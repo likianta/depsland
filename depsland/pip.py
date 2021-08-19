@@ -1,6 +1,9 @@
-import subprocess
+from lk_logger import lk
+from lk_utils import send_cmd
+from lk_utils.filesniff import normpath
+from yaml import safe_load
 
-from .conf import DefaultConf, VenvConf
+from .conf import ProjConf, VenvConf
 
 
 class Pip:
@@ -10,9 +13,134 @@ class Pip:
             local='',
             offline=False,
             pypi_url='https://pypi.python.org/simple/',
-            pyversion=DefaultConf.pyversion,
+            pyversion=ProjConf.pyversion,
+            cache_dir=VenvConf.cache_dir,
             quiet=True,
-            # target=VenvConf.lib_dir,
+    ):
+        self._template = PipCmdTemplate(
+            local, offline, pypi_url, pyversion, cache_dir, quiet
+        )
+        self._get_pip_cmd = self._template.get_pip_cmd
+    
+    # -------------------------------------------------------------------------
+    
+    def download(self, name: str, target=VenvConf.download_dir):
+        send_cmd(self._get_pip_cmd('download', name, f'--dest="{target}"',
+                                   add_pkg_idx_options=True))
+    
+    def download_r(self, file, target=VenvConf.download_dir):
+        send_cmd(self._get_pip_cmd('download -r', file, f'--dest="{target}"',
+                                   add_pkg_idx_options=True))
+    
+    def install(self, name: str, target=VenvConf.lib_dir):
+        """ install package to `VenvConf.lib_dir` (default). """
+        send_cmd(self._get_pip_cmd('install', name, f'--target="{target}"',
+                                   add_pkg_idx_options=True))
+    
+    def install_r(self, file, target=VenvConf.lib_dir):
+        send_cmd(self._get_pip_cmd('install -r', file, f'--target="{target}"',
+                                   add_pkg_idx_options=True))
+    
+    def show_dependencies(self, name) -> list[str]:
+        ret = send_cmd(self._get_pip_cmd('show', name))
+        #   -> see example in `self.show_location`
+        ret = safe_load(ret)
+        if ret['Requires']:
+            return ret['Requires'].split(', ')
+            #   e.g. {'Requires': 'xlrd, lk-logger, xlsxwriter', ...} -> [
+            #       'xlrd', 'lk-logger', 'xlsxwriter']
+        else:
+            return []
+    
+    def show_locations(self, name) -> set[str]:
+        ret = send_cmd(self._get_pip_cmd('show', name, '-f'))
+        r''' e.g.
+            Name: lk-logger
+            Version: 3.6.3
+            Summary: Advanced logger with source code lineno indicator.
+            Home-page:
+            Author: Likianta
+            Author-email: likianta@foxmail.com
+            License: MIT
+            Location: e:\programs\python\python39\lib\site-packages
+            Requires:
+            Required-by: pyportable-installer, lk-utils, lk-qtquick-scaffold
+            Files:
+              lk_logger-3.6.3.dist-info\INSTALLER
+              lk_logger-3.6.3.dist-info\METADATA
+              lk_logger-3.6.3.dist-info\RECORD
+              lk_logger-3.6.3.dist-info\REQUESTED
+              lk_logger-3.6.3.dist-info\WHEEL
+              lk_logger\__init__.py
+              lk_logger\__pycache__\__init__.cpython-39.pyc
+              lk_logger\__pycache__\lk_logger.cpython-39.pyc
+              lk_logger\lk_logger.py
+        '''
+        ret = safe_load(ret.replace('Files:', 'Files: |'))
+        ''' -> {
+                'Name': 'lk-logger',
+                ...
+                'Files': 'xxx\nxxx\nxxx\n...'
+            }
+        '''
+        
+        # analyse files root dirs
+        out = set()
+        for f in ret['Files'].split('\n'):
+            if f == '' or f.startswith('.'):
+                #   e.g. '..\..\Scripts\vba_extract.py'
+                continue
+            else:
+                out.add(normpath(f).split('/', 1)[0])
+        return out
+    
+    # def analyse(self, name):
+    #     ret = send_cmd(self._get_pip_cmd('show', name, '-f'))
+    #     r''' e.g.
+    #         Name: lk-logger
+    #         Version: 3.6.3
+    #         Summary: Advanced logger with source code lineno indicator.
+    #         Home-page:
+    #         Author: Likianta
+    #         Author-email: likianta@foxmail.com
+    #         License: MIT
+    #         Location: e:\programs\python\python39\lib\site-packages
+    #         Requires:
+    #         Required-by: pyportable-installer, lk-utils, lk-qtquick-scaffold
+    #         Files:
+    #           lk_logger-3.6.3.dist-info\INSTALLER
+    #           lk_logger-3.6.3.dist-info\METADATA
+    #           lk_logger-3.6.3.dist-info\RECORD
+    #           lk_logger-3.6.3.dist-info\REQUESTED
+    #           lk_logger-3.6.3.dist-info\WHEEL
+    #           lk_logger\__init__.py
+    #           lk_logger\__pycache__\__init__.cpython-39.pyc
+    #           lk_logger\__pycache__\lk_logger.cpython-39.pyc
+    #           lk_logger\lk_logger.py
+    #     '''
+    #     ret = safe_load(ret.replace('Files:', 'Files: |'))
+    #     ''' -> {
+    #             'Name': 'lk-logger',
+    #             ...
+    #             'Files': 'xxx\nxxx\nxxx\n...'
+    #         }
+    #     '''
+    #
+    #     dependencies = ret['Requires'].split(', ')
+    #     top_folders = set(split(f)[0] for f in ret['Files'].split('\n'))
+    #     return dependencies, top_folders
+
+
+class PipCmdTemplate:
+    
+    def __init__(
+            self,
+            local='',
+            offline=False,
+            pypi_url='https://pypi.python.org/simple/',
+            pyversion=ProjConf.pyversion,
+            cache_dir=VenvConf.cache_dir,
+            quiet=True,
     ):
         if offline is False:
             assert pypi_url
@@ -24,63 +152,49 @@ class Pip:
             host = ''
         
         # setup options
-        self.template = ' '.join((
-            f'pip {{action}} {{name}} --target="{{target}}"',
+        self._template = 'pip {action} {name} {options}'
+        
+        self._general_options = (
+            f'--cache-dir="{cache_dir}"',
             f'--disable-pip-version-check',
+            f'--no-python-version-warning',
+            f'--quiet' if quiet else '',
+            f'--trusted-host {host}' if host else '',
+        )
+        
+        self._pkg_idx_options = (
             f'--find-links="{local}"' if local else '',
             f'--index-url {pypi_url}' if not offline else '',
             f'--no-index' if offline else '',
             f'--only-binary=:all:',
             f'--python-version {pyversion}' if pyversion else '',
-            f'--quiet' if quiet else '',
-            f'--trusted-host {host}' if host else '',
-        ))
-
-    def install(self, name: str, target=VenvConf.lib_dir):
-        """ install package to `VenvConf.lib_dir` (default). """
-        send_cmd(self.template.format(
-            action='install', name=name, target=target
-        ), ignore_errors=False)
+        )
     
-    def download(self, name: str, target=VenvConf.download_dir):
-        send_cmd(self.template.format(
-            action='download', name=name, target=target
-        ), ignore_errors=False)
+    @property
+    def template(self):
+        return self._template
+    
+    @property
+    def general_options(self):
+        return ' '.join(self._general_options)
+    
+    @property
+    def pkg_idx_options(self):
+        return ' '.join(self._pkg_idx_options)
+    
+    def get_pip_cmd(self, action, name,
+                    *custom_options,
+                    add_general_options=True,
+                    add_pkg_idx_options=False):
+        options = []
+        options.extend(custom_options)
+        if add_general_options:
+            options.extend(self._general_options)
+        if add_pkg_idx_options:
+            options.extend(self._pkg_idx_options)
         
-
-def send_cmd(cmd: str, ignore_errors=False):
-    """
-
-    Args:
-        cmd:
-        ignore_errors
-
-    References:
-        https://docs.python.org/zh-cn/3/library/subprocess.html
-    """
-    try:
-        '''
-        subprocess.run:params
-            shell=True  传入字符串, 以字符串方式调用命令
-            shell=False 传入一个列表, 列表的第一个元素当作命令, 后续元素当作该命
-                        令的参数
-            check=True  检查返回码, 如果 subprocess 正常运行完, 则返回码是 0. 如
-                        果有异常发生, 则返回码非 0. 当返回码非 0 时, 会报
-                        `subprocess.CalledProcessError` 错误
-            capture_output=True
-                        捕获输出后, 控制台不会打印; 通过:
-                            output = subprocess.run(..., capture_output=True)
-                            output.stdout.read()  # -> bytes ...
-                            output.stderr.read()  # -> bytes ...
-                        可以获取.
-        '''
-        from lk_logger import lk
-        lk.log(cmd.replace(VenvConf.venv_home, '~'))
-        subprocess.run(cmd, shell=True, check=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        if ignore_errors:
-            return False
-        else:
-            raise Exception(e.stderr)
-    else:
-        return True
+        out = self._template.format(
+            action=action, name=name, options=' '.join(options)
+        )
+        lk.logt('[D2023]', out)
+        return out

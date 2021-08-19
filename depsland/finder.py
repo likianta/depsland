@@ -10,6 +10,11 @@ from lk_utils.read_and_write import load_list
 from .typehint import *
 
 
+def analyse_locations(pip, requirements):
+    for name in requirements:
+        pip.show()
+
+
 class PackageFinder:
     
     def __init__(self, path: TPath):
@@ -123,9 +128,9 @@ class PackageFinder:
         
         return out
     
-    def get_dependencies(self, key: TKey, recursive=False):
+    def get_dependencies(self, key: TRawName, recursive=False):
         
-        def recurse(keys: List[TKey], collector: set):
+        def recurse(keys: List[TRawName], collector: set):
             for key in keys:
                 if key in collector:
                     continue
@@ -134,7 +139,7 @@ class PackageFinder:
                 recurse(self.get_dependencies(key, recursive=False), collector)
             return collector
 
-        key = self.normalize_key(key)
+        key = self.normalize_name(key)
 
         if not recursive:
             if key not in self.pkg_deps:
@@ -158,12 +163,12 @@ class PackageFinder:
                 )
             )
     
-    def exists(self, key: TKey) -> bool:
-        key = self.normalize_key(key)
+    def exists(self, key: TRawName) -> bool:
+        key = self.normalize_name(key)
         return key in self.lib_pkgs
     
-    def get_info(self, key: TKey) -> TPackagesInfo:
-        key = self.normalize_key(key)
+    def get_info(self, key: TRawName) -> TPackagesInfo:
+        key = self.normalize_name(key)
         try:
             info = self.lib_pkgs[key]
         except KeyError:
@@ -172,5 +177,5 @@ class PackageFinder:
             return info
 
     @staticmethod
-    def normalize_key(key: TKey) -> TNormalizedKey:
+    def normalize_name(key: TRawName) -> TNormName:
         return key.replace('-', '_')

@@ -1,0 +1,3 @@
+class LibManager:
+    inventory = {}
+    pass

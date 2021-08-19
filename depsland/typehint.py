@@ -1,11 +1,15 @@
 from typing import *
 
-TKey = str
+TName = str
+#   e.g. 'numpy', 'pandas', 'lk-logger', 'pillow', etc.
+
+# DELETE: `TRawName`, `TNormName`, `TRealName` are going to be removed.
+TRawName = str
 #   note: this is all lower case
 #   e.g. 'numpy', 'pandas', 'lk-logger', 'pillow', etc.
-TNormalizedKey = str
+TNormName = str
 #   it amounts to `TKey.replace('-', '_')`
-TName = str
+TRealName = str
 #   note: this is case sensitive
 #   e.g. 'numpy', 'pandas', 'lk_logger', 'PIL', etc.
 
@@ -14,13 +18,13 @@ TBaseName = str  # basename of TPath
 
 
 class TPackagesInfo(TypedDict):
-    name: TName
-    deps: list[TNormalizedKey]
+    name: TRealName
+    deps: list[TNormName]
     path: tuple[TBaseName, TBaseName]
     isfile: bool
 
 
-TPackges = Dict[TNormalizedKey, TPackagesInfo]
+TPackges = dict[TNormName, TPackagesInfo]
 ''' see `finder.py:PackageFinder:list_all_packages:returns`
     {
         str_key: {
