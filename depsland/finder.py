@@ -1,3 +1,6 @@
+"""
+DELETE ME
+"""
 from collections import defaultdict
 from importlib.metadata import DistributionFinder, MetadataPathFinder
 from os.path import isfile

@@ -3,43 +3,41 @@ from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
 
-from .conf import ProjConf, VenvConf
+from .venv_manager import path_mgr
 
 
 class Pip:
     
-    def __init__(
-            self,
-            local='',
-            offline=False,
-            pypi_url='https://pypi.python.org/simple/',
-            pyversion=ProjConf.pyversion,
-            cache_dir=VenvConf.cache_dir,
-            quiet=True,
-    ):
-        self._template = PipCmdTemplate(
-            local, offline, pypi_url, pyversion, cache_dir, quiet
-        )
+    def __init__(self, pip, local, **kwargs):
+        self._template = PipCmdTemplate(pip, local, **kwargs)
         self._get_pip_cmd = self._template.get_pip_cmd
     
     # -------------------------------------------------------------------------
     
-    def download(self, name: str, target=VenvConf.download_dir):
-        send_cmd(self._get_pip_cmd('download', name, f'--dest="{target}"',
-                                   add_pkg_idx_options=True))
+    def download(self, name: str, target=path_mgr.downloads):
+        send_cmd(self._get_pip_cmd(
+            'download', name, f'--dest="{target}"',
+            add_pkg_idx_options=True
+        ))
     
-    def download_r(self, file, target=VenvConf.download_dir):
-        send_cmd(self._get_pip_cmd('download -r', file, f'--dest="{target}"',
-                                   add_pkg_idx_options=True))
+    def download_r(self, file, target=path_mgr.downloads):
+        send_cmd(self._get_pip_cmd(
+            'download -r', file, f'--dest="{target}"',
+            add_pkg_idx_options=True
+        ))
     
-    def install(self, name: str, target=VenvConf.lib_dir):
+    def install(self, name: str, target=path_mgr.site_packages):
         """ install package to `VenvConf.lib_dir` (default). """
-        send_cmd(self._get_pip_cmd('install', name, f'--target="{target}"',
-                                   add_pkg_idx_options=True))
+        send_cmd(self._get_pip_cmd(
+            'install', name, f'--target="{target}"',
+            add_pkg_idx_options=True
+        ))
     
-    def install_r(self, file, target=VenvConf.lib_dir):
-        send_cmd(self._get_pip_cmd('install -r', file, f'--target="{target}"',
-                                   add_pkg_idx_options=True))
+    def install_r(self, file, target=path_mgr.site_packages):
+        send_cmd(self._get_pip_cmd(
+            'install -r', file, f'--target="{target}"',
+            add_pkg_idx_options=True
+        ))
     
     def show_dependencies(self, name) -> list[str]:
         ret = send_cmd(self._get_pip_cmd('show', name))
@@ -87,9 +85,14 @@ class Pip:
         # analyse files root dirs
         out = set()
         for f in ret['Files'].split('\n'):
-            if f == '' or f.startswith('.'):
-                #   e.g. '..\..\Scripts\vba_extract.py'
+            if f == '':
                 continue
+            if f.startswith('.'):
+                #   e.g. '..\..\Scripts\vba_extract.py'
+                assert f.startswith('..\\..\\Scripts\\')
+                out.add('../../Scripts/{}'.format(
+                    normpath(f[14:]).split('/', 1)[0]
+                ))
             else:
                 out.add(normpath(f).split('/', 1)[0])
         return out
@@ -135,11 +138,12 @@ class PipCmdTemplate:
     
     def __init__(
             self,
-            local='',
+            pip,
+            local,
             offline=False,
             pypi_url='https://pypi.python.org/simple/',
-            pyversion=ProjConf.pyversion,
-            cache_dir=VenvConf.cache_dir,
+            pyversion=path_mgr.pyversion,
+            cache_dir=path_mgr.cache,
             quiet=True,
     ):
         if offline is False:
@@ -152,7 +156,7 @@ class PipCmdTemplate:
             host = ''
         
         # setup options
-        self._template = 'pip {action} {name} {options}'
+        self._template = pip + ' {action} {name} {options}'
         
         self._general_options = (
             f'--cache-dir="{cache_dir}"',
@@ -162,12 +166,13 @@ class PipCmdTemplate:
             f'--trusted-host {host}' if host else '',
         )
         
+        from .utils import pyversion_2_num
         self._pkg_idx_options = (
             f'--find-links="{local}"' if local else '',
             f'--index-url {pypi_url}' if not offline else '',
             f'--no-index' if offline else '',
             f'--only-binary=:all:',
-            f'--python-version {pyversion}' if pyversion else '',
+            f'--python-version {pyversion_2_num(pyversion)}' if pyversion else '',
         )
     
     @property

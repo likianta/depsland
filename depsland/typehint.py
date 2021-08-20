@@ -1,5 +1,25 @@
 from typing import *
 
+# TPyVersion = str
+TPyVersion = Literal[
+    # 'python2', 'python2-32',
+    # 'python3', 'python3-32',
+    'python27', 'python27-32',
+    'python30', 'python30-32',
+    'python31', 'python31-32',
+    'python32', 'python32-32',
+    'python33', 'python33-32',
+    'python34', 'python34-32',
+    'python35', 'python35-32',
+    'python36', 'python36-32',
+    'python37', 'python37-32',
+    'python38', 'python38-32',
+    'python39', 'python39-32',
+]
+TPlatform = Literal[
+    'linux', 'macos', 'windows'
+]
+
 TName = str
 #   e.g. 'numpy', 'pandas', 'lk-logger', 'pillow', etc.
 
