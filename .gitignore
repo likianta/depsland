@@ -127,4 +127,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Custom
+/.idea/
+/history/
+/test/
+/upcoming/
 /venv_home/
