@@ -77,3 +77,8 @@ def unzip_file(src_file, dst_dir, complete_delete=False):
 def send_cmd_bat(cmd: str):
     cmd = dedent(cmd).replace('|\n', '').replace('\n', '&')
     return os.system(cmd)
+
+
+def normailize_name(name: str):
+    return name.lower().replace('_', '-')
+    # return name.lower().replace('-', '_')

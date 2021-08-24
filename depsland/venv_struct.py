@@ -68,9 +68,6 @@ class SourcePathStruct(_PathStruct):
         self.cache = f'{self.pypi_home}/cache'
         self.downloads = f'{self.pypi_home}/downloads'
         
-        self.pip_suits = os.listdir(assets_struct.pip)
-        self.tk_suits = os.listdir(assets_struct.tkinter)
-        
         self.indexing_dirs(pyversion)
     
     def __str__(self):
@@ -109,7 +106,7 @@ class SourcePathStruct(_PathStruct):
             mkdir(self.scripts)
             
             mkdir(self.site_packages)
-            
+    
     @property
     def interpreter(self):
         return os.path.normpath(f'{self.python}/python.exe')
@@ -150,6 +147,10 @@ class DestinationPathStruct(_PathStruct):
     @property
     def interpreter(self):
         return f'{self.home}/python.exe'
+    
+    @property
+    def python_pth(self):
+        return f'{self.home}/{self.pyversion}._pth'
 
 
 class BuildAssetsStruct(_PathStruct):
@@ -204,6 +205,10 @@ class BuildAssetsStruct(_PathStruct):
 # noinspection PyTypeChecker
 path_struct = SourcePathStruct('python39', platform)
 assets_struct = BuildAssetsStruct('python39', platform)
+
+path_struct.pip_suits = os.listdir(assets_struct.pip) + \
+                        os.listdir(assets_struct.setuptools)
+path_struct.tk_suits = os.listdir(assets_struct.tkinter)
 
 __all__ = [
     'platform', 'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',

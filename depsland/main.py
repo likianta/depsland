@@ -2,7 +2,7 @@ from lk_logger import lk
 from lk_utils import dumps
 from lk_utils.read_and_write import load_list
 
-from .pip import Pip
+from .pip import default_pip
 from .typehint import *
 from .utils import mklink, mklinks
 from .venv_struct import DestinationPathStruct, SourcePathStruct, path_struct
@@ -29,8 +29,7 @@ def create_venv(
     _init_venv_dir(src_struct, dst_struct)
     
     if not pip:
-        pip = Pip(f'{src_struct.interpreter} -m pip',
-                  src_struct.downloads, quiet=False)
+        pip = default_pip
     
     if isinstance(requirements, str):
         f = requirements

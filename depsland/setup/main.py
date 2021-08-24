@@ -11,7 +11,7 @@ from depsland.utils import unzip_file
 from depsland.venv_struct import *
 
 
-def main(pyversion):
+def main(pyversion='python39'):
     path_struct.indexing_dirs(pyversion)
     assets_struct.indexing_dirs(pyversion)
     
@@ -20,8 +20,6 @@ def main(pyversion):
     _setup_python_suits()
     _add_to_system_environment()
     
-    # TODO: delete `~/dist/setup.bat` file
-
 
 def _build_dirs():
     for d in (
@@ -32,6 +30,7 @@ def _build_dirs():
             f'{proj_dir}/pypi',
             f'{proj_dir}/pypi/cache',
             f'{proj_dir}/pypi/downloads',
+            f'{proj_dir}/pypi/index',
     ):
         if not exists(d):
             lk.loga('mkdir', d)
@@ -42,8 +41,9 @@ def _build_dirs():
 
 def _setup_embed_python():
     if exists(zip_file := assets_struct.embed_python_zip):
-        # unpack to the bin dir
+        # unpack to `path_struct.python`
         unzip_file(zip_file, path_struct.python)
+        disable_pth_file(path_struct.python_pth)
     else:
         # download_embed_python('python27')
         download_embed_python('python39')

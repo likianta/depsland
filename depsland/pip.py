@@ -9,11 +9,13 @@ from .venv_struct import path_struct
 class Pip:
     
     def __init__(self, pip, local, **kwargs):
+        self.head = pip
         self._template = PipCmdTemplate(pip, local, **kwargs)
         self._get_pip_cmd = self._template.get_pip_cmd
-        # TEST
-        lk.loga(send_cmd(f'{pip} -V'))
-        
+    
+    def test(self):
+        lk.loga(send_cmd(f'{self.head} -V'), h='parent')
+    
     def download(self, name: str, target=path_struct.downloads):
         send_cmd(self._get_pip_cmd(
             'download', name, f'--dest="{target}"',
@@ -151,7 +153,7 @@ class PipCmdTemplate:
             pypi_url='https://pypi.python.org/simple/',
             pyversion=path_struct.pyversion,
             cache_dir=path_struct.cache,
-            quiet=True,
+            quiet=False,
     ):
         if offline is False:
             assert pypi_url
@@ -210,3 +212,9 @@ class PipCmdTemplate:
         )
         lk.logt('[D2023]', out)
         return out
+
+
+default_pip = Pip(
+    f'{path_struct.interpreter} -m pip',
+    path_struct.downloads, quiet=False
+)

@@ -14,10 +14,12 @@ def download_embed_python(pyversion: TPyVersion, platform=platform):
     manager = EmbedPythonManager(pyversion, platform)
     manager.download(extract=True)
     manager.test()
-    
-    # disable _pth file
-    if os.path.exists(f := f'{manager.bin_dir}/{pyversion}._pth'):
-        os.rename(f, f + '.bak')
+    disable_pth_file(manager.python_pth)
+
+
+def disable_pth_file(pth_file):
+    if os.path.exists(pth_file):
+        os.rename(pth_file, pth_file + '.bak')
 
 
 class EmbedPythonManager:
@@ -54,6 +56,10 @@ class EmbedPythonManager:
     @property
     def interpreter(self):
         return f'{self.bin_dir}/python.exe'
+    
+    @property
+    def python_pth(self):
+        return f'{self.bin_dir}/{self.pyversion}._pth'
 
 
 def get_download_link(pyversion, platform=platform):
