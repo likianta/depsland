@@ -2,6 +2,7 @@
 References:
     ~/venv_home/readme.md
 """
+import os
 from os import mkdir
 from os.path import dirname, exists
 from platform import system
@@ -10,7 +11,8 @@ from lk_utils.filesniff import normpath
 
 from .typehint import TPlatform, TPyVersion
 
-platform = system().lower()
+# noinspection PyTypeChecker
+platform = system().lower()  # type: TPlatform
 curr_dir = normpath(dirname(__file__))  # current dir
 pakg_dir = curr_dir  # depsland package dir
 proj_dir = dirname(pakg_dir)  # depsland project dir
@@ -18,9 +20,41 @@ home_dir = f'{proj_dir}/venv_home'  # project venv_home dir
 pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
 
 
-class SourcePathStruct:
+class _PathStruct:
+    pyversion: TPyVersion
+    platform: TPlatform
     
-    def __init__(self, pyversion: TPyVersion, platform: TPlatform):
+    def __str__(self):
+        raise NotImplementedError
+    
+    def indexing_dirs(self, pyversion):
+        self.pyversion = pyversion
+        
+    def build_dirs(self):
+        raise NotImplementedError
+        
+
+class SourcePathStruct(_PathStruct):
+    inventory: str
+    venvlinks: str
+    
+    venv_home: str
+    plat_home: str
+    pypi_home: str
+    
+    cache: str
+    downloads: str
+    
+    pip_suits: list[str]
+    tk_suits: list[str]
+    
+    python: str
+    dlls: str
+    lib: str
+    scripts: str
+    site_packages: str
+    
+    def __init__(self, pyversion: TPyVersion, platform=platform):
         self.pyversion = pyversion
         self.platform = platform
         
@@ -34,8 +68,8 @@ class SourcePathStruct:
         self.cache = f'{self.pypi_home}/cache'
         self.downloads = f'{self.pypi_home}/downloads'
         
-        self.pip_suits = None  # list[path]
-        self.tk_suits = None  # list[path]
+        self.pip_suits = os.listdir(assets_struct.pip)
+        self.tk_suits = os.listdir(assets_struct.tkinter)
         
         self.indexing_dirs(pyversion)
     
@@ -47,9 +81,9 @@ class SourcePathStruct:
             )
         return self.python
     
-    # noinspection PyAttributeOutsideInit
     def indexing_dirs(self, pyversion):
-        self.pyversion = pyversion
+        super().indexing_dirs(pyversion)
+        
         self.python = f'{self.plat_home}/{pyversion}'
         
         self.dlls = f'{self.python}/dlls'
@@ -76,15 +110,17 @@ class SourcePathStruct:
             
             mkdir(self.site_packages)
             
-            # from .setup import download_embed_python
-            # download_embed_python(self.pyversion, self.platform)
-            
-            from .setup import get_pip, get_tkinter
-            self.pip_suits = get_pip(self.pyversion, dst_dir=self.site_packages)
-            self.tk_suits = get_tkinter(self.pyversion, dst_dir=self.python)
+    @property
+    def interpreter(self):
+        return os.path.normpath(f'{self.python}/python.exe')
 
 
-class DestinationPathStruct:
+class DestinationPathStruct(_PathStruct):
+    home: str
+    dlls: str
+    lib: str
+    scripts: str
+    site_packages: str
     
     def __init__(self, name):
         self.home = f'{home_dir}/venv_links/{name}'
@@ -104,10 +140,11 @@ class DestinationPathStruct:
         if not exists(self.home):
             mkdir(self.home)
             
-            mkdir(self.dlls)
-            mkdir(self.lib)
-            mkdir(self.scripts)
+            # mkdir(self.dlls)
+            # mkdir(self.lib)
+            # mkdir(self.scripts)
             
+            mkdir(self.lib)
             mkdir(self.site_packages)
     
     @property
@@ -115,30 +152,53 @@ class DestinationPathStruct:
         return f'{self.home}/python.exe'
 
 
-class BuildAssetsStruct:
+class BuildAssetsStruct(_PathStruct):
     """ ~/build/assets/* """
+    assets: str
+    curr_assets: str
     
-    def __init__(self, pyversion, platform):
+    python_suits: str
+    embed_python_zip: str
+    pip_src: str
+    pip_egg: str
+    pip: str
+    setuptools: str
+    tkinter: str
+    
+    def __init__(self, pyversion, platform=platform):
         self.pyversion = pyversion
-        # 1
-        self.assets = f'{proj_dir}/assets'
-        # 2
+        
+        self.assets = f'{proj_dir}/build/assets'
         self.curr_assets = f'{self.assets}/{platform}'
-        # 3
+        
+        self.indexing_dirs(pyversion)
+        
+    def __str__(self):
+        return self.python_suits
+
+    def indexing_dirs(self, pyversion):
+        super().indexing_dirs(pyversion)
+
         if pyversion.startswith('python2'):
             self.python_suits = f'{self.curr_assets}/python2_suits'
-            self.python = ''  # TODO
+            # TODO: self.embed_python_zip, self.pip_src, self.pip_egg
         else:
             self.python_suits = f'{self.curr_assets}/python3_suits'
-            self.python = f'{self.curr_assets}/python39_embed_win.zip'
-        # 4
+            self.embed_python_zip = f'{self.python_suits}/python39_embed_win.zip'
+            #   FIXME: this is related to platform
+            self.pip_src = f'{self.python_suits}/pip_src/pip-21.2.4'
+            self.pip_egg = f'pip-21.2.4-py3.9.egg'
+        
         self.pip = f'{self.python_suits}/pip'
-        self.pip_src = f'{self.python_suits}/pip'
-        self.setuptools = f'{self.python_suits}/pip'
+        self.setuptools = f'{self.python_suits}/setuptools'
+        
         if pyversion.endswith('-32'):
             self.tkinter = f'{self.python_suits}/tkinter32'
         else:
             self.tkinter = f'{self.python_suits}/tkinter64'
+            
+    def build_dirs(self):
+        raise NotImplemented
 
 
 # noinspection PyTypeChecker
@@ -147,5 +207,6 @@ assets_struct = BuildAssetsStruct('python39', platform)
 
 __all__ = [
     'platform', 'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',
-    'SourcePathStruct', 'DestinationPathStruct', 'path_struct', 'assets_struct',
+    'SourcePathStruct', 'DestinationPathStruct', 'BuildAssetsStruct',
+    'path_struct', 'assets_struct',
 ]

@@ -11,7 +11,9 @@ class Pip:
     def __init__(self, pip, local, **kwargs):
         self._template = PipCmdTemplate(pip, local, **kwargs)
         self._get_pip_cmd = self._template.get_pip_cmd
-    
+        # TEST
+        lk.loga(send_cmd(f'{pip} -V'))
+        
     def download(self, name: str, target=path_struct.downloads):
         send_cmd(self._get_pip_cmd(
             'download', name, f'--dest="{target}"',

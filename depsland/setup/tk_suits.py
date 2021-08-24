@@ -1,7 +1,7 @@
-from shutil import copytree, copyfile
+from shutil import copyfile, copytree
 
+from ..typehint import TPathStruct
 from ..utils import mklinks
-from ..venv_struct import proj_dir
 
 
 def copy_tkinter(system_python_dir, dst_dir):
@@ -17,7 +17,7 @@ def copy_tkinter(system_python_dir, dst_dir):
             (f'{system_python_dir}/Lib/tkinter', f'{dst_dir}/tkinter'),
     ):
         copytree(i, o)
-        
+    
     for i, o in (
             (f'{system_python_dir}/DLLs/_tkinter.pyd', f'{dst_dir}/_tkinter.pyd'),
             (f'{system_python_dir}/DLLs/tcl86t.dll', f'{dst_dir}/tcl86t.dll'),
@@ -26,18 +26,5 @@ def copy_tkinter(system_python_dir, dst_dir):
         copyfile(i, o)
 
 
-def get_tkinter(pyversion: str, dst_dir):
-    assets_dir = f'{proj_dir}/build/assets'
-    
-    if pyversion.startswith('python2'):
-        if pyversion.endswith('-32'):
-            src_dir = f'{assets_dir}/tk_suits_for_py2_32bit'
-        else:
-            src_dir = f'{assets_dir}/tk_suits_for_py2'
-    else:
-        if pyversion.endswith('-32'):
-            src_dir = f'{assets_dir}/tk_suits_for_py3_32bit'
-        else:
-            src_dir = f'{assets_dir}/tk_suits_for_py3'
-    
-    return mklinks(src_dir, dst_dir)
+def get_tkinter(assets_struct: TPathStruct, dst_dir):
+    return mklinks(assets_struct.tkinter, dst_dir)

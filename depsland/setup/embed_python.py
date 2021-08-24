@@ -35,7 +35,7 @@ class EmbedPythonManager:
         file to `path_struct.bin`
         """
         link = get_download_link(self.pyversion, self.platform)
-        file = path_struct.curr_home + '/' + link.rsplit("/")[-1]
+        file = path_struct.python + '/' + link.rsplit("/")[-1]
         
         from ..downloader import download
         download(link, file, exist_ok=True)

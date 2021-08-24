@@ -2,12 +2,19 @@ from typing import *
 
 if __name__ == '__main__':
     from depsland.pip import Pip as _Pip
+    from depsland.venv_struct import SourcePathStruct as _Struct1
+    from depsland.venv_struct import DestinationPathStruct as _Struct2
+    from depsland.venv_struct import BuildAssetsStruct as _Struct3
 else:
     _Pip = None
+    _Struct1 = None
+    _Struct2 = None
+    _Struct3 = None
 
 # -----------------------------------------------------------------------------
 
 TPip = _Pip
+TPathStruct = Union[_Struct1, _Struct2, _Struct3]
 
 # TPyVersion = str
 TPyVersion = Literal[

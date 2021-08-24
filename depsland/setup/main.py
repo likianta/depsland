@@ -6,29 +6,32 @@ from os.path import exists
 
 from lk_logger import lk
 
-from depsland.setup import download_embed_python
+from depsland.setup import *
 from depsland.utils import unzip_file
 from depsland.venv_struct import *
 
-assets_dir = f'{proj_dir}/build/assets'
 
-
-def main():
-    build_dirs()
+def main(pyversion):
+    path_struct.indexing_dirs(pyversion)
+    assets_struct.indexing_dirs(pyversion)
+    
+    _build_dirs()
     _setup_embed_python()
+    _setup_python_suits()
     _add_to_system_environment()
+    
     # TODO: delete `~/dist/setup.bat` file
 
 
-def build_dirs():
+def _build_dirs():
     for d in (
-        f'{proj_dir}/venv_home',
-        f'{proj_dir}/venv_home/inventory',
-        f'{proj_dir}/venv_home/inventory/{platform}',
-        f'{proj_dir}/venv_home/venv_links',
-        f'{proj_dir}/pypi',
-        f'{proj_dir}/pypi/cache',
-        f'{proj_dir}/pypi/downloads',
+            f'{proj_dir}/venv_home',
+            f'{proj_dir}/venv_home/inventory',
+            f'{proj_dir}/venv_home/inventory/{platform}',
+            f'{proj_dir}/venv_home/venv_links',
+            f'{proj_dir}/pypi',
+            f'{proj_dir}/pypi/cache',
+            f'{proj_dir}/pypi/downloads',
     ):
         if not exists(d):
             lk.loga('mkdir', d)
@@ -38,12 +41,18 @@ def build_dirs():
 
 
 def _setup_embed_python():
-    if exists(file := f'{assets_dir}/python39_embed_win.zip'):
+    if exists(zip_file := assets_struct.embed_python_zip):
         # unpack to the bin dir
-        unzip_file(file, path_struct.python)
+        unzip_file(zip_file, path_struct.python)
     else:
         # download_embed_python('python27')
         download_embed_python('python39')
+
+
+def _setup_python_suits():
+    get_tkinter(assets_struct, path_struct.python)
+    get_pip_scripts(path_struct.site_packages)
+    get_pip(path_struct.site_packages)
 
 
 def _add_to_system_environment():
@@ -61,14 +70,8 @@ def _add_to_system_environment():
     path = os.path.abspath(f'{proj_dir}/depsland.bat')
     if path not in os.environ.get('DEPSLAND', []):
         os.system('setx DEPSLAND "{}"'.format(path))
-    lk.loga('Environment variable updated', os.getenv('DEPSLAND'))
-
-
-def create_pyvenv_dirs(*pyversions):
-    for v in pyversions:
-        path_mgr = SourcePathStruct(v, platform)
-        path_mgr.build_dirs()
+    lk.loga('Environment variable updated', f'DEPSLAND => {path}')
 
 
 if __name__ == '__main__':
-    main()
+    main('python39')

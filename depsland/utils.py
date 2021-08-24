@@ -55,17 +55,10 @@ def mklink(src_path: TPath, dst_path: TPath, exist_ok=False):
     return dst_path
 
 
-def mklinks(src_dir: TPath, dst_dir: TPath, names=None):
-    """
-
-    Args:
-        src_dir:
-        dst_dir:
-        names: Optional[Iterable[str]]
-    """
+def mklinks(src_dir: TPath, dst_dir: TPath, names=None, exist_ok=False):
     out = []
     for n in (names or os.listdir(src_dir)):
-        out.append(mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}'))
+        out.append(mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}', exist_ok))
     return out
 
 
