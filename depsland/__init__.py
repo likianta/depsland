@@ -1,4 +1,5 @@
-from . import venv_manager
+from .manager import deps_manager
+from .manager import venv_manager
 from .main import create_venv
 from .pip import Pip
 from .utils import mklink, mklinks

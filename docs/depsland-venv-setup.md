@@ -15,38 +15,7 @@
 
     ![](.assets/20210820-094859.png)
 
-3. 打开 'python39._pth' 文件, 修改为以下内容:
-
-    *注: 井号开头的是注释, 复不复制都不影响.*
-
-    ```
-    python39.zip
-    .
-    # 加入以下自定义路径
-    # 推荐按照下面的顺序填写
-    dlls
-    lib
-    scripts
-    lib/site-packages
-    ```
-
-4. 在 cmd 中测试:
-
-    ```
-    ~/depsland/venv/python.exe
-    >>> # 现在我们进入了 embed python 的交互控制台
-    >>> import sys
-    >>> # 打印 sys.path, 我们会看到 'python39._pth' 文件中的路径在这里都加入了
-    >>> print(sys.path)
-    >>> # 退出交互模式
-    >>> sys.exit()
-    ```
-
-    截图 (下图有些过时, 与上述内容存在差异. 仅供参考!)
-
-    ![](.assets/20210820-100011.png)
-
-5. 在 '~/depsland/venv' 下创建以下空目录
+3. 在 '~/depsland/venv' 下创建以下空目录
 
     *注: 大小写不敏感.*
 
@@ -58,9 +27,29 @@
     |= scripts
     ```
 
+4. 将 'python39._pth' 文件删除 (或者将它重命名为 'python39._pth.bak')
+
+    *注: 该操作将改变 embed python 的 `sys.path` 的值, 更符合我们的使用习惯.*
+
+5. 在 cmd 中测试:
+
+    ```
+    ~/depsland/venv/python.exe
+    >>> # 现在我们进入了 embed python 的交互控制台
+    >>> import sys
+    >>> # 打印 sys.path
+    >>> print(sys.path)
+    >>> # 退出交互模式
+    >>> sys.exit()
+    ```
+
+    截图:
+
+    ![](.assets/20210823-101701.png)
+
 # 安装 pip
 
-1. 首先下载 setuptools, 待会儿我们安装 pip 时需要用到: [setuptools-57.4.0-py3-none-any.whl](https://pypi.tuna.tsinghua.edu.cn/packages/bd/25/5bdf7f1adeebd4e3fa76b2e2f045ae53ee208e40a4231ad0f0c3007e4353/setuptools-57.4.0-py3-none-any.whl#sha256=a49230977aa6cfb9d933614d2f7b79036e9945c4cdd7583163f4e920b83418d6)
+1. 首先下载 setuptools (待会儿我们安装 pip 时需要用到): [setuptools-57.4.0-py3-none-any.whl](https://pypi.tuna.tsinghua.edu.cn/packages/bd/25/5bdf7f1adeebd4e3fa76b2e2f045ae53ee208e40a4231ad0f0c3007e4353/setuptools-57.4.0-py3-none-any.whl#sha256=a49230977aa6cfb9d933614d2f7b79036e9945c4cdd7583163f4e920b83418d6)
 
 2. 将下载后的文件的后缀改为 '.zip', 然后解压
     
@@ -68,7 +57,7 @@
 
     ```
     downloads
-    |= setuptools-57.4.0-py3-none-any.whl
+    |= setuptools-57.4.0-py3-none-any
         |= _distutils_hack
         |= pkg_resources
         |= setuptools
@@ -137,7 +126,7 @@
 
     4. 将解压后的两个文件夹 'pip' 和 'pip-21.2.4.dist-info' 放到 '~/depsland/venv/lib/site-packages' 目录下
 
-11. 完成后, 在 '~/depsland/venv' 下会出现以下文件:
+11. 完成后, 在 '~/depsland/venv' 下的目录结构当如下所示:
 
     ```
     depsland/venv
@@ -174,6 +163,9 @@
 pip 21.2.4 版本自带的 urllib3 库 (~/pip/_vendor/urllib3) 的版本是 v1.26.*, 该版本有一个严重的问题会导致 pip install 失败 (报错内容: 'ValueError: check_hostname requires server_hostname'). 我用下面的方法解决:
 
 1. 删除 '~/pip/_vendor/urllib3' 文件夹
+
 2. 从 pypi 仓库下载 v1.25.* 版本的 urllib3: [urllib3-1.25.9-py2.py3-none-any.whl](https://pypi.tuna.tsinghua.edu.cn/packages/e1/e5/df302e8017440f111c11cc41a6b432838672f5a70aa29227bf58149dc72f/urllib3-1.25.9-py2.py3-none-any.whl#sha256=88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115)
+
 3. 将后缀改为 '.zip', 解压
+
 4. 解压后里面有一个 'urllib3' 文件夹, 把它复制到 '~/pip/_vendor' 下面

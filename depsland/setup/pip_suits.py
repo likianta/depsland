@@ -3,7 +3,7 @@ References:
     ~/docs/depsland-venv-setup.md
 """
 from ..main import mklinks
-from ..venv_manager import proj_dir, path_mgr
+from ..manager.venv_manager import proj_dir, path_mgr
 
 
 def get_pip(pyversion):

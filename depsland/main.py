@@ -2,11 +2,12 @@ from os import path as ospath
 
 from lk_logger import lk
 from lk_utils import dumps
+from lk_utils.read_and_write import load_list
 
+from .manager import DestinationPathManager, SourcePathManager, path_mgr
 from .pip import Pip
 from .typehint import *
-from .utils import mklinks, mklink
-from .venv_manager import path_mgr, SourcePathManager, DestinationPathManager
+from .utils import mklink, mklinks
 
 
 def create_venv(
@@ -33,17 +34,17 @@ def create_venv(
         pip = Pip(f'{ospath.abspath("../venv/python.exe")} -m pip',
                   src_path_mgr.downloads, quiet=False)
     
-    if not requirements:
-        return
-    
-    if not isinstance(requirements, str):
-        dumps(requirements, f := '../cache/requirements.txt')
-    else:
-        from lk_utils.read_and_write import load_list
+    if isinstance(requirements, str):
         f = requirements
         requirements = [name for name in load_list(f)
                         if name and not name.startswith('#')]
-    
+    else:
+        f = '../cache/requirements.txt'
+        dumps(requirements, f)
+
+    if not requirements:
+        return
+
     pip.download_r(f, src_path_mgr.downloads)
     pip.install_r(f, src_path_mgr.site_packages)
     

@@ -1,7 +1,7 @@
 from shutil import copytree, copyfile
 
 from ..utils import mklinks
-from ..venv_manager import proj_dir, path_mgr
+from ..manager.venv_manager import proj_dir, path_mgr
 
 
 def copy_tkinter(system_python_dir, dst_dir):

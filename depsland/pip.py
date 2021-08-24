@@ -3,7 +3,7 @@ from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
 
-from .venv_manager import path_mgr
+from .manager import path_mgr
 
 
 class Pip:
@@ -12,13 +12,18 @@ class Pip:
         self._template = PipCmdTemplate(pip, local, **kwargs)
         self._get_pip_cmd = self._template.get_pip_cmd
     
-    # -------------------------------------------------------------------------
-    
     def download(self, name: str, target=path_mgr.downloads):
         send_cmd(self._get_pip_cmd(
             'download', name, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
+        r''' e.g.
+            Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+            Collecting lk-logger
+              Using cached https://.../lk_logger-3.6.3-py3-none-any.whl (11 kB)
+            Saved e:\...\lk_logger-3.6.3-py3-none-any.whl
+            Successfully downloaded lk-logger
+        '''
     
     def download_r(self, file, target=path_mgr.downloads):
         send_cmd(self._get_pip_cmd(

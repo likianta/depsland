@@ -1,5 +1,14 @@
 from typing import *
 
+if __name__ == '__main__':
+    from depsland.pip import Pip as _Pip
+else:
+    _Pip = None
+
+# -----------------------------------------------------------------------------
+
+TPip = _Pip
+
 # TPyVersion = str
 TPyVersion = Literal[
     # 'python2', 'python2-32',
@@ -27,7 +36,7 @@ TName = str
 TRawName = str
 #   note: this is all lower case
 #   e.g. 'numpy', 'pandas', 'lk-logger', 'pillow', etc.
-TNormName = str
+TNormName = TName
 #   it amounts to `TKey.replace('-', '_')`
 TRealName = str
 #   note: this is case sensitive

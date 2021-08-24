@@ -2,12 +2,12 @@
 Download embedded python executables.
 """
 import os
-from zipfile import ZipFile
 
 from lk_logger import lk
 
 from ..typehint import *
-from ..venv_manager import path_mgr, platform
+from ..utils import unzip_file
+from ..manager.venv_manager import path_mgr, platform
 
 
 def download_embed_python(pyversion: TPyVersion, platform=platform):
@@ -41,20 +41,11 @@ class EmbedPythonManager:
         download(link, file, exist_ok=True)
         
         if extract:
-            zip_file = file
-            unzip_dir = path_mgr.bin
-            self.extract(zip_file, unzip_dir)
+            dst_dir = unzip_file(file, path_mgr.bin)
+            lk.loga('see unzipped result', dst_dir)
         # else you can extract it manually later.
         
         return file
-    
-    @staticmethod
-    def extract(file_i, dir_o):
-        file_handle = ZipFile(file_i)
-        file_handle.extractall(dir_o)
-        lk.loga('see unzipped result', dir_o)
-        # delete zip file
-        pass
     
     def test(self):
         from lk_utils import send_cmd
@@ -92,4 +83,7 @@ def get_download_link(pyversion, platform=platform):
         },
         # TODO: more platforms needed
     }
-    return urls[platform][pyversion]
+    try:
+        return urls[platform][pyversion]
+    except KeyError:
+        raise Exception('Unexpected Python version', platform, pyversion)

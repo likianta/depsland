@@ -1,10 +1,13 @@
-from os import path as ospath, listdir
+import os
+from os import path as ospath
+from textwrap import dedent
+from zipfile import ZipFile
 
 from lk_utils import send_cmd
 
-from .typehint import TPyVersion, Literal, TPath
+from .typehint import Literal, TPath, TPyVersion
 
-TPyVersionNum = Literal[
+_TPyVersionNum = Literal[
     '2.7', '2.7-32',
     '3.0', '3.0-32',
     '3.1', '3.1-32',
@@ -19,7 +22,7 @@ TPyVersionNum = Literal[
 ]
 
 
-def pyversion_2_num(pyversion: TPyVersion) -> TPyVersionNum:
+def pyversion_2_num(pyversion: TPyVersion) -> _TPyVersionNum:
     v = pyversion.removeprefix('python')
     assert len(v) == 2, v
     major, suffix = v[0], v[1]
@@ -55,5 +58,22 @@ def mklinks(src_dir: TPath, dst_dir: TPath, names=None):
         dst_dir:
         names: Optional[Iterable[str]]
     """
-    for n in (names or listdir(src_dir)):
+    for n in (names or os.listdir(src_dir)):
         mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}')
+
+
+def unzip_file(src_file, dst_dir, complete_delete=False):
+    file_handle = ZipFile(src_file)
+    file_handle.extractall(dst_dir)
+    
+    if complete_delete:
+        # delete zip file
+        from os import remove
+        remove(src_file)
+    
+    return dst_dir
+
+
+def send_cmd_bat(cmd: str):
+    cmd = dedent(cmd).replace('|\n', '').replace('\n', '&')
+    return os.system(cmd)
