@@ -1,0 +1,1 @@
+.\venv\python.exe .\launches\run.py %*

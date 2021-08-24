@@ -7,6 +7,7 @@ from os import mkdir
 from os.path import dirname, exists
 from platform import system
 
+from lk_utils import loads
 from lk_utils.filesniff import normpath
 
 from .typehint import TPlatform, TPyVersion
@@ -32,9 +33,9 @@ class _PathStruct:
         
     def build_dirs(self):
         raise NotImplementedError
-        
 
-class SourcePathStruct(_PathStruct):
+
+class VEnvSourceStruct(_PathStruct):
     inventory: str
     venvlinks: str
     
@@ -112,7 +113,7 @@ class SourcePathStruct(_PathStruct):
         return os.path.normpath(f'{self.python}/python.exe')
 
 
-class DestinationPathStruct(_PathStruct):
+class VEnvDistStruct(_PathStruct):
     home: str
     dlls: str
     lib: str
@@ -197,21 +198,80 @@ class BuildAssetsStruct(_PathStruct):
             self.tkinter = f'{self.python_suits}/tkinter32'
         else:
             self.tkinter = f'{self.python_suits}/tkinter64'
-            
+
     def build_dirs(self):
         raise NotImplemented
 
+    
+class LocalPyPIStruct(_PathStruct):
+    """ ~/pypi/* """
+    home: str
+    
+    def __init__(self, platform=platform):
+        self.home = pypi_dir
+        
+        self.cache = f'{self.home}/cache'
+        self.downloads = f'{self.home}/downloads'
+        self.extraced = f'{self.home}/extracted'
+        self.index = f'{self.home}/index'
+
+        # noinspection PyTypeChecker
+        self.platform = f'{self.extraced}/{platform}'
+        
+        self.name_version = f'{self.index}/name_version.pkl'
+        self.locations = f'{self.index}/locations.pkl'
+        self.dependencies = f'{self.index}/dependencies.pkl'
+        self.updates = f'{self.index}/updates_record.pkl'
+    
+    def __str__(self):
+        return self.home
+    
+    def indexing_dirs(self, pyversion):
+        raise NotImplemented
+    
+    def build_dirs(self):
+        if not exists(self.platform):
+            mkdir(self.platform)
+    
+    def mkdir(self, name_id):
+        os.mkdir(d := f'{self.platform}/{name_id}')
+        return d
+    
+    def load_index_data(self):
+        """
+        See `depsland/repository.py`
+        """
+        bundle = (
+            self.name_version,
+            self.locations,
+            self.dependencies,
+            self.updates,
+        )
+        if all(map(exists, bundle)):
+            return tuple(map(loads, bundle))
+        else:
+            from collections import defaultdict
+            return (
+                defaultdict(list),
+                defaultdict(list),
+                defaultdict(list),
+                dict()
+            )
+
 
 # noinspection PyTypeChecker
-path_struct = SourcePathStruct('python39', platform)
+path_struct = VEnvSourceStruct('python39', platform)
 assets_struct = BuildAssetsStruct('python39', platform)
+pypi_struct = LocalPyPIStruct()
 
 path_struct.pip_suits = os.listdir(assets_struct.pip) + \
                         os.listdir(assets_struct.setuptools)
 path_struct.tk_suits = os.listdir(assets_struct.tkinter)
 
 __all__ = [
-    'platform', 'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',
-    'SourcePathStruct', 'DestinationPathStruct', 'BuildAssetsStruct',
-    'path_struct', 'assets_struct',
+    'platform',
+    'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',
+    'VEnvSourceStruct', 'VEnvDistStruct',
+    'BuildAssetsStruct', 'LocalPyPIStruct',
+    'path_struct', 'assets_struct', 'pypi_struct',
 ]

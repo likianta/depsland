@@ -2,20 +2,27 @@ from typing import *
 
 if __name__ == '__main__':
     from depsland.pip import Pip as _Pip
-    from depsland.venv_struct import SourcePathStruct as _Struct1
-    from depsland.venv_struct import DestinationPathStruct as _Struct2
+    from depsland.struct import PackageInfo as _PackageInfo
+    from depsland.struct import Requirement as _Requirement
+    from depsland.venv_struct import VEnvSourceStruct as _Struct1
+    from depsland.venv_struct import VEnvDistStruct as _Struct2
     from depsland.venv_struct import BuildAssetsStruct as _Struct3
 else:
+    _PackageInfo = None
     _Pip = None
+    _Requirement = None
     _Struct1 = None
     _Struct2 = None
     _Struct3 = None
 
+TPackageInfo = _PackageInfo
+TPathStruct = Union[_Struct1, _Struct2, _Struct3]
+TPip = _Pip
+TRequirement = _Requirement
+
 # -----------------------------------------------------------------------------
 
-TPip = _Pip
-TPathStruct = Union[_Struct1, _Struct2, _Struct3]
-
+TVersion = str
 # TPyVersion = str
 TPyVersion = Literal[
     # 'python2', 'python2-32',
@@ -83,3 +90,12 @@ TPackges = dict[TNormName, TPackagesInfo]
         }
     }
 '''
+
+# `repository.py > class:LocalPyPI`
+TNameId = tuple[TName, TVersion]
+TNameVersions = dict[TName, list[TVersion]]
+TLocations = list[TPath]
+TLocationsIndex = dict[TNameId, TLocations]
+TDependencies = list[TNameId]
+TDependenciesIndex = dict[TNameId, TDependencies]
+TUpdates = dict[TName, float]

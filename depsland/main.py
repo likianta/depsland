@@ -5,7 +5,7 @@ from lk_utils.read_and_write import load_list
 from .pip import default_pip
 from .typehint import *
 from .utils import mklink, mklinks
-from .venv_struct import DestinationPathStruct, SourcePathStruct, path_struct
+from .venv_struct import VEnvDistStruct, VEnvSourceStruct, path_struct
 
 
 def create_venv(
@@ -24,7 +24,7 @@ def create_venv(
         pip: Optional[Pip]
     """
     src_struct = path_struct
-    dst_struct = DestinationPathStruct(venv_name)
+    dst_struct = VEnvDistStruct(venv_name)
     
     _init_venv_dir(src_struct, dst_struct)
     
@@ -61,8 +61,13 @@ def create_venv(
     mklinks(src_struct.site_packages, dst_struct.site_packages, locations)
 
 
-def _init_venv_dir(src_struct: SourcePathStruct,
-                   dst_struct: DestinationPathStruct):
+def install_requirements(requirements: list[TRequirement]):
+    for req in requirements:
+        pass
+
+
+def _init_venv_dir(src_struct: VEnvSourceStruct,
+                   dst_struct: VEnvDistStruct):
     """
     see `../docs/project-structure.md > chapters:h1:VENV_HOME`
     """
