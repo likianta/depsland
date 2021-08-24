@@ -18,7 +18,7 @@ home_dir = f'{proj_dir}/venv_home'  # project venv_home dir
 pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
 
 
-class SourcePathManager:
+class SourcePathStruct:
     
     def __init__(self, pyversion: TPyVersion, platform: TPlatform):
         self.pyversion = pyversion
@@ -84,7 +84,7 @@ class SourcePathManager:
             self.tk_suits = get_tkinter(self.pyversion, dst_dir=self.python)
 
 
-class DestinationPathManager:
+class DestinationPathStruct:
     
     def __init__(self, name):
         self.home = f'{home_dir}/venv_links/{name}'
@@ -115,10 +115,37 @@ class DestinationPathManager:
         return f'{self.home}/python.exe'
 
 
+class BuildAssetsStruct:
+    """ ~/build/assets/* """
+    
+    def __init__(self, pyversion, platform):
+        self.pyversion = pyversion
+        # 1
+        self.assets = f'{proj_dir}/assets'
+        # 2
+        self.curr_assets = f'{self.assets}/{platform}'
+        # 3
+        if pyversion.startswith('python2'):
+            self.python_suits = f'{self.curr_assets}/python2_suits'
+            self.python = ''  # TODO
+        else:
+            self.python_suits = f'{self.curr_assets}/python3_suits'
+            self.python = f'{self.curr_assets}/python39_embed_win.zip'
+        # 4
+        self.pip = f'{self.python_suits}/pip'
+        self.pip_src = f'{self.python_suits}/pip'
+        self.setuptools = f'{self.python_suits}/pip'
+        if pyversion.endswith('-32'):
+            self.tkinter = f'{self.python_suits}/tkinter32'
+        else:
+            self.tkinter = f'{self.python_suits}/tkinter64'
+
+
 # noinspection PyTypeChecker
-path_mgr = SourcePathManager('python39', platform)
+path_struct = SourcePathStruct('python39', platform)
+assets_struct = BuildAssetsStruct('python39', platform)
 
 __all__ = [
     'platform', 'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',
-    'SourcePathManager', 'DestinationPathManager', 'path_mgr',
+    'SourcePathStruct', 'DestinationPathStruct', 'path_struct', 'assets_struct',
 ]

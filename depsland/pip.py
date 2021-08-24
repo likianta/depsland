@@ -3,7 +3,7 @@ from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
 
-from .venv_struct import path_mgr
+from .venv_struct import path_struct
 
 
 class Pip:
@@ -12,7 +12,7 @@ class Pip:
         self._template = PipCmdTemplate(pip, local, **kwargs)
         self._get_pip_cmd = self._template.get_pip_cmd
     
-    def download(self, name: str, target=path_mgr.downloads):
+    def download(self, name: str, target=path_struct.downloads):
         send_cmd(self._get_pip_cmd(
             'download', name, f'--dest="{target}"',
             add_pkg_idx_options=True
@@ -25,20 +25,20 @@ class Pip:
             Successfully downloaded lk-logger
         '''
     
-    def download_r(self, file, target=path_mgr.downloads):
+    def download_r(self, file, target=path_struct.downloads):
         send_cmd(self._get_pip_cmd(
             'download -r', file, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
     
-    def install(self, name: str, target=path_mgr.site_packages):
+    def install(self, name: str, target=path_struct.site_packages):
         """ install package to `VenvConf.lib_dir` (default). """
         send_cmd(self._get_pip_cmd(
             'install', name, f'--target="{target}"',
             add_pkg_idx_options=True
         ))
     
-    def install_r(self, file, target=path_mgr.site_packages):
+    def install_r(self, file, target=path_struct.site_packages):
         send_cmd(self._get_pip_cmd(
             'install -r', file, f'--target="{target}"',
             add_pkg_idx_options=True
@@ -147,8 +147,8 @@ class PipCmdTemplate:
             local,
             offline=False,
             pypi_url='https://pypi.python.org/simple/',
-            pyversion=path_mgr.pyversion,
-            cache_dir=path_mgr.cache,
+            pyversion=path_struct.pyversion,
+            cache_dir=path_struct.cache,
             quiet=True,
     ):
         if offline is False:
