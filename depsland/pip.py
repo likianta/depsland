@@ -3,7 +3,7 @@ from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
 
-from .manager import path_mgr
+from .venv_struct import path_mgr
 
 
 class Pip:

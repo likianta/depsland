@@ -1,5 +1,5 @@
 from .manager import deps_manager
-from .manager import venv_manager
+from . import venv_struct
 from .main import create_venv
 from .pip import Pip
 from .utils import mklink, mklinks

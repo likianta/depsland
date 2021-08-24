@@ -7,7 +7,7 @@ from lk_logger import lk
 
 from ..typehint import *
 from ..utils import unzip_file
-from ..manager.venv_manager import path_mgr, platform
+from ..venv_struct import path_mgr, platform
 
 
 def download_embed_python(pyversion: TPyVersion, platform=platform):
@@ -26,7 +26,7 @@ class EmbedPythonManager:
                  download_dir=''):
         self.pyversion = pyversion
         self.platform = platform
-        self.bin_dir = path_mgr.bin
+        self.bin_dir = path_mgr.python
         self.download_dir = download_dir or self.bin_dir
     
     def download(self, extract=False):
@@ -41,7 +41,7 @@ class EmbedPythonManager:
         download(link, file, exist_ok=True)
         
         if extract:
-            dst_dir = unzip_file(file, path_mgr.bin)
+            dst_dir = unzip_file(file, path_mgr.python)
             lk.loga('see unzipped result', dst_dir)
         # else you can extract it manually later.
         

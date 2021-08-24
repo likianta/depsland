@@ -30,7 +30,7 @@ def pyversion_2_num(pyversion: TPyVersion) -> _TPyVersionNum:
     return f'{major}.{suffix}'
 
 
-def mklink(src_path: TPath, dst_path: TPath):
+def mklink(src_path: TPath, dst_path: TPath, exist_ok=False):
     """
 
     References:
@@ -40,7 +40,10 @@ def mklink(src_path: TPath, dst_path: TPath):
     """
     assert ospath.exists(src_path), src_path
     if ospath.exists(dst_path):
-        return
+        if exist_ok:
+            return dst_path
+        else:
+            raise FileExistsError(dst_path)
     
     if ospath.isdir(src_path):
         send_cmd(f'mklink /J "{dst_path}" "{src_path}"')
@@ -48,6 +51,8 @@ def mklink(src_path: TPath, dst_path: TPath):
         send_cmd(f'mklink /H "{dst_path}" "{src_path}"')
     else:
         raise Exception(src_path)
+    
+    return dst_path
 
 
 def mklinks(src_dir: TPath, dst_dir: TPath, names=None):
@@ -58,8 +63,10 @@ def mklinks(src_dir: TPath, dst_dir: TPath, names=None):
         dst_dir:
         names: Optional[Iterable[str]]
     """
+    out = []
     for n in (names or os.listdir(src_dir)):
-        mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}')
+        out.append(mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}'))
+    return out
 
 
 def unzip_file(src_file, dst_dir, complete_delete=False):

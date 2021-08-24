@@ -27,7 +27,7 @@ def _build_dirs():
 def _setup_embed_python():
     if exists(file := f'{assets_dir}/python39_embed_win.zip'):
         # unpack to the bin dir
-        unzip_file(file, path_mgr.bin)
+        unzip_file(file, path_mgr.python)
     else:
         # download_embed_python('python27')
         download_embed_python('python39')

@@ -1,7 +1,7 @@
 from shutil import copytree, copyfile
 
 from ..utils import mklinks
-from ..manager.venv_manager import proj_dir, path_mgr
+from ..venv_struct import proj_dir
 
 
 def copy_tkinter(system_python_dir, dst_dir):
@@ -26,8 +26,9 @@ def copy_tkinter(system_python_dir, dst_dir):
         copyfile(i, o)
 
 
-def get_tkinter(pyversion: str):
+def get_tkinter(pyversion: str, dst_dir):
     assets_dir = f'{proj_dir}/build/assets'
+    
     if pyversion.startswith('python2'):
         if pyversion.endswith('-32'):
             src_dir = f'{assets_dir}/tk_suits_for_py2_32bit'
@@ -39,6 +40,4 @@ def get_tkinter(pyversion: str):
         else:
             src_dir = f'{assets_dir}/tk_suits_for_py3'
     
-    dst_dir = path_mgr.tk_suits
-    
-    mklinks(src_dir, dst_dir)
+    return mklinks(src_dir, dst_dir)

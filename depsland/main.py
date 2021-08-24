@@ -69,7 +69,7 @@ def _init_venv_dir(src_path_mgr: SourcePathManager,
     """
     see `../docs/project-structure.md > chapters:h1:VENV_HOME`
     """
-    mklinks(src_path_mgr.bin, dst_path_mgr.home)
+    mklinks(src_path_mgr.python, dst_path_mgr.home)
     mklink(src_path_mgr.scripts, dst_path_mgr.scripts)
     mklinks(src_path_mgr.pip_suits, dst_path_mgr.site_packages)
     mklinks(src_path_mgr.tk_suits, dst_path_mgr.home)
