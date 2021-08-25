@@ -11,7 +11,6 @@ __pycache__/
 build/
 develop-eggs/
 dist/
-downloads/
 eggs/
 .eggs/
 lib/
@@ -132,5 +131,14 @@ dmypy.json
 /.idea/
 /history/
 /test/
-/upcoming/
-/venv_home/
+/tests/
+
+# Keep folders
+/cache/*
+/cache/!.gitkeep
+/conf/*
+/conf/!.gitkeep
+/pypi/*/*
+/pypi/*/!.gitkeep
+/venv_home/*/*
+/venv_home/*/!.gitkeep
