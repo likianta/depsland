@@ -1,18 +1,15 @@
+import os
+from os import listdir
+
 from lk_logger import lk
-from lk_utils import dumps
-from lk_utils.read_and_write import load_list
 
-from .pip import default_pip
+from .path_struct import VEnvDistStruct, VEnvSourceStruct, src_struct
+from .pypi import local_pypi
 from .typehint import *
-from .utils import mklink, mklinks
-from .venv_struct import VEnvDistStruct, VEnvSourceStruct, path_struct
+from .utils import mklinks
 
 
-def create_venv(
-        venv_name: str,
-        requirements: Union[TPath, list[TRawName]],
-        pip=None
-):
+def create_venv(venv_name: str, requirements: list[TRequirement]):
     """
     
     Args:
@@ -21,49 +18,18 @@ def create_venv(
         requirements: e.g. 'requests', 'pillow', 'numpy', etc.
             note:
                 1. the name is case insensitive
-        pip: Optional[Pip]
     """
-    src_struct = path_struct
-    dst_struct = VEnvDistStruct(venv_name)
-    
-    _init_venv_dir(src_struct, dst_struct)
-    
-    if not pip:
-        pip = default_pip
-    
-    if isinstance(requirements, str):
-        f = requirements
-        requirements = [name for name in load_list(f)
-                        if name and not name.startswith('#')]
-    else:
-        f = '../cache/requirements.txt'
-        dumps(requirements, f)
-    
-    if not requirements:
-        return
-    
-    pip.download_r(f, src_struct.downloads)
-    pip.install_r(f, src_struct.site_packages)
-    
-    all_requirements = set()
-    for name in requirements:
-        all_requirements.add(name)
-        all_requirements.update(pip.show_dependencies(name))
-    lk.logp(all_requirements)
-    
-    locations = set()
-    for name in all_requirements:
-        locations.update(pip.show_locations(name))
-    
-    # deploy
-    lk.logt('[D2943]', src_struct, dst_struct)
-    lk.logp('[D2944]', locations)
-    mklinks(src_struct.site_packages, dst_struct.site_packages, locations)
-
-
-def install_requirements(requirements: list[TRequirement]):
-    for req in requirements:
-        pass
+    try:
+        dst_struct = VEnvDistStruct(venv_name)
+        _init_venv_dir(src_struct, dst_struct)
+        for loc in _install_requirements(requirements):
+            lk.logt('[D1736]', os.path.basename(loc))
+            mklinks(loc, dst_struct.site_packages)
+    except Exception as e:
+        raise e
+    finally:
+        local_pypi.save()
+    return dst_struct.home
 
 
 def _init_venv_dir(src_struct: VEnvSourceStruct,
@@ -73,10 +39,27 @@ def _init_venv_dir(src_struct: VEnvSourceStruct,
     """
     dst_struct.build_dirs()
     
-    mklinks(src_struct.python, dst_struct.home)
-    
-    mklink(src_struct.dlls, dst_struct.dlls)
-    mklink(src_struct.scripts, dst_struct.scripts)
+    mklinks(src_struct.python, dst_struct.home,
+            [x for x in listdir(src_struct.python) if x != 'lib'])
+    # mklink(src_struct.dlls, dst_struct.dlls)
+    # mklink(src_struct.scripts, dst_struct.scripts)
     
     mklinks(src_struct.site_packages, dst_struct.site_packages,
             src_struct.pip_suits)
+
+
+def _install_requirements(requirements: list[TRequirement]):
+    pkg_list = []
+    for req in requirements:
+        pkg_list.append(local_pypi.main(req))
+    
+    for pkg in pkg_list:
+        for loc in pkg.locations:
+            yield loc
+    
+    all_deps = set()
+    for pkg in pkg_list:
+        all_deps.update(pkg.dependencies)
+    for dep in all_deps:
+        for loc in local_pypi.get_locations(dep):
+            yield loc

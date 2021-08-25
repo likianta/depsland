@@ -2,12 +2,15 @@ import re
 from os.path import exists
 from time import time
 
+from lk_logger import lk
+from lk_utils import dumps
 from pkginfo import Wheel
 
-from .struct import PackageInfo, Requirement
+from .data_struct import PackageInfo, Requirement
+from .path_struct import pypi_struct
+from .pip import default_pip
 from .typehint import *
 from .utils import find_best_matched_version, unzip_file
-from .venv_struct import pypi_struct
 
 
 class LocalPyPI:
@@ -20,9 +23,11 @@ class LocalPyPI:
     dependencies: TDependenciesIndex
     updates: TUpdates
     
+    __circular_deps = []
+    
     def __init__(self, pip: TPip):
         self.pip = pip
-        a, b, c, d = pypi_struct.load_index_data()
+        a, b, c, d = pypi_struct.load_indexed_data()
         self.name_versions = a
         self.locations = b
         self.dependencies = c
@@ -31,11 +36,11 @@ class LocalPyPI:
     def get_all_dependencies(self, name_id, holder=None) -> list[TNameId]:
         if holder is None:
             holder = []
-        holder.append(name_id)
-        for i in self.dependencies[name_id]:
-            if i in holder:
+        for dep_name_id in self.dependencies[name_id]:
+            if dep_name_id in holder:
                 continue
-            self.get_all_dependencies(i, holder)
+            holder.append(dep_name_id)
+            self.get_all_dependencies(dep_name_id, holder)
         return holder
     
     def get_locations(self, name_id) -> TLocations:
@@ -57,8 +62,8 @@ class LocalPyPI:
         
         return PackageInfo(
             name=name, version=version, name_id=name_id,
-            locations=self.locations[name],
-            dependencies=self.dependencies[name]
+            locations=self.locations[name_id],
+            dependencies=self.dependencies[name_id]
         )
     
     def _get_local_matched_version(self, req, check_outdated=True):
@@ -80,7 +85,7 @@ class LocalPyPI:
         if req.version_spec == 'latest':
             if check_outdated and self._is_outdated(req.name):
                 return None
-        version_list = self.name_versions.get(req.name)
+        version_list = self.name_versions[req.name]
         return find_best_matched_version(req.version_spec, version_list)
     
     def _is_outdated(self, name):
@@ -91,10 +96,12 @@ class LocalPyPI:
     
     def _refresh_local_repo(self, req: TRequirement):
         def finish_processing():
-            self.updates[req.name] = time()
+            self.__circular_deps.clear()
+            self.updates[req.name] = int(time())
             return
         
         if not (path := self._download(req.raw_name, pypi_struct.downloads)):
+            # current case: assert path == ''
             return finish_processing()
         
         # FIXME: '.tar.gz' suffix supports
@@ -107,18 +114,42 @@ class LocalPyPI:
         name, version, name_id = req.name, req.version, req.name_id
         
         # extract and update index
-        loc = unzip_file(whl, pypi_struct.mkdir(name_id))
+        loc = unzip_file(path, pypi_struct.mkdir(name_id))
+        # try:
+        #     loc = unzip_file(path, pypi_struct.mkdir(name_id))
+        # except FileExistsError:  # TEST
+        #     loc = f'{pypi_struct.extraced}/{name_id}'
         
         # update indexes
-        self.name_versions[name] = version
+        self.name_versions[name].append(version)
         self.locations[name_id].append(loc)
         #   TODO: assign sole location instead of list[location] type
         for raw_name in whl.requires_dist:
-            #   e.g. ['cachecontrol[filecache] (>=0.12.4,<0.13.0)',
-            #         'cachy (>=0.3.0,<0.4.0)', ...]
-            req = Requirement(raw_name)
-            self.dependencies[name_id].append(req.name_id)
-            yield req
+            lk.logt('[D4831]', raw_name)
+            #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
+            #        'cachy (>=0.3.0,<0.4.0)', ...
+            new_req = Requirement(raw_name.replace('(', '').replace(')', ''))
+            
+            # yielding new_req to the caller (`self.main`), the caller will
+            # firstly handle it and update its related indexed data, then
+            # continue to current thread.
+            # be notice that if a circular dependency found, for example
+            # package A depends on B but B (or B's dependencies) also depends
+            # on A, a circular import error will be raised.
+            if new_req.name in self.__circular_deps:
+                raise Exception()
+            else:
+                self.__circular_deps.append(new_req.name)
+                yield new_req
+            
+            version = find_best_matched_version(
+                new_req.version_spec, self.name_versions[new_req.name]
+            )
+            new_req.set_fixed_version(version)
+            self.dependencies[name_id].append(new_req.name_id)
+        
+        _sort_versions(self.name_versions[name])
+        _sort_versions(self.dependencies[name_id])
         
         return finish_processing()
     
@@ -129,7 +160,11 @@ class LocalPyPI:
                 path: new downloaded file path
                 empty_string: the requested file already exists in local
         """
-        ret = self.pip.download(raw_name, dst_dir)
+        # use quotes around `raw_name` because `raw_name` includes version
+        # specifiers (like '>', '<', etc.) which should be wrapped when using
+        # in shell. (https://pip.pypa.io/en/stable/cli/pip_install/#requirement
+        # -specifiers)
+        ret = self.pip.download(f'"{raw_name}"', dst_dir)
         r'''
             Sucessfully downloaded example:
                 Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
@@ -144,6 +179,7 @@ class LocalPyPI:
                   none-any.whl
                 Successfully downloaded lk-logger
         '''
+        lk.logt('[D2054]', ret.replace('\n', '[\\n]'))
         # get name from ret info
         if new_file_matched := re.search(r'(?<=Saved ).+', ret):
             path = new_file_matched.group()
@@ -152,3 +188,33 @@ class LocalPyPI:
         else:
             assert re.search(r'(?<=File was already downloaded ).+', ret)
             return ''
+            # # TEST
+            # return re.search(r'(?<=File was already downloaded ).+', ret).group()
+    
+    def save(self):
+        for data, file in zip(
+                (self.name_versions,
+                 self.locations,
+                 self.dependencies,
+                 self.updates),
+                pypi_struct.get_indexed_files()
+        ):
+            dumps(data, file)
+
+
+def _sort_versions(versions: list[TVersion], reverse=True):
+    """
+    References:
+        https://stackoverflow.com/questions/12255554/sort-versions-in-python/12255578
+    """
+    from distutils.version import StrictVersion
+    versions.sort(key=lambda x: StrictVersion(x.split('-', 1)[-1]),
+                  # `x` type is Union[TNameId, TVersion], for TNameId we need
+                  # to split out the name part.
+                  reverse=reverse)
+    return versions
+
+
+local_pypi = LocalPyPI(default_pip)
+
+__all__ = ['local_pypi']

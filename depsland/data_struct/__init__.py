@@ -1,5 +1,7 @@
 from .packge_info import PackageInfo
+from .requester import Requester
 from .requirement import Requirement
+from .venv_options import VenvOptions
 
 # class Name:
 #     raw_name: str

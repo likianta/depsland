@@ -30,7 +30,7 @@ class _PathStruct:
     
     def indexing_dirs(self, pyversion):
         self.pyversion = pyversion
-        
+    
     def build_dirs(self):
         raise NotImplementedError
 
@@ -174,13 +174,13 @@ class BuildAssetsStruct(_PathStruct):
         self.curr_assets = f'{self.assets}/{platform}'
         
         self.indexing_dirs(pyversion)
-        
+    
     def __str__(self):
         return self.python_suits
-
+    
     def indexing_dirs(self, pyversion):
         super().indexing_dirs(pyversion)
-
+        
         if pyversion.startswith('python2'):
             self.python_suits = f'{self.curr_assets}/python2_suits'
             # TODO: self.embed_python_zip, self.pip_src, self.pip_egg
@@ -198,25 +198,21 @@ class BuildAssetsStruct(_PathStruct):
             self.tkinter = f'{self.python_suits}/tkinter32'
         else:
             self.tkinter = f'{self.python_suits}/tkinter64'
-
+    
     def build_dirs(self):
         raise NotImplemented
 
-    
+
 class LocalPyPIStruct(_PathStruct):
     """ ~/pypi/* """
-    home: str
     
-    def __init__(self, platform=platform):
+    def __init__(self):
         self.home = pypi_dir
         
         self.cache = f'{self.home}/cache'
         self.downloads = f'{self.home}/downloads'
         self.extraced = f'{self.home}/extracted'
         self.index = f'{self.home}/index'
-
-        # noinspection PyTypeChecker
-        self.platform = f'{self.extraced}/{platform}'
         
         self.name_version = f'{self.index}/name_version.pkl'
         self.locations = f'{self.index}/locations.pkl'
@@ -230,23 +226,17 @@ class LocalPyPIStruct(_PathStruct):
         raise NotImplemented
     
     def build_dirs(self):
-        if not exists(self.platform):
-            mkdir(self.platform)
+        raise NotImplemented
     
     def mkdir(self, name_id):
-        os.mkdir(d := f'{self.platform}/{name_id}')
+        os.mkdir(d := f'{self.extraced}/{name_id}')
         return d
     
-    def load_index_data(self):
+    def load_indexed_data(self):
         """
         See `depsland/repository.py`
         """
-        bundle = (
-            self.name_version,
-            self.locations,
-            self.dependencies,
-            self.updates,
-        )
+        bundle = self.get_indexed_files()
         if all(map(exists, bundle)):
             return tuple(map(loads, bundle))
         else:
@@ -257,21 +247,29 @@ class LocalPyPIStruct(_PathStruct):
                 defaultdict(list),
                 dict()
             )
+    
+    def get_indexed_files(self):
+        return (
+            self.name_version,
+            self.locations,
+            self.dependencies,
+            self.updates,
+        )
 
 
 # noinspection PyTypeChecker
-path_struct = VEnvSourceStruct('python39', platform)
 assets_struct = BuildAssetsStruct('python39', platform)
 pypi_struct = LocalPyPIStruct()
 
-path_struct.pip_suits = os.listdir(assets_struct.pip) + \
-                        os.listdir(assets_struct.setuptools)
-path_struct.tk_suits = os.listdir(assets_struct.tkinter)
+src_struct = VEnvSourceStruct('python39', platform)
+src_struct.pip_suits = os.listdir(assets_struct.pip) + \
+                       os.listdir(assets_struct.setuptools)
+src_struct.tk_suits = os.listdir(assets_struct.tkinter)
 
 __all__ = [
     'platform',
     'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',
     'VEnvSourceStruct', 'VEnvDistStruct',
     'BuildAssetsStruct', 'LocalPyPIStruct',
-    'path_struct', 'assets_struct', 'pypi_struct',
+    'assets_struct', 'pypi_struct', 'src_struct',
 ]

@@ -6,24 +6,10 @@ from zipfile import ZipFile
 from dephell_specifier import RangeSpecifier
 from lk_utils import send_cmd
 
-from .typehint import Literal, TPath, TPyVersion, TVersion, TVersionSpec
-
-_TPyVersionNum = Literal[
-    '2.7', '2.7-32',
-    '3.0', '3.0-32',
-    '3.1', '3.1-32',
-    '3.2', '3.2-32',
-    '3.3', '3.3-32',
-    '3.4', '3.4-32',
-    '3.5', '3.5-32',
-    '3.6', '3.6-32',
-    '3.7', '3.7-32',
-    '3.8', '3.8-32',
-    '3.9', '3.9-32',
-]
+from .typehint import *
 
 
-def pyversion_2_num(pyversion: TPyVersion) -> _TPyVersionNum:
+def pyversion_2_num(pyversion: TPyVersion) -> TPyVersionNum:
     v = pyversion.removeprefix('python')
     assert len(v) == 2, v
     major, suffix = v[0], v[1]
@@ -80,14 +66,18 @@ def send_cmd_bat(cmd: str):
     return os.system(cmd)
 
 
-def find_best_matched_version(ver_spec: TVersionSpec, ver_list: list[TVersion]):
+def find_best_matched_version(
+        ver_spec: TVersionSpec, ver_list: list[TVersion]
+) -> Optional[TVersion]:
     """
     
     Args:
         ver_spec: 'version specifier', e.g. '>=3.0', '==1.*', '>=1.2,!=1.2.4',
             ...
-        ver_list: a group of fixed version numbers. e.g. ['1.0.2', '1.0.2a0',
-            '2.0.0.pre3', '2.0.0.post3', '2014.04', ...]
+        ver_list: a group of fixed version numbers.
+            e.g. ['2014.04', '2.0.0.post3', '1.0.2a0', '1.0.2', ...]
+            note the elements have already been sorted by descending order.
+            i.e. `ver_list[0]` is latest version, `ver_list[-1]` is oldest.
             see PEP-440: https://www.python.org/dev/peps/pep-0440/#version
             -specifiers
     
@@ -102,8 +92,11 @@ def find_best_matched_version(ver_spec: TVersionSpec, ver_list: list[TVersion]):
                 >>> '3.4' in RangeSpecifier('>2.7')
                 True
     """
+    if ver_spec == 'latest' or ver_spec == '':
+        return ver_list[0]
+    
     spec = RangeSpecifier(ver_spec)
-    for v in reversed(ver_list):
+    for v in ver_list:
         if v in spec:
             return v
     else:

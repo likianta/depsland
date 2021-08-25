@@ -8,11 +8,11 @@ from lk_logger import lk
 
 from depsland.setup import *
 from depsland.utils import unzip_file
-from depsland.venv_struct import *
+from depsland.path_struct import *
 
 
 def main(pyversion='python39'):
-    path_struct.indexing_dirs(pyversion)
+    src_struct.indexing_dirs(pyversion)
     assets_struct.indexing_dirs(pyversion)
     
     _build_dirs()
@@ -36,23 +36,23 @@ def _build_dirs():
             lk.loga('mkdir', d)
             os.mkdir(d)
     
-    path_struct.build_dirs()
+    src_struct.build_dirs()
 
 
 def _setup_embed_python():
     if exists(zip_file := assets_struct.embed_python_zip):
-        # unpack to `path_struct.python`
-        unzip_file(zip_file, path_struct.python)
-        disable_pth_file(path_struct.python_pth)
+        # unpack to `src_struct.python`
+        unzip_file(zip_file, src_struct.python)
+        disable_pth_file(src_struct.python_pth)
     else:
         # download_embed_python('python27')
         download_embed_python('python39')
 
 
 def _setup_python_suits():
-    get_tkinter(assets_struct, path_struct.python)
-    get_pip_scripts(path_struct.site_packages)
-    get_pip(path_struct.site_packages)
+    get_tkinter(assets_struct, src_struct.python)
+    get_pip_scripts(src_struct.site_packages)
+    get_pip(src_struct.site_packages)
 
 
 def _add_to_system_environment():

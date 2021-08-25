@@ -6,7 +6,7 @@ from lk_logger import lk
 from lk_utils import dumps, loads, send_cmd
 
 from .typehint import TPip
-from .venv_struct import pypi_dir
+from .path_struct import pypi_dir
 from .utils import normailize_name
 
 

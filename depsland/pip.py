@@ -3,7 +3,7 @@ from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
 
-from .venv_struct import path_struct
+from .path_struct import src_struct
 
 
 class Pip:
@@ -16,34 +16,27 @@ class Pip:
     def test(self):
         lk.loga(send_cmd(f'{self.head} -V'), h='parent')
     
-    def download(self, name: str, target=path_struct.downloads):
-        send_cmd(self._get_pip_cmd(
+    def download(self, name: str, target=src_struct.downloads):
+        return send_cmd(self._get_pip_cmd(
             'download', name, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
-        r''' e.g.
-            Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
-            Collecting lk-logger
-              Using cached https://.../lk_logger-3.6.3-py3-none-any.whl (11 kB)
-            Saved e:\...\lk_logger-3.6.3-py3-none-any.whl
-            Successfully downloaded lk-logger
-        '''
     
-    def download_r(self, file, target=path_struct.downloads):
-        send_cmd(self._get_pip_cmd(
+    def download_r(self, file, target=src_struct.downloads):
+        return send_cmd(self._get_pip_cmd(
             'download -r', file, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
     
-    def install(self, name: str, target=path_struct.site_packages):
+    def install(self, name: str, target=src_struct.site_packages):
         """ install package to `VenvConf.lib_dir` (default). """
-        send_cmd(self._get_pip_cmd(
+        return send_cmd(self._get_pip_cmd(
             'install', name, f'--target="{target}"',
             add_pkg_idx_options=True
         ))
     
-    def install_r(self, file, target=path_struct.site_packages):
-        send_cmd(self._get_pip_cmd(
+    def install_r(self, file, target=src_struct.site_packages):
+        return send_cmd(self._get_pip_cmd(
             'install -r', file, f'--target="{target}"',
             add_pkg_idx_options=True
         ))
@@ -151,8 +144,8 @@ class PipCmdTemplate:
             local,
             offline=False,
             pypi_url='https://pypi.python.org/simple/',
-            pyversion=path_struct.pyversion,
-            cache_dir=path_struct.cache,
+            pyversion=src_struct.pyversion,
+            cache_dir=src_struct.cache,
             quiet=False,
     ):
         if offline is False:
@@ -215,6 +208,6 @@ class PipCmdTemplate:
 
 
 default_pip = Pip(
-    f'{path_struct.interpreter} -m pip',
-    path_struct.downloads, quiet=False
+    f'{src_struct.interpreter} -m pip',
+    src_struct.downloads, quiet=False
 )

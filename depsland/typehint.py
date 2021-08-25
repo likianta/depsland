@@ -2,11 +2,11 @@ from typing import *
 
 if __name__ == '__main__':
     from depsland.pip import Pip as _Pip
-    from depsland.struct import PackageInfo as _PackageInfo
-    from depsland.struct import Requirement as _Requirement
-    from depsland.venv_struct import VEnvSourceStruct as _Struct1
-    from depsland.venv_struct import VEnvDistStruct as _Struct2
-    from depsland.venv_struct import BuildAssetsStruct as _Struct3
+    from depsland.data_struct import PackageInfo as _PackageInfo
+    from depsland.data_struct import Requirement as _Requirement
+    from depsland.path_struct import BuildAssetsStruct as _Struct1
+    from depsland.path_struct import VEnvSourceStruct as _Struct2
+    from depsland.path_struct import VEnvDistStruct as _Struct3
 else:
     _PackageInfo = None
     _Pip = None
@@ -42,63 +42,36 @@ TPyVersion = Literal[
     'python38', 'python38-32',
     'python39', 'python39-32',
 ]
+TPyVersionNum = Literal[
+    '2.7', '2.7-32',
+    '3.0', '3.0-32',
+    '3.1', '3.1-32',
+    '3.2', '3.2-32',
+    '3.3', '3.3-32',
+    '3.4', '3.4-32',
+    '3.5', '3.5-32',
+    '3.6', '3.6-32',
+    '3.7', '3.7-32',
+    '3.8', '3.8-32',
+    '3.9', '3.9-32',
+]
+
 TPlatform = Literal[
     'linux', 'macos', 'windows'
 ]
 
+TRawName = str
 TName = str
 #   e.g. 'numpy', 'pandas', 'lk-logger', 'pillow', etc.
-
-# DELETE: `TRawName`, `TNormName`, `TRealName` are going to be removed.
-TRawName = str
-#   note: this is all lower case
-#   e.g. 'numpy', 'pandas', 'lk-logger', 'pillow', etc.
-TNormName = TName
-#   it amounts to `TKey.replace('-', '_')`
-TRealName = str
-#   note: this is case sensitive
-#   e.g. 'numpy', 'pandas', 'lk_logger', 'PIL', etc.
+TNameId = str  # f'{TName}-{TFixedVersion}'
 
 TPath = str  # use only '/' as separator
 TBaseName = str  # basename of TPath
 
-
-class TPackagesInfo(TypedDict):
-    name: TRealName
-    deps: list[TNormName]
-    path: tuple[TBaseName, TBaseName]
-    isfile: bool
-
-
-TPackges = dict[TNormName, TPackagesInfo]
-''' see `finder.py:PackageFinder:list_all_packages:returns`
-    {
-        str_key: {
-            'name': str,
-            'deps': [key, ...],
-            'path': (str, str),
-            'isfile': bool,
-        }, ...
-    }
-    e.g. {
-        'pillow': {
-            'name': 'PIL',
-            'deps': [],
-            'path': (
-                'C:/Program Files/Python39/Lib/site-packages/PIL',
-                'C:/Program Files/Python39/Lib/site-packages/Pillow-8.2.0
-                .dist-info',
-            ),
-            'isfile': False
-        }
-    }
-'''
-
 # `repository.py > class:LocalPyPI`
-TNameId = str  # f'{TName}-{TFixedVersion}'
 TNameVersions = dict[TName, list[TVersion]]
 TLocations = list[TPath]
 TLocationsIndex = dict[TNameId, TLocations]
 TDependencies = list[TNameId]
 TDependenciesIndex = dict[TNameId, TDependencies]
-TUpdates = dict[TName, float]
+TUpdates = dict[TName, int]

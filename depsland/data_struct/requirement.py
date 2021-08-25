@@ -1,6 +1,6 @@
 import re
 
-from ..normalization import normalize_name, normalize_version
+from ..normalization import *
 from ..typehint import *
 
 
@@ -15,19 +15,19 @@ class Requirement:
     #   see `self.set_fixed_version`.
     
     def __init__(self, raw_name: str):
-        self.raw_name = raw_name.lower()
-        name, version = self._split_name_and_version()
+        self.raw_name = normalize_raw_name(raw_name)
+        name, version_spec = self._split_name_and_version(self.raw_name)
         self.name = normalize_name(name)
-        self.version_spec = normalize_version(version)
+        self.version_spec = normalize_version(version_spec)
     
-    def _split_name_and_version(self):
+    @staticmethod
+    def _split_name_and_version(raw_name):
         """
         `self.raw_name` formats:
             xxx
             xxx == 1.2
             xxx == 1.2.0
             xxx >=1.2,<2.0
-            xxx (>=1.2,<2.0)
             xxx != 1.3.4.*
             xxx ~= 1.4.2
             xxx == 5.4; python_version < '2.7'
@@ -36,16 +36,9 @@ class Requirement:
         References:
             PEP-440: https://www.python.org/dev/peps/pep-0440/#version-specifiers
         """
-        name = re.search(r'[-.\w]+', self.raw_name).group()
-        version = (
-            self.raw_name
-                .removeprefix(name)
-                .replace(' ', '')
-                .replace('(', '')
-                .replace(')', '')
-                .split(';')[0]
-        )
-        return name, version
+        name = re.search(r'[-.\w]+', raw_name).group()
+        version_spec = raw_name.removeprefix(name).replace(' ', '')
+        return name, version_spec
     
     def set_fixed_version(self, version):
         self._version = version.replace('!', 'n')
