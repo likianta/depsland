@@ -22,8 +22,11 @@ TRequirement = _Requirement
 
 # -----------------------------------------------------------------------------
 
+TVersionSpec = str
+#   followed PEP-440 canonical form (with clause symbols like '>=', '!=' etc).
+#   additionally supported extra character '*' and keyword 'latest'.
 TVersion = str
-# TPyVersion = str
+#   followed PEP-440 canonical form (without clause symbols).
 TPyVersion = Literal[
     # 'python2', 'python2-32',
     # 'python3', 'python3-32',
@@ -92,7 +95,7 @@ TPackges = dict[TNormName, TPackagesInfo]
 '''
 
 # `repository.py > class:LocalPyPI`
-TNameId = tuple[TName, TVersion]
+TNameId = str  # f'{TName}-{TFixedVersion}'
 TNameVersions = dict[TName, list[TVersion]]
 TLocations = list[TPath]
 TLocationsIndex = dict[TNameId, TLocations]

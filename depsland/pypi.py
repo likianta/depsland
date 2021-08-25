@@ -6,9 +6,8 @@ from pkginfo import Wheel
 
 from .struct import PackageInfo, Requirement
 from .typehint import *
-from .utils import unzip_file
+from .utils import find_best_matched_version, unzip_file
 from .venv_struct import pypi_struct
-from .version_comp import find_best_matched_version
 
 
 class LocalPyPI:
@@ -53,8 +52,7 @@ class LocalPyPI:
             version = self._get_local_matched_version(req, check_outdated=False)
             assert version
         
-        # update req info
-        req.version = version
+        req.set_fixed_version(version)
         name, version, name_id = req.name, req.version, req.name_id
         
         return PackageInfo(
@@ -79,11 +77,11 @@ class LocalPyPI:
         """
         if req.name not in self.name_versions:
             return None
-        if req.version == 'latest':
+        if req.version_spec == 'latest':
             if check_outdated and self._is_outdated(req.name):
                 return None
         version_list = self.name_versions.get(req.name)
-        return find_best_matched_version(req.version, version_list)
+        return find_best_matched_version(req.version_spec, version_list)
     
     def _is_outdated(self, name):
         if t := self.updates.get(name):
@@ -105,7 +103,7 @@ class LocalPyPI:
         )
         
         whl = Wheel(path)
-        req.version = whl.version  # update req.version
+        req.set_fixed_version(whl.version)
         name, version, name_id = req.name, req.version, req.name_id
         
         # extract and update index

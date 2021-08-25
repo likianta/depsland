@@ -1,3 +1,4 @@
+dephell-specifier
 lk-logger
 lk-utils
 pkginfo

@@ -3,9 +3,10 @@ from os import path as ospath
 from textwrap import dedent
 from zipfile import ZipFile
 
+from dephell_specifier import RangeSpecifier
 from lk_utils import send_cmd
 
-from .typehint import Literal, TPath, TPyVersion
+from .typehint import Literal, TPath, TPyVersion, TVersion, TVersionSpec
 
 _TPyVersionNum = Literal[
     '2.7', '2.7-32',
@@ -77,3 +78,33 @@ def unzip_file(src_file, dst_dir, complete_delete=False):
 def send_cmd_bat(cmd: str):
     cmd = dedent(cmd).replace('|\n', '').replace('\n', '&')
     return os.system(cmd)
+
+
+def find_best_matched_version(ver_spec: TVersionSpec, ver_list: list[TVersion]):
+    """
+    
+    Args:
+        ver_spec: 'version specifier', e.g. '>=3.0', '==1.*', '>=1.2,!=1.2.4',
+            ...
+        ver_list: a group of fixed version numbers. e.g. ['1.0.2', '1.0.2a0',
+            '2.0.0.pre3', '2.0.0.post3', '2014.04', ...]
+            see PEP-440: https://www.python.org/dev/peps/pep-0440/#version
+            -specifiers
+    
+    References:
+        https://github.com/dephell/dephell_specifier
+            Usages:
+                >>> from dephell_specifier import RangeSpecifier
+                >>> '3.4' in RangeSpecifier('*')
+                True
+                >>> '3.4' in RangeSpecifier('<=2.7')
+                False
+                >>> '3.4' in RangeSpecifier('>2.7')
+                True
+    """
+    spec = RangeSpecifier(ver_spec)
+    for v in reversed(ver_list):
+        if v in spec:
+            return v
+    else:
+        return None
