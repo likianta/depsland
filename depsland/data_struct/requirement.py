@@ -19,6 +19,9 @@ class Requirement:
         name, version_spec = self._split_name_and_version(self.raw_name)
         self.name = normalize_name(name)
         self.version_spec = normalize_version(version_spec)
+        
+    def __str__(self):
+        return self.name
     
     @staticmethod
     def _split_name_and_version(raw_name):

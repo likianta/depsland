@@ -1,13 +1,21 @@
 from os.path import exists
 from uuid import uuid1
 
+from lk_logger import lk
 from lk_utils.read_and_write import load_list
 
 from .data_struct import *
 from .main import create_venv as _create_venv
+from .typehint import Union
 
 
-def launch(name, requirements: list[str], venv_id=''):
+def launch(name, requirements: Union[list[str], str], venv_id=''):
+    if isinstance(requirements, str):
+        requirements = [Requirement(name) for name in load_list(requirements)
+                        if name and not name.startswith('#')]
+    else:
+        requirements = list(map(Requirement, requirements))
+    
     venv_options = VenvOptions(
         name=name,
         venv_id=venv_id or str(uuid1()).replace('-', ''),
@@ -18,13 +26,10 @@ def launch(name, requirements: list[str], venv_id=''):
 
 def standard_launch(venv_options: VenvOptions):
     if exists(x := venv_options.venv_path):
+        lk.loga('request already satisfied', venv_options.venv_id)
         return x
     
-    if isinstance((f := venv_options.requirements), str):
-        requirements = [Requirement(name) for name in load_list(f)
-                        if name and not name.startswith('#')]
-    else:
-        requirements = list(map(Requirement, venv_options.requirements))
-    
-    return _create_venv(venv_options.venv_name, requirements)
-    # return venv_options.venv_path
+    venv_path = _create_venv(venv_options.venv_name, venv_options.requirements)
+    #   assert venv_path == venv_options.venv_path
+    lk.loga(f'see generated venv path: {venv_path}')
+    return venv_path

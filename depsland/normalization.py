@@ -7,6 +7,8 @@ def normalize_raw_name(raw_name: str):
             # .replace(' ', '')
             .replace('(', '')
             .replace(')', '')
+            .split(';', 1)[0]
+            .strip()
     )
 
 

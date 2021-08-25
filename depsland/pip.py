@@ -10,39 +10,39 @@ class Pip:
     
     def __init__(self, pip, local, **kwargs):
         self.head = pip
-        self._template = PipCmdTemplate(pip, local, **kwargs)
-        self._get_pip_cmd = self._template.get_pip_cmd
+        template = PipCmdTemplate(pip, local, **kwargs)
+        self.get_pip_cmd = template.get_pip_cmd
     
     def test(self):
         lk.loga(send_cmd(f'{self.head} -V'), h='parent')
     
     def download(self, name: str, target=src_struct.downloads):
-        return send_cmd(self._get_pip_cmd(
+        return send_cmd(self.get_pip_cmd(
             'download', name, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
     
     def download_r(self, file, target=src_struct.downloads):
-        return send_cmd(self._get_pip_cmd(
+        return send_cmd(self.get_pip_cmd(
             'download -r', file, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
     
     def install(self, name: str, target=src_struct.site_packages):
         """ install package to `VenvConf.lib_dir` (default). """
-        return send_cmd(self._get_pip_cmd(
+        return send_cmd(self.get_pip_cmd(
             'install', name, f'--target="{target}"',
             add_pkg_idx_options=True
         ))
     
     def install_r(self, file, target=src_struct.site_packages):
-        return send_cmd(self._get_pip_cmd(
+        return send_cmd(self.get_pip_cmd(
             'install -r', file, f'--target="{target}"',
             add_pkg_idx_options=True
         ))
     
     def show_dependencies(self, name) -> list[str]:
-        ret = send_cmd(self._get_pip_cmd('show', name))
+        ret = send_cmd(self.get_pip_cmd('show', name))
         #   -> see example in `self.show_location`
         ret = safe_load(ret)
         if ret['Requires']:
@@ -53,7 +53,7 @@ class Pip:
             return []
     
     def show_locations(self, name) -> set[str]:
-        ret = send_cmd(self._get_pip_cmd('show', name, '-f'))
+        ret = send_cmd(self.get_pip_cmd('show', name, '-f'))
         r''' e.g.
             Name: lk-logger
             Version: 3.6.3
@@ -100,7 +100,7 @@ class Pip:
         return out
     
     # def analyse(self, name):
-    #     ret = send_cmd(self._get_pip_cmd('show', name, '-f'))
+    #     ret = send_cmd(self.get_pip_cmd('show', name, '-f'))
     #     r''' e.g.
     #         Name: lk-logger
     #         Version: 3.6.3
@@ -203,7 +203,7 @@ class PipCmdTemplate:
         out = self._template.format(
             action=action, name=name, options=' '.join(options)
         )
-        lk.logt('[D2023]', out)
+        # lk.logt('[D2023]', out)
         return out
 
 

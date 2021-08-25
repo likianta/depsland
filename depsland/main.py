@@ -10,24 +10,16 @@ from .utils import mklinks
 
 
 def create_venv(venv_name: str, requirements: list[TRequirement]):
-    """
-    
-    Args:
-        venv_name: target directory name. for example 'hello_world_venv',
-            this will create `{VenvConf.venv_dir}/hello_world_venv` directory.
-        requirements: e.g. 'requests', 'pillow', 'numpy', etc.
-            note:
-                1. the name is case insensitive
-    """
     try:
         dst_struct = VEnvDistStruct(venv_name)
         _init_venv_dir(src_struct, dst_struct)
         for loc in _install_requirements(requirements):
-            lk.logt('[D1736]', os.path.basename(loc))
+            lk.loga('add package to venv', os.path.basename(loc))
             mklinks(loc, dst_struct.site_packages)
     except Exception as e:
         raise e
     finally:
+        lk.loga('save updated local pypi indexed data')
         local_pypi.save()
     return dst_struct.home
 
@@ -37,6 +29,7 @@ def _init_venv_dir(src_struct: VEnvSourceStruct,
     """
     see `../docs/project-structure.md > chapters:h1:VENV_HOME`
     """
+    lk.loga('init venv directory', dst_struct.home)
     dst_struct.build_dirs()
     
     mklinks(src_struct.python, dst_struct.home,
@@ -49,8 +42,11 @@ def _init_venv_dir(src_struct: VEnvSourceStruct,
 
 
 def _install_requirements(requirements: list[TRequirement]):
+    lk.loga('installing requirements', len(requirements))
+    
     pkg_list = []
     for req in requirements:
+        lk.loga(req)
         pkg_list.append(local_pypi.main(req))
     
     for pkg in pkg_list:

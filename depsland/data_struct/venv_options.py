@@ -1,14 +1,14 @@
 from dataclasses import dataclass  # noqa
 
 from ..path_struct import src_struct
-from ..typehint import Union
+from ..typehint import TRequirement
 
 
 @dataclass
 class VenvOptions:
     name: str  # project or application name, suggest snake case
     venv_id: str
-    requirements: Union[list[str], str]
+    requirements: list[TRequirement]
     
     @property
     def venv_name(self):

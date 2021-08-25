@@ -3,8 +3,8 @@ from os.path import exists
 from time import time
 
 from lk_logger import lk
-from lk_utils import dumps
-from pkginfo import Wheel
+from lk_utils import dumps, send_cmd
+from pkginfo import SDist, Wheel
 
 from .data_struct import PackageInfo, Requirement
 from .path_struct import pypi_struct
@@ -56,6 +56,8 @@ class LocalPyPI:
                 self.main(new_req)
             version = self._get_local_matched_version(req, check_outdated=False)
             assert version
+        else:
+            lk.loga('found requirement in local repo', req)
         
         req.set_fixed_version(version)
         name, version, name_id = req.name, req.version, req.name_id
@@ -102,6 +104,7 @@ class LocalPyPI:
         
         if not (path := self._download(req.raw_name, pypi_struct.downloads)):
             # current case: assert path == ''
+            lk.loga('local repo already satisfied', req)
             return finish_processing()
         
         # FIXME: '.tar.gz' suffix supports
@@ -109,8 +112,14 @@ class LocalPyPI:
             'This file type is not supported yet', path
         )
         
-        whl = Wheel(path)
-        req.set_fixed_version(whl.version)
+        if path.endswith('.whl'):
+            pkg = Wheel(path)
+        elif path.endswith('.tar.gz'):
+            pkg = SDist(path)
+        else:
+            raise Exception('This file type is not recognized', path)
+        
+        req.set_fixed_version(pkg.version)
         name, version, name_id = req.name, req.version, req.name_id
         
         # extract and update index
@@ -124,11 +133,12 @@ class LocalPyPI:
         self.name_versions[name].append(version)
         self.locations[name_id].append(loc)
         #   TODO: assign sole location instead of list[location] type
-        for raw_name in whl.requires_dist:
+        for raw_name in pkg.requires_dist:
             lk.logt('[D4831]', raw_name)
             #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
             #        'cachy (>=0.3.0,<0.4.0)', ...
-            new_req = Requirement(raw_name.replace('(', '').replace(')', ''))
+            new_req = Requirement(raw_name)
+            lk.loga(f'got new requirement "{new_req}" from "{req}"')
             
             # yielding new_req to the caller (`self.main`), the caller will
             # firstly handle it and update its related indexed data, then
@@ -164,7 +174,13 @@ class LocalPyPI:
         # specifiers (like '>', '<', etc.) which should be wrapped when using
         # in shell. (https://pip.pypa.io/en/stable/cli/pip_install/#requirement
         # -specifiers)
-        ret = self.pip.download(f'"{raw_name}"', dst_dir)
+        lk.loga('downloading package (this takes a few seconds/minutes...)',
+                raw_name)
+        ret = send_cmd(self.pip.get_pip_cmd(
+            'download', f'"{raw_name}"', f'-d "{dst_dir}"', '--no-deps'
+        ))
+        # ret = self.pip.download(f'"{raw_name}"', dst_dir)
+        # lk.logt('[D2054]', ret.replace('\n', '[\\n]'))
         r'''
             Sucessfully downloaded example:
                 Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
@@ -172,14 +188,13 @@ class LocalPyPI:
                   Using cached .../lk_logger-3.6.3-py3-none-any.whl (11KB)
                 Saved e:\...\lk_logger-3.6.3-py3-none-any.whl
                 Successfully downloaded lk-logger
-            File already exists:
+            File already exists example:
                 Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
                 Collecting lk-logger
                   File was already downloaded e:\downloads\lk_logger-3.6.3-py3-
                   none-any.whl
                 Successfully downloaded lk-logger
         '''
-        lk.logt('[D2054]', ret.replace('\n', '[\\n]'))
         # get name from ret info
         if new_file_matched := re.search(r'(?<=Saved ).+', ret):
             path = new_file_matched.group()
