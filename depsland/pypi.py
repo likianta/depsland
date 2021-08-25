@@ -77,14 +77,13 @@ class LocalPyPI:
             exists to avoid saving an existed verison which may cause a
             FileExistsError.
         """
+        if req.name not in self.name_versions:
+            return None
         if req.version == 'latest':
             if check_outdated and self._is_outdated(req.name):
                 return None
-            else:
-                return self.name_versions[req.version]
-        if not (versions := self.name_versions.get(req.version)):
-            return None
-        return find_best_matched_version(req.version, versions)
+        version_list = self.name_versions.get(req.name)
+        return find_best_matched_version(req.version, version_list)
     
     def _is_outdated(self, name):
         if t := self.updates.get(name):
