@@ -24,9 +24,10 @@ TRequirement = _Requirement
 
 TVersionSpec = str
 #   followed PEP-440 canonical form (with clause symbols like '>=', '!=' etc).
-#   additionally supported extra character '*' and keyword 'latest'.
+#   additionally supported special keywords: see `.data_struct.special_versions`
 TVersion = str
 #   followed PEP-440 canonical form (without clause symbols).
+#   additionally supported special keywords: see `.data_struct.special_versions`
 TPyVersion = Literal[
     # 'python2', 'python2-32',
     # 'python3', 'python3-32',

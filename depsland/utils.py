@@ -8,6 +8,7 @@ from dephell_specifier import RangeSpecifier
 from lk_logger import lk
 from lk_utils import send_cmd
 
+from .data_struct.special_versions import IGNORE, LATEST
 from .typehint import *
 
 
@@ -96,12 +97,22 @@ def find_best_matched_version(
                 >>> '3.4' in RangeSpecifier('>2.7')
                 True
     """
-    if ver_spec in ('*', '', 'latest'):
-        # the latest depsland preferably likes '*', because it can be used in
-        # `depsland.pypi._sort_versions`.
-        # the other two will be removed in the future.
+    # case 1
+    if not ver_list:
+        return None
+    
+    # case 2
+    if ver_list == [IGNORE]:  # see `pypi.py > LocalPyPI > _refresh_local
+        #   _repo > code:'lk.logt('[D3411]', 'ignoring this req', req) ...'`
+        return IGNORE
+    else:
+        assert IGNORE not in ver_list
+    
+    # case 3
+    if ver_spec in (LATEST, ''):
         return ver_list[0]
     
+    # case 4
     spec = RangeSpecifier(ver_spec)
     for v in ver_list:
         if v in spec:

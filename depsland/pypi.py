@@ -7,6 +7,7 @@ from lk_utils import dumps, send_cmd
 from pkginfo import SDist, Wheel
 
 from .data_struct import PackageInfo, Requirement
+from .data_struct.special_versions import IGNORE, LATEST
 from .path_struct import pypi_struct
 from .pip import default_pip
 from .typehint import *
@@ -22,8 +23,6 @@ class LocalPyPI:
     locations: TLocationsIndex
     dependencies: TDependenciesIndex
     updates: TUpdates
-    
-    __circular_deps = []
     
     def __init__(self, pip: TPip):
         self.pip = pip
@@ -51,11 +50,11 @@ class LocalPyPI:
         # latest but local repository is outdated, we should refresh local
         # repository.
         version = self._get_local_matched_version(req)
-        if not version:
+        if version is None:
             for new_req in self._refresh_local_repo(req):
                 self.main(new_req)
             version = self._get_local_matched_version(req, check_outdated=False)
-            assert version
+            assert version is not None
         else:
             lk.loga('found requirement in local repo', req)
         
@@ -84,7 +83,7 @@ class LocalPyPI:
         """
         if req.name not in self.name_versions:
             return None
-        if req.version_spec == '*':
+        if req.version_spec == LATEST:
             if check_outdated and self._is_outdated(req.name):
                 return None
         version_list = self.name_versions[req.name]
@@ -98,11 +97,17 @@ class LocalPyPI:
     
     def _refresh_local_repo(self, req: TRequirement):
         def finish_processing():
-            self.__circular_deps.clear()
             self.updates[req.name] = int(time())
             return
         
         path = self._download(req.raw_name, pypi_struct.downloads)
+        if path == IGNORE:
+            lk.logt('[D3411]', 'ignoring this req', req)
+            req.set_fixed_version(IGNORE)
+            self.name_versions[req.name] = [IGNORE]
+            self.locations[req.name_id] = []
+            self.dependencies[req.name_id] = []
+            return finish_processing()
         
         if path.endswith('.whl'):
             pkg = Wheel(path)
@@ -127,46 +132,48 @@ class LocalPyPI:
             loc = pypi_struct.extraced + '/' + name_id
         
         # update indexes
-        # note: use lazy updation. i.e. donot update indexed data (`self
-        # .name_versions`, `self.locations`, `self.dependencies`) immediately,
-        # create a new temp var to hold the upcoming data, then self indexed
-        # data extends the var.
-        # why: because the dependencies processing is not stable in current
-        # depsland version, it ofter occurs unexpected errors (e.g. downloading
-        # timeout, complicated uncovered version comparisons, etc.), if we
-        # update indexed data in processing, it maybe crashed and depsland will
-        # try to save an uncomplete data to local, which is harmful to the next
-        # time restarting.
-        deps = []
-        for raw_name in pkg.requires_dist:
-            lk.logt('[D4831]', raw_name)
-            #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
-            #        'cachy (>=0.3.0,<0.4.0)', ...
-            new_req = Requirement(raw_name)
-            lk.loga(f'got new requirement "{new_req}" from "{req}"')
-            
-            # yielding new_req to the caller (`self.main`), the caller will
-            # firstly handle it and update its related indexed data, then
-            # continue to current thread.
-            # be notice that if a circular dependency found, for example
-            # package A depends on B but B (or B's dependencies) also depends
-            # on A, a circular import error will be raised.
-            if new_req.name in self.__circular_deps:
-                raise Exception()
-            else:
-                self.__circular_deps.append(new_req.name)
-                yield new_req
-            
-            version = find_best_matched_version(
-                new_req.version_spec, self.name_versions[new_req.name]
-            )
-            new_req.set_fixed_version(version)
-            deps.append(new_req.name_id)
-
+        # note (outdated):
+        #   use lazy updation. i.e. do not update indexed data
+        #   (`self.name_versions`, `self.locations`, `self.dependencies`)
+        #   immediately, create a new temp var to hold the upcoming data, then
+        #   self indexed data extends the var.
+        # why (outdated):
+        #   because the dependencies processing is not stable in current
+        #   depsland version, it ofter occurs unexpected errors (e.g.
+        #   downloading timeout, complicated uncovered version comparisons,
+        #   etc.), if we update indexed data in processing, it maybe crashed
+        #   and depsland will try to save an uncomplete data to local, which is
+        #   harmful to the next time restarting.
         self.name_versions[name].append(version)
         self.locations[name_id].append(loc)
         #   FIXME: assign sole location instead of list[location] type
-        self.dependencies[name_id].extend(deps)
+        try:
+            deps = []
+            for raw_name in pkg.requires_dist:
+                lk.logt('[D4831]', raw_name)
+                #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
+                #        'cachy (>=0.3.0,<0.4.0)', ...
+                new_req = Requirement(raw_name)
+                lk.loga(f'got new requirement "{new_req}" from "{req}"')
+                
+                # yielding new_req to the caller (`self.main`), the caller will
+                # firstly handle it and update its related indexed data, then
+                # continue to current thread.
+                yield new_req
+                
+                version = find_best_matched_version(
+                    new_req.version_spec, self.name_versions[new_req.name]
+                )
+                new_req.set_fixed_version(version)
+                deps.append(new_req.name_id)
+        except Exception as e:
+            # rollback
+            lk.logt('[W0232]', 'roll back changes from indexed data', name_id)
+            self.name_versions.pop(name)
+            self.locations.pop(name_id)
+            raise e
+        else:
+            self.dependencies[name_id].extend(deps)
         
         sort_versions(self.name_versions[name])
         # sort_versions(self.dependencies[name_id])
@@ -208,10 +215,12 @@ class LocalPyPI:
         # get name from ret info
         if x := re.search(r'(?<=Saved ).+', ret):
             path = x.group()
-            lk.loga('new file downloaded', os.path.basename(path))
+            lk.logt('[D0108]', 'new file downloaded', os.path.basename(path))
         elif y := re.search(r'(?<=File was already downloaded ).+', ret):
             path = y.group()
-            lk.loga('file already exists', os.path.basename(path))
+            lk.logt('[D0109]', 'file already exists', os.path.basename(path))
+        elif re.search('Ignoring ', ret):
+            return IGNORE
         else:
             raise Exception('Unknown returned value', ret)
         # assert exists(path)

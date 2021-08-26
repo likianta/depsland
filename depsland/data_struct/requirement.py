@@ -44,10 +44,13 @@ class Requirement:
         return name, version_spec
     
     def set_fixed_version(self, version):
-        self._version = version.replace('!', 'n')
-        #   '!' -> 'n': earlier explicit epoch, e.g. '1!1.1'.
-        #       the fixed version will be used in making folder names but '!'
-        #       is not allowed, so we convert it to 'n'.
+        if version == '*':
+            self._version = 'any'
+        else:
+            self._version = version.replace('!', 'n')
+            #   '!' -> 'n': earlier explicit epoch, e.g. '1!1.1'.
+            #       the fixed version will be used in making folder names but
+            #       '!' is not allowed, so we convert it to 'n'.
     
     @property
     def version(self):

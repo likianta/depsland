@@ -1,0 +1,2 @@
+IGNORE = 'ignore'
+LATEST = '*'
