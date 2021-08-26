@@ -1,4 +1,5 @@
 import os
+from distutils.version import LooseVersion, StrictVersion
 from os import path as ospath
 from textwrap import dedent
 from zipfile import ZipFile
@@ -66,6 +67,8 @@ def send_cmd_bat(cmd: str):
     return os.system(cmd)
 
 
+# -----------------------------------------------------------------------------
+
 def find_best_matched_version(
         ver_spec: TVersionSpec, ver_list: list[TVersion]
 ) -> Optional[TVersion]:
@@ -92,7 +95,10 @@ def find_best_matched_version(
                 >>> '3.4' in RangeSpecifier('>2.7')
                 True
     """
-    if ver_spec == 'latest' or ver_spec == '':
+    if ver_spec in ('*', '', 'latest'):
+        # the latest depsland preferably likes '*', because it can be used in
+        # `depsland.pypi._sort_versions`.
+        # the other two will be removed in the future.
         return ver_list[0]
     
     spec = RangeSpecifier(ver_spec)
@@ -101,3 +107,31 @@ def find_best_matched_version(
             return v
     else:
         return None
+
+
+def sort_versions(versions: list[TVersion], reverse=True):
+    """
+    References:
+        Sort versions in Python:
+            https://stackoverflow.com/questions/12255554/sort-versions-in-python
+            /12255578
+        The LooseVersion and StrictVersion difference:
+            https://www.python.org/dev/peps/pep-0386/
+    """
+    def _normalize_version(v: Union[TNameId, TVersion]):
+        if '-' in v:
+            v = v.split('-', 1)[-1]
+        if v in ('', '*', 'latest'):
+            return '999999.999.999'
+        else:
+            return v
+    
+    try:
+        versions.sort(key=lambda v: StrictVersion(_normalize_version(v)),
+                      # `x` type is Union[TNameId, TVersion], for TNameId we
+                      # need to split out the name part.
+                      reverse=reverse)
+    except ValueError:
+        versions.sort(key=lambda v: LooseVersion(_normalize_version(v)),
+                      reverse=reverse)
+    return versions

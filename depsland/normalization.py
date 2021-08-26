@@ -18,11 +18,11 @@ def normalize_name(name: str):
     return name.lower().replace('-', '_')
 
 
-def normalize_version(version_rng: str):
-    """ Normalize verison (only for internal purpose). """
-    if version_rng in ('', '*', '==*'):
-        return 'latest'
-    elif version_rng.startswith('['):  # e.g. '[all]'
-        return ''
+def normalize_version_spec(version_spec: str):
+    """ Normalize verison specifier. """
+    if version_spec in ('', '*', '==*'):
+        return '*'
+    elif version_spec.startswith('['):  # e.g. '[all]'
+        return '*'
     else:
-        return version_rng
+        return version_spec

@@ -15,7 +15,7 @@ def create_venv(venv_name: str, requirements: list[TRequirement]):
         _init_venv_dir(src_struct, dst_struct)
         for loc in _install_requirements(requirements):
             lk.loga('add package to venv', os.path.basename(loc))
-            mklinks(loc, dst_struct.site_packages)
+            mklinks(loc, dst_struct.site_packages, exist_ok=True)
     except Exception as e:
         raise e
     finally:

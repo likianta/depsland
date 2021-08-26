@@ -18,7 +18,7 @@ class Requirement:
         self.raw_name = normalize_raw_name(raw_name)
         name, version_spec = self._split_name_and_version(self.raw_name)
         self.name = normalize_name(name)
-        self.version_spec = normalize_version(version_spec)
+        self.version_spec = normalize_version_spec(version_spec)
         
     def __str__(self):
         return self.name

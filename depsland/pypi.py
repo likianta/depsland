@@ -1,5 +1,5 @@
+import os
 import re
-from os.path import exists
 from time import time
 
 from lk_logger import lk
@@ -10,7 +10,7 @@ from .data_struct import PackageInfo, Requirement
 from .path_struct import pypi_struct
 from .pip import default_pip
 from .typehint import *
-from .utils import find_best_matched_version, unzip_file
+from .utils import find_best_matched_version, sort_versions, unzip_file
 
 
 class LocalPyPI:
@@ -84,7 +84,7 @@ class LocalPyPI:
         """
         if req.name not in self.name_versions:
             return None
-        if req.version_spec == 'latest':
+        if req.version_spec == '*':
             if check_outdated and self._is_outdated(req.name):
                 return None
         version_list = self.name_versions[req.name]
@@ -102,15 +102,7 @@ class LocalPyPI:
             self.updates[req.name] = int(time())
             return
         
-        if not (path := self._download(req.raw_name, pypi_struct.downloads)):
-            # current case: assert path == ''
-            lk.loga('local repo already satisfied', req)
-            return finish_processing()
-        
-        # FIXME: '.tar.gz' suffix supports
-        assert path.endswith('.whl'), (
-            'This file type is not supported yet', path
-        )
+        path = self._download(req.raw_name, pypi_struct.downloads)
         
         if path.endswith('.whl'):
             pkg = Wheel(path)
@@ -122,12 +114,17 @@ class LocalPyPI:
         req.set_fixed_version(pkg.version)
         name, version, name_id = req.name, req.version, req.name_id
         
+        if version in self.name_versions[name]:
+            lk.loga('local repo satisfies requirement '
+                    '(refresh local time only)')
+            return finish_processing()
+        
         # extract and update index
-        loc = unzip_file(path, pypi_struct.mkdir(name_id))
-        # try:
-        #     loc = unzip_file(path, pypi_struct.mkdir(name_id))
-        # except FileExistsError:  # TEST
-        #     loc = f'{pypi_struct.extraced}/{name_id}'
+        try:
+            loc = pypi_struct.mkdir(name_id)
+            unzip_file(path, pypi_struct.mkdir(name_id))
+        except FileExistsError:
+            loc = pypi_struct.extraced + '/' + name_id
         
         # update indexes
         self.name_versions[name].append(version)
@@ -158,8 +155,8 @@ class LocalPyPI:
             new_req.set_fixed_version(version)
             self.dependencies[name_id].append(new_req.name_id)
         
-        _sort_versions(self.name_versions[name])
-        _sort_versions(self.dependencies[name_id])
+        sort_versions(self.name_versions[name])
+        sort_versions(self.dependencies[name_id])
         
         return finish_processing()
     
@@ -196,15 +193,16 @@ class LocalPyPI:
                 Successfully downloaded lk-logger
         '''
         # get name from ret info
-        if new_file_matched := re.search(r'(?<=Saved ).+', ret):
-            path = new_file_matched.group()
-            assert exists(path)
-            return path
+        if x := re.search(r'(?<=Saved ).+', ret):
+            path = x.group()
+            lk.loga('new file downloaded', os.path.basename(path))
+        elif y := re.search(r'(?<=File was already downloaded ).+', ret):
+            path = y.group()
+            lk.loga('file already exists', os.path.basename(path))
         else:
-            assert re.search(r'(?<=File was already downloaded ).+', ret)
-            return ''
-            # # TEST
-            # return re.search(r'(?<=File was already downloaded ).+', ret).group()
+            raise Exception('Unknown returned value', ret)
+        # assert exists(path)
+        return path
     
     def save(self):
         for data, file in zip(
@@ -215,19 +213,6 @@ class LocalPyPI:
                 pypi_struct.get_indexed_files()
         ):
             dumps(data, file)
-
-
-def _sort_versions(versions: list[TVersion], reverse=True):
-    """
-    References:
-        https://stackoverflow.com/questions/12255554/sort-versions-in-python/12255578
-    """
-    from distutils.version import StrictVersion
-    versions.sort(key=lambda x: StrictVersion(x.split('-', 1)[-1]),
-                  # `x` type is Union[TNameId, TVersion], for TNameId we need
-                  # to split out the name part.
-                  reverse=reverse)
-    return versions
 
 
 local_pypi = LocalPyPI(default_pip)
