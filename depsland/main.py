@@ -18,8 +18,10 @@ def create_venv(venv_name: str, requirements: list[TRequirement]):
             try:
                 mklinks(loc, dst_struct.site_packages, exist_ok=False)
             except FileExistsError:
-                lk.logt('[I1457]', 'target dir already exists, use ')
-                mergelinks(loc, dst_struct.site_packages, file_exist_ok=True)
+                lk.logt('[I1457]', 'merging existed target venv',
+                        os.path.basename(loc))
+                mergelinks(loc, dst_struct.site_packages,
+                           file_exist_handle='keep')
     except Exception as e:
         raise e
     finally:

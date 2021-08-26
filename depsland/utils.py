@@ -1,5 +1,4 @@
 import os
-import shutil
 from distutils.version import LooseVersion, StrictVersion
 from os import path as ospath
 from textwrap import dedent
@@ -76,17 +75,22 @@ def mergelink(src_dir, dst_dir, new_dir, file_exist_handle='error'):
                     mklink(sub_src_path, sub_new_path)
         else:
             mklink(sub_src_path, sub_new_path)
-
+    
     new_names = os.listdir(new_dir)
     for n in dst_names:
-        sub_dst_path = f'{dst_names}/{n}'
+        sub_dst_path = f'{dst_dir}/{n}'
         sub_new_path = f'{new_dir}/{n}'
+        assert ospath.exists(sub_dst_path), (
+            n,
+            n in os.listdir(dst_dir),
+            sub_dst_path
+        )
         if n not in new_names:
             mklink(sub_dst_path, sub_new_path)
-
+    
     return new_dir
-    
-    
+
+
 def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
     out = []
     dst_names = os.listdir(dst_dir)
@@ -97,13 +101,19 @@ def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
         
         if n in dst_names:
             if ospath.isdir(src_path):
-                new_path = dst_path + '_new'
-                os.mkdir(new_path)
-                out.append(
-                    mergelink(src_path, dst_path, new_path, file_exist_handle)
-                )
-                shutil.rmtree(dst_path)
-                os.rename(new_path, dst_path)
+                lk.logt('[D2205]', f'merging "{n}" ({src_dir} -> {dst_dir})')
+                
+                temp = dst_path
+                while ospath.exists(temp):
+                    temp += '_bak'
+                else:
+                    os.rename(dst_path, temp)
+                new_path = dst_path
+                dst_path = temp
+                if not ospath.exists(new_path):
+                    os.mkdir(new_path)
+                
+                mergelink(src_path, dst_path, new_path, file_exist_handle)
             else:
                 if file_exist_handle == 'error':
                     raise FileExistsError(dst_path)
@@ -113,7 +123,9 @@ def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
                     os.remove(dst_path)
                     mklink(src_path, dst_path)
         else:
-            out.append(mklink(src_path, dst_path, exist_ok=False))
+            mklink(src_path, dst_path, exist_ok=False)
+        
+        out.append(dst_path)
     
     return out
 
