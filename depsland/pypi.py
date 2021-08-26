@@ -3,11 +3,11 @@ import re
 from time import time
 
 from lk_logger import lk
-from lk_utils import dumps, send_cmd
+from lk_utils import dumps
 from pkginfo import SDist, Wheel
 
 from .data_struct import PackageInfo, Requirement
-from .data_struct.special_versions import IGNORE, LATEST
+from .data_struct.special_versions import LATEST
 from .path_struct import pypi_struct
 from .pip import default_pip
 from .typehint import *
@@ -100,91 +100,69 @@ class LocalPyPI:
             self.updates[req.name] = int(time())
             return
         
-        path = self._download(req.raw_name, pypi_struct.downloads)
-        if path == IGNORE:
-            lk.logt('[D3411]', 'ignoring this req', req)
-            req.set_fixed_version(IGNORE)
-            self.name_versions[req.name] = [IGNORE]
-            self.locations[req.name_id] = []
-            self.dependencies[req.name_id] = []
+        for path in self._download(req.raw_name, pypi_struct.downloads):
+            if path.endswith('.whl'):
+                pkg = Wheel(path)
+            elif path.endswith('.tar.gz'):
+                pkg = SDist(path)
+            else:
+                raise Exception('This file type is not recognized', path)
+            
+            req.set_fixed_version(pkg.version)
+            name, version, name_id = req.name, req.version, req.name_id
+            
+            if version in self.name_versions[name]:
+                lk.loga('local repo satisfies requirement (refresh local time '
+                        'only)')
+                return finish_processing()
+            
+            try:  # extract and update index
+                loc = pypi_struct.mkdir(name_id)
+                unzip_file(path, pypi_struct.mkdir(name_id))
+            except FileExistsError:
+                loc = pypi_struct.extraced + '/' + name_id
+            
+            self.name_versions[name].append(version)
+            self.locations[name_id].append(loc)
+            #   FIXME: assign sole location instead of list[location] type
+            
+            try:
+                deps = []
+                for raw_name in pkg.requires_dist:
+                    # lk.logt('[D4831]', raw_name)
+                    #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
+                    #        'cachy (>=0.3.0,<0.4.0)', ...
+                    
+                    # excluded names
+                    if re.search(r'\bextra\b *==', raw_name):
+                        lk.loga('exclude extra package', raw_name)
+                        continue
+                    
+                    new_req = Requirement(raw_name)
+                    lk.loga(f'got new requirement "{new_req}" from "{req}"')
+                    
+                    # yielding new_req to the caller (`self.main`), the caller
+                    # will firstly handle it and update its related indexed
+                    # data, then continue to current thread.
+                    yield new_req
+                    
+                    version = find_best_matched_version(
+                        new_req.version_spec, self.name_versions[new_req.name]
+                    )
+                    new_req.set_fixed_version(version)
+                    deps.append(new_req.name_id)
+            except Exception as e:
+                # rollback
+                lk.logt('[W0232]', 'rollback changes from indexed data',
+                        name_id)
+                self.name_versions.pop(name)
+                self.locations.pop(name_id)
+                raise e
+            else:
+                self.dependencies[name_id].extend(deps)
+            
+            sort_versions(self.name_versions[name])
             return finish_processing()
-        
-        if path.endswith('.whl'):
-            pkg = Wheel(path)
-        elif path.endswith('.tar.gz'):
-            pkg = SDist(path)
-        else:
-            raise Exception('This file type is not recognized', path)
-        
-        req.set_fixed_version(pkg.version)
-        name, version, name_id = req.name, req.version, req.name_id
-        
-        if version in self.name_versions[name]:
-            lk.loga('local repo satisfies requirement '
-                    '(refresh local time only)')
-            return finish_processing()
-        
-        # extract and update index
-        try:
-            loc = pypi_struct.mkdir(name_id)
-            unzip_file(path, pypi_struct.mkdir(name_id))
-        except FileExistsError:
-            loc = pypi_struct.extraced + '/' + name_id
-        
-        # update indexes
-        # note (outdated):
-        #   use lazy updation. i.e. do not update indexed data
-        #   (`self.name_versions`, `self.locations`, `self.dependencies`)
-        #   immediately, create a new temp var to hold the upcoming data, then
-        #   self indexed data extends the var.
-        # why (outdated):
-        #   because the dependencies processing is not stable in current
-        #   depsland version, it ofter occurs unexpected errors (e.g.
-        #   downloading timeout, complicated uncovered version comparisons,
-        #   etc.), if we update indexed data in processing, it maybe crashed
-        #   and depsland will try to save an uncomplete data to local, which is
-        #   harmful to the next time restarting.
-        self.name_versions[name].append(version)
-        self.locations[name_id].append(loc)
-        #   FIXME: assign sole location instead of list[location] type
-        try:
-            deps = []
-            for raw_name in pkg.requires_dist:
-                # lk.logt('[D4831]', raw_name)
-                #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
-                #        'cachy (>=0.3.0,<0.4.0)', ...
-                
-                # excluded names
-                if re.search(r'\bextra\b *==', raw_name):
-                    lk.loga('exclude extra package', raw_name)
-                    continue
-                
-                new_req = Requirement(raw_name)
-                lk.loga(f'got new requirement "{new_req}" from "{req}"')
-                
-                # yielding new_req to the caller (`self.main`), the caller will
-                # firstly handle it and update its related indexed data, then
-                # continue to current thread.
-                yield new_req
-                
-                version = find_best_matched_version(
-                    new_req.version_spec, self.name_versions[new_req.name]
-                )
-                new_req.set_fixed_version(version)
-                deps.append(new_req.name_id)
-        except Exception as e:
-            # rollback
-            lk.logt('[W0232]', 'rollback changes from indexed data', name_id)
-            self.name_versions.pop(name)
-            self.locations.pop(name_id)
-            raise e
-        else:
-            self.dependencies[name_id].extend(deps)
-        
-        sort_versions(self.name_versions[name])
-        # sort_versions(self.dependencies[name_id])
-        
-        return finish_processing()
     
     def _download(self, raw_name, dst_dir):
         """
@@ -193,44 +171,50 @@ class LocalPyPI:
                 path: new downloaded file path
                 empty_string: the requested file already exists in local
         """
+        lk.loga('downloading package (this takes a few seconds/minutes...)',
+                raw_name)
         # use quotes around `raw_name` because `raw_name` includes version
         # specifiers (like '>', '<', etc.) which should be wrapped when using
         # in shell. (https://pip.pypa.io/en/stable/cli/pip_install/#requirement
         # -specifiers)
-        lk.loga('downloading package (this takes a few seconds/minutes...)',
-                raw_name)
-        ret = send_cmd(self.pip.get_pip_cmd(
-            'download', f'"{raw_name}"', f'-d "{dst_dir}"', '--no-deps'
-        ))
-        # ret = self.pip.download(f'"{raw_name}"', dst_dir)
-        # lk.logt('[D2054]', ret.replace('\n', '[\\n]'))
-        r'''
-            Sucessfully downloaded example:
-                Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
-                Collecting lk-logger
-                  Using cached .../lk_logger-3.6.3-py3-none-any.whl (11KB)
-                Saved e:\...\lk_logger-3.6.3-py3-none-any.whl
-                Successfully downloaded lk-logger
-            File already exists example:
-                Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
-                Collecting lk-logger
-                  File was already downloaded e:\downloads\lk_logger-3.6.3-py3-
-                  none-any.whl
-                Successfully downloaded lk-logger
+        ret = self.pip.download(f'"{raw_name}"', dst_dir)
+        r'''Example:
+            Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+            Collecting lk-utils
+              File was already downloaded e:\downloads\test_20210826_155333\lk_u
+              tils-1.4.4-py38-none-any.whl
+            Collecting lk-logger<4.0,>=3.6
+              File was already downloaded e:\downloads\test_20210826_155333\lk_l
+              ogger-3.6.3-py3-none-any.whl
+            Collecting xlsxwriter<2.0,>=1.3
+              File was already downloaded e:\downloads\test_20210826_155333\Xlsx
+              Writer-1.4.5-py2.py3-none-any.whl
+            Collecting xlrd==1.2
+              Using cached https://pypi.tuna.tsinghua.edu.cn/packages/b0/16/6357
+              6a1a001752e34bf8ea62e367997530dc553b689356b9879339cf45a4/xlrd-1.2.
+              0-py2.py3-none-any.whl (103 kB)
+            Saved e:\downloads\test_20210826_155333\xlrd-1.2.0-py2.py3-none-any.
+            whl
+            Successfully downloaded lk-utils xlrd lk-logger xlsxwriter
         '''
-        # get name from ret info
-        if x := re.search(r'(?<=Saved ).+', ret):
-            path = x.group()
+        
+        pattern1 = re.compile(r'(?<=Saved ).+')
+        pattern2 = re.compile(r'(?<=File was already downloaded ).+')
+        
+        for m in pattern1.finditer(ret):
+            yield m.group()
+        
+        for m in pattern2.finditer(ret):
+            yield m.group()
+        
+        for m in re.finditer(r'(?<=Saved ).+', ret):
+            path = m.group()
             lk.logt('[D0108]', 'new file downloaded', os.path.basename(path))
-        elif y := re.search(r'(?<=File was already downloaded ).+', ret):
-            path = y.group()
+            yield path
+        for m in re.finditer(r'(?<=File was already downloaded ).+', ret):
+            path = m.group()
             lk.logt('[D0109]', 'file already exists', os.path.basename(path))
-        elif re.search('Ignoring ', ret):
-            return IGNORE
-        else:
-            raise Exception('Unknown returned value', ret)
-        # assert exists(path)
-        return path
+            yield path
     
     def save(self):
         for data, file in zip(
