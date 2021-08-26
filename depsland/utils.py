@@ -1,4 +1,5 @@
 import os
+import tarfile
 from distutils.version import LooseVersion, StrictVersion
 from os import listdir, mkdir
 from os.path import exists, isdir, isfile
@@ -133,8 +134,15 @@ def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
     return out
 
 
-def unzip_file(src_file, dst_dir, complete_delete=False):
-    file_handle = ZipFile(src_file)
+def unzip_file(src_file: TPath, dst_dir, complete_delete=False):
+    if src_file.endswith(('.whl', '.zip')):
+        file_handle = ZipFile(src_file)
+    elif src_file.endswith(('.tar.gz', '.tar')):
+        # https://www.cnblogs.com/xiao987334176/p/10227480.html
+        file_handle = tarfile.open(src_file)
+    else:
+        raise Exception('Unknown file type', src_file)
+    
     file_handle.extractall(dst_dir)
     
     if complete_delete:
