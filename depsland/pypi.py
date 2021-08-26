@@ -50,13 +50,12 @@ class LocalPyPI:
         # latest but local repository is outdated, we should refresh local
         # repository.
         version = self._get_local_matched_version(req)
-        if version is None:
-            for new_req in self._refresh_local_repo(req):
-                self.main(new_req)
-            version = self._get_local_matched_version(req, check_outdated=False)
-            assert version is not None
-        else:
+        if version:
             lk.loga('found requirement in local repo', req)
+            req.set_fixed_version(version)
+        else:
+            lk.loga('request requirement from pip (online)', req)
+            req = self._refresh_local_repo(req)
         
         req.set_fixed_version(version)
         name, version, name_id = req.name, req.version, req.name_id
@@ -96,9 +95,10 @@ class LocalPyPI:
         return True
     
     def _refresh_local_repo(self, req: TRequirement):
-        def finish_processing():
-            self.updates[req.name] = int(time())
-            return
+        _req = req
+        
+        deps = {}
+        available_namespace = {}
         
         for path in self._download(req.raw_name, pypi_struct.downloads):
             if path.endswith('.whl'):
@@ -108,61 +108,62 @@ class LocalPyPI:
             else:
                 raise Exception('This file type is not recognized', path)
             
-            req.set_fixed_version(pkg.version)
+            req = Requirement(pkg.name, pkg.version)
             name, version, name_id = req.name, req.version, req.name_id
             
+            # self.updates
+            self.updates[name] = int(time())
+            
+            # self.name_versions
             if version in self.name_versions[name]:
                 lk.loga('local repo satisfies requirement (refresh local time '
                         'only)')
-                return finish_processing()
+                continue
+            else:
+                self.name_versions[name].append(version)
+                sort_versions(self.name_versions[name])
             
-            try:  # extract and update index
+            # self.locations
+            try:
                 loc = pypi_struct.mkdir(name_id)
                 unzip_file(path, pypi_struct.mkdir(name_id))
             except FileExistsError:
                 loc = pypi_struct.extraced + '/' + name_id
+            finally:
+                # noinspection PyUnboundLocalVariable
+                self.locations[name_id].append(loc)
+                #   FIXME: assign sole location instead of list[location] type
             
-            self.name_versions[name].append(version)
-            self.locations[name_id].append(loc)
-            #   FIXME: assign sole location instead of list[location] type
-            
-            try:
-                deps = []
-                for raw_name in pkg.requires_dist:
-                    # lk.logt('[D4831]', raw_name)
-                    #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
-                    #        'cachy (>=0.3.0,<0.4.0)', ...
+            # self.dependencies
+            available_namespace[name] = version
+            deps[name_id] = pkg.requires_dist
+            #   pkg.requires_dist: e.g. 'cachecontrol[filecache] (>=0.12.4,
+            #       <0.13.0)', 'cachy (>=0.3.0,<0.4.0)', ...
+
+        assert _req.name in available_namespace
+        _req.set_fixed_version(available_namespace[_req.name])
+
+        for name_id, requires_dist in deps.items():
+            for raw_name in requires_dist:
+                # # excluded names
+                # if re.search(r'\bextra\b *==', raw_name):
+                #     lk.loga('exclude extra package', raw_name)
+                #     continue
                     
-                    # excluded names
-                    if re.search(r'\bextra\b *==', raw_name):
-                        lk.loga('exclude extra package', raw_name)
-                        continue
+                dep = Requirement(raw_name)
+                
+                if dep.name not in available_namespace:
+                    # it means this dep is an invalid package (authorized by
+                    # pip download)
+                    lk.loga('invalid package recorded in requires_dist but not '
+                            'downloaded by pip-download', dep.raw_name)
+                    continue
                     
-                    new_req = Requirement(raw_name)
-                    lk.loga(f'got new requirement "{new_req}" from "{req}"')
-                    
-                    # yielding new_req to the caller (`self.main`), the caller
-                    # will firstly handle it and update its related indexed
-                    # data, then continue to current thread.
-                    yield new_req
-                    
-                    version = find_best_matched_version(
-                        new_req.version_spec, self.name_versions[new_req.name]
-                    )
-                    new_req.set_fixed_version(version)
-                    deps.append(new_req.name_id)
-            except Exception as e:
-                # rollback
-                lk.logt('[W0232]', 'rollback changes from indexed data',
-                        name_id)
-                self.name_versions.pop(name)
-                self.locations.pop(name_id)
-                raise e
-            else:
-                self.dependencies[name_id].extend(deps)
-            
-            sort_versions(self.name_versions[name])
-            return finish_processing()
+                version = available_namespace[dep.name]
+                dep.set_fixed_version(version)
+                self.dependencies[name_id].append(dep.name_id)
+    
+        return _req
     
     def _download(self, raw_name, dst_dir):
         """

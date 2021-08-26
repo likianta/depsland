@@ -1,5 +1,3 @@
-import re
-
 from ..normalization import *
 from ..typehint import *
 
@@ -14,11 +12,15 @@ class Requirement:
     
     #   see `self.set_fixed_version`.
     
-    def __init__(self, raw_name: str):
+    def __init__(self, raw_name: str, version=None):
         self.raw_name = normalize_raw_name(raw_name)
+        
         name, version_spec = self._split_name_and_version(self.raw_name)
         self.name = normalize_name(name)
         self.version_spec = normalize_version_spec(version_spec)
+        
+        if version:
+            self.set_fixed_version(version)
         
     def __str__(self):
         return self.name
