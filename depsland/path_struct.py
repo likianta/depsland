@@ -10,7 +10,7 @@ from platform import system
 from lk_utils import loads
 from lk_utils.filesniff import normpath
 
-from .typehint import TPlatform, TPyVersion
+from .typehint import *
 
 # noinspection PyTypeChecker
 platform = system().lower()  # type: TPlatform
@@ -209,9 +209,26 @@ class BuildAssetsStruct(_PathStruct):
 
 class LocalPyPIStruct(_PathStruct):
     """ ~/pypi/* """
+    home: str
+    
+    cache: str
+    downloads: str
+    extraced: str
+    index: str
+    
+    name_version: str
+    locations: str
+    dependencies: str
+    updates: str
     
     def __init__(self):
-        self.home = pypi_dir
+        self.indexing_dirs(pypi_dir)
+    
+    def __str__(self):
+        return self.home
+    
+    def indexing_dirs(self, home):
+        self.home = home
         
         self.cache = f'{self.home}/cache'
         self.downloads = f'{self.home}/downloads'
@@ -223,14 +240,16 @@ class LocalPyPIStruct(_PathStruct):
         self.dependencies = f'{self.index}/dependencies.pkl'
         self.updates = f'{self.index}/updates_record.pkl'
     
-    def __str__(self):
-        return self.home
-    
-    def indexing_dirs(self, pyversion):
-        raise NotImplemented
-    
     def build_dirs(self):
-        raise NotImplemented
+        assert exists(self.home)
+        for d in (
+            self.cache,
+            self.downloads,
+            self.extraced,
+            self.index,
+        ):
+            if not exists(d):
+                mkdir(d)
     
     def mkdir(self, name_id):
         d = f'{self.extraced}/{name_id}'
@@ -242,12 +261,15 @@ class LocalPyPIStruct(_PathStruct):
             raise FileExistsError
         return d
     
-    def load_indexed_data(self):
+    def load_indexed_data(self) -> tuple[
+        TNameVersions, TLocationsIndex, TDependenciesIndex, TUpdates
+    ]:
         """
         See `depsland/repository.py`
         """
         bundle = self.get_indexed_files()
         if all(map(exists, bundle)):
+            # noinspection PyTypeChecker
             return tuple(map(loads, bundle))
         else:
             from collections import defaultdict

@@ -39,13 +39,14 @@ class Requirement:
             xxx; sys_platform == 'win32'
         
         References:
-            PEP-440: https://www.python.org/dev/peps/pep-0440/#version-specifiers
+            PEP-440: https://www.python.org/dev/peps/pep-0440/#version
+                -specifiers
         """
         name = re.search(r'[-.\w]+', raw_name).group()
         version_spec = raw_name.removeprefix(name).replace(' ', '')
         return name, version_spec
     
-    def set_fixed_version(self, version):
+    def set_fixed_version(self, version: Optional[TVersion]):
         if not version or version == LATEST:
             # the unrecognized version maybe one of ('', None, LATEST).
             raise ValueError(version)
@@ -56,7 +57,7 @@ class Requirement:
             #       '!' is not allowed, so we convert it to 'n'.
     
     @property
-    def version(self):
+    def version(self) -> TVersion:
         assert self._version, (
             'The version is not specified, you need to call `Requirement'
             '.update_version` to update version to a specific number.',
@@ -65,7 +66,7 @@ class Requirement:
         return self._version
     
     @property
-    def name_id(self):
+    def name_id(self) -> TNameId:
         """
         Returns:
             examples:

@@ -100,9 +100,9 @@ class LocalPyPI:
         available_namespace = {}
         
         for path in self._download(req.raw_name, pypi_struct.downloads):
-            if path.endswith('.whl'):
+            if path.endswith(('.whl', '.zip')):
                 pkg = Wheel(path)
-            elif path.endswith('.tar.gz'):
+            elif path.endswith(('.tar.gz', '.tar')):
                 pkg = SDist(path)
             else:
                 raise Exception('This file type is not recognized', path)
@@ -126,7 +126,7 @@ class LocalPyPI:
             # self.locations
             try:
                 loc = pypi_struct.mkdir(name_id)
-                unzip_file(path, pypi_struct.mkdir(name_id))
+                unzip_file(path, loc)
             except FileExistsError:
                 loc = pypi_struct.extraced + '/' + name_id
             finally:

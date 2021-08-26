@@ -77,4 +77,5 @@ def _add_to_system_environment():
 
 
 if __name__ == '__main__':
+    lk.lite_mode = True
     main('python39')
