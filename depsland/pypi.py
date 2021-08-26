@@ -57,7 +57,6 @@ class LocalPyPI:
             lk.loga('request requirement from pip (online)', req)
             req = self._refresh_local_repo(req)
         
-        req.set_fixed_version(version)
         name, version, name_id = req.name, req.version, req.name_id
         
         return PackageInfo(
@@ -111,13 +110,14 @@ class LocalPyPI:
             req = Requirement(pkg.name, pkg.version)
             name, version, name_id = req.name, req.version, req.name_id
             
+            available_namespace[name] = version
+
             # self.updates
             self.updates[name] = int(time())
-            
+
             # self.name_versions
             if version in self.name_versions[name]:
-                lk.loga('local repo satisfies requirement (refresh local time '
-                        'only)')
+                lk.loga('local repo satisfies requirement', name_id)
                 continue
             else:
                 self.name_versions[name].append(version)
@@ -135,12 +135,13 @@ class LocalPyPI:
                 #   FIXME: assign sole location instead of list[location] type
             
             # self.dependencies
-            available_namespace[name] = version
             deps[name_id] = pkg.requires_dist
             #   pkg.requires_dist: e.g. 'cachecontrol[filecache] (>=0.12.4,
             #       <0.13.0)', 'cachy (>=0.3.0,<0.4.0)', ...
 
-        assert _req.name in available_namespace
+        assert _req.name in available_namespace, (
+            _req, available_namespace
+        )
         _req.set_fixed_version(available_namespace[_req.name])
 
         for name_id, requires_dist in deps.items():

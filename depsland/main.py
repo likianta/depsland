@@ -50,18 +50,15 @@ def _init_venv_dir(src_struct: VEnvSourceStruct,
 def _install_requirements(requirements: list[TRequirement]):
     lk.loga('installing requirements', len(requirements))
     
-    pkg_list = []
+    pkg_list = []  # list[PackageInfo]
     for req in requirements:
         lk.loga(req)
         pkg_list.append(local_pypi.main(req))
     
+    all_pkgs = set()
     for pkg in pkg_list:
-        for loc in pkg.locations:
-            yield loc
-    
-    all_deps = set()
-    for pkg in pkg_list:
-        all_deps.update(pkg.dependencies)
-    for dep in all_deps:
-        for loc in local_pypi.get_locations(dep):
+        all_pkgs.add(pkg.name_id)
+        all_pkgs.update(pkg.dependencies)
+    for name_id in all_pkgs:
+        for loc in local_pypi.get_locations(name_id):
             yield loc

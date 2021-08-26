@@ -1,6 +1,7 @@
 from pprint import pprint
 
 from lk_logger import lk
+from lk_utils import dumps
 
 from depsland.path_struct import pypi_struct
 
@@ -17,3 +18,9 @@ pprint(c)
 
 lk.logd('updates')
 pprint(d)
+
+for data, file in zip(
+        (a, b, c, d),
+        pypi_struct.get_indexed_files()
+):
+    dumps(data, file.removesuffix('.pkl') + '.json')
