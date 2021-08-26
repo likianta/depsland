@@ -1,0 +1,69 @@
+{
+    "app_name": "setup",
+    "app_version": "0.1.0r13",
+    "description": "Python dependencies manager specific for pyportable-installer.",
+    "author": "likianta<likianta@foxmail.com>",
+    "build": {
+        "proj_dir": "../depsland",
+        "dist_dir": "../dist/depsland-v{app_version}-win-standard",
+        "icon": "",
+        "target": {
+            "file": "../depsland/setup/main.py",
+            "function": "main",
+            "args": ["python39"],
+            "kwargs": {}
+        },
+        "side_utils": [],
+        "readme": "",
+        "attachments": {
+            "../build/assets/windows": "assets",
+            "../conf": "assets",
+            "../requirements.txt": "asset,dist:build/{name}",
+            "../launch_cli.py": "asset,dist:{name}",
+            "../pypi/cache": "only_folder",
+            "../pypi/downloads": "only_folder",
+            "../pypi/extracted": "only_folder",
+            "../pypi/index": "only_folder",
+            "../sidework": "assets,compile",
+            "../venv_home/inventory": "only_folder",
+            "../venv_home/venv_links": "only_folder"
+        },
+        "module_paths": [],
+        "venv": {
+            "enable_venv": false,
+            "python_version": "3.9",
+            "mode": "source_venv",
+            "options": {
+                "depsland": {
+                    "requirements": []
+                },
+                "source_venv": {
+                    "path": ""
+                },
+                "pip": {
+                    "requirements": [],
+                    "pypi_url": "https://pypi.python.org/simple/",
+                    "local": "",
+                    "offline": false
+                }
+            }
+        },
+        "compiler": {
+            "name": "pyarmor",
+            "options": {
+                "pyarmor": {
+                    "liscense": "trial",
+                    "obfuscate_level": 0
+                },
+                "pyc": {
+                    "optimize_level": 0
+                },
+                "zip": {
+                    "password": ""
+                }
+            }
+        },
+        "enable_console": true
+    },
+    "note": ""
+}

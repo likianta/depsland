@@ -8,7 +8,6 @@ __pycache__/
 
 # Distribution / packaging
 .Python
-build/
 develop-eggs/
 dist/
 eggs/
@@ -142,3 +141,4 @@ dmypy.json
 /pypi/*/!.gitkeep
 /venv_home/*/*
 /venv_home/*/!.gitkeep
+/build/assets/*
