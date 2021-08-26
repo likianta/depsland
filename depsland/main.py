@@ -6,7 +6,7 @@ from lk_logger import lk
 from .path_struct import VEnvDistStruct, VEnvSourceStruct, src_struct
 from .pypi import local_pypi
 from .typehint import *
-from .utils import mergelinks, mklink, mklinks
+from .utils import mergelinks, mklinks
 
 
 def create_venv(venv_name: str, requirements: list[TRequirement]):

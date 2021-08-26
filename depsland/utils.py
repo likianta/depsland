@@ -1,6 +1,7 @@
 import os
 from distutils.version import LooseVersion, StrictVersion
-from os import path as ospath
+from os import listdir, mkdir
+from os.path import exists, isdir, isfile
 from textwrap import dedent
 from zipfile import ZipFile
 
@@ -28,16 +29,16 @@ def mklink(src_path: TPath, dst_path: TPath, exist_ok=False):
             号链接, 和大家熟知的快捷方式) https://blog.walterlv.com/post/ntfs
             -link-comparisons.html
     """
-    assert ospath.exists(src_path), src_path
-    if ospath.exists(dst_path):
+    assert exists(src_path), src_path
+    if exists(dst_path):
         if exist_ok:
             return dst_path
         else:
             raise FileExistsError(dst_path)
     
-    if ospath.isdir(src_path):
+    if isdir(src_path):
         send_cmd(f'mklink /J "{dst_path}" "{src_path}"')
-    elif ospath.isfile(src_path):
+    elif isfile(src_path):
         send_cmd(f'mklink /H "{dst_path}" "{src_path}"')
     else:
         raise Exception(src_path)
@@ -47,21 +48,22 @@ def mklink(src_path: TPath, dst_path: TPath, exist_ok=False):
 
 def mklinks(src_dir: TPath, dst_dir: TPath, names=None, exist_ok=False):
     out = []
-    for n in (names or os.listdir(src_dir)):
+    for n in (names or listdir(src_dir)):
         out.append(mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}', exist_ok))
     return out
 
 
 def mergelink(src_dir, dst_dir, new_dir, file_exist_handle='error'):
-    src_names = os.listdir(src_dir)
-    dst_names = os.listdir(dst_dir)
+    src_names = listdir(src_dir)
+    dst_names = listdir(dst_dir)
     
     for sn in src_names:
         sub_src_path = f'{src_dir}/{sn}'
         sub_dst_path = f'{dst_dir}/{sn}'
         sub_new_path = f'{new_dir}/{sn}'
         if sn in dst_names:
-            if ospath.isdir(sub_src_path):
+            if isdir(sub_src_path):
+                mkdir(sub_new_path)
                 mergelink(
                     sub_src_path, sub_dst_path, sub_new_path,
                     file_exist_handle
@@ -76,13 +78,13 @@ def mergelink(src_dir, dst_dir, new_dir, file_exist_handle='error'):
         else:
             mklink(sub_src_path, sub_new_path)
     
-    new_names = os.listdir(new_dir)
+    new_names = listdir(new_dir)
     for n in dst_names:
         sub_dst_path = f'{dst_dir}/{n}'
         sub_new_path = f'{new_dir}/{n}'
-        assert ospath.exists(sub_dst_path), (
+        assert exists(sub_dst_path), (
             n,
-            n in os.listdir(dst_dir),
+            n in listdir(dst_dir),
             sub_dst_path
         )
         if n not in new_names:
@@ -93,25 +95,26 @@ def mergelink(src_dir, dst_dir, new_dir, file_exist_handle='error'):
 
 def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
     out = []
-    dst_names = os.listdir(dst_dir)
+    dst_names = listdir(dst_dir)
     
-    for n in os.listdir(src_dir):
+    for n in listdir(src_dir):
         src_path = f'{src_dir}/{n}'
         dst_path = f'{dst_dir}/{n}'
         
         if n in dst_names:
-            if ospath.isdir(src_path):
+            if isdir(src_path):
                 lk.logt('[D2205]', f'merging "{n}" ({src_dir} -> {dst_dir})')
                 
                 temp = dst_path
-                while ospath.exists(temp):
+                while exists(temp):
                     temp += '_bak'
                 else:
                     os.rename(dst_path, temp)
                 new_path = dst_path
                 dst_path = temp
-                if not ospath.exists(new_path):
-                    os.mkdir(new_path)
+                if not exists(new_path):
+                    mkdir(new_path)
+                # os.makedirs(new_path, exist_ok=True)
                 
                 mergelink(src_path, dst_path, new_path, file_exist_handle)
             else:
@@ -142,7 +145,7 @@ def unzip_file(src_file, dst_dir, complete_delete=False):
     return dst_dir
 
 
-def send_cmd_bat(cmd: str):
+def send_cmd_bat(cmd: str):  # DELETE
     cmd = dedent(cmd).replace('|\n', '').replace('\n', '&')
     return os.system(cmd)
 
