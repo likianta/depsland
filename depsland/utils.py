@@ -1,4 +1,5 @@
 import os
+import shutil
 from distutils.version import LooseVersion, StrictVersion
 from os import path as ospath
 from textwrap import dedent
@@ -49,6 +50,71 @@ def mklinks(src_dir: TPath, dst_dir: TPath, names=None, exist_ok=False):
     out = []
     for n in (names or os.listdir(src_dir)):
         out.append(mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}', exist_ok))
+    return out
+
+
+def mergelink(src_dir, dst_dir, new_dir, file_exist_handle='error'):
+    src_names = os.listdir(src_dir)
+    dst_names = os.listdir(dst_dir)
+    
+    for sn in src_names:
+        sub_src_path = f'{src_dir}/{sn}'
+        sub_dst_path = f'{dst_dir}/{sn}'
+        sub_new_path = f'{new_dir}/{sn}'
+        if sn in dst_names:
+            if ospath.isdir(sub_src_path):
+                mergelink(
+                    sub_src_path, sub_dst_path, sub_new_path,
+                    file_exist_handle
+                )
+            else:
+                if file_exist_handle == 'error':
+                    raise FileExistsError(sub_dst_path)
+                elif file_exist_handle == 'keep':
+                    mklink(sub_dst_path, sub_new_path)
+                elif file_exist_handle == 'override':
+                    mklink(sub_src_path, sub_new_path)
+        else:
+            mklink(sub_src_path, sub_new_path)
+
+    new_names = os.listdir(new_dir)
+    for n in dst_names:
+        sub_dst_path = f'{dst_names}/{n}'
+        sub_new_path = f'{new_dir}/{n}'
+        if n not in new_names:
+            mklink(sub_dst_path, sub_new_path)
+
+    return new_dir
+    
+    
+def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
+    out = []
+    dst_names = os.listdir(dst_dir)
+    
+    for n in os.listdir(src_dir):
+        src_path = f'{src_dir}/{n}'
+        dst_path = f'{dst_dir}/{n}'
+        
+        if n in dst_names:
+            if ospath.isdir(src_path):
+                new_path = dst_path + '_new'
+                os.mkdir(new_path)
+                out.append(
+                    mergelink(src_path, dst_path, new_path, file_exist_handle)
+                )
+                shutil.rmtree(dst_path)
+                os.rename(new_path, dst_path)
+            else:
+                if file_exist_handle == 'error':
+                    raise FileExistsError(dst_path)
+                elif file_exist_handle == 'keep':
+                    pass
+                elif file_exist_handle == 'override':
+                    os.remove(dst_path)
+                    mklink(src_path, dst_path)
+        else:
+            out.append(mklink(src_path, dst_path, exist_ok=False))
+    
     return out
 
 

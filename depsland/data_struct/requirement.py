@@ -44,8 +44,9 @@ class Requirement:
         return name, version_spec
     
     def set_fixed_version(self, version):
-        if version == '*':
-            self._version = 'any'
+        if not version or version == LATEST:
+            # the unrecognized version maybe one of ('', None, LATEST).
+            raise ValueError(version)
         else:
             self._version = version.replace('!', 'n')
             #   '!' -> 'n': earlier explicit epoch, e.g. '1!1.1'.

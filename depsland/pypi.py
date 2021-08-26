@@ -150,9 +150,15 @@ class LocalPyPI:
         try:
             deps = []
             for raw_name in pkg.requires_dist:
-                lk.logt('[D4831]', raw_name)
+                # lk.logt('[D4831]', raw_name)
                 #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
                 #        'cachy (>=0.3.0,<0.4.0)', ...
+                
+                # excluded names
+                if re.search(r'\bextra\b *==', raw_name):
+                    lk.loga('exclude extra package', raw_name)
+                    continue
+                
                 new_req = Requirement(raw_name)
                 lk.loga(f'got new requirement "{new_req}" from "{req}"')
                 
@@ -168,7 +174,7 @@ class LocalPyPI:
                 deps.append(new_req.name_id)
         except Exception as e:
             # rollback
-            lk.logt('[W0232]', 'roll back changes from indexed data', name_id)
+            lk.logt('[W0232]', 'rollback changes from indexed data', name_id)
             self.name_versions.pop(name)
             self.locations.pop(name_id)
             raise e

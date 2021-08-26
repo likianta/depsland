@@ -6,7 +6,7 @@ from lk_logger import lk
 from .path_struct import VEnvDistStruct, VEnvSourceStruct, src_struct
 from .pypi import local_pypi
 from .typehint import *
-from .utils import mklinks
+from .utils import mergelinks, mklink, mklinks
 
 
 def create_venv(venv_name: str, requirements: list[TRequirement]):
@@ -15,7 +15,11 @@ def create_venv(venv_name: str, requirements: list[TRequirement]):
         _init_venv_dir(src_struct, dst_struct)
         for loc in _install_requirements(requirements):
             lk.loga('add package to venv', os.path.basename(loc))
-            mklinks(loc, dst_struct.site_packages, exist_ok=True)
+            try:
+                mklinks(loc, dst_struct.site_packages, exist_ok=False)
+            except FileExistsError:
+                lk.logt('[I1457]', 'target dir already exists, use ')
+                mergelinks(loc, dst_struct.site_packages, file_exist_ok=True)
     except Exception as e:
         raise e
     finally:
