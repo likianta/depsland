@@ -111,6 +111,10 @@ class VEnvSourceStruct(_PathStruct):
     @property
     def interpreter(self):
         return os.path.normpath(f'{self.python}/python.exe')
+    
+    @property
+    def python_pth(self):
+        return f'{self.python}/{self.pyversion}._pth'
 
 
 class VEnvDistStruct(_PathStruct):
@@ -229,7 +233,13 @@ class LocalPyPIStruct(_PathStruct):
         raise NotImplemented
     
     def mkdir(self, name_id):
-        os.mkdir(d := f'{self.extraced}/{name_id}')
+        d = f'{self.extraced}/{name_id}'
+        if not exists(d):
+            os.mkdir(d)
+        elif not os.listdir(d):
+            pass
+        else:
+            raise FileExistsError
         return d
     
     def load_indexed_data(self):

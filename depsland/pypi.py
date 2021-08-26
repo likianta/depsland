@@ -32,20 +32,7 @@ class LocalPyPI:
         self.dependencies = c
         self.updates = d
     
-    def get_all_dependencies(self, name_id, holder=None) -> list[TNameId]:
-        if holder is None:
-            holder = []
-        for dep_name_id in self.dependencies[name_id]:
-            if dep_name_id in holder:
-                continue
-            holder.append(dep_name_id)
-            self.get_all_dependencies(dep_name_id, holder)
-        return holder
-    
-    def get_locations(self, name_id) -> TLocations:
-        return self.locations[name_id]
-    
-    def main(self, req: TRequirement):
+    def analyse_requirement(self, req: TRequirement):
         # if version doesn't in self.name_versions, or the version requests
         # latest but local repository is outdated, we should refresh local
         # repository.
@@ -64,6 +51,19 @@ class LocalPyPI:
             locations=self.locations[name_id],
             dependencies=self.dependencies[name_id]
         )
+    
+    def get_all_dependencies(self, name_id, holder=None) -> list[TNameId]:
+        if holder is None:
+            holder = []
+        for dep_name_id in self.dependencies[name_id]:
+            if dep_name_id in holder:
+                continue
+            holder.append(dep_name_id)
+            self.get_all_dependencies(dep_name_id, holder)
+        return holder
+    
+    def get_locations(self, name_id) -> TLocations:
+        return self.locations[name_id]
     
     def _get_local_matched_version(self, req, check_outdated=True):
         """

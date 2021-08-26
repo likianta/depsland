@@ -4,3 +4,8 @@ create_venv(
     *input('packages (separated with comma): ').split(','),
     venv_name=input('target dirname: '),
 )
+
+
+def main():
+    input('venv_name: ')
+    

@@ -53,7 +53,7 @@ def _install_requirements(requirements: list[TRequirement]):
     pkg_list = []  # list[PackageInfo]
     for req in requirements:
         lk.loga(req)
-        pkg_list.append(local_pypi.main(req))
+        pkg_list.append(local_pypi.analyse_requirement(req))
     
     all_pkgs = set()
     for pkg in pkg_list:

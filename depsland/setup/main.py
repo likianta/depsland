@@ -6,9 +6,9 @@ from os.path import exists
 
 from lk_logger import lk
 
+from depsland.path_struct import *
 from depsland.setup import *
 from depsland.utils import unzip_file
-from depsland.path_struct import *
 
 
 def main(pyversion='python39'):
@@ -19,7 +19,9 @@ def main(pyversion='python39'):
     _setup_embed_python()
     _setup_python_suits()
     _add_to_system_environment()
-    
+
+    lk.loga('successfully setup depsland :)')
+
 
 def _build_dirs():
     for d in (
@@ -30,6 +32,7 @@ def _build_dirs():
             f'{proj_dir}/pypi',
             f'{proj_dir}/pypi/cache',
             f'{proj_dir}/pypi/downloads',
+            f'{proj_dir}/pypi/extracted',
             f'{proj_dir}/pypi/index',
     ):
         if not exists(d):
