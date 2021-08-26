@@ -127,9 +127,17 @@ class LocalPyPI:
             loc = pypi_struct.extraced + '/' + name_id
         
         # update indexes
-        self.name_versions[name].append(version)
-        self.locations[name_id].append(loc)
-        #   TODO: assign sole location instead of list[location] type
+        # note: use lazy updation. i.e. donot update indexed data (`self
+        # .name_versions`, `self.locations`, `self.dependencies`) immediately,
+        # create a new temp var to hold the upcoming data, then self indexed
+        # data extends the var.
+        # why: because the dependencies processing is not stable in current
+        # depsland version, it ofter occurs unexpected errors (e.g. downloading
+        # timeout, complicated uncovered version comparisons, etc.), if we
+        # update indexed data in processing, it maybe crashed and depsland will
+        # try to save an uncomplete data to local, which is harmful to the next
+        # time restarting.
+        deps = []
         for raw_name in pkg.requires_dist:
             lk.logt('[D4831]', raw_name)
             #   e.g. 'cachecontrol[filecache] (>=0.12.4,<0.13.0)',
@@ -153,10 +161,15 @@ class LocalPyPI:
                 new_req.version_spec, self.name_versions[new_req.name]
             )
             new_req.set_fixed_version(version)
-            self.dependencies[name_id].append(new_req.name_id)
+            deps.append(new_req.name_id)
+
+        self.name_versions[name].append(version)
+        self.locations[name_id].append(loc)
+        #   FIXME: assign sole location instead of list[location] type
+        self.dependencies[name_id].extend(deps)
         
         sort_versions(self.name_versions[name])
-        sort_versions(self.dependencies[name_id])
+        # sort_versions(self.dependencies[name_id])
         
         return finish_processing()
     

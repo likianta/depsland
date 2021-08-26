@@ -5,6 +5,7 @@ from textwrap import dedent
 from zipfile import ZipFile
 
 from dephell_specifier import RangeSpecifier
+from lk_logger import lk
 from lk_utils import send_cmd
 
 from .typehint import *
@@ -118,7 +119,10 @@ def sort_versions(versions: list[TVersion], reverse=True):
         The LooseVersion and StrictVersion difference:
             https://www.python.org/dev/peps/pep-0386/
     """
+    
     def _normalize_version(v: Union[TNameId, TVersion]):
+        # TODO: the incoming `param:v` type must be TVersion; TNameId should be
+        #   removed.
         if '-' in v:
             v = v.split('-', 1)[-1]
         if v in ('', '*', 'latest'):
@@ -131,7 +135,13 @@ def sort_versions(versions: list[TVersion], reverse=True):
                       # `x` type is Union[TNameId, TVersion], for TNameId we
                       # need to split out the name part.
                       reverse=reverse)
-    except ValueError:
-        versions.sort(key=lambda v: LooseVersion(_normalize_version(v)),
-                      reverse=reverse)
+    except ValueError as exception_point:
+        lk.logt('[I1543]', f'strict version comparison failed because of: '
+                           f'"{exception_point}"', 'use loose compare instead')
+        try:
+            versions.sort(key=lambda v: LooseVersion(_normalize_version(v)),
+                          reverse=reverse)
+        except Exception as e:
+            lk.logt('[E2123]', versions)
+            raise e
     return versions

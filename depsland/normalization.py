@@ -22,7 +22,11 @@ def normalize_version_spec(version_spec: str):
     """ Normalize verison specifier. """
     if version_spec in ('', '*', '==*'):
         return '*'
-    elif version_spec.startswith('['):  # e.g. '[all]'
-        return '*'
+    elif version_spec.startswith('['):  # e.g. '[toml] >=5.0.2'
+        if version_spec.endswith(']'):
+            return '*'
+        else:
+            version_spec = version_spec.split(']')[-1]
+            return version_spec
     else:
         return version_spec
