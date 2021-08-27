@@ -144,3 +144,4 @@ dmypy.json
 /build/assets/*
 /build/assets.zip
 /build/venv_packages.zip
+/venv1/*
