@@ -31,11 +31,20 @@ def main(pyversion='python39'):
             Then test it in the CMD:
                 depsland -V
             There're should be shown "Python 3.9.6".
-        NOTICE:
+        NOTES:
             1. You need to restart CMD before running `depsland -V` in CMD.
-            2. You need to restart computer before running depsland-based
-               applications.
     '''))
+    '''
+        Warnings:
+            If you are using the third party files manager -- for example
+            "XYPlorer" -- you cannot see any environment variable changes
+            when you double click any bat script file (which includes `echo
+            %PATH%` command) in it.
+            The simplest resolution is restarting the third party files
+            manager, or just open Windows files explorer and double click on
+            that bat script. You will see `echo %PATH%` has been updated and
+            `depsland -V` works as expected then.
+    '''
 
 
 def _build_dirs():
