@@ -3,7 +3,7 @@ Deploy depsland on client computer and make sure depsland integrity.
 """
 import os
 import sys
-from os.path import exists, normpath
+from os.path import dirname, exists, normpath
 from textwrap import dedent
 
 from lk_logger import lk
@@ -24,6 +24,14 @@ def main(pyversion='python39'):
     _create_depsland_bat()
     _add_to_system_environment()
     
+    # remove <root>/setup.exe
+    parent_dir = proj_dir
+    for try_times in range(2):
+        parent_dir = dirname(parent_dir)
+        if exists(setup_exe := f'{parent_dir}/setup.exe'):
+            os.remove(setup_exe)
+            break
+    
     lk.loga('Successfully setup depsland :)')
     lk.logt('[I4238]', dedent('''
         THE NEXT STEP:
@@ -36,7 +44,7 @@ def main(pyversion='python39'):
     '''))
     '''
         Warnings:
-            If you are using the third party files manager -- for example
+            If you are using a third party files manager -- for example
             "XYPlorer" -- you cannot see any environment variable changes
             when you double click any bat script file (which includes `echo
             %PATH%` command) in it.
@@ -103,6 +111,10 @@ def _add_to_system_environment():
     path = normpath(proj_dir)
     os.system('setx DEPSLAND "{}"'.format(path))
     lk.loga('Environment variable updated', f'DEPSLAND => {path}')
+    
+    if '%DEPSLAND%' not in os.getenv('PATH') and path not in os.getenv('PATH'):
+        os.system('setx PATH "%PATH%;%DEPSLAND%"'.format(path))
+    lk.loga('Added DEPSLAND to USER_PATH')
 
 
 if __name__ == '__main__':
