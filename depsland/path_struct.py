@@ -21,7 +21,7 @@ home_dir = f'{proj_dir}/venv_home'  # project venv_home dir
 pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
 
 
-class _PathStruct:
+class PathStruct:
     pyversion: TPyVersion
     platform: TPlatform
     
@@ -35,7 +35,7 @@ class _PathStruct:
         raise NotImplementedError
 
 
-class VEnvSourceStruct(_PathStruct):
+class VEnvSourceStruct(PathStruct):
     inventory: str
     venvlinks: str
     
@@ -117,7 +117,7 @@ class VEnvSourceStruct(_PathStruct):
         return f'{self.python}/{self.pyversion}._pth'
 
 
-class VEnvDistStruct(_PathStruct):
+class VEnvDistStruct(PathStruct):
     home: str
     dlls: str
     lib: str
@@ -158,7 +158,7 @@ class VEnvDistStruct(_PathStruct):
         return f'{self.home}/{self.pyversion}._pth'
 
 
-class BuildAssetsStruct(_PathStruct):
+class BuildAssetsStruct(PathStruct):
     """ ~/build/assets/* """
     assets: str
     curr_assets: str
@@ -207,7 +207,7 @@ class BuildAssetsStruct(_PathStruct):
         raise NotImplemented
 
 
-class LocalPyPIStruct(_PathStruct):
+class LocalPyPIStruct(PathStruct):
     """ ~/pypi/* """
     home: str
     
@@ -301,7 +301,7 @@ src_struct.tk_suits = os.listdir(assets_struct.tkinter)
 __all__ = [
     'platform',
     'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',
-    'VEnvSourceStruct', 'VEnvDistStruct',
+    'PathStruct', 'VEnvSourceStruct', 'VEnvDistStruct',
     'BuildAssetsStruct', 'LocalPyPIStruct',
     'assets_struct', 'pypi_struct', 'src_struct',
 ]

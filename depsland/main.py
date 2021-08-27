@@ -49,6 +49,7 @@ def _init_venv_dir(src_struct: VEnvSourceStruct,
 
 def _install_requirements(requirements: list[TRequirement]):
     lk.loga('installing requirements', len(requirements))
+    lk.logp(requirements)
     
     pkg_list = []  # list[PackageInfo]
     for req in requirements:

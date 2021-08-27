@@ -2,9 +2,12 @@
 Deploy depsland on client computer and make sure depsland integrity.
 """
 import os
-from os.path import exists
+import sys
+from os.path import exists, normpath
+from textwrap import dedent
 
 from lk_logger import lk
+from lk_utils import dumps, loads
 
 from depsland.path_struct import *
 from depsland.setup import *
@@ -18,9 +21,21 @@ def main(pyversion='python39'):
     _build_dirs()
     _setup_embed_python()
     _setup_python_suits()
+    _create_depsland_bat()
     _add_to_system_environment()
-
-    lk.loga('successfully setup depsland :)')
+    
+    lk.loga('Successfully setup depsland :)')
+    lk.logt('[I4238]', dedent('''
+        THE NEXT STEP:
+            You need to add "%DEPSLAND%" to your environment PATH manullay.
+            Then test it in the CMD:
+                depsland -V
+            There're should be shown "Python 3.9.6".
+        NOTICE:
+            1. You need to restart CMD before running `depsland -V` in CMD.
+            2. You need to restart computer before running depsland-based
+               applications.
+    '''))
 
 
 def _build_dirs():
@@ -58,6 +73,12 @@ def _setup_python_suits():
     get_pip(src_struct.site_packages)
 
 
+def _create_depsland_bat():
+    template = loads(f'{proj_dir}/build/depsland.bat')
+    code = template.format(PYTHON=sys.executable)
+    dumps(code, f'{proj_dir}/depsland.bat')
+
+
 def _add_to_system_environment():
     """
     References:
@@ -70,9 +91,8 @@ def _add_to_system_environment():
         distinguish the system paths and user paths. So I set the path to a
         soly new environment variable.
     """
-    path = os.path.abspath(f'{proj_dir}/depsland.bat')
-    if path not in os.environ.get('DEPSLAND', []):
-        os.system('setx DEPSLAND "{}"'.format(path))
+    path = normpath(proj_dir)
+    os.system('setx DEPSLAND "{}"'.format(path))
     lk.loga('Environment variable updated', f'DEPSLAND => {path}')
 
 

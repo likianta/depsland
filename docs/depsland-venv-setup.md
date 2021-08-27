@@ -158,7 +158,9 @@
 
 参考: https://blog.csdn.net/LYJ_viviani/article/details/70568434
 
-## 附加: urllib3 的问题
+# 附加
+
+## pip/_vendor/urllib3 的问题
 
 pip 21.2.4 版本自带的 urllib3 库 (~/pip/_vendor/urllib3) 的版本是 v1.26.*, 该版本有一个严重的问题会导致 pip install 失败 (报错内容: 'ValueError: check_hostname requires server_hostname'). 我用下面的方法解决:
 
@@ -169,3 +171,7 @@ pip 21.2.4 版本自带的 urllib3 库 (~/pip/_vendor/urllib3) 的版本是 v1.2
 3. 将后缀改为 '.zip', 解压
 
 4. 解压后里面有一个 'urllib3' 文件夹, 把它复制到 '~/pip/_vendor' 下面
+
+## 配置国内镜像源
+
+TODO

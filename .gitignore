@@ -142,3 +142,5 @@ dmypy.json
 /venv_home/*/*
 /venv_home/*/!.gitkeep
 /build/assets/*
+/build/assets.zip
+/build/venv_packages.zip

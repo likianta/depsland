@@ -1,11 +1,12 @@
 {
-    "app_name": "setup",
-    "app_version": "0.1.0r13",
+    "app_name": "Depsland",
+    "app_version": "0.1.0-beta.20",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "author": "likianta<likianta@foxmail.com>",
     "build": {
         "proj_dir": "../depsland",
         "dist_dir": "../dist/depsland-v{app_version}-win-standard",
+        "launcher_name": "setup",
         "icon": "",
         "target": {
             "file": "../depsland/setup/main.py",
@@ -17,34 +18,39 @@
         "readme": "",
         "attachments": {
             "../build/assets/windows": "assets",
+            "../build/depsland.bat": "asset",
             "../conf": "assets",
-            "../requirements.txt": "asset,dist:build/{name}",
-            "../launch_cli.py": "asset,dist:{name}",
             "../pypi/cache": "only_folder",
             "../pypi/downloads": "only_folder",
             "../pypi/extracted": "only_folder",
             "../pypi/index": "only_folder",
+            "../requirements.txt": "asset,dist:build/{name}",
             "../sidework": "assets,compile",
             "../venv_home/inventory": "only_folder",
             "../venv_home/venv_links": "only_folder"
         },
         "module_paths": [],
         "venv": {
-            "enable_venv": false,
+            "enable_venv": true,
             "python_version": "3.9",
-            "mode": "source_venv",
+            "mode": "embed_python",
             "options": {
                 "depsland": {
-                    "requirements": []
+                    "venv_name": "{app_name_lower}_venv",
+                    "venv_id": "",
+                    "requirements": "../requirements.txt"
                 },
                 "source_venv": {
-                    "path": ""
+                    "path": "../venv1"
                 },
                 "pip": {
                     "requirements": [],
                     "pypi_url": "https://pypi.python.org/simple/",
                     "local": "",
                     "offline": false
+                },
+                "embed_python": {
+                    "path": "../venv1"
                 }
             }
         },
@@ -65,5 +71,8 @@
         },
         "enable_console": true
     },
-    "note": ""
+    "note": [
+        "notice: depsland cannot package itself based on `venv:mode:depsland`"
+    ],
+    "pyportable_installer_version": "3.5.0"
 }

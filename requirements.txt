@@ -1,5 +1,6 @@
 dephell-specifier
 lk-logger
 lk-utils
+pillow
 pkginfo
 pyyaml
