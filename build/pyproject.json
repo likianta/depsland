@@ -1,6 +1,6 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.1.0-beta.20",
+    "app_version": "0.1.0-beta.21",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "author": "likianta<likianta@foxmail.com>",
     "build": {

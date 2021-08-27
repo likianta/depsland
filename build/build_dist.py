@@ -10,16 +10,12 @@ from sidework import show_pypi_index_data
 
 def standard_packing():
     conf = full_build('pyproject.json')
-    if exists(d := conf['build']['dist_dir'] + '/lib/pytransform'):
-        from shutil import move
-        move(d, conf['build']['dist_dir'] + '/venv/lib/pytransform')
+    _move_pytransform(conf)
 
 
-def full_packing():
+def extended_packaging():
     conf = full_build('pyproject.json')
-    if exists(d := conf['build']['dist_dir'] + '/lib/pytransform'):
-        from shutil import move
-        move(d, conf['build']['dist_dir'] + '/venv/lib/pytransform')
+    _move_pytransform(conf)
     
     lk.logd('preinstall packages')
     lk.logp(listdir('assets/preinstalled_packages'))
@@ -35,8 +31,14 @@ def full_packing():
     
     # show indexed data
     show_pypi_index_data.main()
-
+    
+    
+def _move_pytransform(conf):
+    if exists(d := conf['build']['dist_dir'] + '/lib/pytransform'):
+        from shutil import move
+        move(d, conf['build']['dist_dir'] + '/venv/lib/pytransform')
+    
 
 if __name__ == '__main__':
-    standard_packing()
-    # full_packing()
+    # standard_packing()
+    extended_packaging()
