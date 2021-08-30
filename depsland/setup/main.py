@@ -35,12 +35,12 @@ def main(pyversion='python39'):
     lk.loga('Successfully setup depsland :)')
     lk.logt('[I4238]', dedent('''
         THE NEXT STEP:
-            You need to add "%DEPSLAND%" to your environment PATH manullay.
-            Then test it in the CMD:
+            (Suggest) You can add "%DEPSLAND%" to your environment PATH
+            manullay. Then test it in the CMD:
                 depsland -V
             There're should be shown "Python 3.9.6".
         NOTES:
-            1. You need to restart CMD before running `depsland -V` in CMD.
+            1. You need to restart CMD before running `depsland -V` in it.
     '''))
     '''
         Warnings:
@@ -103,18 +103,32 @@ def _add_to_system_environment():
             -environment-variable-from-python-permanently
     
     Notice:
-        The command `setx PATH "%PATH%;{my_path}"` doesn't work as expected as
-        we did in CMD manually, it overwrote existed variables and couldn't
-        distinguish the system paths and user paths. So I set the path to a
-        soly new environment variable.
+        1. The command `setx PATH "%PATH%;{my_path}"` doesn't work as expected
+           as we did in CMD manually, it overwrote existed variables and
+           couldn't distinguish the system paths and user paths. So I set the
+           path to a soly new environment variable.
+        2. The `setx` command is only available in Windows 7 and later.
     """
     path = normpath(proj_dir)
     os.system('setx DEPSLAND "{}"'.format(path))
-    lk.loga('Environment variable updated', f'DEPSLAND => {path}')
+    lk.loga('Added DEPSLAND to environment variable', f'DEPSLAND => {path}')
     
-    if '%DEPSLAND%' not in os.getenv('PATH') and path not in os.getenv('PATH'):
-        os.system('setx PATH "%PATH%;%DEPSLAND%"'.format(path))
-    lk.loga('Added DEPSLAND to USER_PATH')
+    ''' Note: How does PyPortable-Installer work with Depsland?
+    
+    1. Using `%DEPSLAND%\\depsland.bat ...` to call depsland in cmd.
+    2. If user has added %DEPSLAND% to user %PATH% manually, the user can use
+       `depsland ...` to call depsland in cmd.
+    3. A Python script can add `sys.path.append(os.getenv('DEPSLAND'))` to
+       import depsland package.
+    '''
+    
+    # add `%DEPSLAND%` to `%PATH%`
+    # FIXME: The method below will mix user path and system path values and
+    #   messy up user one's. We may need to find a way to modify register table
+    #   instead of using `setx` command.
+    # if '%DEPSLAND%' not in os.getenv('PATH') and path not in os.getenv('PATH'):
+    #     os.system('setx PATH "%PATH%;%DEPSLAND%"'.format(path))
+    # lk.loga('Added DEPSLAND to USER_PATH')
 
 
 if __name__ == '__main__':
