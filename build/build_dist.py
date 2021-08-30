@@ -40,5 +40,5 @@ def _move_pytransform(conf):
     
 
 if __name__ == '__main__':
-    # standard_packing()
-    extended_packaging()
+    standard_packing()
+    # extended_packaging()

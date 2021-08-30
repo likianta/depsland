@@ -14,7 +14,25 @@ from depsland.setup import *
 from depsland.utils import unzip_file
 
 
+def _fuzzy_find_path(name):
+    parent_dir = proj_dir
+    for try_times in range(2):
+        parent_dir = dirname(parent_dir)
+        if exists(out := f'{parent_dir}/{name}'):
+            return out
+    raise FileNotFoundError(name)
+
+
 def main(pyversion='python39'):
+    curr_build_dir = _fuzzy_find_path('build')
+    if exists(f'{curr_build_dir}/setup_done.txt'):
+        lk.logt('[I4139]', dedent('''
+            Despland has been installed on your computer.
+            For re-installation, you can delete '~/build/setup_done.txt' then
+            run 'setup.exe' again.
+        '''))
+        return
+    
     src_struct.indexing_dirs(pyversion)
     assets_struct.indexing_dirs(pyversion)
     
@@ -22,37 +40,43 @@ def main(pyversion='python39'):
     _setup_embed_python()
     _setup_python_suits()
     _create_depsland_bat()
-    _add_to_system_environment()
+    env_var = _add_to_system_environment()
+    
+    # mark setup done
+    dumps('', f'{curr_build_dir}/setup_done.txt')
     
     # remove <root>/setup.exe
-    parent_dir = proj_dir
-    for try_times in range(2):
-        parent_dir = dirname(parent_dir)
-        if exists(setup_exe := f'{parent_dir}/setup.exe'):
-            os.remove(setup_exe)
-            break
+    # parent_dir = proj_dir
+    # for try_times in range(2):
+    #     parent_dir = dirname(parent_dir)
+    #     if exists(setup_exe := f'{parent_dir}/setup.exe'):
+    #         os.remove(setup_exe)
+    #         #   FIXME: OSError happend because 'setup.exe' is running.
+    #         break
     
     lk.loga('Successfully setup depsland :)')
-    lk.logt('[I4238]', dedent('''
-        THE NEXT STEP:
-            (Suggest) You can add "%DEPSLAND%" to your environment PATH
-            manullay. Then test it in the CMD:
-                depsland -V
-            There're should be shown "Python 3.9.6".
-        NOTES:
-            1. You need to restart CMD before running `depsland -V` in it.
-    '''))
-    '''
-        Warnings:
-            If you are using a third party files manager -- for example
-            "XYPlorer" -- you cannot see any environment variable changes
-            when you double click any bat script file (which includes `echo
-            %PATH%` command) in it.
-            The simplest resolution is restarting the third party files
-            manager, or just open Windows files explorer and double click on
-            that bat script. You will see `echo %PATH%` has been updated and
-            `depsland -V` works as expected then.
-    '''
+    if '%DEPSLAND%' not in os.getenv('PATH') and \
+            env_var not in os.getenv('PATH'):
+        lk.logt('[I4238]', dedent('''
+            THE NEXT STEP:
+                (Suggest) You can add "%DEPSLAND%" to your environment PATH
+                manullay. Then test it in the CMD:
+                    depsland -V
+                There're should be shown "Python 3.9.6".
+            NOTE:
+                1. You need to restart CMD before running `depsland -V` in it.
+        '''))
+        '''
+            Warnings:
+                If you are using a third party files manager -- for example
+                "XYPlorer" -- you cannot see any environment variable changes
+                when you double click any bat script file (which includes `echo
+                %PATH%` command) in it.
+                The simplest resolution is restarting the third party files
+                manager, or just open Windows files explorer and double click
+                on that bat script. You will see `echo %PATH%` has been updated
+                and `depsland -V` works as expected then.
+        '''
 
 
 def _build_dirs():
@@ -129,6 +153,8 @@ def _add_to_system_environment():
     # if '%DEPSLAND%' not in os.getenv('PATH') and path not in os.getenv('PATH'):
     #     os.system('setx PATH "%PATH%;%DEPSLAND%"'.format(path))
     # lk.loga('Added DEPSLAND to USER_PATH')
+    
+    return path
 
 
 if __name__ == '__main__':
