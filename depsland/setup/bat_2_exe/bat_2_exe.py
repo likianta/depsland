@@ -15,7 +15,8 @@ Examples:
     bat_to_exe_converter /bat xxx.bat /exe xxx.exe /x64 /icon xxx.ico
 """
 from os import popen
-from os.path import abspath, splitext
+from os.path import abspath
+from os.path import splitext
 
 from lk_utils import send_cmd
 

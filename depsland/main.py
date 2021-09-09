@@ -3,13 +3,16 @@ from os import listdir
 
 from lk_logger import lk
 
-from .path_struct import VEnvDistStruct, VEnvSourceStruct, src_struct
+from .path_struct import VEnvDistStruct
+from .path_struct import VEnvSourceStruct
+from .path_struct import src_struct
 from .pypi import local_pypi
 from .typehint import *
-from .utils import mergelinks, mklinks
+from .utils import mergelinks
+from .utils import mklinks
 
 
-def create_venv(venv_name: str, requirements: list[TRequirement]):
+def create_venv(venv_name: str, requirements: List[TRequirement]):
     try:
         dst_struct = VEnvDistStruct(venv_name)
         _init_venv_dir(src_struct, dst_struct)
@@ -47,7 +50,7 @@ def _init_venv_dir(src_struct: VEnvSourceStruct,
             src_struct.pip_suits)
 
 
-def _install_requirements(requirements: list[TRequirement]):
+def _install_requirements(requirements: List[TRequirement]):
     lk.loga('installing requirements', len(requirements))
     lk.logp(requirements)
     

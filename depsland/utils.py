@@ -1,8 +1,12 @@
 import os
 import tarfile
-from distutils.version import LooseVersion, StrictVersion
-from os import listdir, mkdir
-from os.path import exists, isdir, isfile
+from distutils.version import LooseVersion
+from distutils.version import StrictVersion
+from os import listdir
+from os import mkdir
+from os.path import exists
+from os.path import isdir
+from os.path import isfile
 from textwrap import dedent
 from zipfile import ZipFile
 
@@ -10,7 +14,8 @@ from dephell_specifier import RangeSpecifier
 from lk_logger import lk
 from lk_utils import send_cmd
 
-from .data_struct.special_versions import IGNORE, LATEST
+from .data_struct.special_versions import IGNORE
+from .data_struct.special_versions import LATEST
 from .typehint import *
 
 
@@ -161,7 +166,7 @@ def send_cmd_bat(cmd: str):  # DELETE
 # -----------------------------------------------------------------------------
 
 def find_best_matched_version(
-        ver_spec: TVersionSpec, ver_list: list[TVersion]
+        ver_spec: TVersionSpec, ver_list: List[TVersion]
 ) -> Optional[TVersion]:
     """
     
@@ -210,7 +215,7 @@ def find_best_matched_version(
         return None
 
 
-def sort_versions(versions: list[TVersion], reverse=True):
+def sort_versions(versions: List[TVersion], reverse=True):
     """
     References:
         Sort versions in Python:

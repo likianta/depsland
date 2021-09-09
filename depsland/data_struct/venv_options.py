@@ -1,6 +1,7 @@
 from dataclasses import dataclass  # noqa
 
 from ..path_struct import src_struct
+from ..typehint import List
 from ..typehint import TRequirement
 
 
@@ -8,7 +9,7 @@ from ..typehint import TRequirement
 class VenvOptions:
     name: str  # project or application name, suggest snake case
     venv_id: str
-    requirements: list[TRequirement]
+    requirements: List[TRequirement]
     
     @property
     def venv_name(self):

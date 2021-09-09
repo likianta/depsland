@@ -1,4 +1,5 @@
-from shutil import copyfile, copytree
+from shutil import copyfile
+from shutil import copytree
 
 from ..typehint import TPathStruct
 from ..utils import mklinks

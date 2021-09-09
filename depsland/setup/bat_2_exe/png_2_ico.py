@@ -17,8 +17,9 @@ def dialog():
 
 def png_2_ico(file_i, file_o):
     try:
+        # noinspection PyPackageRequirements
         from PIL import Image  # pip install pillow
-    except (ModuleNotFoundError, ImportError) as e:
+    except ImportError as e:
         print('Please install pillow library (pip install pillow)')
         raise e
     img = Image.open(file_i)

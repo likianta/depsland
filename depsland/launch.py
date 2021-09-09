@@ -6,10 +6,10 @@ from lk_utils.read_and_write import load_list
 
 from .data_struct import *
 from .main import create_venv as _create_venv
-from .typehint import Union
+from .typehint import *
 
 
-def launch(name, requirements: Union[list[str], str], venv_id=''):
+def launch(name, requirements: Union[List[str], str], venv_id=''):
     if isinstance(requirements, str):
         requirements = [Requirement(name) for name in load_list(requirements)
                         if name and not name.startswith('#')]

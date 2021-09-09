@@ -13,8 +13,8 @@ from shutil import rmtree
 
 from lk_utils import send_cmd
 
-from ..utils import mklinks
 from ..path_struct import *
+from ..utils import mklinks
 
 
 def get_pip_scripts(dst_dir):

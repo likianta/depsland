@@ -3,11 +3,13 @@ from os.path import exists
 from re import compile
 
 from lk_logger import lk
-from lk_utils import dumps, loads, send_cmd
+from lk_utils import dumps
+from lk_utils import loads
+from lk_utils import send_cmd
 
-from .typehint import TPip
+from .normalization import normalize_name
 from .path_struct import pypi_dir
-from .utils import normailize_name
+from .typehint import TPip
 
 
 def full_indexing(pip: TPip):
@@ -50,4 +52,4 @@ def _get_list(pip_head):
             continue
         name, version = pattern.search(line).groups()
         # yield name, version
-        yield normailize_name(name), version
+        yield normalize_name(name), version

@@ -1,1 +1,1 @@
-pyportable-installer
+pyportable-installer>=4.0.0a1

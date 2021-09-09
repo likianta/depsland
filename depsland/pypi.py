@@ -4,14 +4,18 @@ from time import time
 
 from lk_logger import lk
 from lk_utils import dumps
-from pkginfo import SDist, Wheel
+from pkginfo import SDist
+from pkginfo import Wheel
 
-from .data_struct import PackageInfo, Requirement
+from .data_struct import PackageInfo
+from .data_struct import Requirement
 from .data_struct.special_versions import LATEST
 from .path_struct import pypi_struct
 from .pip import default_pip
 from .typehint import *
-from .utils import find_best_matched_version, sort_versions, unzip_file
+from .utils import find_best_matched_version
+from .utils import sort_versions
+from .utils import unzip_file
 
 
 class LocalPyPI:
@@ -52,7 +56,7 @@ class LocalPyPI:
             dependencies=self.dependencies[name_id]
         )
     
-    def get_all_dependencies(self, name_id, holder=None) -> list[TNameId]:
+    def get_all_dependencies(self, name_id, holder=None) -> List[TNameId]:
         if holder is None:
             holder = []
         for dep_name_id in self.dependencies[name_id]:
@@ -111,10 +115,10 @@ class LocalPyPI:
             name, version, name_id = req.name, req.version, req.name_id
             
             available_namespace[name] = version
-
+            
             # self.updates
             self.updates[name] = int(time())
-
+            
             # self.name_versions
             if version in self.name_versions[name]:
                 lk.loga('local repo satisfies requirement', name_id)
@@ -138,19 +142,19 @@ class LocalPyPI:
             deps[name_id] = pkg.requires_dist
             #   pkg.requires_dist: e.g. 'cachecontrol[filecache] (>=0.12.4,
             #       <0.13.0)', 'cachy (>=0.3.0,<0.4.0)', ...
-
+        
         assert _req.name in available_namespace, (
             _req, available_namespace
         )
         _req.set_fixed_version(available_namespace[_req.name])
-
+        
         for name_id, requires_dist in deps.items():
             for raw_name in requires_dist:
                 # # excluded names
                 # if re.search(r'\bextra\b *==', raw_name):
                 #     lk.loga('exclude extra package', raw_name)
                 #     continue
-                    
+                
                 dep = Requirement(raw_name)
                 
                 if dep.name not in available_namespace:
@@ -159,11 +163,11 @@ class LocalPyPI:
                     lk.loga('invalid package recorded in requires_dist but not '
                             'downloaded by pip-download', dep.raw_name)
                     continue
-                    
+                
                 version = available_namespace[dep.name]
                 dep.set_fixed_version(version)
                 self.dependencies[name_id].append(dep.name_id)
-    
+        
         return _req
     
     def _download(self, raw_name, dst_dir):

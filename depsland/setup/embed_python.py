@@ -5,9 +5,10 @@ import os
 
 from lk_logger import lk
 
+from ..path_struct import platform
+from ..path_struct import src_struct
 from ..typehint import *
 from ..utils import unzip_file
-from ..path_struct import src_struct, platform
 
 
 def download_embed_python(pyversion: TPyVersion, platform=platform):

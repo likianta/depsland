@@ -70,9 +70,9 @@ TPath = str  # use only '/' as separator
 TBaseName = str  # basename of TPath
 
 # `repository.py > class:LocalPyPI`
-TNameVersions = dict[TName, list[TVersion]]
-TLocations = list[TPath]
-TLocationsIndex = dict[TNameId, TLocations]
-TDependencies = list[TNameId]
-TDependenciesIndex = dict[TNameId, TDependencies]
-TUpdates = dict[TName, int]
+TNameVersions = Dict[TName, List[TVersion]]
+TLocations = List[TPath]
+TLocationsIndex = Dict[TNameId, TLocations]
+TDependencies = List[TNameId]
+TDependenciesIndex = Dict[TNameId, TDependencies]
+TUpdates = Dict[TName, int]

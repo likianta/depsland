@@ -3,11 +3,14 @@ Deploy depsland on client computer and make sure depsland integrity.
 """
 import os
 import sys
-from os.path import dirname, exists, normpath
+from os.path import dirname
+from os.path import exists
+from os.path import normpath
 from textwrap import dedent
 
 from lk_logger import lk
-from lk_utils import dumps, loads
+from lk_utils import dumps
+from lk_utils import loads
 
 from depsland.path_struct import *
 from depsland.setup import *

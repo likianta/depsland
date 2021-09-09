@@ -4,6 +4,8 @@ from lk_utils.filesniff import normpath
 from yaml import safe_load
 
 from .path_struct import src_struct
+from .typehint import List
+from .typehint import Set
 
 
 class Pip:
@@ -11,6 +13,18 @@ class Pip:
     def __init__(self, pip, local, **kwargs):
         self.head = pip
         template = PipCmdTemplate(pip, local, **kwargs)
+        self.get_pip_cmd = template.get_pip_cmd
+    
+    def change_pip_options(self, **kwargs):
+        """
+        Keyword Args:
+            offline: bool[False]
+            pypi_url: str
+            pyversion: TPyVersion[src_struct.pyversion]
+            cache_dir: TPath[src_struct.cache]
+            quiet: bool[False]
+        """
+        template = PipCmdTemplate(self.head, src_struct.downloads, **kwargs)
         self.get_pip_cmd = template.get_pip_cmd
     
     def test(self):
@@ -41,7 +55,7 @@ class Pip:
             add_pkg_idx_options=True
         ))
     
-    def show_dependencies(self, name) -> list[str]:
+    def show_dependencies(self, name) -> List[str]:
         ret = send_cmd(self.get_pip_cmd('show', name))
         #   -> see example in `self.show_location`
         ret = safe_load(ret)
@@ -52,7 +66,7 @@ class Pip:
         else:
             return []
     
-    def show_locations(self, name) -> set[str]:
+    def show_locations(self, name) -> Set[str]:
         ret = send_cmd(self.get_pip_cmd('show', name, '-f'))
         r''' e.g.
             Name: lk-logger
@@ -207,7 +221,18 @@ class PipCmdTemplate:
         return out
 
 
+# if True:
+#     from os.path import exists
+#     from lk_utils import loads
+#     from .path_struct import conf_dir
+#
+#     _options = {'quiet': False}
+#     if exists(f := f'{conf_dir}/internal.yaml'):
+#         _options.update(loads(f)['pip_options'])
+
+_options = {'quiet': False}
+
 default_pip = Pip(
     f'{src_struct.interpreter} -m pip',
-    src_struct.downloads, quiet=False
+    src_struct.downloads, **_options
 )

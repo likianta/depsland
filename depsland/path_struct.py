@@ -4,7 +4,8 @@ References:
 """
 import os
 from os import mkdir
-from os.path import dirname, exists
+from os.path import dirname
+from os.path import exists
 from platform import system
 
 from lk_utils import loads
@@ -14,9 +15,12 @@ from .typehint import *
 
 # noinspection PyTypeChecker
 platform = system().lower()  # type: TPlatform
+
 curr_dir = normpath(dirname(__file__))  # current dir
 pakg_dir = curr_dir  # depsland package dir
 proj_dir = dirname(pakg_dir)  # depsland project dir
+
+conf_dir = f'{proj_dir}/conf'
 home_dir = f'{proj_dir}/venv_home'  # project venv_home dir
 pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
 
@@ -46,8 +50,8 @@ class VEnvSourceStruct(PathStruct):
     cache: str
     downloads: str
     
-    pip_suits: list[str]
-    tk_suits: list[str]
+    pip_suits: List[str]
+    tk_suits: List[str]
     
     python: str
     dlls: str
@@ -261,7 +265,7 @@ class LocalPyPIStruct(PathStruct):
             raise FileExistsError
         return d
     
-    def load_indexed_data(self) -> tuple[
+    def load_indexed_data(self) -> Tuple[
         TNameVersions, TLocationsIndex, TDependenciesIndex, TUpdates
     ]:
         """
@@ -300,7 +304,8 @@ src_struct.tk_suits = os.listdir(assets_struct.tkinter)
 
 __all__ = [
     'platform',
-    'curr_dir', 'pakg_dir', 'proj_dir', 'home_dir', 'pypi_dir',
+    'curr_dir', 'pakg_dir', 'proj_dir',
+    'conf_dir', 'home_dir', 'pypi_dir',
     'PathStruct', 'VEnvSourceStruct', 'VEnvDistStruct',
     'BuildAssetsStruct', 'LocalPyPIStruct',
     'assets_struct', 'pypi_struct', 'src_struct',
