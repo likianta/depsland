@@ -1,3 +1,5 @@
+import re
+
 from lk_logger import lk
 from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
@@ -164,10 +166,7 @@ class PipCmdTemplate:
     ):
         if offline is False:
             assert pypi_url
-            host = pypi_url \
-                .removeprefix('http://') \
-                .removeprefix('https://') \
-                .split('/', 1)[0]
+            host = re.search(r'https?://([^/]+)', pypi_url).group(1)
         else:
             host = ''
         

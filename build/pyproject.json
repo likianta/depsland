@@ -1,8 +1,8 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.2.0-test.2",
+    "app_version": "0.1.0-test.1",
     "description": "Python dependencies manager specific for pyportable-installer.",
-    "author": "likianta<likianta@foxmail.com>",
+    "author": "Likianta <likianta@foxmail.com>",
     "build": {
         "proj_dir": "../depsland",
         "dist_dir": "../dist/depsland-v{app_version}-win-standard",
@@ -11,7 +11,7 @@
         "target": [{
             "file": "../depsland/setup/main.py",
             "function": "main",
-            "args": ["python39"],
+            "args": ["python38"],
             "kwargs": {}
         }],
         "readme": "",
@@ -32,7 +32,7 @@
         "module_paths": [],
         "venv": {
             "enable_venv": true,
-            "python_version": "3.9",
+            "python_version": "3.8",
             "mode": "embed_python",
             "options": {
                 "depsland": {
