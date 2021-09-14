@@ -7,11 +7,12 @@ Requirements:
 BTW: You can find a convertion tool online, for example this site:
     https://www.easyicon.net/covert/
 """
+from os.path import splitext
 
 
 def dialog():
     file_i = input('image: ')
-    file_o = file_i.removesuffix('.png') + '.ico'
+    file_o = splitext(file_i)[0] + '.ico'
     png_2_ico(file_i, file_o)
 
 

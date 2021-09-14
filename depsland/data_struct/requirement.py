@@ -43,7 +43,7 @@ class Requirement:
                 -specifiers
         """
         name = re.search(r'[-.\w]+', raw_name).group()
-        version_spec = raw_name.removeprefix(name).replace(' ', '')
+        version_spec = raw_name.replace(name, '', 1).replace(' ', '')
         return name, version_spec
     
     def set_fixed_version(self, version: Optional[TVersion]):

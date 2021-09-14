@@ -20,7 +20,7 @@ from .typehint import *
 
 
 def pyversion_2_num(pyversion: TPyVersion) -> TPyVersionNum:
-    v = pyversion.removeprefix('python')
+    v = pyversion.replace('python', '')
     assert len(v) == 2, v
     major, suffix = v[0], v[1]
     # noinspection PyTypeChecker

@@ -26,7 +26,7 @@ def main(save_json=False):
                 (a, b, c, d),
                 pypi_struct.get_indexed_files()
         ):
-            dumps(data, file.removesuffix('.pkl') + '.json')
+            dumps(data, file.replace('.pkl', '.json'))
 
 
 if __name__ == '__main__':

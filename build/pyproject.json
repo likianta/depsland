@@ -1,19 +1,21 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.1.0-test.1",
+    "app_version": "0.1.0-test.5",
     "description": "Python dependencies manager specific for pyportable-installer.",
-    "author": "Likianta <likianta@foxmail.com>",
+    "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
         "proj_dir": "../depsland",
-        "dist_dir": "../dist/depsland-v{app_version}-win-standard",
+        "dist_dir": "../dist/depsland-v{app_version}-win64-standard",
         "launcher_name": "setup",
         "icon": "",
-        "target": [{
-            "file": "../depsland/setup/main.py",
-            "function": "main",
-            "args": ["python38"],
-            "kwargs": {}
-        }],
+        "target": [
+            {
+                "file": "../depsland/setup/main.py",
+                "function": "main",
+                "args": ["python38"],
+                "kwargs": {}
+            }
+        ],
         "readme": "",
         "attachments": {
             "../build/assets/windows": "assets",
@@ -28,8 +30,10 @@
             "../venv_home/inventory": "only_folder",
             "../venv_home/venv_links": "only_folder"
         },
-        "attachments_exist_scheme": "error",
+        "attachments_exclusions": [],
+        "attachments_exist_scheme": "override",
         "module_paths": [],
+        "module_paths_scheme": "translate",
         "venv": {
             "enable_venv": true,
             "python_version": "3.8",
@@ -43,7 +47,8 @@
                     "local": ""
                 },
                 "source_venv": {
-                    "path": "../venv1"
+                    "path": "../venv1",
+                    "copy_venv": true
                 },
                 "pip": {
                     "requirements": [],
@@ -59,6 +64,10 @@
         "compiler": {
             "name": "pyportable_crypto",
             "options": {
+                "cythonize": {
+                    "c_compiler": "msvc",
+                    "python_path": "_auto_detect"
+                },
                 "pyarmor": {
                     "liscense": "trial",
                     "obfuscate_level": 0
@@ -67,12 +76,17 @@
                     "optimize_level": 0
                 },
                 "pyportable_crypto": {
-                    "key": "depsland_project"
+                    "key": "depsland_project",
+                    "c_compiler": "msvc",
+                    "python_path": "E:\\programs\\python\\Python38\\python.exe"
                 },
                 "zipapp": {
                     "password": ""
                 }
             }
+        },
+        "experimental_features": {
+            "add_pywin32_support": false
         },
         "enable_console": true
     },
@@ -80,5 +94,5 @@
         "notice: depsland cannot package itself based on `venv:mode:depsland`",
         "FIXME: you need to manually copy '~/dist/lib/*' to '~/dist/venv/lib/site-packages/*'"
     ],
-    "pyportable_installer_version": "4.0.0a1"
+    "pyportable_installer_version": "4.0.0b2"
 }

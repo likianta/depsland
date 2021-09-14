@@ -37,9 +37,9 @@ def full_indexing(pip: TPip):
     dumps(locations, f2)
     dumps(dependencies, f3)
     # for human readability
-    dumps(name_versions, f1.removesuffix('.pkl') + '.json', pretty_dump=True)
-    dumps(locations, f2.removesuffix('.pkl') + '.json', pretty_dump=True)
-    dumps(dependencies, f3.removesuffix('.pkl') + '.json', pretty_dump=True)
+    dumps(name_versions, f1.replace('.pkl', '.json'), pretty_dump=True)
+    dumps(locations, f2.replace('.pkl', '.json'), pretty_dump=True)
+    dumps(dependencies, f3.replace('.pkl', '.json'), pretty_dump=True)
 
 
 def _get_list(pip_head):
