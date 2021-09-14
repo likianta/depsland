@@ -1,6 +1,6 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.1.0-test.5",
+    "app_version": "0.1.0-test.6",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
@@ -76,7 +76,7 @@
                     "optimize_level": 0
                 },
                 "pyportable_crypto": {
-                    "key": "depsland_project",
+                    "key": "we1c0me_to_depsland",
                     "c_compiler": "msvc",
                     "python_path": "E:\\programs\\python\\Python38\\python.exe"
                 },
