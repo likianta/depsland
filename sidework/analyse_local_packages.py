@@ -6,7 +6,7 @@ from lk_utils import find_files
 from pkginfo import SDist, Wheel
 
 from depsland.data_struct import Requirement
-from depsland.path_struct import pypi_struct
+from depsland.path_model import pypi_model
 from depsland.utils import sort_versions, unzip_file
 
 
@@ -14,8 +14,8 @@ def main(dir_i, dir_o):
     """
     This is a copy of `depsland.pypi.LocalPyPI._refresh_local_repo`.
     """
-    pypi_struct.indexing_dirs(dir_o)
-    pypi_struct.build_dirs()
+    pypi_model.indexing_dirs(dir_o)
+    pypi_model.build_dirs()
     
     deps = {}
     available_namespace = {}
@@ -25,7 +25,7 @@ def main(dir_i, dir_o):
         locations,
         dependencies,
         updates
-    ) = pypi_struct.load_indexed_data()
+    ) = pypi_model.load_indexed_data()
     
     for path in _get_path(dir_i):
         if path.endswith(('.whl', '.zip')):
@@ -49,10 +49,10 @@ def main(dir_i, dir_o):
             sort_versions(name_versions[name])
         
         try:
-            loc = pypi_struct.mkdir(name_id)
+            loc = pypi_model.mkdir(name_id)
             unzip_file(path, loc)
         except FileExistsError:
-            loc = pypi_struct.extraced + '/' + name_id
+            loc = pypi_model.extraced + '/' + name_id
         finally:
             # noinspection PyUnboundLocalVariable
             locations[name_id].append(loc)
@@ -76,7 +76,7 @@ def main(dir_i, dir_o):
              locations,
              dependencies,
              updates),
-            pypi_struct.get_indexed_files()
+            pypi_model.get_indexed_files()
     ):
         dumps(data, file)
 

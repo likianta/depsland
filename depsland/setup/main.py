@@ -12,7 +12,7 @@ from lk_logger import lk
 from lk_utils import dumps
 from lk_utils import loads
 
-from depsland.path_struct import *
+from depsland.path_model import *
 from depsland.setup import *
 from depsland.utils import unzip_file
 
@@ -36,8 +36,8 @@ def main(pyversion='python39'):
         '''))
         return
     
-    src_struct.indexing_dirs(pyversion)
-    assets_struct.indexing_dirs(pyversion)
+    src_model.indexing_dirs(pyversion)
+    assets_model.indexing_dirs(pyversion)
     
     _build_dirs()
     _setup_embed_python()
@@ -98,23 +98,23 @@ def _build_dirs():
             lk.loga('mkdir', d)
             os.mkdir(d)
     
-    src_struct.build_dirs()
+    src_model.build_dirs()
 
 
 def _setup_embed_python():
-    if exists(zip_file := assets_struct.embed_python_zip):
-        # unpack to `src_struct.python`
-        unzip_file(zip_file, src_struct.python)
-        disable_pth_file(src_struct.python_pth)
+    if exists(zip_file := assets_model.embed_python_zip):
+        # unpack to `src_model.python`
+        unzip_file(zip_file, src_model.python)
+        disable_pth_file(src_model.python_pth)
     else:
         # download_embed_python('python27')
         download_embed_python('python39')
 
 
 def _setup_python_suits():
-    get_tkinter(assets_struct, src_struct.python)
-    get_pip_scripts(src_struct.site_packages)
-    get_pip(src_struct.site_packages)
+    get_tkinter(assets_model, src_model.python)
+    get_pip_scripts(src_model.site_packages)
+    get_pip(src_model.site_packages)
 
 
 def _create_depsland_bat():
