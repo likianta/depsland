@@ -3,16 +3,28 @@ from time import time
 from lk_logger import lk
 from lk_utils import dumps
 from lk_utils import find_files
-from pkginfo import SDist, Wheel
+from pkginfo import SDist
+from pkginfo import Wheel
 
 from depsland.data_struct import Requirement
-from depsland.path_model import pypi_model
-from depsland.utils import sort_versions, unzip_file
+from depsland.path_model import pypi_model, pypi_dir
+from depsland.utils import sort_versions
+from depsland.utils import unzip_file
 
 
-def main(dir_i, dir_o):
+def main(dir_i, dir_o=pypi_dir):
     """
     This is a copy of `depsland.pypi.LocalPyPI._refresh_local_repo`.
+    
+    Args:
+        dir_i: input any dir that includes downloaded whl files
+        dir_o: default is `depsland.path_model.pypi_model.home` (i.e.
+            `f'{proj_dir}/pypi'`)
+            
+    Notes:
+        - if dir_o/index has existed pkl file, the new data will be added to
+          them.
+        - after indexing done, the dir_i is free to delete.
     """
     pypi_model.indexing_dirs(dir_o)
     pypi_model.build_dirs()
@@ -79,6 +91,10 @@ def main(dir_i, dir_o):
             pypi_model.get_indexed_files()
     ):
         dumps(data, file)
+    
+    lk.logt('[I5533]', 'see (updated) indexed data at: {}'.format(
+        pypi_model.index
+    ))
 
 
 def _get_path(dir_i):

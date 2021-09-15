@@ -1,1 +1,1 @@
-{PYTHON} -B %*
+{PYTHON} %*

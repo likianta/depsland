@@ -1,6 +1,6 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.2.0-test.5",
+    "app_version": "0.1.0-dist.3",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
@@ -30,7 +30,8 @@
             "../venv_home/venv_links": "only_folder"
         },
         "attachments_exclusions": [
-            "../.venv/python38/embed_venv/%SystemDrive%"
+            "../.venv/python38/embed_venv/%SystemDrive%",
+            "../.venv/python38/embed_venv/lib/site-packages/embed_python_manager/assets"
         ],
         "attachments_exist_scheme": "override",
         "module_paths": [],

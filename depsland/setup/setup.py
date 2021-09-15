@@ -60,10 +60,11 @@ def main(pyversion='python39'):
             THE NEXT STEP:
                 (Suggest) You can add "%DEPSLAND%" to your environment PATH
                 manullay. Then test it in the CMD:
-                    depsland -V
-                There're should be shown "Python 3.9.6".
+                    depsland --version
+                There're should be shown "Python 3.8.10".
             NOTE:
-                1. You need to restart CMD before running `depsland -V` in it.
+                1. You may restart CMD to make new environment variable
+                   settings take effect.
         '''))
         '''
             Warnings:
