@@ -21,10 +21,10 @@ def launch(name, requirements: Union[List[str], str], venv_id=''):
         venv_id=venv_id or str(uuid1()).replace('-', ''),
         requirements=requirements
     )
-    return standard_launch(venv_options)
+    return _launch(venv_options)
 
 
-def standard_launch(venv_options: VenvOptions):
+def _launch(venv_options: VenvOptions):
     if exists(x := venv_options.venv_path):
         lk.loga('request already satisfied', venv_options.venv_id)
         return x

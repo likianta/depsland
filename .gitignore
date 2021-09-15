@@ -126,22 +126,16 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Custom
+# Customs
 /.idea/
-/history/
+/.venv/
+/build/assets.zip
+/build/assets/[^.]*
+/build/venv_packages.zip
+/cache/[^.]*
+/conf/[^.]*
+/dustbin/
+/pypi/*/[^.]*
 /test/
 /tests/
-
-# Keep folders
-/cache/*
-/cache/!.gitkeep
-/conf/*
-/conf/!.gitkeep
-/pypi/*/*
-/pypi/*/!.gitkeep
-/venv_home/*/*
-/venv_home/*/!.gitkeep
-/build/assets/*
-/build/assets.zip
-/build/venv_packages.zip
-/venv1/*
+/venv_home/*/[^.]*

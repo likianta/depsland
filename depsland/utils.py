@@ -99,7 +99,7 @@ def mergelink(src_dir, dst_dir, new_dir, file_exist_handle='error'):
     return new_dir
 
 
-def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
+def mergelinks(src_dir, dst_dir, file_exist_scheme='error'):
     out = []
     dst_names = listdir(dst_dir)
     
@@ -122,13 +122,13 @@ def mergelinks(src_dir, dst_dir, file_exist_handle='error'):
                     mkdir(new_path)
                 # os.makedirs(new_path, exist_ok=True)
                 
-                mergelink(src_path, dst_path, new_path, file_exist_handle)
+                mergelink(src_path, dst_path, new_path, file_exist_scheme)
             else:
-                if file_exist_handle == 'error':
+                if file_exist_scheme == 'error':
                     raise FileExistsError(dst_path)
-                elif file_exist_handle == 'keep':
+                elif file_exist_scheme == 'keep':
                     pass
-                elif file_exist_handle == 'override':
+                elif file_exist_scheme == 'override':
                     os.remove(dst_path)
                     mklink(src_path, dst_path)
         else:

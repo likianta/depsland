@@ -50,9 +50,6 @@ class VEnvSourceModel(_PathModel):
     cache: str
     downloads: str
     
-    pip_suits: List[str]
-    tk_suits: List[str]
-    
     python: str
     dlls: str
     lib: str
@@ -113,12 +110,21 @@ class VEnvSourceModel(_PathModel):
             mkdir(self.site_packages)
     
     @property
-    def interpreter(self):
+    def python_exe(self):
         return os.path.normpath(f'{self.python}/python.exe')
     
     @property
     def python_pth(self):
         return f'{self.python}/{self.pyversion}._pth'
+    
+    @property
+    def pip_suits(self) -> List[str]:
+        return os.listdir(assets_model.pip) + \
+               os.listdir(assets_model.setuptools)
+    
+    @property
+    def tk_suits(self) -> List[str]:
+        return os.listdir(assets_model.tkinter)
 
 
 class VEnvDistModel(_PathModel):
@@ -137,7 +143,7 @@ class VEnvDistModel(_PathModel):
         
         self.site_packages = f'{self.lib}/site-packages'
         
-        self.build_dirs()
+        # self.build_dirs()
     
     def __str__(self):
         return self.home
@@ -146,15 +152,16 @@ class VEnvDistModel(_PathModel):
         if not exists(self.home):
             mkdir(self.home)
             
-            # mkdir(self.dlls)
-            # mkdir(self.lib)
-            # mkdir(self.scripts)
+            # # mkdir(self.dlls)
+            # # mkdir(self.scripts)
+            #   do not create 'dlls' and 'scripts' dirs, we will make links to
+            #   them by `.main._init_venv_dir:MARK@20210915105256`
             
             mkdir(self.lib)
             mkdir(self.site_packages)
     
     @property
-    def interpreter(self):
+    def python_exe(self):
         return f'{self.home}/python.exe'
     
     @property
@@ -164,51 +171,42 @@ class VEnvDistModel(_PathModel):
 
 class BuildAssetsModel(_PathModel):
     """ ~/build/assets/* """
-    assets: str
-    curr_assets: str
-    
-    python_suits: str
-    embed_python_zip: str
-    pip_src: str
-    pip_egg: str
+    embed_python: str
     pip: str
+    pip_src: str
     setuptools: str
     tkinter: str
+    urllib3: str
     
-    def __init__(self, pyversion, platform=platform):
+    def __init__(self, pyversion):
         self.pyversion = pyversion
-        
-        self.assets = f'{proj_dir}/build/assets'
-        self.curr_assets = f'{self.assets}/{platform}'
-        
         self.indexing_dirs(pyversion)
     
     def __str__(self):
-        return self.python_suits
+        raise NotImplemented
     
     def indexing_dirs(self, pyversion):
         super().indexing_dirs(pyversion)
         
-        if pyversion.startswith('python2'):
-            self.python_suits = f'{self.curr_assets}/python2_suits'
-            # TODO: self.embed_python_zip, self.pip_src, self.pip_egg
-        else:
-            self.python_suits = f'{self.curr_assets}/python3_suits'
-            self.embed_python_zip = f'{self.python_suits}/python39_embed_win.zip'
-            #   FIXME: this is related to platform
-            self.pip_src = f'{self.python_suits}/pip_src/pip-21.2.4'
-            self.pip_egg = f'pip-21.2.4-py3.9.egg'
+        from embed_python_manager import PyVersion
+        from embed_python_manager.path_model import AssetsPathModel
         
-        self.pip = f'{self.python_suits}/pip'
-        self.setuptools = f'{self.python_suits}/setuptools'
+        model = AssetsPathModel(PyVersion(self.pyversion))
         
-        if pyversion.endswith('-32'):
-            self.tkinter = f'{self.python_suits}/tkinter32'
+        self.embed_python = model.embed_python
+        self.pip = model.pip_in_pip_suits
+        self.pip_src = model.pip_src_in_pip_suits
+        self.setuptools = model.setuptools_in_pip_suits
+        self.urllib3 = model.urllib3_in_pip_suits
+        
+        # FIXME: we need to check tkinter 32/64 bit version.
+        if model.pyversion.major == 2:
+            self.tkinter = model.tk_suits_py2
         else:
-            self.tkinter = f'{self.python_suits}/tkinter64'
+            self.tkinter = model.tk_suits_py3
     
     def build_dirs(self):
-        raise NotImplemented
+        pass
 
 
 class LocalPyPIModel(_PathModel):
@@ -294,19 +292,15 @@ class LocalPyPIModel(_PathModel):
 
 
 # noinspection PyTypeChecker
-assets_model = BuildAssetsModel('python39', platform)
+assets_model = BuildAssetsModel('python39')
 pypi_model = LocalPyPIModel()
 
 src_model = VEnvSourceModel('python39', platform)
-src_model.pip_suits = os.listdir(assets_model.pip) + \
-                      os.listdir(assets_model.setuptools)
-src_model.tk_suits = os.listdir(assets_model.tkinter)
 
 __all__ = [
     'platform',
     'curr_dir', 'pakg_dir', 'proj_dir',
     'conf_dir', 'home_dir', 'pypi_dir',
-    '_PathModel', 'VEnvSourceModel', 'VEnvDistModel',
-    'BuildAssetsModel', 'LocalPyPIModel',
+    'VEnvSourceModel', 'VEnvDistModel', 'BuildAssetsModel', 'LocalPyPIModel',
     'assets_model', 'pypi_model', 'src_model',
 ]

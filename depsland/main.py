@@ -1,5 +1,4 @@
 import os
-from os import listdir
 
 from lk_logger import lk
 
@@ -7,6 +6,7 @@ from .path_model import VEnvDistModel
 from .path_model import VEnvSourceModel
 from .path_model import src_model
 from .pypi import local_pypi
+from .setup import setup_embed_python
 from .typehint import *
 from .utils import mergelinks
 from .utils import mklinks
@@ -14,40 +14,44 @@ from .utils import mklinks
 
 def create_venv(venv_name: str, requirements: List[TRequirement]):
     try:
-        dst_struct = VEnvDistModel(venv_name)
-        _init_venv_dir(src_model, dst_struct)
+        dst_model = VEnvDistModel(venv_name)
+        _init_venv_dir(src_model, dst_model)
         for loc in _install_requirements(requirements):
-            lk.loga('add package to venv', os.path.basename(loc))
+            lk.log('add package to venv', os.path.basename(loc))
             try:
-                mklinks(loc, dst_struct.site_packages, exist_ok=False)
+                mklinks(loc, dst_model.site_packages, exist_ok=False)
             except FileExistsError:
                 lk.logt('[I1457]', 'merging existed target venv',
                         os.path.basename(loc))
-                mergelinks(loc, dst_struct.site_packages,
-                           file_exist_handle='keep')
+                mergelinks(loc, dst_model.site_packages,
+                           file_exist_scheme='keep')
     except Exception as e:
         raise e
     finally:
         lk.loga('save updated local pypi indexed data')
         local_pypi.save()
-    return dst_struct.home
+    return dst_model.home
 
 
-def _init_venv_dir(src_struct: VEnvSourceModel,
-                   dst_struct: VEnvDistModel):
+def _init_venv_dir(src_model: VEnvSourceModel,
+                   dst_model: VEnvDistModel):
     """
     see `../docs/project-structure.md > chapters:h1:VENV_HOME`
     """
-    lk.loga('init venv directory', dst_struct.home)
-    dst_struct.build_dirs()
+    lk.loga('init venv directory', dst_model.home)
+    dst_model.build_dirs()
     
-    mklinks(src_struct.python, dst_struct.home,
-            [x for x in listdir(src_struct.python) if x != 'lib'])
-    # mklink(src_model.dlls, dst_struct.dlls)
-    # mklink(src_model.scripts, dst_struct.scripts)
+    if not os.path.exists(src_model.python_exe):
+        setup_embed_python(src_model.pyversion, src_model.python)
     
-    mklinks(src_struct.site_packages, dst_struct.site_packages,
-            src_struct.pip_suits)
+    # MARK: 20210915105256
+    mklinks(src_model.python, dst_model.home,
+            [x for x in os.listdir(src_model.python) if x != 'lib'])
+    # mklink(src_model.dlls, dst_model.dlls)
+    # mklink(src_model.scripts, dst_model.scripts)
+    
+    mklinks(src_model.site_packages, dst_model.site_packages,
+            src_model.pip_suits)
 
 
 def _install_requirements(requirements: List[TRequirement]):
@@ -55,9 +59,10 @@ def _install_requirements(requirements: List[TRequirement]):
     lk.logp(requirements)
     
     pkg_list = []  # list[PackageInfo]
-    for req in requirements:
-        lk.loga(req)
-        pkg_list.append(local_pypi.analyse_requirement(req))
+    with lk.counting(len(requirements)):
+        for req in requirements:
+            lk.logax(req)
+            pkg_list.append(local_pypi.analyse_requirement(req))
     
     all_pkgs = set()
     for pkg in pkg_list:

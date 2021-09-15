@@ -13,8 +13,7 @@ from lk_utils import dumps
 from lk_utils import loads
 
 from depsland.path_model import *
-from depsland.setup import *
-from depsland.utils import unzip_file
+from depsland.setup import setup_embed_python
 
 
 def _fuzzy_find_path(name):
@@ -40,8 +39,7 @@ def main(pyversion='python39'):
     assets_model.indexing_dirs(pyversion)
     
     _build_dirs()
-    _setup_embed_python()
-    _setup_python_suits()
+    _setup_embed_python(pyversion)
     _create_depsland_bat()
     env_var = _add_to_system_environment()
     
@@ -101,20 +99,9 @@ def _build_dirs():
     src_model.build_dirs()
 
 
-def _setup_embed_python():
-    if exists(zip_file := assets_model.embed_python_zip):
-        # unpack to `src_model.python`
-        unzip_file(zip_file, src_model.python)
-        disable_pth_file(src_model.python_pth)
-    else:
-        # download_embed_python('python27')
-        download_embed_python('python39')
-
-
-def _setup_python_suits():
-    get_tkinter(assets_model, src_model.python)
-    get_pip_scripts(src_model.site_packages)
-    get_pip(src_model.site_packages)
+def _setup_embed_python(pyversion):
+    if not os.path.exists(src_model.python_exe):
+        setup_embed_python(pyversion, src_model.python)
 
 
 def _create_depsland_bat():

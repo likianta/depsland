@@ -1,7 +1,6 @@
 from . import path_model
 from . import setup
 from .launch import launch
-from .launch import standard_launch
 from .main import create_venv
 from .pip import Pip
 from .pip import default_pip

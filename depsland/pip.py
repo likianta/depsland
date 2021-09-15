@@ -232,6 +232,6 @@ class PipCmdTemplate:
 _options = {'quiet': False}
 
 default_pip = Pip(
-    f'{src_model.interpreter} -m pip',
+    f'{src_model.python_exe} -m pip',
     src_model.downloads, **_options
 )
