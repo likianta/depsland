@@ -41,7 +41,9 @@ def _init_venv_dir(src_model: VEnvSourceModel,
     lk.loga('init venv directory', dst_model.home)
     dst_model.build_dirs()
     
+    # MARK: 20210915153053
     if not os.path.exists(src_model.python_exe):
+        assert not os.path.exists(src_model.python)
         setup_embed_python(src_model.pyversion, src_model.python)
     
     # MARK: 20210915105256

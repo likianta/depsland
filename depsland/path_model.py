@@ -99,15 +99,18 @@ class VEnvSourceModel(_PathModel):
         
         # if not exists(self.plat_home):
         #     mkdir(self.plat_home)
-        
-        if not exists(self.python):
-            mkdir(self.python)
-            
-            mkdir(self.dlls)
-            mkdir(self.lib)
-            mkdir(self.scripts)
-            
-            mkdir(self.site_packages)
+
+        # do not create these dirs, the external manager will do.
+        # see `.main._init_venv_dir:MARK@20210915153053` and `.setup.setup
+        # ._setup_embed_python`
+        # if not exists(self.python):
+        #     mkdir(self.python)
+        #
+        #     mkdir(self.dlls)
+        #     mkdir(self.lib)
+        #     mkdir(self.scripts)
+        #
+        #     mkdir(self.site_packages)
     
     @property
     def python_exe(self):

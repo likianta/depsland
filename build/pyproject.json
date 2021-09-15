@@ -1,6 +1,6 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.2.0-test.2",
+    "app_version": "0.2.0-test.5",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
@@ -10,7 +10,7 @@
         "icon": "",
         "target": [
             {
-                "file": "../depsland/setup/main.py",
+                "file": "../depsland/setup/setup.py",
                 "function": "main",
                 "args": ["python38"],
                 "kwargs": {}

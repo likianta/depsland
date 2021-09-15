@@ -99,7 +99,9 @@ def _build_dirs():
 
 def _setup_embed_python(pyversion):
     if not os.path.exists(src_model.python_exe):
+        assert not os.path.exists(src_model.python)
         setup_embed_python(pyversion, src_model.python)
+        assert os.path.exists(src_model.python_exe)
 
 
 def _create_depsland_bat():
