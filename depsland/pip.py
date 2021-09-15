@@ -5,7 +5,7 @@ from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
 
-from .path_struct import src_struct
+from .path_model import src_model
 from .typehint import List
 from .typehint import Set
 
@@ -22,36 +22,36 @@ class Pip:
         Keyword Args:
             offline: bool[False]
             pypi_url: str
-            pyversion: TPyVersion[src_struct.pyversion]
-            cache_dir: TPath[src_struct.cache]
+            pyversion: TPyVersion[src_model.pyversion]
+            cache_dir: TPath[src_model.cache]
             quiet: bool[False]
         """
-        template = PipCmdTemplate(self.head, src_struct.downloads, **kwargs)
+        template = PipCmdTemplate(self.head, src_model.downloads, **kwargs)
         self.get_pip_cmd = template.get_pip_cmd
     
     def test(self):
         lk.loga(send_cmd(f'{self.head} -V'), h='parent')
     
-    def download(self, name: str, target=src_struct.downloads):
+    def download(self, name: str, target=src_model.downloads):
         return send_cmd(self.get_pip_cmd(
             'download', name, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
     
-    def download_r(self, file, target=src_struct.downloads):
+    def download_r(self, file, target=src_model.downloads):
         return send_cmd(self.get_pip_cmd(
             'download -r', file, f'--dest="{target}"',
             add_pkg_idx_options=True
         ))
     
-    def install(self, name: str, target=src_struct.site_packages):
+    def install(self, name: str, target=src_model.site_packages):
         """ install package to `VenvConf.lib_dir` (default). """
         return send_cmd(self.get_pip_cmd(
             'install', name, f'--target="{target}"',
             add_pkg_idx_options=True
         ))
     
-    def install_r(self, file, target=src_struct.site_packages):
+    def install_r(self, file, target=src_model.site_packages):
         return send_cmd(self.get_pip_cmd(
             'install -r', file, f'--target="{target}"',
             add_pkg_idx_options=True
@@ -160,8 +160,8 @@ class PipCmdTemplate:
             local,
             offline=False,
             pypi_url='https://pypi.python.org/simple/',
-            pyversion=src_struct.pyversion,
-            cache_dir=src_struct.cache,
+            pyversion=src_model.pyversion,
+            cache_dir=src_model.cache,
             quiet=False,
     ):
         if offline is False:
@@ -232,6 +232,6 @@ class PipCmdTemplate:
 _options = {'quiet': False}
 
 default_pip = Pip(
-    f'{src_struct.interpreter} -m pip',
-    src_struct.downloads, **_options
+    f'{src_model.interpreter} -m pip',
+    src_model.downloads, **_options
 )

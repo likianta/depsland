@@ -10,7 +10,7 @@ from pkginfo import Wheel
 from .data_struct import PackageInfo
 from .data_struct import Requirement
 from .data_struct.special_versions import LATEST
-from .path_struct import pypi_struct
+from .path_model import pypi_model
 from .pip import default_pip
 from .typehint import *
 from .utils import find_best_matched_version
@@ -30,7 +30,7 @@ class LocalPyPI:
     
     def __init__(self, pip: TPip):
         self.pip = pip
-        a, b, c, d = pypi_struct.load_indexed_data()
+        a, b, c, d = pypi_model.load_indexed_data()
         self.name_versions = a
         self.locations = b
         self.dependencies = c
@@ -103,7 +103,7 @@ class LocalPyPI:
         deps = {}
         available_namespace = {}
         
-        for path in self._download(req.raw_name, pypi_struct.downloads):
+        for path in self._download(req.raw_name, pypi_model.downloads):
             if path.endswith(('.whl', '.zip')):
                 pkg = Wheel(path)
             elif path.endswith(('.tar.gz', '.tar')):
@@ -129,10 +129,10 @@ class LocalPyPI:
             
             # self.locations
             try:
-                loc = pypi_struct.mkdir(name_id)
+                loc = pypi_model.mkdir(name_id)
                 unzip_file(path, loc)
             except FileExistsError:
-                loc = pypi_struct.extraced + '/' + name_id
+                loc = pypi_model.extraced + '/' + name_id
             finally:
                 # noinspection PyUnboundLocalVariable
                 self.locations[name_id].append(loc)
@@ -228,7 +228,7 @@ class LocalPyPI:
                  self.locations,
                  self.dependencies,
                  self.updates),
-                pypi_struct.get_indexed_files()
+                pypi_model.get_indexed_files()
         ):
             dumps(data, file)
 

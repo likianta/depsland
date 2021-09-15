@@ -25,7 +25,7 @@ home_dir = f'{proj_dir}/venv_home'  # project venv_home dir
 pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
 
 
-class PathStruct:
+class _PathModel:
     pyversion: TPyVersion
     platform: TPlatform
     
@@ -39,7 +39,7 @@ class PathStruct:
         raise NotImplementedError
 
 
-class VEnvSourceStruct(PathStruct):
+class VEnvSourceModel(_PathModel):
     inventory: str
     venvlinks: str
     
@@ -121,7 +121,7 @@ class VEnvSourceStruct(PathStruct):
         return f'{self.python}/{self.pyversion}._pth'
 
 
-class VEnvDistStruct(PathStruct):
+class VEnvDistModel(_PathModel):
     home: str
     dlls: str
     lib: str
@@ -162,7 +162,7 @@ class VEnvDistStruct(PathStruct):
         return f'{self.home}/{self.pyversion}._pth'
 
 
-class BuildAssetsStruct(PathStruct):
+class BuildAssetsModel(_PathModel):
     """ ~/build/assets/* """
     assets: str
     curr_assets: str
@@ -211,7 +211,7 @@ class BuildAssetsStruct(PathStruct):
         raise NotImplemented
 
 
-class LocalPyPIStruct(PathStruct):
+class LocalPyPIModel(_PathModel):
     """ ~/pypi/* """
     home: str
     
@@ -247,10 +247,10 @@ class LocalPyPIStruct(PathStruct):
     def build_dirs(self):
         assert exists(self.home)
         for d in (
-            self.cache,
-            self.downloads,
-            self.extraced,
-            self.index,
+                self.cache,
+                self.downloads,
+                self.extraced,
+                self.index,
         ):
             if not exists(d):
                 mkdir(d)
@@ -294,19 +294,19 @@ class LocalPyPIStruct(PathStruct):
 
 
 # noinspection PyTypeChecker
-assets_struct = BuildAssetsStruct('python39', platform)
-pypi_struct = LocalPyPIStruct()
+assets_model = BuildAssetsModel('python39', platform)
+pypi_model = LocalPyPIModel()
 
-src_struct = VEnvSourceStruct('python39', platform)
-src_struct.pip_suits = os.listdir(assets_struct.pip) + \
-                       os.listdir(assets_struct.setuptools)
-src_struct.tk_suits = os.listdir(assets_struct.tkinter)
+src_model = VEnvSourceModel('python39', platform)
+src_model.pip_suits = os.listdir(assets_model.pip) + \
+                      os.listdir(assets_model.setuptools)
+src_model.tk_suits = os.listdir(assets_model.tkinter)
 
 __all__ = [
     'platform',
     'curr_dir', 'pakg_dir', 'proj_dir',
     'conf_dir', 'home_dir', 'pypi_dir',
-    'PathStruct', 'VEnvSourceStruct', 'VEnvDistStruct',
-    'BuildAssetsStruct', 'LocalPyPIStruct',
-    'assets_struct', 'pypi_struct', 'src_struct',
+    '_PathModel', 'VEnvSourceModel', 'VEnvDistModel',
+    'BuildAssetsModel', 'LocalPyPIModel',
+    'assets_model', 'pypi_model', 'src_model',
 ]

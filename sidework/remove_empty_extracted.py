@@ -3,11 +3,11 @@ import os
 from lk_logger import lk
 from lk_utils import find_dirs
 
-from depsland.path_struct import pypi_struct
+from depsland.path_model import pypi_model
 
 failed = []
 
-for p, n in find_dirs(pypi_struct.extraced, fmt='zip'):
+for p, n in find_dirs(pypi_model.extraced, fmt='zip'):
     if n == '.gitkeep':
         continue
     if not os.listdir(p):

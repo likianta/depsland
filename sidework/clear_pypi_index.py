@@ -3,9 +3,9 @@ from os.path import exists
 
 from lk_logger import lk
 
-from depsland.path_struct import pypi_struct
+from depsland.path_model import pypi_model
 
-for i in pypi_struct.get_indexed_files():
+for i in pypi_model.get_indexed_files():
     if exists(i):
         lk.loga('removing', i)
         remove(i)

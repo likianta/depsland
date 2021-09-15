@@ -3,9 +3,9 @@ from os import listdir
 
 from lk_logger import lk
 
-from .path_struct import VEnvDistStruct
-from .path_struct import VEnvSourceStruct
-from .path_struct import src_struct
+from .path_model import VEnvDistModel
+from .path_model import VEnvSourceModel
+from .path_model import src_model
 from .pypi import local_pypi
 from .typehint import *
 from .utils import mergelinks
@@ -14,8 +14,8 @@ from .utils import mklinks
 
 def create_venv(venv_name: str, requirements: List[TRequirement]):
     try:
-        dst_struct = VEnvDistStruct(venv_name)
-        _init_venv_dir(src_struct, dst_struct)
+        dst_struct = VEnvDistModel(venv_name)
+        _init_venv_dir(src_model, dst_struct)
         for loc in _install_requirements(requirements):
             lk.loga('add package to venv', os.path.basename(loc))
             try:
@@ -33,8 +33,8 @@ def create_venv(venv_name: str, requirements: List[TRequirement]):
     return dst_struct.home
 
 
-def _init_venv_dir(src_struct: VEnvSourceStruct,
-                   dst_struct: VEnvDistStruct):
+def _init_venv_dir(src_struct: VEnvSourceModel,
+                   dst_struct: VEnvDistModel):
     """
     see `../docs/project-structure.md > chapters:h1:VENV_HOME`
     """
@@ -43,8 +43,8 @@ def _init_venv_dir(src_struct: VEnvSourceStruct,
     
     mklinks(src_struct.python, dst_struct.home,
             [x for x in listdir(src_struct.python) if x != 'lib'])
-    # mklink(src_struct.dlls, dst_struct.dlls)
-    # mklink(src_struct.scripts, dst_struct.scripts)
+    # mklink(src_model.dlls, dst_struct.dlls)
+    # mklink(src_model.scripts, dst_struct.scripts)
     
     mklinks(src_struct.site_packages, dst_struct.site_packages,
             src_struct.pip_suits)

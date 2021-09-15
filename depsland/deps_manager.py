@@ -8,7 +8,7 @@ from lk_utils import loads
 from lk_utils import send_cmd
 
 from .normalization import normalize_name
-from .path_struct import pypi_dir
+from .path_model import pypi_dir
 from .typehint import TPip
 
 

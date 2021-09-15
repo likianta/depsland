@@ -3,11 +3,11 @@ from pprint import pprint
 from lk_logger import lk
 from lk_utils import dumps
 
-from depsland.path_struct import pypi_struct
+from depsland.path_model import pypi_model
 
 
 def main(save_json=False):
-    a, b, c, d = pypi_struct.load_indexed_data()
+    a, b, c, d = pypi_model.load_indexed_data()
     
     lk.logd('name_version')
     pprint(a)
@@ -24,7 +24,7 @@ def main(save_json=False):
     if save_json:
         for data, file in zip(
                 (a, b, c, d),
-                pypi_struct.get_indexed_files()
+                pypi_model.get_indexed_files()
         ):
             dumps(data, file.replace('.pkl', '.json'))
 

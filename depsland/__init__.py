@@ -1,4 +1,4 @@
-from . import path_struct
+from . import path_model
 from . import setup
 from .launch import launch
 from .launch import standard_launch

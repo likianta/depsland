@@ -5,8 +5,8 @@ import os
 
 from lk_logger import lk
 
-from ..path_struct import platform
-from ..path_struct import src_struct
+from ..path_model import platform
+from ..path_model import src_model
 from ..typehint import *
 from ..utils import unzip_file
 
@@ -29,22 +29,22 @@ class EmbedPythonManager:
                  download_dir=''):
         self.pyversion = pyversion
         self.platform = platform
-        self.bin_dir = src_struct.python
+        self.bin_dir = src_model.python
         self.download_dir = download_dir or self.bin_dir
     
     def download(self, extract=False):
         """
-        Download embed python file (.zip) to `src_struct.curr_home`, then unzip
-        file to `src_struct.bin`
+        Download embed python file (.zip) to `src_model.curr_home`, then unzip
+        file to `src_model.bin`
         """
         link = get_download_link(self.pyversion, self.platform)
-        file = src_struct.python + '/' + link.rsplit("/")[-1]
+        file = src_model.python + '/' + link.rsplit("/")[-1]
         
         from ..downloader import download
         download(link, file, exist_ok=True)
         
         if extract:
-            dst_dir = unzip_file(file, src_struct.python)
+            dst_dir = unzip_file(file, src_model.python)
             lk.loga('see unzipped result', dst_dir)
         # else you can extract it manually later.
         
