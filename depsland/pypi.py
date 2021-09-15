@@ -208,17 +208,12 @@ class LocalPyPI:
         pattern2 = re.compile(r'(?<=File was already downloaded ).+')
         
         for m in pattern1.finditer(ret):
-            yield m.group()
-        
-        for m in pattern2.finditer(ret):
-            yield m.group()
-        
-        for m in re.finditer(r'(?<=Saved ).+', ret):
-            path = m.group()
+            path = m.group().strip()
             lk.logt('[D0108]', 'new file downloaded', os.path.basename(path))
             yield path
-        for m in re.finditer(r'(?<=File was already downloaded ).+', ret):
-            path = m.group()
+        
+        for m in pattern2.finditer(ret):
+            path = m.group().strip()
             lk.logt('[D0109]', 'file already exists', os.path.basename(path))
             yield path
     
