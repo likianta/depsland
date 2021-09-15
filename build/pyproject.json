@@ -1,6 +1,6 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.1.0-test.6",
+    "app_version": "0.2.0-test.2",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
@@ -18,7 +18,6 @@
         ],
         "readme": "",
         "attachments": {
-            "../build/assets/windows": "assets",
             "../build/depsland.bat": "asset",
             "../conf": "assets",
             "../pypi/cache": "only_folder",
@@ -30,7 +29,9 @@
             "../venv_home/inventory": "only_folder",
             "../venv_home/venv_links": "only_folder"
         },
-        "attachments_exclusions": [],
+        "attachments_exclusions": [
+            "../.venv/python38/embed_venv/%SystemDrive%"
+        ],
         "attachments_exist_scheme": "override",
         "module_paths": [],
         "module_paths_scheme": "translate",
@@ -91,8 +92,9 @@
         "enable_console": true
     },
     "note": [
-        "notice: depsland cannot package itself based on `venv:mode:depsland`",
-        "FIXME: you need to manually copy '~/dist/lib/*' to '~/dist/venv/lib/site-packages/*'"
+        "if `~/site-packages/embed_python_manager/assets/tk_suits` are not exist, run at least once `./prepare_tkinter_suits.py`",
+        "note that depsland cannot package itself based on `~:venv:mode:depsland`",
+        "you need to manually copy '~/dist/lib/*' to '~/dist/venv/lib/site-packages/*'"
     ],
     "pyportable_installer_version": "4.0.0b2"
 }

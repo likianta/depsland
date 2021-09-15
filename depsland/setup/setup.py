@@ -1,5 +1,10 @@
 """
 Deploy depsland on client computer and make sure depsland integrity.
+
+How to import this module in other script:
+    from depsland.setup import setup
+    setup.main(pyversion='python38')
+    ...
 """
 import os
 import sys
@@ -26,6 +31,9 @@ def _fuzzy_find_path(name):
 
 
 def main(pyversion='python39'):
+    # always refresh system environment
+    env_var = _add_to_system_environment()
+    
     curr_build_dir = _fuzzy_find_path('build')
     if exists(f'{curr_build_dir}/setup_done.txt'):
         lk.logt('[I4139]', dedent('''
@@ -41,19 +49,9 @@ def main(pyversion='python39'):
     _build_dirs()
     _setup_embed_python(pyversion)
     _create_depsland_bat()
-    env_var = _add_to_system_environment()
     
     # mark setup done
     dumps('', f'{curr_build_dir}/setup_done.txt')
-    
-    # remove <root>/setup.exe
-    # parent_dir = proj_dir
-    # for try_times in range(2):
-    #     parent_dir = dirname(parent_dir)
-    #     if exists(setup_exe := f'{parent_dir}/setup.exe'):
-    #         os.remove(setup_exe)
-    #         #   FIXME: OSError happend because 'setup.exe' is running.
-    #         break
     
     lk.loga('Successfully setup depsland :)')
     if '%DEPSLAND%' not in os.getenv('PATH') and \
