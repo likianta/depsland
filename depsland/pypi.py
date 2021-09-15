@@ -19,14 +19,15 @@ from .utils import unzip_file
 
 
 class LocalPyPI:
-    UPDATE_FREQ = 60 * 60 * 24 * 7  # one week
-    
     pip: TPip
     
     name_versions: TNameVersions
     locations: TLocationsIndex
     dependencies: TDependenciesIndex
     updates: TUpdates
+    
+    # # update_freq = 60 * 60 * 24 * 7  # one week
+    update_freq = -1
     
     def __init__(self, pip: TPip):
         self.pip = pip
@@ -92,8 +93,10 @@ class LocalPyPI:
         return find_best_matched_version(req.version_spec, version_list)
     
     def _is_outdated(self, name):
+        if self.update_freq == -1:
+            return False  # never outdated
         if t := self.updates.get(name):
-            if (time() - t) <= self.UPDATE_FREQ:
+            if (time() - t) <= self.update_freq:
                 return False
         return True
     
