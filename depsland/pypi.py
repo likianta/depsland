@@ -37,6 +37,13 @@ class LocalPyPI:
         self.dependencies = c
         self.updates = d
     
+    def reload_indexed_data(self):
+        a, b, c, d = pypi_model.load_indexed_data()
+        self.name_versions = a
+        self.locations = b
+        self.dependencies = c
+        self.updates = d
+    
     def analyse_requirement(self, req: TRequirement):
         # if version doesn't in self.name_versions, or the version requests
         # latest but local repository is outdated, we should refresh local
