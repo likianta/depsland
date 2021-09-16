@@ -172,7 +172,7 @@ class VEnvDistModel(_PathModel):
         return f'{self.home}/{self.pyversion}._pth'
 
 
-class BuildAssetsModel(_PathModel):
+class EmbedAssetsModel(_PathModel):
     """ ~/build/assets/* """
     embed_python: str
     pip: str
@@ -295,15 +295,14 @@ class LocalPyPIModel(_PathModel):
 
 
 # noinspection PyTypeChecker
-assets_model = BuildAssetsModel('python39')
+assets_model = EmbedAssetsModel('python39')
 pypi_model = LocalPyPIModel()
-
 src_model = VEnvSourceModel('python39', platform)
 
 __all__ = [
     'platform',
     'curr_dir', 'pakg_dir', 'proj_dir',
     'conf_dir', 'home_dir', 'pypi_dir',
-    'VEnvSourceModel', 'VEnvDistModel', 'BuildAssetsModel', 'LocalPyPIModel',
+    'VEnvSourceModel', 'VEnvDistModel', 'EmbedAssetsModel', 'LocalPyPIModel',
     'assets_model', 'pypi_model', 'src_model',
 ]

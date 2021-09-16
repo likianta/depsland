@@ -4,7 +4,7 @@ if __name__ == '__main__':
     from depsland.pip import Pip as _Pip
     from depsland.data_struct import PackageInfo as _PackageInfo
     from depsland.data_struct import Requirement as _Requirement
-    from depsland.path_model import BuildAssetsModel as _Struct1
+    from depsland.path_model import EmbedAssetsModel as _Struct1
     from depsland.path_model import VEnvSourceModel as _Struct2
     from depsland.path_model import VEnvDistModel as _Struct3
 else:

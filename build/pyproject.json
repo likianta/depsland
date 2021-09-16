@@ -1,11 +1,11 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.1.0-dist.3",
+    "app_version": "0.1.0-dist.4",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
         "proj_dir": "../depsland",
-        "dist_dir": "../dist/depsland-v{app_version}-win64-standard",
+        "dist_dir": "../dist/depsland-v{app_version}",
         "launcher_name": "setup",
         "icon": "",
         "target": [
@@ -20,12 +20,12 @@
         "attachments": {
             "../build/depsland.bat": "asset",
             "../conf": "assets",
+            "../depsland_additional_tools": "assets,compile",
             "../pypi/cache": "only_folder",
             "../pypi/downloads": "only_folder",
             "../pypi/extracted": "only_folder",
             "../pypi/index": "only_folder",
             "../requirements.txt": "asset,dist:build/{name}",
-            "../sidework": "assets,compile",
             "../venv_home/inventory": "only_folder",
             "../venv_home/venv_links": "only_folder"
         },
@@ -97,5 +97,5 @@
         "note that depsland cannot package itself based on `~:venv:mode:depsland`",
         "you need to manually copy '~/dist/lib/*' to '~/dist/venv/lib/site-packages/*'"
     ],
-    "pyportable_installer_version": "4.0.0b2"
+    "pyportable_installer_version": "4.0.0b3"
 }

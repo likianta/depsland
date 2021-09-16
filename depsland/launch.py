@@ -9,12 +9,22 @@ from .main import create_venv as _create_venv
 from .typehint import *
 
 
-def launch(name, requirements: Union[List[str], str], venv_id=''):
-    if isinstance(requirements, str):
+def launch(name, requirements: Union[List[str], str], venv_id='',
+           pyversion='python39'):
+    if not requirements:
+        requirements = []
+    elif isinstance(requirements, str):
         requirements = [Requirement(name) for name in load_list(requirements)
                         if name and not name.startswith('#')]
     else:
         requirements = list(map(Requirement, requirements))
+    
+    if pyversion != 'python39':  # re-indexing path models
+        from .path_model import assets_model, src_model
+        assets_model.indexing_dirs(pyversion)
+        assets_model.build_dirs()
+        src_model.indexing_dirs(pyversion)
+        src_model.build_dirs()
     
     venv_options = VenvOptions(
         name=name,
