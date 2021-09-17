@@ -5,7 +5,18 @@ from os.path import exists
 from pyportable_installer import full_build
 
 
+def _precheck():
+    if not exists('./pyportable_runtime'):
+        raise Exception(
+            'couldn\'t find precompiled pyportable_runtime package.',
+            'see `~/docs/steps-to-prebuild-pyportable-runtime-package.zh.md` '
+            'for help.'
+        )
+
+
 def build_standard_version():
+    _precheck()
+    
     conf = full_build('pyproject.json')
     
     _copy_runtime(conf)
@@ -32,10 +43,12 @@ def build_standard_version():
 
 
 def build_full_version():
+    _precheck()
+    
     conf = full_build('pyproject.json')
     
     _copy_runtime(conf)
-
+    
     d = conf['build']['dist_dir'] + f'/venv/lib/site-packages/embed_python' \
                                     f'_manager/assets'
     if exists(d):
@@ -63,15 +76,14 @@ def build_full_version():
 
 
 def _copy_runtime(conf):
-    if exists(conf['build']['dist_dir'] + '/lib/pyportable_runtime'):
-        dir_i = conf['build']['dist_dir'] + '/lib'
-        dir_o = conf['build']['dist_dir'] + '/venv/lib/site-packages'
-        
-        from shutil import move
-        move(f'{dir_i}/pyportable_runtime', f'{dir_o}/pyportable_runtime')
-        move(f'{dir_i}/Cryptodome', f'{dir_o}/Cryptodome')
+    if conf['build']['compiler']['name'] != 'pyportable_crypto':
+        return
+    src_dir = '.'
+    dst_dir = conf['build']['dist_dir']
+    shutil.copytree(f'{src_dir}/pyportable_runtime',
+                    f'{dst_dir}/venv/lib/site-packages/pyportable_runtime')
 
 
 if __name__ == '__main__':
-    # build_standard_version()
-    build_full_version()
+    build_standard_version()
+    # build_full_version()
