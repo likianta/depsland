@@ -1,4 +1,5 @@
 import os
+import shutil
 
 from lk_logger import lk
 
@@ -13,8 +14,8 @@ from .utils import mklinks
 
 
 def create_venv(venv_name: str, requirements: List[TRequirement]):
+    dst_model = VEnvDistModel(venv_name)
     try:
-        dst_model = VEnvDistModel(venv_name)
         _init_venv_dir(src_model, dst_model)
         for loc in _install_requirements(requirements):
             lk.log('add package to venv', os.path.basename(loc))
@@ -26,6 +27,10 @@ def create_venv(venv_name: str, requirements: List[TRequirement]):
                 mergelinks(loc, dst_model.site_packages,
                            file_exist_scheme='keep')
     except Exception as e:
+        if os.path.exists(dst_model.home):
+            lk.logt('[W5630]', 'creating venv failed, withdraw target venv',
+                    dst_model.home)
+            shutil.rmtree(dst_model.home)
         raise e
     finally:
         lk.loga('save updated local pypi indexed data')
