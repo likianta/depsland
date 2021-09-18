@@ -71,8 +71,7 @@ TBaseName = str  # basename of TPath
 
 # `repository.py > class:LocalPyPI`
 TNameVersions = Dict[TName, List[TVersion]]
-TLocations = List[TPath]
-TLocationsIndex = Dict[TNameId, TLocations]
+TLocation = TPath
 TDependencies = List[TNameId]
 TDependenciesIndex = Dict[TNameId, TDependencies]
 TUpdates = Dict[TName, int]

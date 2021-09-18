@@ -8,6 +8,7 @@ from os.path import dirname
 from os.path import exists
 from platform import system
 
+from lk_utils import dumps
 from lk_utils import loads
 from lk_utils.filesniff import normpath
 
@@ -222,7 +223,7 @@ class LocalPyPIModel(_PathModel):
     index: str
     
     name_version: str
-    locations: str
+    # locations: str
     dependencies: str
     updates: str
     
@@ -241,7 +242,7 @@ class LocalPyPIModel(_PathModel):
         self.index = f'{self.home}/index'
         
         self.name_version = f'{self.index}/name_version.pkl'
-        self.locations = f'{self.index}/locations.pkl'
+        # self.locations = f'{self.index}/locations.pkl'  # DELETE
         self.dependencies = f'{self.index}/dependencies.pkl'
         self.updates = f'{self.index}/updates_record.pkl'
     
@@ -267,7 +268,7 @@ class LocalPyPIModel(_PathModel):
         return d
     
     def load_indexed_data(self) -> Tuple[
-        TNameVersions, TLocationsIndex, TDependenciesIndex, TUpdates
+        TNameVersions, TDependenciesIndex, TUpdates
     ]:
         """
         See `depsland/repository.py`
@@ -281,14 +282,19 @@ class LocalPyPIModel(_PathModel):
             return (
                 defaultdict(list),
                 defaultdict(list),
-                defaultdict(list),
                 dict()
             )
+    
+    def save_indexed_data(
+            self, a: TNameVersions, b: TDependenciesIndex, c: TUpdates
+    ):
+        for data, file in zip((a, b, c), self.get_indexed_files()):
+            dumps(data, file)
     
     def get_indexed_files(self):
         return (
             self.name_version,
-            self.locations,
+            # self.locations,
             self.dependencies,
             self.updates,
         )

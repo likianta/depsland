@@ -65,7 +65,7 @@ def _install_requirements(requirements: List[TRequirement]):
     lk.loga('installing requirements', len(requirements))
     lk.logp(requirements)
     
-    pkg_list = []  # list[PackageInfo]
+    pkg_list = []  # type: list[TPackageInfo]
     with lk.counting(len(requirements)):
         for req in requirements:
             lk.logax(req)
@@ -76,5 +76,5 @@ def _install_requirements(requirements: List[TRequirement]):
         all_pkgs.add(pkg.name_id)
         all_pkgs.update(pkg.dependencies)
     for name_id in all_pkgs:
-        for loc in local_pypi.get_locations(name_id):
-            yield loc
+        loc = local_pypi.get_location(name_id)
+        yield loc
