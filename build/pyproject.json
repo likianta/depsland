@@ -1,6 +1,6 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.1.0-dist.15",
+    "app_version": "0.1.0-dist.19",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
@@ -94,8 +94,7 @@
     },
     "note": [
         "if `~/site-packages/embed_python_manager/assets/tk_suits` are not exist, run at least once `./prepare_tkinter_suits.py`",
-        "note that depsland cannot package itself based on `~:venv:mode:depsland`",
-        "you need to manually copy '~/dist/lib/*' to '~/dist/venv/lib/site-packages/*'"
+        "note that depsland cannot package itself based on `~:venv:mode:depsland`"
     ],
     "pyportable_installer_version": "4.0.0b3"
 }

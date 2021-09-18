@@ -1,7 +1,6 @@
 from time import time
 
 from lk_logger import lk
-from lk_utils import dumps
 from lk_utils import find_files
 from pkginfo import SDist
 from pkginfo import Wheel
@@ -34,7 +33,6 @@ def main(dir_i, dir_o=pypi_dir):
     
     (
         name_versions,
-        locations,
         dependencies,
         updates
     ) = pypi_model.load_indexed_data()
@@ -62,12 +60,10 @@ def main(dir_i, dir_o=pypi_dir):
         
         try:
             loc = pypi_model.mkdir(name_id)
-            unzip_file(path, loc)
         except FileExistsError:
-            loc = pypi_model.extraced + '/' + name_id
-        finally:
-            # noinspection PyUnboundLocalVariable
-            locations[name_id].append(loc)
+            pass
+        else:
+            unzip_file(path, loc)
         
         deps[name_id] = pkg.requires_dist
     
@@ -83,15 +79,7 @@ def main(dir_i, dir_o=pypi_dir):
             dep.set_fixed_version(version)
             dependencies[name_id].append(dep.name_id)
     
-    for data, file in zip(
-            (name_versions,
-             locations,
-             dependencies,
-             updates),
-            pypi_model.get_indexed_files()
-    ):
-        dumps(data, file)
-    
+    pypi_model.save_indexed_data(name_versions, dependencies, updates)
     lk.logt('[I5533]', 'see (updated) indexed data at: {}'.format(
         pypi_model.index
     ))

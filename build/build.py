@@ -86,4 +86,4 @@ def _copy_runtime(conf):
 
 if __name__ == '__main__':
     build_standard_version()
-    # build_full_version()
+    build_full_version()
