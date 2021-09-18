@@ -38,6 +38,7 @@ def main(dir_i, dir_o=pypi_dir):
     ) = pypi_model.load_indexed_data()
     
     for path in _get_path(dir_i):
+        lk.logax(path)
         if path.endswith(('.whl', '.zip')):
             pkg = Wheel(path)
         elif path.endswith(('.tar.gz', '.tar')):
