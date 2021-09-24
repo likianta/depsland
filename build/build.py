@@ -53,23 +53,8 @@ def build_full_version():
                                     f'_manager/assets'
     if exists(d):
         shutil.rmtree(d)
-    # about 150MB
+    # about 33MB
     shutil.copytree('assets/post_build/embed_python_manager/assets', d)
-    
-    # lk.logd('preinstall packages')
-    # lk.logp(os.listdir('assets/preinstalled_packages'))
-    #
-    # # dst_root = conf['build']['dist_dir']
-    # # for p, n in find_files('assets/preinstalled_packages', fmt='zip'):
-    # #     copyfile(p, f'{dst_root}/src/pypi/downloads/{n}')
-    #
-    # analyse_local_packages.main(
-    #     'assets/preinstalled_packages',
-    #     conf['build']['dist_dir'] + '/src/pypi'
-    # )
-    #
-    # # show indexed data
-    # show_pypi_index_data.main()
     
     os.rename(conf['build']['dist_dir'],
               conf['build']['dist_dir'] + '-win64-full')
@@ -78,10 +63,10 @@ def build_full_version():
 def _copy_runtime(conf):
     if conf['build']['compiler']['name'] != 'pyportable_crypto':
         return
-    src_dir = '.'
-    dst_dir = conf['build']['dist_dir']
+    src_dir = conf['build']['dist_dir'] + '/lib'
+    dst_dir = conf['build']['dist_dir'] + '/venv/lib/site-packages'
     shutil.copytree(f'{src_dir}/pyportable_runtime',
-                    f'{dst_dir}/venv/lib/site-packages/pyportable_runtime')
+                    f'{dst_dir}/pyportable_runtime')
 
 
 if __name__ == '__main__':

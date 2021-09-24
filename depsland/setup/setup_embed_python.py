@@ -6,7 +6,7 @@ def setup_embed_python(pyversion: str, dst_dir, **kwargs):
     manager.change_source('npm_taobao_org.yml')
     manager.deploy(
         kwargs.get('add_pip_suits', True),
-        kwargs.get('add_pip_scripts', True),
+        kwargs.get('add_pip_scripts', False),
         kwargs.get('add_tk_suits', True),
     )
     manager.move_to(dst_dir)
