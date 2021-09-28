@@ -1,8 +1,8 @@
 # depsland venv 虚拟环境目录创建流程
 
-1. 从 python 官网下载嵌入式版本的 python: python-3.9.7-embed-amd64.zip
+1. 从 python 官网下载嵌入式版本的 python: 'python-3.9.7-embed-amd64.zip'
 
-2. 解压到 "embed_venv"
+2. 解压到 'embed_venv'
 
    ```
    my_downloads
@@ -20,7 +20,7 @@
             |- ...
    ```
 
-3. 将 '~/embed_venv/python39._pth' 重命名为 '~/embed_venv/python39._pth.bak'
+3. 将 `~/embed_venv/python39._pth` 重命名为 `~/embed_venv/python39._pth.bak`
 
    ```
    depsland_project
