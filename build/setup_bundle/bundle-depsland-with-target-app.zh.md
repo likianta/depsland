@@ -5,7 +5,7 @@
 example
 |= dist
     |= depsland-v0.1.0-dist.3-win64-full
-    |= jlsemi_ephy_toolbox_0.1.0-dist.2-full
+    |= hello_world_0.1.0-dist.2-full
 ```
 
 ```
@@ -13,7 +13,7 @@ example
 example
 |= dist
     |~ depsland-v0.1.0-dist.3-win64-full  ------+
-    |= jlsemi_ephy_toolbox_0.1.0-dist.2-full    |  # move and rename
+    |= hello_world_0.1.0-dist.2-full            |  # move and rename
         |= depsland  <--------------------------+
 ```
 
@@ -21,7 +21,7 @@ example
 # step3. 将本文所在目录下的 "setup.bat" 复制并覆盖到目标项目的同名文件上.
 example
 |= dist
-    |= jlsemi_ephy_toolbox_0.1.0-dist.2-full
+    |= hello_world_0.1.0-dist.2-full
         |= depsland
         |- setup.bat  <-----+
 depsland-source-project     |
@@ -35,7 +35,7 @@ depsland-source-project     |
 # step4. 现在我们可以把目标应用制作成压缩包了.
 example
 |= dist
-    |= jlsemi_ephy_toolbox_0.1.0-dist.2-full  ------+
-    |                                               |
-    |- jlsemi_ephy_toolbox_0.1.0-dist.2-full.zip  <-+
+    |= hello_world_0.1.0-dist.2-full  ------+
+    |                                       |
+    |- hello_world_0.1.0-dist.2-full.zip  <-+
 ```
