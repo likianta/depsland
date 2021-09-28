@@ -32,7 +32,7 @@
         "attachments_exclusions": [
             "../.venv/python39/embed_venv/%SystemDrive%",
             "../.venv/python39/embed_venv/lib/site-packages/embed_python_manager/assets",
-            "../.venv/python39/pyportable_installer"
+            "../.venv/python39/embed_venv/lib/site-packages/pyportable_installer"
         ],
         "attachments_exist_scheme": "override",
         "module_paths": [],
@@ -60,7 +60,7 @@
                     "offline": false
                 },
                 "embed_python": {
-                    "path": "../.venv/python39/embed_venv/python-3.9.7-embed-amd64"
+                    "path": "../.venv/python39/embed_venv"
                 }
             }
         },
