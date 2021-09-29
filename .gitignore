@@ -5,8 +5,10 @@
 /build/venv_packages.zip
 /cache/[^.]*
 /conf/[^.]*
+/dist/
 /dustbin/
 /pypi/*/[^.]*
 /test/
 /tests/
 /venv_home/*/[^.]*
+__pycache__
