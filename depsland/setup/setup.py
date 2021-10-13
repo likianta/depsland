@@ -141,8 +141,8 @@ def _add_to_system_environment():
 
 def _store_launching_info_in_program_data_dir(bat_file):
     program_data_dir = os.getenv('ProgramData')  # -> 'C:\ProgramData'
-    depsland_dir = f'{program_data_dir}/Depsland'
-    depsland_bat = f'{depsland_dir}/depsland.bat'
+    depsland_dir = f'{program_data_dir}/Depsland'.replace('\\', '/')
+    depsland_bat = f'{depsland_dir}/depsland.bat'.replace('\\', '/')
     
     assert program_data_dir is not None
     if not exists(depsland_dir):
@@ -154,14 +154,14 @@ def _store_launching_info_in_program_data_dir(bat_file):
     
     from depsland import __version__
     dumps(dedent('''
-        __version__ = {}
-        depsland_dir = {}
-        depsland_bat = {}
+        __version__ = "{}"
+        depsland_dir = r"{}"
+        depsland_bat = r"{}"
     '''.format(
         __version__,
-        depsland_dir,
-        depsland_bat
-    )).strip(), f'{depsland_dir}/depsland_manifest.py')
+        proj_dir,
+        f'{proj_dir}/depsland.bat'
+    )).strip(), f'{depsland_dir}/depsland_entrance.py')
     #   see usage in pyportable-installer project:
     #       ~/template/depsland/setup_part_b.txt
 
