@@ -1,12 +1,8 @@
 """
 Deploy depsland on client computer and make sure depsland integrity.
-
-How to import this module in other script:
-    from depsland.setup import setup
-    setup.main(pyversion='python38')
-    ...
 """
 import os
+import shutil
 import sys
 from os.path import dirname
 from os.path import exists
@@ -48,10 +44,9 @@ def main(pyversion='python39'):
     
     _build_dirs()
     _setup_embed_python(pyversion)
-    _create_depsland_bat()
-    
-    # mark setup done
-    dumps('', f'{curr_build_dir}/setup_done.txt')
+    bat_file = _create_depsland_bat()
+    _mark_setup_is_done(curr_build_dir)
+    _store_launching_info_in_program_data_dir(bat_file)
     
     lk.loga('Successfully setup depsland :)')
     if '%DEPSLAND%' not in os.getenv('PATH') and \
@@ -61,22 +56,11 @@ def main(pyversion='python39'):
                 (Suggest) You can add "%DEPSLAND%" to your environment PATH
                 manullay. Then test it in the CMD:
                     depsland --version
-                There're should be shown "Python 3.8.10".
+                There're should be shown "Python 3.9.7".
             NOTE:
                 1. You may restart CMD to make new environment variable
                    settings take effect.
         '''))
-        '''
-            Warnings:
-                If you are using a third party files manager -- for example
-                "XYPlorer" -- you cannot see any environment variable changes
-                when you double click any bat script file (which includes `echo
-                %PATH%` command) in it.
-                The simplest resolution is restarting the third party files
-                manager, or just open Windows files explorer and double click
-                on that bat script. You will see `echo %PATH%` has been updated
-                and `depsland -V` works as expected then.
-        '''
 
 
 def _build_dirs():
@@ -108,7 +92,24 @@ def _setup_embed_python(pyversion):
 def _create_depsland_bat():
     template = loads(f'{proj_dir}/build/depsland.bat')
     code = template.format(PYTHON=sys.executable)
-    dumps(code, f'{proj_dir}/depsland.bat')
+    dumps(code, d := f'{proj_dir}/depsland.bat')
+    return d
+
+
+def _mark_setup_is_done(build_dir):
+    dumps('', f'{build_dir}/setup_done.txt')
+
+
+def _refresh_system_environment():
+    """
+    DELETE: Do not use this function anymore. This is effectless.
+    
+    References:
+        https://www.isumsoft.com/windows-10/3-ways-to-restart-explorer-exe-in
+        -windows-10.html
+    """
+    os.system('taskkill /f /im explorer.exe')
+    os.system('start explorer.exe')
 
 
 def _add_to_system_environment():
@@ -118,34 +119,51 @@ def _add_to_system_environment():
             -environment-variable-from-python-permanently
     
     Notice:
-        1. The command `setx PATH "%PATH%;{my_path}"` doesn't work as expected
-           as we did in CMD manually, it overwrote existed variables and
-           couldn't distinguish the system paths and user paths. So I set the
-           path to a soly new environment variable.
+        1. Do not use `setx PATH "%PATH%;<DEPSLAND>"`, because we can't
+           distinguish the system paths and user paths in this way.
+           I will set a new environment variable named 'DEPSLAND' in user
+           variables.
         2. The `setx` command is only available in Windows 7 and later.
+        3. For third party file explorer/manager, for example XYPlorer, Clover
+           or File Explorer UWP, new settings cannot be effected immediately
+           unless the user closes the third party app and restarts it. It means
+           this function only works well with Windows File Explorer.
+           To resolve this issue, I will not only create a system environment
+           variable, but also store the depsland entrance message in
+           'C:/ProgramData' (which can be fetched by CMD `%PROGRAMDATA%`).
+           See also `function:_store_launching_info_in_program_data_dir`.
     """
-    path = normpath(proj_dir)
-    os.system('setx DEPSLAND "{}"'.format(path))
-    lk.loga('Added DEPSLAND to environment variable', f'DEPSLAND => {path}')
+    depsland_entrance = normpath(proj_dir)
+    os.system('setx DEPSLAND "{}"'.format(depsland_entrance))
+    lk.loga('Added DEPSLAND to environment variable\nDEPSLAND => {path}')
+    return depsland_entrance
+
+
+def _store_launching_info_in_program_data_dir(bat_file):
+    program_data_dir = os.getenv('ProgramData')  # -> 'C:\ProgramData'
+    depsland_dir = f'{program_data_dir}/Depsland'
+    depsland_bat = f'{depsland_dir}/depsland.bat'
     
-    ''' Note: How does PyPortable-Installer work with Depsland?
+    assert program_data_dir is not None
+    if not exists(depsland_dir):
+        os.mkdir(depsland_dir)
+    if exists(depsland_bat):
+        os.remove(depsland_bat)
     
-    1. Using `%DEPSLAND%\\depsland.bat ...` to call depsland in cmd.
-    2. If user has added %DEPSLAND% to user %PATH% manually, the user can use
-       `depsland ...` to call depsland in cmd.
-    3. A Python script can add `sys.path.append(os.getenv('DEPSLAND'))` to
-       import depsland package.
-    '''
+    shutil.copyfile(bat_file, depsland_bat)
     
-    # add `%DEPSLAND%` to `%PATH%`
-    # FIXME: The method below will mix user path and system path values and
-    #   messy up user one's. We may need to find a way to modify register table
-    #   instead of using `setx` command.
-    # if '%DEPSLAND%' not in os.getenv('PATH') and path not in os.getenv('PATH'):
-    #     os.system('setx PATH "%PATH%;%DEPSLAND%"'.format(path))
-    # lk.loga('Added DEPSLAND to USER_PATH')
-    
-    return path
+    from depsland import __version__
+    dumps(dedent('''
+        __version__ = {}
+        depsland_dir = {}
+        depsland_bat = {}
+    '''.format(
+        __version__,
+        depsland_dir,
+        depsland_bat
+    )).strip(), f'{depsland_dir}/depsland_manifest.py')
+    #   see usage in pyportable-installer project:
+    #       ~/template/depsland/setup_part_b.txt
 
 
 if __name__ == '__main__':

@@ -1,11 +1,11 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.1.0-dist.3",
+    "app_version": "0.2.0-build.1",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
         "proj_dir": "../depsland",
-        "dist_dir": "../dist/depsland-v{app_version}",
+        "dist_dir": "../dist/depsland-{app_version}",
         "launcher_name": "setup",
         "icon": "",
         "target": [
@@ -60,7 +60,7 @@
                     "offline": false
                 },
                 "embed_python": {
-                    "path": "../.venv/python39/embed_venv"
+                    "path": "../.venv/python39/embed_venv/python-3.9.7-embed-amd64"
                 }
             }
         },
