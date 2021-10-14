@@ -9,9 +9,9 @@ except ImportError:
     try:
         import sys
         dir_0 = input('pyportable_installer parent dir: ')
-        dir_1 = input('pyportable_installer related venv dir: ')
         sys.path.append(dir_0)
-        sys.path.append(f'{dir_1}/lib/site-packages')
+        # dir_1 = input('pyportable_installer related venv dir: ')
+        # sys.path.append(f'{dir_1}/lib/site-packages')
         # noinspection PyUnresolvedReferences
         from pyportable_installer import full_build
     except Exception as e:

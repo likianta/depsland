@@ -100,18 +100,6 @@ def _mark_setup_is_done(build_dir):
     dumps('', f'{build_dir}/setup_done.txt')
 
 
-def _refresh_system_environment():
-    """
-    DELETE: Do not use this function anymore. This is effectless.
-    
-    References:
-        https://www.isumsoft.com/windows-10/3-ways-to-restart-explorer-exe-in
-        -windows-10.html
-    """
-    os.system('taskkill /f /im explorer.exe')
-    os.system('start explorer.exe')
-
-
 def _add_to_system_environment():
     """
     References:
@@ -135,7 +123,8 @@ def _add_to_system_environment():
     """
     depsland_entrance = normpath(proj_dir)
     os.system('setx DEPSLAND "{}"'.format(depsland_entrance))
-    lk.loga('Added DEPSLAND to environment variable\nDEPSLAND => {path}')
+    lk.loga('Added DEPSLAND to environment variable\n'
+            + f'DEPSLAND => {depsland_entrance}')
     return depsland_entrance
 
 
