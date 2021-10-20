@@ -1,9 +1,5 @@
-from gui_builder import GuiBuilder, Window
+from gui_builder import GuiBuilder
 from ..path_model import pypi_model
-
-
-def namedtuple():
-    pass
 
 
 class Application:
@@ -13,18 +9,19 @@ class Application:
         self.name_versions = a
         self.dependencies = b
         self.updates = c
-
+        
         class Options:
             pass
         
         self.opt = Options
-        
+    
+    # noinspection PyMethodMayBeStatic
     def _init_layout(self):
         builder = GuiBuilder()
-    
+        
         builder.add_col(
             builder.add_row(
-                builder.add_listbox()
+                # builder.add_listbox()
             )
         )
 
@@ -37,6 +34,3 @@ def main():
         
         )
     )
-    
-
-
