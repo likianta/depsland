@@ -9,12 +9,11 @@ from os.path import exists
 from os.path import normpath
 from textwrap import dedent
 
+from depsland.path_model import *
+from depsland.setup import setup_embed_python
 from lk_logger import lk
 from lk_utils import dumps
 from lk_utils import loads
-
-from depsland.path_model import *
-from depsland.setup import setup_embed_python
 
 
 def _fuzzy_find_path(name):
@@ -48,19 +47,20 @@ def main(pyversion='python39'):
     _mark_setup_is_done(curr_build_dir)
     _store_launching_info_in_program_data_dir(bat_file)
     
-    lk.loga('Successfully setup depsland :)')
     if '%DEPSLAND%' not in os.getenv('PATH') and \
             env_var not in os.getenv('PATH'):
-        lk.logt('[I4238]', dedent('''
-            THE NEXT STEP:
-                (Suggest) You can add "%DEPSLAND%" to your environment PATH
-                manullay. Then test it in the CMD:
-                    depsland --version
-                There're should be shown "Python 3.9.7".
-            NOTE:
-                1. You may restart CMD to make new environment variable
-                   settings take effect.
-        '''))
+        lk.logt('[I4239]', '\t' + '\n\t'.join((
+            'THE NEXT STEP:',
+            '    (Suggest) You can add "%DEPSLAND%" to your system environment '
+            'PATH mannually. Then test it in the CMD:',
+            '        depsland --version',
+            '    There\'re should be shown "Python 3.9.7" or "Python 3.8.10". '
+            '(the pyversion depends on depsland version)',
+            'NOTE:',
+            '    - You may restart CMD to make new environment variable '
+            'settings take effect',
+        )))
+    lk.loga('Successfully setup depsland :)')
 
 
 def _build_dirs():
