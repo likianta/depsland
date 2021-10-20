@@ -5,7 +5,6 @@ from time import time
 from lk_logger import lk
 from pkginfo import SDist
 from pkginfo import Wheel
-
 from .data_struct import PackageInfo
 from .data_struct import Requirement
 from .data_struct.special_versions import LATEST

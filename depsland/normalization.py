@@ -27,7 +27,7 @@ def normalize_version_spec(version_spec: str):
     version_spec = version_spec.replace(' ', '')
     if ';' in version_spec:  # e.g. ">=0.15.2;extra=='uvloop'"
         version_spec = version_spec.split(';')[0]
-
+    
     if version_spec in ('', '*', '==*'):
         return LATEST
     
@@ -36,5 +36,5 @@ def normalize_version_spec(version_spec: str):
             return LATEST
         else:
             version_spec = version_spec.split(']')[-1]
-
+    
     return re.search(r'[-.,><=!\w]+', version_spec).group()

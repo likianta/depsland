@@ -4,7 +4,6 @@ from lk_logger import lk
 from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
-
 from .path_model import src_model
 from .typehint import List
 from .typehint import Set

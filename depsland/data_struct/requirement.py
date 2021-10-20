@@ -21,7 +21,7 @@ class Requirement:
         
         if version:
             self.set_fixed_version(version)
-        
+    
     def __str__(self):
         return self.name
     

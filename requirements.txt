@@ -1,6 +1,6 @@
 # note: don't forget to update '~/.venv/python38/embed_venv/lib/site-packages' manually.
 dephell-specifier
-embed-python-manager >= 0.2.5
+embed-python-manager
 lk-logger
 lk-utils
 pkginfo

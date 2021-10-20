@@ -1,1 +1,3 @@
+lk-qtquick-scaffold
 pyportable-installer >= 4.0.0b2
+pyside6

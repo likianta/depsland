@@ -11,7 +11,6 @@ from platform import system
 from lk_utils import dumps
 from lk_utils import loads
 from lk_utils.filesniff import normpath
-
 from .typehint import *
 
 # noinspection PyTypeChecker
@@ -100,7 +99,7 @@ class VEnvSourceModel(_PathModel):
         
         # if not exists(self.plat_home):
         #     mkdir(self.plat_home)
-
+        
         # do not create these dirs, the external manager will do.
         # see `.main._init_venv_dir:MARK@20210915153053` and `.setup.setup
         # ._setup_embed_python`

@@ -13,7 +13,6 @@ from zipfile import ZipFile
 from dephell_specifier import RangeSpecifier
 from lk_logger import lk
 from lk_utils import send_cmd
-
 from .data_struct.special_versions import IGNORE
 from .data_struct.special_versions import LATEST
 from .typehint import *
