@@ -34,8 +34,6 @@ def build_standard_version():
     
     conf = full_build('pyproject.json')
     
-    _copy_runtime(conf)
-    
     d = conf['build']['dist_dir'] + \
         '/venv/lib/site-packages/embed_python_manager'
     if exists(f'{d}/assets'):
@@ -62,8 +60,6 @@ def build_full_version():
     
     conf = full_build('pyproject.json')
     
-    _copy_runtime(conf)
-    
     d = conf['build']['dist_dir'] + f'/venv/lib/site-packages/embed_python' \
                                     f'_manager/assets'
     if exists(d):
@@ -73,15 +69,6 @@ def build_full_version():
     
     os.rename(conf['build']['dist_dir'],
               conf['build']['dist_dir'] + '-win64-full')
-
-
-def _copy_runtime(conf):
-    if conf['build']['compiler']['name'] != 'pyportable_crypto':
-        return
-    src_dir = conf['build']['dist_dir'] + '/lib'
-    dst_dir = conf['build']['dist_dir'] + '/venv/lib/site-packages'
-    shutil.copytree(f'{src_dir}/pyportable_runtime',
-                    f'{dst_dir}/pyportable_runtime')
 
 
 if __name__ == '__main__':

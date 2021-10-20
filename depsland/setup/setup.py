@@ -49,7 +49,7 @@ def main(pyversion='python39'):
     
     if '%DEPSLAND%' not in os.getenv('PATH') and \
             env_var not in os.getenv('PATH'):
-        lk.logt('[I4239]', '\t' + '\n\t'.join((
+        lk.logt('[I4239]', '\n    ' + '\n    '.join((
             'THE NEXT STEP:',
             '    (Suggest) You can add "%DEPSLAND%" to your system environment '
             'PATH mannually. Then test it in the CMD:',
@@ -60,7 +60,7 @@ def main(pyversion='python39'):
             '    - You may restart CMD to make new environment variable '
             'settings take effect',
         )))
-    lk.loga('Successfully setup depsland :)')
+    print('Successfully setup depsland :)')
 
 
 def _build_dirs():
