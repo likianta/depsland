@@ -1,6 +1,5 @@
 import os
 import shutil
-from os.path import exists
 
 try:
     # noinspection PyUnresolvedReferences
@@ -8,6 +7,7 @@ try:
 except ImportError:
     try:
         import sys
+        
         dir_0 = input('pyportable_installer parent dir: ')
         sys.path.append(dir_0)
         dir_1 = input('pyportable_installer related venv dir: ')
@@ -21,7 +21,7 @@ except ImportError:
 
 
 def _precheck():
-    if not exists('./pyportable_runtime'):
+    if not os.path.exists('./pyportable_runtime'):
         raise Exception(
             'couldn\'t find precompiled pyportable_runtime package.',
             'see `~/docs/steps-to-prebuild-pyportable-runtime-package.zh.md` '
@@ -33,10 +33,14 @@ def build_standard_version():
     _precheck()
     
     conf = full_build('pyproject.json')
+    dist_root = conf['build']['dist_dir']
     
-    d = conf['build']['dist_dir'] + \
-        '/venv/lib/site-packages/embed_python_manager'
-    if exists(f'{d}/assets'):
+    # replace `<dist>/setup.exe` with custom setup.bat
+    os.remove(f'{dist_root}/setup.exe')
+    shutil.copyfile('setup_bat/setup_depsland.bat', f'{dist_root}/setup.bat')
+    
+    d = dist_root + '/venv/lib/site-packages/embed_python_manager'
+    if os.path.exists(f'{d}/assets'):
         shutil.rmtree(f'{d}/assets')
     os.mkdir(f'{d}/assets')
     os.mkdir(f'{d}/assets/embed_python')
@@ -51,24 +55,28 @@ def build_standard_version():
     shutil.copytree('assets/post_build/embed_python_manager/assets/tk_suits'
                     '/python3', f'{d}/assets/tk_suits/python3')
     
-    os.rename(conf['build']['dist_dir'],
-              conf['build']['dist_dir'] + '-win64-standard')
+    os.rename(dist_root,
+              dist_root + '-win64-standard')
 
 
 def build_full_version():
     _precheck()
     
     conf = full_build('pyproject.json')
+    dist_root = conf['build']['dist_dir']
     
-    d = conf['build']['dist_dir'] + f'/venv/lib/site-packages/embed_python' \
-                                    f'_manager/assets'
-    if exists(d):
+    # replace `<dist>/setup.exe` with custom setup.bat
+    os.remove(f'{dist_root}/setup.exe')
+    shutil.copyfile('setup_bat/setup_depsland.bat', f'{dist_root}/setup.bat')
+    
+    d = dist_root + f'/venv/lib/site-packages/embed_python_manager/assets'
+    if os.path.exists(d):
         shutil.rmtree(d)
     # about 33MB
     shutil.copytree('assets/post_build/embed_python_manager/assets', d)
     
-    os.rename(conf['build']['dist_dir'],
-              conf['build']['dist_dir'] + '-win64-full')
+    os.rename(dist_root,
+              dist_root + '-win64-full')
 
 
 if __name__ == '__main__':

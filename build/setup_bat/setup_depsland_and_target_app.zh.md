@@ -23,12 +23,12 @@ example
 |= dist
     |= hello_world_0.1.0-dist.2-full
         |= depsland
-        |- setup.bat  <-----+
-depsland-source-project     |
-|= build                    |  # copy and override
-    |= setup_bundle         |
-        |- setup.bat  ------+
-        |- bundle-depsland-with-target-app.zh.md  # current article location
+        |- setup.bat  <--------------------------+
+depsland-source-project                          |
+|= build                                         |  # copy, override and rename
+    |= setup_bat                                 |
+        |- setup_depsland_and_target_app.bat  ---+
+        |- setup_depsland_and_target_app.zh.md  # current article location
 ```
 
 ```

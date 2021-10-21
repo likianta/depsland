@@ -2,6 +2,10 @@
 /.venv/*/*/[^.]*
 /build/assets.zip
 /build/assets/[^.]*
+/build/windows_patch/windows-7-sp1-32bit/*.msu
+/build/windows_patch/windows-7-sp1-64bit/*.msu
+/build/windows_patch/windows-8-32bit/*.exe
+/build/windows_patch/windows-8-64bit/*.exe
 /build/venv_packages.zip
 /cache/[^.]*
 /conf/[^.]*
