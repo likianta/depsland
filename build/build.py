@@ -45,7 +45,11 @@ def main(full_pack: bool, **kwargs):
     conf = full_build('pyproject.json')
     dist_root = conf['build']['dist_dir']
     
-    _use_custom_setup_bat(dist_root)
+    # do not encrypt depsland/doctor.py
+    os.remove(d := f'{dist_root}/src/depsland/doctor.py')
+    shutil.copyfile('../depsland/doctor.py', d)
+    
+    _use_custom_setup_launcher(dist_root)
     
     _create_embed_python_manager(dist_root, full_assets=full_pack)
     
@@ -68,10 +72,10 @@ def _precheck():
         )
 
 
-def _use_custom_setup_bat(dist_root: str):
+def _use_custom_setup_launcher(dist_root: str):
     # replace `<dist>/setup.exe` with custom setup.bat
     os.remove(f'{dist_root}/setup.exe')
-    shutil.copyfile('setup_bat/setup_depsland.bat', f'{dist_root}/setup.bat')
+    shutil.copyfile('setup_bundle/setup_depsland.bat', f'{dist_root}/setup.bat')
 
 
 def _create_embed_python_manager(dist_root, full_assets: bool):
@@ -106,7 +110,7 @@ def _copy_windows_patch(dist_root: str, select: list):
     }.items():
         if number in select:
             for fp, fn in find_files(assets_dir, fmt='zip'):
-                fp_i, fp_o = fp, f'{dist_root}/build/windows_patch/{fn}'
+                fp_i, fp_o = fp, f'{dist_root}/build/{assets_dir}/{fn}'
                 if not os.path.exists(fp_o):
                     shutil.copyfile(fp_i, fp_o)
 

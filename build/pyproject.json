@@ -1,6 +1,6 @@
 {
     "app_name": "Depsland",
-    "app_version": "0.3.0",
+    "app_version": "0.3.1-build.1",
     "description": "Python dependencies manager specific for pyportable-installer.",
     "authors": ["Likianta <likianta@foxmail.com>"],
     "build": {
@@ -19,7 +19,7 @@
         "readme": "",
         "attachments": {
             "../build/depsland.bat": "asset",
-            "../build/doctor.py": "assets,dist:build/{name}",
+            "../build/setup_bundle/setup_failed_help.base64.html": "asset,dist:Setup Failed Help.html",
             "../build/windows_patch/windows-7-sp1-32bit/download-link.txt": "asset,dist:build/windows_patch/windows-7-sp1-32bit/download-link.txt",
             "../build/windows_patch/windows-7-sp1-64bit/download-link.txt": "asset,dist:build/windows_patch/windows-7-sp1-64bit/download-link.txt",
             "../build/windows_patch/windows-8-32bit/download-link.txt": "asset,dist:build/windows_patch/windows-8-32bit/download-link.txt",

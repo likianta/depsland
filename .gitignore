@@ -2,6 +2,8 @@
 /.venv/*/*/[^.]*
 /build/assets.zip
 /build/assets/[^.]*
+/build/setup_bundle/.assets
+/build/setup_bundle/setup_failed_help.base64.html
 /build/windows_patch/windows-7-sp1-32bit/*.msu
 /build/windows_patch/windows-7-sp1-64bit/*.msu
 /build/windows_patch/windows-8-32bit/*.exe
