@@ -1,7 +1,9 @@
 import os
 import shutil
 
-try:
+from lk_utils import find_files
+
+try:  # importing pyportable-installer
     # noinspection PyUnresolvedReferences
     from pyportable_installer import full_build
 except ImportError:
@@ -20,6 +22,43 @@ except ImportError:
         del sys
 
 
+# ------------------------------------------------------------------------------
+
+def main(full_pack: bool, **kwargs):
+    """
+    
+    Args:
+        full_pack:
+        **kwargs:
+            precheck: bool[True]
+            add_windows_patch: optional[list[int[1, 2, 3, 4]]]
+                None: do not add windows patch
+                1: add windows 7 32bit
+                2: add windows 7 64bit
+                3: add windows 8 32bit
+                4: add windows 8 64bit
+            rename: bool[True]
+    """
+    if kwargs.get('precheck', True):
+        _precheck()
+    
+    conf = full_build('pyproject.json')
+    dist_root = conf['build']['dist_dir']
+    
+    _use_custom_setup_bat(dist_root)
+    
+    _create_embed_python_manager(dist_root, full_assets=full_pack)
+    
+    if x := kwargs.get('add_windows_patch'):
+        _copy_windows_patch(dist_root, x)
+    
+    if kwargs.get('rename', True):
+        if full_pack:
+            os.rename(dist_root, dist_root + '-win64-full')
+        else:
+            os.rename(dist_root, dist_root + '-win64-standard')
+
+
 def _precheck():
     if not os.path.exists('./pyportable_runtime'):
         raise Exception(
@@ -29,56 +68,48 @@ def _precheck():
         )
 
 
-def build_standard_version():
-    _precheck()
-    
-    conf = full_build('pyproject.json')
-    dist_root = conf['build']['dist_dir']
-    
+def _use_custom_setup_bat(dist_root: str):
     # replace `<dist>/setup.exe` with custom setup.bat
     os.remove(f'{dist_root}/setup.exe')
     shutil.copyfile('setup_bat/setup_depsland.bat', f'{dist_root}/setup.bat')
-    
-    d = dist_root + '/venv/lib/site-packages/embed_python_manager'
-    if os.path.exists(f'{d}/assets'):
-        shutil.rmtree(f'{d}/assets')
-    os.mkdir(f'{d}/assets')
-    os.mkdir(f'{d}/assets/embed_python')
-    os.mkdir(f'{d}/assets/embed_python/windows')
-    os.mkdir(f'{d}/assets/pip_suits')
-    os.mkdir(f'{d}/assets/pip_suits/python2')
-    os.mkdir(f'{d}/assets/pip_suits/python3')
-    os.mkdir(f'{d}/assets/tk_suits')
-    os.mkdir(f'{d}/assets/tk_suits/python2')
-    # os.mkdir(f'{d}/assets/tk_suits/python3')
-    # about 5MB
-    shutil.copytree('assets/post_build/embed_python_manager/assets/tk_suits'
-                    '/python3', f'{d}/assets/tk_suits/python3')
-    
-    os.rename(dist_root,
-              dist_root + '-win64-standard')
 
 
-def build_full_version():
-    _precheck()
+def _create_embed_python_manager(dist_root, full_assets: bool):
+    assets = dist_root + '/venv/lib/site-packages/embed_python_manager/assets'
+    if os.path.exists(assets):
+        shutil.rmtree(assets)
     
-    conf = full_build('pyproject.json')
-    dist_root = conf['build']['dist_dir']
-    
-    # replace `<dist>/setup.exe` with custom setup.bat
-    os.remove(f'{dist_root}/setup.exe')
-    shutil.copyfile('setup_bat/setup_depsland.bat', f'{dist_root}/setup.bat')
-    
-    d = dist_root + f'/venv/lib/site-packages/embed_python_manager/assets'
-    if os.path.exists(d):
-        shutil.rmtree(d)
-    # about 33MB
-    shutil.copytree('assets/post_build/embed_python_manager/assets', d)
-    
-    os.rename(dist_root,
-              dist_root + '-win64-full')
+    if full_assets:
+        # about 33MB
+        shutil.copytree('assets/post_build/embed_python_manager/assets', assets)
+    else:
+        os.mkdir(f'{assets}')
+        os.mkdir(f'{assets}/embed_python')
+        os.mkdir(f'{assets}/embed_python/windows')
+        os.mkdir(f'{assets}/pip_suits')
+        os.mkdir(f'{assets}/pip_suits/python2')
+        os.mkdir(f'{assets}/pip_suits/python3')
+        os.mkdir(f'{assets}/tk_suits')
+        os.mkdir(f'{assets}/tk_suits/python2')
+        # os.mkdir(f'{assets}/tk_suits/python3')
+        # add tkinter (about 5MB)
+        shutil.copytree('assets/post_build/embed_python_manager/assets/tk_suits'
+                        '/python3', f'{assets}/tk_suits/python3')
+
+
+def _copy_windows_patch(dist_root: str, select: list):
+    for number, assets_dir in {
+        1: 'windows_patch/windows-7-sp1-32bit',
+        2: 'windows_patch/windows-7-sp1-64bit',
+        3: 'windows_patch/windows-8-32bit',
+        4: 'windows_patch/windows-8-64bit',
+    }.items():
+        if number in select:
+            for fp, fn in find_files(assets_dir, fmt='zip'):
+                fp_i, fp_o = fp, f'{dist_root}/build/windows_patch/{fn}'
+                if not os.path.exists(fp_o):
+                    shutil.copyfile(fp_i, fp_o)
 
 
 if __name__ == '__main__':
-    # build_standard_version()
-    build_full_version()
+    main(full_pack=True, add_windows_patch=[2])
