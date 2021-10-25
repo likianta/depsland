@@ -14,4 +14,4 @@ from .pip import default_pip
 from .utils import mklink
 from .utils import mklinks
 
-__version__ = '0.3.1'
+__version__ = '0.3.2'

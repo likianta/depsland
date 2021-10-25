@@ -1,5 +1,5 @@
 /.idea/
-/.venv/*/*/[^.]*
+/.venv/python38/embed_venv/[^.]*
 /build/assets.zip
 /build/assets/[^.]*
 /build/setup_bundle/.assets
