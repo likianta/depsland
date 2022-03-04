@@ -1,32 +1,21 @@
-import re
 from distutils.version import LooseVersion
 from distutils.version import StrictVersion
+#   `distutils` came from `setuptools`.
 
 from dephell_specifier import RangeSpecifier
 from lk_logger import lk
 
+from .data_struct import PyVersion
+
+__all__ = ['IGNORE', 'LATEST',
+           'PyVersion',
+           'find_best_matched_version', 'sort_versions']
+
 
 class T:
-    import typing as t
-    List = t.List
-    Optional = t.Optional
-    Union = t.Union
+    from typing import List, Literal, Union
     
-    VersionRaw = t.Literal[
-        # '2.7', '2.7-32',
-        # '3.0', '3.0-32',
-        # '3.1', '3.1-32',
-        # '3.2', '3.2-32',
-        # '3.3', '3.3-32',
-        # '3.4', '3.4-32',
-        # '3.5', '3.5-32',
-        '3.6', '3.6-32',
-        '3.7', '3.7-32',
-        '3.8', '3.8-32',
-        '3.9', '3.9-32',
-        '3.10', '3.10-32',
-    ]
-    Version = t.Literal[
+    VersionStr = Literal[
         # '2.7',
         # '3.0',
         # '3.1',
@@ -40,62 +29,12 @@ class T:
         '3.9',
         '3.10',
     ]
-    VersionNoDot = t.Literal[
-        # '27',
-        # '30',
-        # '31',
-        # '32',
-        # '33',
-        # '34',
-        # '35',
-        '36',
-        '37',
-        '38',
-        '39',
-        '310',
-    ]
     VersionSpec = str
     #   followed PEP-440 canonical form (with clause symbols like '>=', '!='
     #   etc). additionally supported special keywords: see `.data_struct
     #   .special_versions`
     
     NameId = str  # e.g. 'numpy-1.13.3'
-    
-    Platform = t.Literal[
-        'linux', 'macos', 'windows'
-    ]
-
-
-class PyVersion:
-    major: int
-    minor: int
-    _version: T.Version
-    _width: int  # 32 or 64
-    
-    def __init__(self, version: T.VersionRaw):
-        assert (m := re.match(r'^([23])\.(\d+)(?:-32)?$', version)), \
-            ('Illegal version pattern!', version)
-        self.major = int(m.group(1))  # 2 or 3
-        self.minor = int(m.group(2))  # 6, 7, 8, ...
-        self._version = version.replace('-32', '')  # noqa
-        self._width = 32 if version.endswith('-32') else 64
-    
-    def __str__(self) -> T.Version:
-        return self._version
-    
-    @property
-    def v(self) -> T.Version:  # the same as `__str__`
-        return self._version
-    
-    @property
-    def no_dot(self) -> T.VersionNoDot:
-        # return: e.g. '38', '39', '310', ...
-        return f'{self.major}{self.minor}'  # noqa
-        #   this is equivalent to `self._version.replace('.', '')`
-    
-    @property
-    def is_64bit(self) -> bool:
-        return self._width == 64
 
 
 IGNORE = 'ignore'
@@ -103,8 +42,8 @@ LATEST = '*'
 
 
 def find_best_matched_version(
-        ver_spec: T.VersionSpec, ver_list: T.List[T.Version]
-) -> T.Optional[T.Version]:
+        ver_spec: T.VersionSpec, ver_list: T.List[T.VersionStr]
+) -> T.Union[None, T.Literal[IGNORE, LATEST], T.VersionStr]:
     """
 
     args:
@@ -149,7 +88,7 @@ def find_best_matched_version(
         return None
 
 
-def sort_versions(versions: T.List[T.Version], reverse=True):
+def sort_versions(versions: T.List[T.VersionStr], reverse=True):
     """
     References:
         Sort versions in Python:
@@ -159,7 +98,7 @@ def sort_versions(versions: T.List[T.Version], reverse=True):
             https://www.python.org/dev/peps/pep-0386/
     """
     
-    def _normalize_version(v: T.Union[T.NameId, T.Version]):
+    def _normalize_version(v: T.Union[T.NameId, T.VersionStr]):
         # TODO: the incoming `param:v` type must be TVersion; TNameId should be
         #   removed.
         if '-' in v:
