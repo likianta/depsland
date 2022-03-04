@@ -1,5 +1,6 @@
 /.idea/
-/.venv/python38/embed_venv/[^.]*
+/.venv/*
+/__pypackages__/
 /build/assets.zip
 /build/assets/[^.]*
 /build/setup_bundle/.assets
@@ -19,5 +20,11 @@
 /tests/
 /venv_home/*/[^.]*
 
+/.pdm.toml
+/pdm.lock
+/pyproject.toml
+
 __pycache__
 .DS_Store
+
+!/.venv/readme-zh.md
