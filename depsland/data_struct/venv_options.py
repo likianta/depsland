@@ -17,4 +17,4 @@ class VenvOptions:
     
     @property
     def venv_path(self):
-        return f'{src_model.venvlinks}/{self.venv_name}'
+        return f'{src_model.instances}/{self.venv_name}'

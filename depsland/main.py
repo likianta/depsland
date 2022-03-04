@@ -13,16 +13,29 @@ from .utils import mklinks
 
 
 def create_venv(venv_name: str, requirements: List[TRequirement]):
+    """
+    workflow:
+        1. build (virtual) path model
+        2. init venv directory
+            1. create folder
+            2. symlink embedded python interpreter
+            3. symlink basically required packages (pip, setuptools, etc.)
+        3. install user defined requirements
+            1. we will always use cached packages first
+            2. if not cached, we will download from pypi to local center
+                repository, then symlink to venv
+        4. synchronize latest packages info to database
+    """
     dst_model = VEnvDistModel(venv_name)
     try:
         _init_venv_dir(src_model, dst_model)
-        for loc in _install_requirements(requirements):
-            lk.log('add package to venv', os.path.basename(loc))
+        for loc in _install_requirements(requirements):  # loc: 'location'
+            loc_name = os.path.basename(loc)
+            lk.log('add package to venv', loc_name)
             try:
-                mklinks(loc, dst_model.site_packages, exist_ok=False)
+                mklinks(loc, dst_model.site_packages, force=False)
             except FileExistsError:
-                lk.logt('[I1457]', 'merging existed target venv',
-                        os.path.basename(loc))
+                lk.logt('[I1457]', 'merging existed target venv', loc_name)
                 mergelinks(loc, dst_model.site_packages,
                            file_exist_scheme='keep')
     except Exception as e:
@@ -50,7 +63,6 @@ def _init_venv_dir(src_model: VEnvSourceModel,
         assert not os.path.exists(src_model.python)
         setup_embed_python(src_model.pyversion, src_model.python)
     
-    # MARK: 20210915105256
     mklinks(src_model.python, dst_model.home,
             [x for x in os.listdir(src_model.python) if x != 'lib'])
     # mklink(src_model.dlls, dst_model.dlls)

@@ -11,10 +11,26 @@ from platform import system
 from lk_utils import dumps
 from lk_utils import loads
 from lk_utils.filesniff import normpath
-from .typehint import *
+
+from .data_struct import PyVersion
+
+
+class T:  # 'TypeHint'
+    from typing import Dict, List, Literal, Tuple
+    
+    Platform = Literal['darwin', 'linux', 'windows']
+    PyVersion = PyVersion
+    
+    Name = str  # e.g. 'numpy'
+    NameId = str  # e.g. 'numpy-1.15.4'
+    NameVersions = Dict[Name, List[PyVersion]]
+    Dependencies = List[NameId]
+    DependenciesIndex = Dict[NameId, Dependencies]
+    Updates = Dict[NameId, int]
+
 
 # noinspection PyTypeChecker
-platform = system().lower()  # type: TPlatform
+platform = system().lower()  # type: T.Platform
 
 curr_dir = normpath(dirname(__file__))  # current dir
 pakg_dir = curr_dir  # depsland package dir
@@ -26,8 +42,8 @@ pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
 
 
 class _PathModel:
-    pyversion: TPyVersion
-    platform: TPlatform
+    pyversion: T.PyVersion
+    platform: T.Platform
     
     def __str__(self):
         raise NotImplementedError
@@ -41,7 +57,7 @@ class _PathModel:
 
 class VEnvSourceModel(_PathModel):
     inventory: str
-    venvlinks: str
+    instances: str
     
     venv_home: str
     plat_home: str
@@ -56,12 +72,12 @@ class VEnvSourceModel(_PathModel):
     scripts: str
     site_packages: str
     
-    def __init__(self, pyversion: TPyVersion, platform=platform):
+    def __init__(self, pyversion: T.PyVersion, platform=platform):
         self.pyversion = pyversion
         self.platform = platform
         
         self.inventory = f'{home_dir}/inventory'
-        self.venvlinks = f'{home_dir}/venv_links'
+        self.instances = f'{home_dir}/instances'
         
         self.venv_home = home_dir
         self.plat_home = f'{home_dir}/inventory/{platform}'
@@ -94,7 +110,7 @@ class VEnvSourceModel(_PathModel):
     def build_dirs(self):
         assert exists(self.venv_home)
         assert exists(self.inventory)
-        assert exists(self.venvlinks)
+        assert exists(self.instances)
         assert exists(self.plat_home)
         
         # if not exists(self.plat_home):
@@ -118,19 +134,28 @@ class VEnvSourceModel(_PathModel):
     
     @property
     def python_pth(self):
-        return f'{self.python}/{self.pyversion}._pth'
+        return f'{self.python}/{self.pyversion.full_name}._pth'
     
     @property
-    def pip_suits(self) -> List[str]:
+    def pip_suits(self) -> T.List[str]:
         return os.listdir(assets_model.pip) + \
                os.listdir(assets_model.setuptools)
     
     @property
-    def tk_suits(self) -> List[str]:
+    def tk_suits(self) -> T.List[str]:
         return os.listdir(assets_model.tkinter)
 
 
 class VEnvDistModel(_PathModel):
+    """
+    folder structure:
+        depsland/venv_home/instances
+            |= home                     # `(attr) home`
+                |= dlls                 # `(attr) dlls`
+                |= lib                  # `(attr) lib`
+                    |= site-packages    # `(attr) site_packages`
+                |= scripts              # `(attr) scripts`
+    """
     home: str
     dlls: str
     lib: str
@@ -138,7 +163,7 @@ class VEnvDistModel(_PathModel):
     site_packages: str
     
     def __init__(self, name):
-        self.home = f'{home_dir}/venv_links/{name}'
+        self.home = f'{home_dir}/instances/{name}'
         
         self.dlls = f'{self.home}/dlls'
         self.lib = f'{self.home}/lib'
@@ -158,7 +183,7 @@ class VEnvDistModel(_PathModel):
             # # mkdir(self.dlls)
             # # mkdir(self.scripts)
             #   do not create 'dlls' and 'scripts' dirs, we will make links to
-            #   them by `.main._init_venv_dir:MARK@20210915105256`
+            #   them by `./main.py : (def) _init_venv_dir`.
             
             mkdir(self.lib)
             mkdir(self.site_packages)
@@ -169,7 +194,8 @@ class VEnvDistModel(_PathModel):
     
     @property
     def python_pth(self):
-        return f'{self.home}/{self.pyversion}._pth'
+        # e.g. '{self.home}/python38._pth'
+        return f'{self.home}/{self.pyversion.full_name}._pth'
 
 
 class EmbedAssetsModel(_PathModel):
@@ -181,7 +207,7 @@ class EmbedAssetsModel(_PathModel):
     tkinter: str
     urllib3: str
     
-    def __init__(self, pyversion):
+    def __init__(self, pyversion: T.PyVersion):
         self.pyversion = pyversion
         self.indexing_dirs(pyversion)
     
@@ -191,10 +217,10 @@ class EmbedAssetsModel(_PathModel):
     def indexing_dirs(self, pyversion):
         super().indexing_dirs(pyversion)
         
-        from embed_python_manager import PyVersion
         from embed_python_manager.path_model import AssetsPathModel
-        
-        model = AssetsPathModel(PyVersion(self.pyversion))
+        # FIXME(risk): `embed_python_manager.pyversion.PyVersion` is outdated
+        #   and unmatched with depsland's one.
+        model = AssetsPathModel(self.pyversion)
         
         self.embed_python = model.embed_python
         self.pip = model.pip_in_pip_suits
@@ -266,8 +292,8 @@ class LocalPyPIModel(_PathModel):
             raise FileExistsError
         return d
     
-    def load_indexed_data(self) -> Tuple[
-        TNameVersions, TDependenciesIndex, TUpdates
+    def load_indexed_data(self) -> T.Tuple[
+        T.NameVersions, T.DependenciesIndex, T.Updates
     ]:
         """
         See `depsland/repository.py`
@@ -285,7 +311,7 @@ class LocalPyPIModel(_PathModel):
             )
     
     def save_indexed_data(
-            self, a: TNameVersions, b: TDependenciesIndex, c: TUpdates
+            self, a: T.NameVersions, b: T.DependenciesIndex, c: T.Updates
     ):
         for data, file in zip((a, b, c), self.get_indexed_files()):
             dumps(data, file)
@@ -300,9 +326,9 @@ class LocalPyPIModel(_PathModel):
 
 
 # noinspection PyTypeChecker
-assets_model = EmbedAssetsModel('python39')
+assets_model = EmbedAssetsModel(PyVersion('3.9'))
 pypi_model = LocalPyPIModel()
-src_model = VEnvSourceModel('python39', platform)
+src_model = VEnvSourceModel(PyVersion('3.9'), platform)
 
 __all__ = [
     'platform',

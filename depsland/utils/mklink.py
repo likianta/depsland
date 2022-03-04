@@ -24,7 +24,7 @@ def mklink(src: T.Path, dst: T.Path, force=False) -> T.Path:
     if force is True and exists(dst):
         return dst
     if force is False and exists(dst):
-        raise Exception(f'destination path already exists: {dst}')
+        raise FileExistsError(f'destination path already exists: {dst}')
     Path(dst).symlink_to(src)
     return dst
 
