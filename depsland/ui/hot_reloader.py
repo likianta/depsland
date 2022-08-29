@@ -11,7 +11,7 @@ def run(target_file: str, **kwargs):
     from functools import partial
     from lk_utils.filesniff import normpath
     target_file = normpath(target_file, force_abspath=True)
-    print(target_file)
+    # print(target_file)
     print(':t0')
     flet.app(
         kwargs.get('app_name', 'Hot Reloader'),
@@ -38,21 +38,27 @@ def _indexing(page: flet.Page, target_file: str, **kwargs):
         page.padding = 0
         page.bgcolor = win_bg
         page.on_keyboard_event = slot = later()
-
+        
         @slot.bind
         def on_key(e: flet.KeyboardEvent):
             # `ctrl + r` to reload view.
             # print(e.key, e.shift, e.ctrl)
             if e.ctrl and e.key == 'R':
                 _reload(page, target_file)
-
-        with hold(text := flet.Text()):
-            text.value = 'Press `CTRL + R` to reload.'
-            text.color = '#666666'
-            text.expand = True
-            text.text_align = 'center'
         
-        page.add(text)
+        with hold(placeholder := flet.Container()):
+            placeholder.alignment = flet.alignment.center
+            placeholder.bgcolor = win_bg
+            placeholder.expand = True
+            
+            with hold(text := flet.Text()):
+                text.value = 'Press `CTRL + R` to reload.'
+                text.color = '#666666'
+                text.text_align = 'center'
+            
+            placeholder.content = text
+        
+        page.add(placeholder)
     
     print(':t', 'reloader construction complete')
 
