@@ -7,7 +7,7 @@ __all__ = ['run']
 lk_logger.setup(quiet=True, show_varnames=True)
 
 
-def run(target_file: str, **kwargs):
+def run(target_file: str, show_fab=False, **kwargs):
     from functools import partial
     from lk_utils.filesniff import normpath
     target_file = normpath(target_file, force_abspath=True)
@@ -15,7 +15,12 @@ def run(target_file: str, **kwargs):
     print(':t0')
     flet.app(
         kwargs.get('app_name', 'Hot Reloader'),
-        target=partial(_indexing, target_file=target_file, **kwargs)
+        target=partial(
+            _indexing,
+            target_file=target_file,
+            show_fab=show_fab,
+            **kwargs
+        )
     )
 
 
@@ -28,6 +33,7 @@ def _indexing(page: flet.Page, target_file: str, **kwargs):
     win_bg = kwargs.get('win_bg', '#f5f7fd')
     win_width = kwargs.get('window_width', 800)
     win_height = kwargs.get('window_height', 600)
+    show_fab = kwargs.get('show_fab', False)
     del kwargs
     
     with hold(page):
@@ -58,9 +64,24 @@ def _indexing(page: flet.Page, target_file: str, **kwargs):
             
             placeholder.content = text
         
-        page.add(placeholder)
+            page.controls.append(placeholder)
+        
+        if show_fab:
+            global _fab
+            with hold(_fab := flet.FloatingActionButton()):
+                from flet import icons
+                _fab.icon = icons.REFRESH
+                _fab.width = 28
+                _fab.height = 28
+                _fab.on_click = lambda _: _reload(page, target_file)
+                page.controls.append(_fab)
+        
+        page.update()
     
     print(':t', 'reloader construction complete')
+
+
+_fab: flet.FloatingActionButton | None = None
 
 
 def _reload(root: flet.Page, target_file: str):
@@ -70,6 +91,8 @@ def _reload(root: flet.Page, target_file: str):
         'print'   : print,  # this points to `lk_logger.lk.log` method.
         '__file__': target_file,
     })
+    if _fab is not None:
+        root.controls.append(_fab)
     root.update()
 
 
