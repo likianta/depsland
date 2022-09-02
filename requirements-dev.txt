@@ -1,3 +1,5 @@
-lk-qtquick-scaffold
-pyportable-installer >= 4.0.0
-pyside6
+faker
+# lk-qtquick-scaffold
+pip-autoremove
+pyportable-installer >= 4.4.3
+# pyside6

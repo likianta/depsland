@@ -64,7 +64,7 @@ def _indexing(page: flet.Page, target_file: str, **kwargs):
             
             placeholder.content = text
         
-            page.controls.append(placeholder)
+        page.controls.append(placeholder)
         
         if show_fab:
             global _fab
@@ -74,7 +74,7 @@ def _indexing(page: flet.Page, target_file: str, **kwargs):
                 _fab.width = 28
                 _fab.height = 28
                 _fab.on_click = lambda _: _reload(page, target_file)
-                page.controls.append(_fab)
+            page.controls.append(_fab)
         
         page.update()
     
@@ -85,15 +85,20 @@ _fab: flet.FloatingActionButton | None = None
 
 
 def _reload(root: flet.Page, target_file: str):
+    from lk_logger.console import con_error
     root.controls.clear()
-    exec(open(target_file).read(), {
-        'root'    : root,
-        'print'   : print,  # this points to `lk_logger.lk.log` method.
-        '__file__': target_file,
-    })
-    if _fab is not None:
-        root.controls.append(_fab)
-    root.update()
+    try:
+        exec(open(target_file).read(), {
+            'root'    : root,
+            'print'   : print,  # this points to `lk_logger.lk.log` method.
+            '__file__': target_file,
+        })
+    except Exception as e:
+        con_error()
+    else:
+        if _fab is not None:
+            root.controls.append(_fab)
+        root.update()
 
 
 if __name__ == '__main__':
