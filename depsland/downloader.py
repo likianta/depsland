@@ -1,39 +1,33 @@
 import os
-from time import strftime
+import typehint as t
+from functools import partial
 from urllib import request
 
-from lk_logger import lk
+
+class T:
+    Overwrite = t.Union[bool, None]
 
 
-def download(link, file, exist_ok=True):
-    """ See animated gif `~/docs/.assets/downloading-embed-python-anim.gif`
-    """
-    if os.path.exists(file):
-        if exist_ok:
-            lk.loga('file already exists (pass)', file)
-            return
-        else:
-            raise FileExistsError(file)
+def download(dst: str, src: str, overwrite: T.Overwrite = None) -> None:
+    if os.path.exists(src):
+        match overwrite:
+            case None:  # skip
+                return
+            case True:  # overwrite
+                os.remove(src)
+            case False:  # raise error
+                raise FileExistsError(src)
     
-    lk.loga('downloading', link)
-    lk.loga('waiting for downloader starts...')
     # https://blog.csdn.net/weixin_39790282/article/details/90170218
-    request.urlretrieve(link, file, _update_progress)
-    lk.loga('done')
+    request.urlretrieve(dst, src, partial(_progress, f'downloading {src}'))
+    print(f'done ({src}', ':t')
 
 
-def _update_progress(block_num, block_size, total_size):
-    """
-
-    Args:
-        block_num: downloaded data blocks number
-        block_size: size of each block
-        total_size: total size of remote file in url
-    """
-    percent = block_size * block_num / total_size * 100
-    if percent > 100: percent = 100
-    print('\r{}\t{:.2f}%'.format(strftime('%H:%M:%S'), percent), end='')
-    #   why put `\r` in the first param?
-    #       because it doesn't work in pycharm if we pass it to `params:end`
-    #       ref: https://stackoverflow.com/questions/34950201/pycharm-print-end
-    #            -r-statement-not-working
+def _progress(
+        description: str,
+        block_num: int, block_size: int, total_size: int
+) -> None:
+    print('{}: {:.2%}'.format(
+        description,
+        block_num * block_size / total_size,
+    ), end='\r')
