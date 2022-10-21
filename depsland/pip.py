@@ -1,9 +1,12 @@
+"""
+a wrapper for pip command.
+"""
 import re
 
-from lk_logger import lk
 from lk_utils import send_cmd
 from lk_utils.filesniff import normpath
 from yaml import safe_load
+
 from .path_model import src_model
 from .typehint import List
 from .typehint import Set
@@ -11,25 +14,26 @@ from .typehint import Set
 
 class Pip:
     
-    def __init__(self, pip, local, **kwargs):
+    def __init__(self, pip: str, local: str):
         self.head = pip
-        template = PipCmdTemplate(pip, local, **kwargs)
+        template = PipCmdTemplate(pip, local)
         self.get_pip_cmd = template.get_pip_cmd
     
     def change_pip_options(self, **kwargs):
         """
-        Keyword Args:
+        kwargs:
             offline: bool[False]
             pypi_url: str
             pyversion: TPyVersion[src_model.pyversion]
             cache_dir: TPath[src_model.cache]
             quiet: bool[False]
         """
+        # noinspection PyArgumentList
         template = PipCmdTemplate(self.head, src_model.downloads, **kwargs)
         self.get_pip_cmd = template.get_pip_cmd
     
     def test(self):
-        lk.loga(send_cmd(f'{self.head} -V'), h='parent')
+        print(send_cmd(f'{self.head} -V'), ':p')
     
     def download(self, name: str, target=src_model.downloads):
         return send_cmd(self.get_pip_cmd(
@@ -159,7 +163,7 @@ class PipCmdTemplate:
             local,
             offline=False,
             pypi_url='https://pypi.python.org/simple/',
-            pyversion=src_model.pyversion,
+            # pyversion=src_model.pyversion,
             cache_dir=src_model.cache,
             quiet=False,
     ):
@@ -180,13 +184,11 @@ class PipCmdTemplate:
             f'--trusted-host {host}' if host else '',
         )
         
-        from .utils import pyversion_2_num
         self._pkg_idx_options = (
             f'--find-links="{local}"' if local else '',
             f'--index-url {pypi_url}' if not offline else '',
             f'--no-index' if offline else '',
             f'--only-binary=:all:',
-            f'--python-version {pyversion_2_num(pyversion)}' if pyversion else '',
         )
     
     @property
@@ -228,9 +230,7 @@ class PipCmdTemplate:
 #     if exists(f := f'{conf_dir}/internal.yaml'):
 #         _options.update(loads(f)['pip_options'])
 
-_options = {'quiet': False}
-
-default_pip = Pip(
+pip = Pip(
     f'{src_model.python_exe} -m pip',
-    src_model.downloads, **_options
+    src_model.downloads
 )
