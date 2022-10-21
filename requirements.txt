@@ -1,8 +1,10 @@
-# note: don't forget to update '~/.venv/python38/embed_venv/lib/site-packages' manually.
-dephell-specifier
-embed-python-manager
+argsense
+# embed-python-manager
+lambda-ex
 lk-logger
 lk-utils
-pkginfo
+packaging
+pip
+# pkginfo
 pyyaml
-setuptools
+# setuptools
