@@ -6,20 +6,9 @@ from zipfile import ZipFile
 def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> None:
     """
     ref: https://likianta.blog.csdn.net/article/details/126710855
-
-    args:
-        overwrite:
-            True: overwrite
-            False: not overwrite, and raise an FileExistsError
-            None: not overwrite, no error (just return)
     """
     if os.path.exists(file_o):
-        if overwrite is True:
-            os.remove(file_o)
-        elif overwrite is False:
-            raise FileExistsError(file_o)
-        else:
-            return
+        _overwrite(file_o, overwrite)
     
     dir_i_parent = os.path.dirname(dir_i)
     with ZipFile(file_o, 'w') as z:
@@ -34,12 +23,7 @@ def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> None:
 
 def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> None:
     if os.path.exists(file_o):
-        if overwrite is True:
-            os.remove(file_o)
-        elif overwrite is False:
-            raise FileExistsError(file_o)
-        else:
-            return
+        _overwrite(file_o, overwrite)
     
     if file_o.endswith('.fzip'):  # trick: just rename file_i to file_o
         shutil.copyfile(file_i, file_o)
@@ -51,12 +35,7 @@ def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> None:
 
 def unzip_file(file_i: str, dir_o: str, overwrite: bool = None) -> None:
     if os.path.exists(dir_o):
-        if overwrite is True:
-            shutil.rmtree(dir_o)
-        elif overwrite is False:
-            raise FileExistsError(dir_o)
-        else:
-            return
+        _overwrite(dir_o, overwrite)
     
     dirname_o = os.path.basename(os.path.abspath(dir_o))
     with ZipFile(file_i, 'r') as z:
@@ -79,3 +58,25 @@ def unzip_file(file_i: str, dir_o: str, overwrite: bool = None) -> None:
                       f'this folder: [yellow]{dir_o}[/]. '
                       f'[dim](we don\'t move up it because its name is not '
                       f'same with parent.)[/]', ':r')
+
+
+def _overwrite(src: str, scheme: bool | None) -> None:
+    """
+    args:
+        scheme:
+            True: overwrite
+            False: not overwrite, and raise an FileExistsError
+            None: not overwrite, no error (skip)
+    """
+    match scheme:
+        case None:  # skip
+            return
+        case True:  # overwrite
+            if os.path.isfile(src):
+                os.remove(src)
+            elif os.path.islink(src):
+                os.unlink(src)
+            else:
+                shutil.rmtree(src)
+        case False:  # raise error
+            raise FileExistsError(src)
