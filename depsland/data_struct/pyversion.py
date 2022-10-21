@@ -46,6 +46,20 @@ class T:
         '39',
         '310',
     ]
+    VersionFullName = Literal[
+        # 'python27',
+        # 'python30',
+        # 'python31',
+        # 'python32',
+        # 'python33',
+        # 'python34',
+        # 'python35',
+        'python36',
+        'python37',
+        'python38',
+        'python39',
+        'python310',
+    ]
 
 
 class PyVersion:
@@ -67,9 +81,9 @@ class PyVersion:
         return self._version
     
     @property
-    def full_name(self) -> str:
+    def full_name(self) -> T.VersionFullName:
         # return: e.g. 'python38'
-        return 'python' + self.no_dot
+        return 'python' + self.no_dot  # noqa
     
     @property
     def v(self) -> T.Version:  # the same as `__str__`

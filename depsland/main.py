@@ -53,7 +53,7 @@ def create_venv(venv_name: str, requirements: List[TRequirement]):
 def _init_venv_dir(src_model: VEnvSourceModel,
                    dst_model: VEnvDistModel):
     """
-    see `../docs/project-structure.md > chapters:h1:VENV_HOME`
+    see `~/docs/project-structure.md : chapters : (h1) VENV_HOME`
     """
     lk.loga('init venv directory', dst_model.home)
     dst_model.build_dirs()
