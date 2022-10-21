@@ -14,8 +14,8 @@
 /conf/[^.]*
 /deleted/
 /dist/
-/dustbin/
 /pypi/*/[^.]*
+/python/*
 /test/
 /tests/
 /venv_home/*/[^.]*
@@ -28,3 +28,5 @@ __pycache__
 .DS_Store
 
 !/.venv/readme-zh.md
+!/python/README.md
+!/python/README.zh.md
