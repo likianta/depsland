@@ -1,6 +1,5 @@
 try:
     from .doctor import setup_env
-    
     setup_env()
 except Exception as e:
     raise e

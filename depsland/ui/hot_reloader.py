@@ -1,6 +1,6 @@
 import flet
 import lk_logger
-from lambda_ex import later
+from lambda_ex import later, hold
 
 __all__ = ['run']
 
@@ -12,7 +12,7 @@ def run(target_file: str, show_fab=False, **kwargs):
     from lk_utils.filesniff import normpath
     target_file = normpath(target_file, force_abspath=True)
     # print(target_file)
-    print(':t0')
+    print(':t0s')
     flet.app(
         kwargs.get('app_name', 'Hot Reloader'),
         target=partial(
@@ -25,8 +25,6 @@ def run(target_file: str, show_fab=False, **kwargs):
 
 
 def _indexing(page: flet.Page, target_file: str, **kwargs):
-    from lambda_ex import hold
-    
     print(':t', 'start indexing reloader page')
     
     app_name = kwargs.get('app_name', 'Hot Reloader')
@@ -93,7 +91,7 @@ def _reload(root: flet.Page, target_file: str):
             'print'   : print,  # this points to `lk_logger.lk.log` method.
             '__file__': target_file,
         })
-    except Exception as e:
+    except Exception:
         con_error()
     else:
         if _fab is not None:
