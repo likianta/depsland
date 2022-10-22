@@ -19,7 +19,7 @@ def launch(name, requirements: Union[List[str], str], venv_id='',
         requirements = list(map(Requirement, requirements))
     
     if pyversion != 'python39':  # re-indexing path models
-        from .path_model import assets_model, src_model
+        from .paths import assets_model, src_model
         assets_model.indexing_dirs(pyversion)
         assets_model.build_dirs()
         src_model.indexing_dirs(pyversion)

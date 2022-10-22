@@ -3,7 +3,7 @@ import os
 from lk_logger import lk
 from lk_utils import find_dirs
 
-from depsland.path_model import pypi_model
+from depsland.paths import pypi_model
 
 failed = []
 

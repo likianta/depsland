@@ -3,30 +3,35 @@ References:
     ~/venv_home/readme.md
 """
 import os
+import typing as t
+from lk_utils import dumps
+from lk_utils import loads
+from lk_utils.filesniff import normpath
 from os import mkdir
 from os.path import dirname
 from os.path import exists
 from platform import system
-
-from lk_utils import dumps
-from lk_utils import loads
-from lk_utils.filesniff import normpath
-
 from .data_struct import PyVersion
+
+__all__ = [
+    'platform',
+    'curr_dir', 'pakg_dir', 'proj_dir',
+    'conf_dir', 'home_dir', 'pypi_dir',
+    'VEnvSourceModel', 'VEnvDistModel', 'EmbedAssetsModel', 'LocalPyPIModel',
+    'assets_model', 'pypi_model', 'src_model',
+]
 
 
 class T:  # 'TypeHint'
-    from typing import Dict, List, Literal, Tuple
-    
-    Platform = Literal['darwin', 'linux', 'windows']
+    Platform = t.Literal['darwin', 'linux', 'windows']
     PyVersion = PyVersion
     
     Name = str  # e.g. 'numpy'
     NameId = str  # e.g. 'numpy-1.15.4'
-    NameVersions = Dict[Name, List[PyVersion]]
-    Dependencies = List[NameId]
-    DependenciesIndex = Dict[NameId, Dependencies]
-    Updates = Dict[NameId, int]
+    NameVersions = t.Dict[Name, t.List[PyVersion]]
+    Dependencies = t.List[NameId]
+    DependenciesIndex = t.Dict[NameId, Dependencies]
+    Updates = t.Dict[NameId, int]
 
 
 # noinspection PyTypeChecker
@@ -137,12 +142,12 @@ class VEnvSourceModel(_PathModel):
         return f'{self.python}/{self.pyversion.full_name}._pth'
     
     @property
-    def pip_suits(self) -> T.List[str]:
+    def pip_suits(self) -> t.List[str]:
         return os.listdir(assets_model.pip) + \
                os.listdir(assets_model.setuptools)
     
     @property
-    def tk_suits(self) -> T.List[str]:
+    def tk_suits(self) -> t.List[str]:
         return os.listdir(assets_model.tkinter)
 
 
@@ -292,7 +297,7 @@ class LocalPyPIModel(_PathModel):
             raise FileExistsError
         return d
     
-    def load_indexed_data(self) -> T.Tuple[
+    def load_indexed_data(self) -> t.Tuple[
         T.NameVersions, T.DependenciesIndex, T.Updates
     ]:
         """
@@ -329,11 +334,3 @@ class LocalPyPIModel(_PathModel):
 assets_model = EmbedAssetsModel(PyVersion('3.9'))
 pypi_model = LocalPyPIModel()
 src_model = VEnvSourceModel(PyVersion('3.9'), platform)
-
-__all__ = [
-    'platform',
-    'curr_dir', 'pakg_dir', 'proj_dir',
-    'conf_dir', 'home_dir', 'pypi_dir',
-    'VEnvSourceModel', 'VEnvDistModel', 'EmbedAssetsModel', 'LocalPyPIModel',
-    'assets_model', 'pypi_model', 'src_model',
-]

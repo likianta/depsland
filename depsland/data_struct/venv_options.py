@@ -1,6 +1,6 @@
 from dataclasses import dataclass  # noqa
 
-from ..path_model import src_model
+from ..paths import src_model
 from ..typehint import List
 from ..typehint import TRequirement
 

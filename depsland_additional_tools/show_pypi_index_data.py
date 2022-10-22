@@ -3,7 +3,7 @@ from pprint import pprint
 from lk_logger import lk
 from lk_utils import dumps
 
-from depsland.path_model import pypi_model
+from depsland.paths import pypi_model
 
 
 def main(save_json=False):

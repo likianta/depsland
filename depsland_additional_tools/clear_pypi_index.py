@@ -3,7 +3,7 @@ from os.path import exists
 
 from lk_logger import lk
 
-from depsland.path_model import pypi_model
+from depsland.paths import pypi_model
 
 for i in pypi_model.get_indexed_files():
     if exists(i):

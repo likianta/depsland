@@ -2,9 +2,9 @@ import os
 import shutil
 
 from lk_logger import lk
-from .path_model import VEnvDistModel
-from .path_model import VEnvSourceModel
-from .path_model import src_model
+from .paths import VEnvDistModel
+from .paths import VEnvSourceModel
+from .paths import src_model
 from .pypi import local_pypi
 from .setup import setup_embed_python
 from .typehint import *

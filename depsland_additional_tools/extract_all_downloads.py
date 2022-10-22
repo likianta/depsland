@@ -3,7 +3,7 @@ import re
 from lk_logger import lk
 from lk_utils import find_files
 
-from depsland.path_model import pypi_model
+from depsland.paths import pypi_model
 from depsland.utils import unzip_file
 
 for fp, fn in find_files(pypi_model.downloads,

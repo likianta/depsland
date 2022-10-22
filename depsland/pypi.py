@@ -8,7 +8,7 @@ from pkginfo import Wheel
 from .data_struct import PackageInfo
 from .data_struct import Requirement
 from .data_struct.special_versions import LATEST
-from .path_model import pypi_model
+from .paths import pypi_model
 from .pip import default_pip
 from .typehint import *
 from .utils import find_best_matched_version

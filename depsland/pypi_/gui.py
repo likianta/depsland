@@ -1,5 +1,5 @@
 from gui_builder import GuiBuilder
-from ..path_model import pypi_model
+from ..paths import pypi_model
 
 
 class Application:

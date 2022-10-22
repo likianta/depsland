@@ -6,7 +6,7 @@ from pkginfo import SDist
 from pkginfo import Wheel
 
 from depsland.data_struct import Requirement
-from depsland.path_model import pypi_model, pypi_dir
+from depsland.paths import pypi_model, pypi_dir
 from depsland.utils import sort_versions
 from depsland.utils import unzip_file
 

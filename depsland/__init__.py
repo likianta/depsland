@@ -4,7 +4,7 @@ try:
 except Exception as e:
     raise e
 
-from . import path_model
+from . import paths
 from . import setup
 from .launch import launch
 from .main import create_venv

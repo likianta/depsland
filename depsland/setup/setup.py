@@ -9,7 +9,7 @@ from os.path import exists
 from os.path import normpath
 from textwrap import dedent
 
-from depsland.path_model import *
+from depsland.paths import *
 from depsland.setup import setup_embed_python
 from lk_logger import lk
 from lk_utils import dumps
