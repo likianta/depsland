@@ -15,8 +15,8 @@ from .data_struct import PyVersion
 
 __all__ = [
     'platform',
-    'curr_dir', 'pakg_dir', 'proj_dir',
-    'conf_dir', 'home_dir', 'pypi_dir',
+    'apps_dir', 'conf_dir', 'curr_dir', 'home_dir',
+    'pakg_dir', 'proj_dir', 'pypi_dir', 'temp_dir',
     'VEnvSourceModel', 'VEnvDistModel', 'EmbedAssetsModel', 'LocalPyPIModel',
     'assets_model', 'pypi_model', 'src_model',
 ]
@@ -41,9 +41,11 @@ curr_dir = normpath(dirname(__file__))  # current dir
 pakg_dir = curr_dir  # depsland package dir
 proj_dir = dirname(pakg_dir)  # depsland project dir
 
+apps_dir = f'{proj_dir}/apps'
 conf_dir = f'{proj_dir}/conf'
 home_dir = f'{proj_dir}/venv_home'  # project venv_home dir
 pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
+temp_dir = f'{proj_dir}/temp'
 
 
 class _PathModel:
