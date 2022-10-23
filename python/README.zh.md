@@ -8,9 +8,13 @@
 
     示例: "cpython-3.10.7+20221002-x86_64-apple-darwin-install_only.tar.gz"
 
-- TODO:MorePlatforms
+- windows: `cpython-<version>-x86_64-pc-windows-msvc-shared-install_only.tar.gz`
 
-# 安装
+    示例: "cpython-3.10.7+20221002-x86_64-pc-windows-msvc-shared-install_only.tar.gz"
+
+# 安装 python
+
+> 以下示例基于 macos.
 
 解压缩到本目录, 如下结构:
 
@@ -34,3 +38,9 @@ current_dir
 # 设置为本项目默认解释器
 
 以 pycharm 为例, 在 settings - project - project interpreter 中选择 `<depsland_proj>/python/bin/python3.10` 为解释器.
+
+# 安装依赖
+
+```sh
+python/bin/python3.10 -m pip install -r requirements.txt --no-warn-script-location
+```
