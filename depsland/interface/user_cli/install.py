@@ -3,10 +3,10 @@ import typing as t
 from lk_utils import fs
 from lk_utils import loads
 from uuid import uuid1
-from .. import paths
-from ..downloader import download
-from ..pip import pip
-from ..utils import ziptool
+from ... import paths
+from ...downloader import download
+from ...pip import pip
+from ...utils import ziptool
 
 
 class T:
