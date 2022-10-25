@@ -18,7 +18,7 @@ __all__ = [
     'apps_dir', 'conf_dir', 'curr_dir', 'home_dir',
     'pakg_dir', 'proj_dir', 'pypi_dir', 'temp_dir',
     'VEnvSourceModel', 'VEnvDistModel', 'EmbedAssetsModel', 'LocalPyPIModel',
-    'assets_model', 'pypi_model', 'src_model',
+    # 'assets_model', 'pypi_model', 'src_model',
 ]
 
 
@@ -333,6 +333,6 @@ class LocalPyPIModel(_PathModel):
 
 
 # noinspection PyTypeChecker
-assets_model = EmbedAssetsModel(PyVersion('3.9'))
-pypi_model = LocalPyPIModel()
-src_model = VEnvSourceModel(PyVersion('3.9'), platform)
+# assets_model = EmbedAssetsModel(PyVersion('3.9'))
+# pypi_model = LocalPyPIModel()
+# src_model = VEnvSourceModel(PyVersion('3.9'), platform)

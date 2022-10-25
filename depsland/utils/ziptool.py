@@ -3,7 +3,7 @@ import shutil
 from zipfile import ZipFile
 
 
-def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> None:
+def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> str:
     """
     ref: https://likianta.blog.csdn.net/article/details/126710855
     """
@@ -19,21 +19,24 @@ def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> None:
                     fp := os.path.join(root, fn),
                     arcname=os.path.relpath(fp, dir_i_parent),
                 )
+    
+    return file_o
 
 
-def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> None:
+def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
     if os.path.exists(file_o):
         _overwrite(file_o, overwrite)
     
     if file_o.endswith('.fzip'):  # trick: just rename file_i to file_o
         shutil.copyfile(file_i, file_o)
-        return
+        return file_o
     
     with ZipFile(file_o, 'w') as z:
         z.write(file_i, arcname=os.path.basename(file_i))
+    return file_o
 
 
-def unzip_file(file_i: str, dir_o: str, overwrite: bool = None) -> None:
+def unzip_file(file_i: str, dir_o: str, overwrite: bool = None) -> str:
     if os.path.exists(dir_o):
         _overwrite(dir_o, overwrite)
     
@@ -58,6 +61,7 @@ def unzip_file(file_i: str, dir_o: str, overwrite: bool = None) -> None:
                       f'this folder: [yellow]{dir_o}[/]. '
                       f'[dim](we don\'t move up it because its name is not '
                       f'same with parent.)[/]', ':r')
+    return dir_o
 
 
 def _overwrite(src: str, scheme: bool | None) -> None:

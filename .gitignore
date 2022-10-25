@@ -1,6 +1,6 @@
 /.idea/
 /.venv/*
-/__pypackages__/
+/apps/*
 /build/assets.zip
 /build/assets/[^.]*
 /build/setup_bundle/.assets
@@ -10,23 +10,24 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/venv_packages.zip
-/cache/[^.]*
-/conf/[^.]*
+/cache/*
+/conf/*
 /deleted/
 /dist/
 /pypi/*/[^.]*
 /python/*
+/temp/*
 /test/
 /tests/
 /venv_home/*/[^.]*
-
-/.pdm.toml
-/pdm.lock
-/pyproject.toml
 
 __pycache__
 .DS_Store
 
 !/.venv/readme-zh.md
+!/apps/.gitkeep
+!/cache/.gitkeep
+!/conf/.gitkeep
 !/python/README.md
 !/python/README.zh.md
+!/temp/.gitkeep

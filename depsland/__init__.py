@@ -1,16 +1,18 @@
-try:
-    from .doctor import setup_env
-    setup_env()
-except Exception as e:
-    raise e
+if True:
+    import lk_logger
+    lk_logger.setup(quiet=True, show_varnames=True)
 
-from . import paths
-from . import setup
-from .launch import launch
-from .main import create_venv
-from .pip import Pip
-from .pip import default_pip
-from .utils import mklink
-from .utils import mklinks
+# if True:
+#     from .doctor import setup_env
+#     setup_env()
+#
+# from . import paths
+# from . import setup
+# from .launch import launch
+# from .main import create_venv
+# from .pip import Pip
+# from .pip import pip
+# from .utils import mklink
+# from .utils import mklinks
 
-__version__ = '0.3.2'
+__version__ = '0.0.0'

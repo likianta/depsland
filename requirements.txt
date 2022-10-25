@@ -1,10 +1,13 @@
+pip
+# setuptools
+wheel
+
 argsense
 # embed-python-manager
 lambda-ex
-lk-logger
-lk-utils
+lk-logger >= 5.4.5
+lk-utils >= 2.4.2a4
+oss2
 packaging
-pip
 # pkginfo
 pyyaml
-# setuptools

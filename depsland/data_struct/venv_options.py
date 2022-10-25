@@ -1,6 +1,5 @@
 from dataclasses import dataclass  # noqa
 
-from ..paths import src_model
 from ..typehint import List
 from ..typehint import TRequirement
 
@@ -17,4 +16,5 @@ class VenvOptions:
     
     @property
     def venv_path(self):
+        from ..paths import src_model
         return f'{src_model.instances}/{self.venv_name}'
