@@ -6,12 +6,12 @@ if True:
 #     from .doctor import setup_env
 #     setup_env()
 #
-# from . import paths
+from . import paths
 # from . import setup
 # from .launch import launch
 # from .main import create_venv
 # from .pip import Pip
-# from .pip import pip
+from .pip import pip
 # from .utils import mklink
 # from .utils import mklinks
 

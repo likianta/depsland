@@ -5,8 +5,8 @@ wheel
 argsense
 # embed-python-manager
 lambda-ex
-lk-logger >= 5.4.5
-lk-utils >= 2.4.2a4
+lk-logger >= 5.4.6a0
+lk-utils >= 2.5.0b2
 oss2
 packaging
 # pkginfo
