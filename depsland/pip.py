@@ -7,7 +7,7 @@ from lk_utils import loads
 from lk_utils.filesniff import normpath
 from lk_utils.subproc import compose_cmd
 from lk_utils.subproc import run_cmd_args
-from yaml import safe_load
+from yaml import safe_load as yaml_safe_load
 from . import paths
 
 
@@ -65,7 +65,7 @@ class Pip:
     def show_dependencies(self, name: str) -> t.List[str]:
         resp = self.run(self._template.pip_show(name))
         #   it can be considered as a YAML string.
-        data: dict = safe_load(resp)
+        data: dict = yaml_safe_load(resp)
         if data['Requires']:
             return data['Requires'].split(', ')
             #   e.g. {'Requires': 'xlrd, lk-logger, xlsxwriter', ...} ->
@@ -98,7 +98,7 @@ class Pip:
               lk_logger\lk_logger.py
         '''
         resp = resp.replace('  ', '  - ')
-        data: dict = safe_load(resp)
+        data: dict = yaml_safe_load(resp)
         #   {'Name': 'lk-logger', ... 'Files': [...]}
         
         # analyse files root dirs
