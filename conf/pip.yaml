@@ -1,0 +1,3 @@
+# see also `depsland.pip.CommandTemplate.__init__`
+index_url: 'https://pypi.tuna.tsinghua.edu.cn/simple'
+quiet: false

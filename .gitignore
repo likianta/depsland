@@ -11,7 +11,7 @@
 /build/windows_patch/windows-8-64bit/*.exe
 /build/venv_packages.zip
 /cache/*
-/conf/*
+/conf/oss_*
 /deleted/
 /dist/
 /pypi/*/[^.]*
@@ -27,7 +27,6 @@ __pycache__
 !/.venv/readme-zh.md
 !/apps/.gitkeep
 !/cache/.gitkeep
-!/conf/.gitkeep
 !/python/README.md
 !/python/README.zh.md
 !/temp/.gitkeep
