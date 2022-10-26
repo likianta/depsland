@@ -20,7 +20,7 @@
 /tests/
 /venv_home/*/[^.]*
 
-__pycache__
+__pycache__/
 .DS_Store
 
 !/.venv/readme-zh.md

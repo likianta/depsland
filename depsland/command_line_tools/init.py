@@ -3,7 +3,7 @@ depsland init
 """
 import os
 
-from lk_utils.filesniff import relpath
+from lk_utils.filesniff import xpath
 
 from ..utils import mklinks
 
@@ -50,7 +50,7 @@ def _create_empty_folders(dirname: str):
                         |= <python_version>
                            |= site-packages
     """
-    root = relpath('../../venv_home/instances')
+    root = xpath('../../venv_home/instances')
     if os.path.exists(f'{root}/{dirname}'):
         raise FileExistsError(f'{dirname} already exists')
     os.mkdir(f'{root}/{dirname}')
@@ -61,6 +61,6 @@ def _create_empty_folders(dirname: str):
 
 
 def _symlink_python_interpreter(dirpath: str):
-    dir_i = relpath('../../venv_home/interpreters/3.10')
+    dir_i = xpath('../../venv_home/interpreters/3.10')
     dir_o = dirpath
     mklinks(dir_i, dir_o)
