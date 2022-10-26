@@ -46,7 +46,7 @@ class Oss:
                 self._update_progress, f'uploading {name}'
             )
         )
-        print(':pt', f'done ({name})')
+        print(':rpt', f'done [cyan]({name})[/]')
     
     def download(self, link: str, file: str):
         name = basename(file)
@@ -56,7 +56,7 @@ class Oss:
                 self._update_progress, f'downloading {name}'
             )
         )
-        print(':pt', f'done ({name})')
+        print(':rpt', f'done [cyan]({name})[/]')
     
     def delete(self, link: str):
         self._bucket.delete_object(link)

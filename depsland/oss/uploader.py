@@ -47,7 +47,8 @@ class T:
     DiffResult = t.Iterator[
         t.Tuple[
             Action,
-            Path,
+            t.Tuple[Path, t.Optional[Path]],
+            #   tuple[origin_path, new_zipped_file]
             t.Tuple[t.Optional[_Key], t.Optional[_Key]]
             #   tuple[old_key, new_key]
         ]
@@ -80,12 +81,16 @@ def main(new_app_dir: str, old_app_dir: str) -> None:
     oss_path = OssPath(manifest_new['appid'])
     print(oss_path)
     
-    for action, zipped_file, (old_key, new_key) in _find_differences(
-            manifest_new, manifest_old,
-            saved_file=(manifest_new_pkl := f'{new_app_dir}/manifest.pkl'),
+    for (
+            action,
+            (origin_path, zipped_file),
+            (old_key, new_key)
+    ) in _find_differences(
+        manifest_new, manifest_old,
+        saved_file=(manifest_new_pkl := f'{new_app_dir}/manifest.pkl'),
     ):
         # the path's extension is: '.zip' or '.fzip'
-        print(':sri', action, fs.filename(zipped_file),
+        print(':sri', action, fs.filename(origin_path),
               f'[dim]([red]{old_key}[/] -> [green]{new_key}[/])[/]')
         # continue  # TEST: uncomment this line for offline test
         
@@ -141,7 +146,7 @@ def _find_differences(
     for path_old in assets_old.keys():
         if path_old not in assets_new:
             yield ('delete',
-                   path_old,
+                   (path_old, None),
                    (assets_old[path_old].key, None))
     # noinspection PyTypeChecker
     for path_i, scheme_i in assets_new.items():
@@ -152,16 +157,19 @@ def _find_differences(
             # no difference
             continue
         
-        path_o = _copy_assets(path_i, temp_dir, scheme_i)
         if scheme_i == 'only_root':
-            path_o = ''
+            pass
         else:
+            path_o = _copy_assets(path_i, temp_dir, scheme_i)
             path_o = _compress(path_o, f'{temp_dir}/{info_new.key}')
-        
-        if info_old is None:
-            yield 'append', path_o, (None, info_new.key)
-        else:
-            yield 'update', path_o, (info_old.key, info_new.key)
+            if info_old is None:
+                yield ('append',
+                       (path_i, path_o),
+                       (None, info_new.key))
+            else:
+                yield ('update',
+                       (path_i, path_o),
+                       (info_old.key, info_new.key))
         
         relpath_i = fs.relpath(path_i, start=saved_dir)
         saved_data['assets'][relpath_i] = info_new
