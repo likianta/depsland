@@ -3,21 +3,27 @@ from lk_utils import loads
 from os.path import basename
 from oss2 import Auth
 from oss2 import Bucket
-from .. import paths
+from ..paths import Conf
 
 
-def get_oss_server() -> 'OssServer':
-    conf = loads(f'{paths.conf_dir}/.oss.yaml')
-    assert all(conf.values()), 'the oss config is not prepared!'
-    assert conf['bucket_name'] == 'likianta-test'  # TEST
-    oss_svr = OssServer(**conf)
-    return oss_svr
+def get_oss_server() -> 'Oss':
+    return _get_oss(loads(Conf.oss_server))
 
 
-class OssServer:
+def get_oss_client() -> 'Oss':
+    return _get_oss(loads(Conf.oss_client))
+
+
+def _get_oss(config: dict) -> 'Oss':
+    assert all(config.values()), 'the oss config is not prepared!'
+    # noinspection PyArgumentList
+    return Oss(**config)
+
+
+class Oss:
     
     def __init__(self, access_key: str, access_secret: str,
-                 endpoint: str, bucket_name: str):
+                 endpoint: str, bucket_name: str, **_):
         self._auth = Auth(access_key, access_secret)
         self._bucket = Bucket(self._auth, endpoint, bucket_name)
     
@@ -56,9 +62,27 @@ class OssServer:
         self._bucket.delete_object(link)
     
     @staticmethod
-    def _update_progress(description: str,
-                         bytes_consumed: int, total_bytes: int) -> None:
+    def _update_progress(
+            description: str,
+            bytes_consumed: int, total_bytes: int
+    ) -> None:
         print('{}: {:.2%}'.format(
             description,
             bytes_consumed / total_bytes
         ), end='\r')
+
+
+class OssPath:
+    def __init__(self, appid: str):
+        self.appid = appid
+    
+    def __str__(self):
+        return f'<bucket:/depsland/apps/{self.appid}>'
+    
+    @property
+    def manifest(self) -> str:
+        return f'apps/{self.appid}/manifest.pkl'
+
+    @property
+    def assets(self) -> str:
+        return f'apps/{self.appid}/assets'
