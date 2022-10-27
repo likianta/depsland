@@ -9,7 +9,7 @@ from .oss import OssPath
 from .oss import get_oss_server
 from .. import config
 from ..profile_reader import T as T0
-from ..profile_reader import get_manifest
+from ..profile_reader import load_manifest
 from ..utils import compare_version
 from ..utils import create_temporary_directory
 from ..utils import get_file_hash
@@ -29,6 +29,7 @@ class T:
         'appid'       : str,
         'name'        : str,
         'version'     : str,
+        # 'start_directory': str,
         'assets'      : t.Dict[
             Path,  # must be relative path
             Info := t.NamedTuple('Info', (
@@ -65,9 +66,9 @@ Info = namedtuple('Info', (
 # -----------------------------------------------------------------------------
 
 def main(new_app_dir: str, old_app_dir: str) -> None:
-    manifest_new: T.ManifestA = get_manifest(f'{new_app_dir}/manifest.json')
+    manifest_new: T.ManifestA = load_manifest(f'{new_app_dir}/manifest.json')
     manifest_old: T.ManifestB = (
-        get_manifest(f'{old_app_dir}/manifest.pkl') if old_app_dir else {
+        load_manifest(f'{old_app_dir}/manifest.pkl') if old_app_dir else {
             'appid'       : manifest_new['appid'],
             'name'        : manifest_new['name'],
             'version'     : '0.0.0',
@@ -87,8 +88,8 @@ def main(new_app_dir: str, old_app_dir: str) -> None:
     print(oss_path)
     
     for action, zipped_file, (old_key, new_key) in _find_differences(
-        manifest_new, manifest_old,
-        saved_file=(manifest_new_pkl := f'{new_app_dir}/manifest.pkl'),
+            manifest_new, manifest_old,
+            saved_file=(manifest_new_pkl := f'{new_app_dir}/manifest.pkl'),
     ):
         # the path's extension is: '.zip' or '.fzip'
         print(':sri', action, fs.filename(zipped_file),
@@ -145,8 +146,9 @@ def _find_differences(
             )
         )
     
-    def update_saved_data(path: str, info_new: T.Info) -> None:
-        relpath = fs.relpath(path, start=root_dir_i)
+    def update_saved_data(abspath: str, info_new: T.Info) -> None:
+        relpath = fs.relpath(abspath, start=root_dir_i)
+        # print(':v', abspath, relpath)
         saved_data['assets'][relpath] = info_new
     
     # noinspection PyTypeChecker

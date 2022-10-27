@@ -25,7 +25,8 @@ class T:
         'name'           : str,
         'version'        : _Version,
         'start_directory': str,
-        'assets'         : t.Dict[str, str],  # dict[abspath, scheme]
+        'assets'         : t.Dict[str, str],  # dict[path, scheme]
+        #   path: when loaded, use abspath; when dumped, use relpath.
         #   scheme: see also `./oss/uploader.py > T.Scheme`.
         'dependencies'   : t.Dict[str, str],  # dict[name, version_spec]
     })
@@ -33,7 +34,7 @@ class T:
 
 
 def get_app_info(manifest_file: T.ManifestFile) -> T.Appinfo:
-    data_i: T.Manifest = get_manifest(manifest_file)
+    data_i: T.Manifest = load_manifest(manifest_file)
     data_o: T.Appinfo = {
         'appid'  : data_i['appid'],
         'name'   : data_i['name'],
@@ -48,8 +49,9 @@ def get_app_info(manifest_file: T.ManifestFile) -> T.Appinfo:
     }
     
     if not exists(d := data_o['dst_dir']): os.makedirs(d)
-    dumps(data_i, f'{d}/manifest.json')
+    dump_manifest(data_i, f'{d}/manifest.json')
     
+    # update history
     history_file = '{}/{}/released_history.json'.format(
         _apps_dir, data_i['appid']
     )
@@ -57,12 +59,13 @@ def get_app_info(manifest_file: T.ManifestFile) -> T.Appinfo:
         data_o['history'] = loads(history_file)
     else:
         print('no history found, it would be the first release',
-              data_o['name'], data_o['version'])
+              data_o['name'], data_o['version'], ':v2')
         dumps([], history_file)
+        
     return data_o
 
 
-def get_manifest(manifest_file: T.ManifestFile) -> T.Manifest:
+def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest:
     manifest_file = fs.normpath(manifest_file, force_abspath=True)
     manifest_dir = fs.parent_path(manifest_file)
     
@@ -71,12 +74,15 @@ def get_manifest(manifest_file: T.ManifestFile) -> T.Manifest:
     # assert required keys
     required_keys = ('appid', 'name', 'version', 'assets')
     assert all(x in data for x in required_keys)
-
+    
     # fill optional keys
-    data['start_directory'] = manifest_dir
+    if 'start_directory' not in data:
+        data['start_directory'] = manifest_dir
+    else:
+        assert data['start_directory'] == manifest_dir
     if 'dependencies' not in data:
         data['dependencies'] = {}
-
+    
     # reformat assets
     reformatted_assets: t.Dict[str, str] = {}
     # noinspection PyTypeChecker
@@ -89,3 +95,24 @@ def get_manifest(manifest_file: T.ManifestFile) -> T.Manifest:
     data['assets'] = reformatted_assets
     
     return data
+
+
+def dump_manifest(manifest: T.Manifest, file_o: T.ManifestFile) -> T.Manifest:
+    # when dump to a file, the manifest's assets keys must be relative paths
+    root_i = manifest['start_directory']
+    root_o = fs.parent_path(file_o)
+    
+    assets_i = manifest['assets']
+    assets_o: t.Dict[str, str] = {}
+    
+    # noinspection PyTypeChecker
+    for abspath, v in assets_i.items():
+        relpath = fs.relpath(abspath, root_i)
+        assets_o[relpath] = v
+    
+    manifest_o = manifest.copy()  # FIXME: deepcopy?
+    manifest_o['start_directory'] = root_o
+    manifest_o['assets'] = assets_o
+    
+    dumps(manifest_o, file_o)
+    return manifest_o

@@ -63,7 +63,7 @@ def upload(manifest_file: str = './manifest.json') -> None:
     
     if not appinfo['history']:
         upload_assets(
-            new_app_dir=appinfo['dst_dir'],
+            new_app_dir=appinfo['src_dir'],
             old_app_dir=''
         )
     else:
