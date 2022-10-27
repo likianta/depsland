@@ -14,8 +14,16 @@ def show_pip_version():
 
 
 @cli.cmd()
-def download_test(package='lambda-ex'):
-    pip.download(package, dest=paths.Temp.unittests)
+def test_download(test_package='lambda-ex'):
+    pip.download(test_package, dest=paths.Temp.unittests)
+
+
+@cli.cmd()
+def test_install(test_package='lambda-ex'):
+    pip.install(test_package, dest=paths.Temp.unittests)
+    print('see result in {}/{}'.format(
+        paths.Temp.unittests, test_package.replace('-', '_')
+    ))
 
 
 if __name__ == '__main__':

@@ -54,8 +54,9 @@ class Pip:
     def download_r(self, file: str, dest=paths.PyPI.downloads) -> None:
         self.run(*self._template.pip_download_r(file, dest))
     
-    def install(self, name: str, dest=paths.Python.site_packages) -> None:
-        self.run(*self._template.pip_install(name, dest))
+    def install(self, name: str, version='',
+                dest=paths.Python.site_packages) -> None:
+        self.run(*self._template.pip_install(name, version, dest))
     
     def install_r(self, file: str, dest=paths.Python.site_packages) -> None:
         self.run(*self._template.pip_install_r(file, dest))
