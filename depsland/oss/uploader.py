@@ -7,6 +7,7 @@ from lk_utils import fs
 from uuid import uuid1
 from .oss import OssPath
 from .oss import get_oss_server
+from .. import config
 from ..profile_reader import T as T0
 from ..profile_reader import get_manifest
 from ..utils import compare_version
@@ -31,6 +32,7 @@ class T:
         'assets'      : t.Dict[
             Path,  # must be relative path
             Info := t.NamedTuple('Info', (
+                ('file_type', t.Literal['file', 'dir']),
                 ('scheme', Scheme),
                 ('updated_time', int),
                 ('hash', t.Optional[str]),
@@ -49,13 +51,15 @@ class T:
             Action,
             t.Tuple[Path, t.Optional[Path]],
             #   tuple[origin_path, new_zipped_file]
-            t.Tuple[t.Optional[_Key], t.Optional[_Key]]
+            t.Tuple[t.Optional[str], t.Optional[str]]
             #   tuple[old_key, new_key]
         ]
     ]
 
 
-Info = namedtuple('Info', ('scheme', 'updated_time', 'hash', 'key'))
+Info = namedtuple('Info', (
+    'file_type', 'scheme', 'updated_time', 'hash', 'key'
+))
 
 
 # -----------------------------------------------------------------------------
@@ -72,6 +76,7 @@ def main(new_app_dir: str, old_app_dir: str) -> None:
             # 'dependencies': manifest_new['dependencies'],
         }
     )
+    print(':l', manifest_new, manifest_old)
     _check_manifest(manifest_new, manifest_old)
     print('updating manifest: [red]{}[/] -> [green]{}[/]'.format(
         manifest_old['version'], manifest_new['version']
@@ -90,10 +95,10 @@ def main(new_app_dir: str, old_app_dir: str) -> None:
         saved_file=(manifest_new_pkl := f'{new_app_dir}/manifest.pkl'),
     ):
         # the path's extension is: '.zip' or '.fzip'
-        print(':sri', action, fs.filename(origin_path),
+        print(':sri', action, fs.filename(zipped_file),
               f'[dim]([red]{old_key}[/] -> [green]{new_key}[/])[/]')
-        # continue  # TEST: uncomment this line for offline test
-        
+        if config.debug_mode:
+            continue
         match action:
             case 'append':
                 oss.upload(zipped_file, f'{oss_path.assets}/{new_key}')
@@ -121,12 +126,13 @@ def _find_differences(
         saved_file: T.Path,
 ) -> T.DiffResult:
     temp_dir = create_temporary_directory()
-    saved_dir = fs.dirpath(saved_file)
+    root_dir_i = manifest_new['start_directory']
     saved_data: T.ManifestB = {
-        'appid'  : manifest_new['appid'],
-        'name'   : manifest_new['name'],
-        'version': manifest_new['version'],
-        'assets' : {},
+        'appid'       : manifest_new['appid'],
+        'name'        : manifest_new['name'],
+        'version'     : manifest_new['version'],
+        'assets'      : {},
+        'dependencies': manifest_new['dependencies'],
     }
     
     assets_new = manifest_new['assets']
@@ -134,13 +140,18 @@ def _find_differences(
     
     def get_new_info(path_i: str, scheme_i) -> T.Info:
         return Info(
+            file_type=(t := 'file' if fs.isfile(path_i) else 'dir'),
             scheme=scheme_i,
             updated_time=get_updated_time(path_i),
-            hash=get_file_hash(path_i) if os.path.isfile(path_i) else None,
+            hash=get_file_hash(path_i) if t == 'file' else None,
             key='{}.{}'.format(
                 uuid1().hex, 'fzip' if os.path.isfile(path_i) else 'zip'
             )
         )
+    
+    def update_saved_data(path: str, info_new: T.Info) -> None:
+        relpath = fs.relpath(path, start=root_dir_i)
+        saved_data['assets'][relpath] = info_new
     
     # noinspection PyTypeChecker
     for path_old in assets_old.keys():
@@ -155,13 +166,17 @@ def _find_differences(
         
         if info_old and not _compare(info_new, info_old):
             # no difference
+            print(':vs', 'no difference', path_i)
+            update_saved_data(path_i, info_new)
             continue
         
         if scheme_i == 'only_root':
             pass
         else:
             path_o = _copy_assets(path_i, temp_dir, scheme_i)
-            path_o = _compress(path_o, f'{temp_dir}/{info_new.key}')
+            path_o = _compress(path_o, path_o + (
+                '.zip' if info_new.file_type == 'dir' else '.fzip'
+            ))
             if info_old is None:
                 yield ('append',
                        (path_i, path_o),
@@ -170,10 +185,9 @@ def _find_differences(
                 yield ('update',
                        (path_i, path_o),
                        (info_old.key, info_new.key))
-        
-        relpath_i = fs.relpath(path_i, start=saved_dir)
-        saved_data['assets'][relpath_i] = info_new
+        update_saved_data(path_i, info_new)
     
+    print(':lv', saved_data)
     dumps(saved_data, saved_file)
     shutil.rmtree(temp_dir)
 
@@ -191,11 +205,12 @@ def _compare(info_new: T.Info, info_old: T.Info) -> bool:
     return False
 
 
-def _compress(path_i: T.Path, file_o: str) -> str:
+def _compress(path_i: T.Path, file_o: T.Path) -> T.Path:
     if file_o.endswith('.zip'):
         ziptool.compress_dir(path_i, file_o)
     else:  # file_o.endswith('.fzip'):
-        ziptool.compress_file(path_i, file_o)
+        fs.move(path_i, file_o)
+        # ziptool.compress_file(path_i, file_o)
     return file_o
 
 
