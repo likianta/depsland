@@ -36,9 +36,16 @@ def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
     return file_o
 
 
-def unzip_file(file_i: str, dir_o: str, overwrite: bool = None) -> str:
-    if os.path.exists(dir_o):
-        _overwrite(dir_o, overwrite)
+def unzip_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
+    if os.path.exists(path_o):
+        _overwrite(path_o, overwrite)
+        
+    if file_i.endswith('.fzip'):
+        file_o = path_o
+        shutil.copyfile(file_i, file_o)
+        return file_o
+    else:
+        dir_o = path_o
     
     dirname_o = os.path.basename(os.path.abspath(dir_o))
     with ZipFile(file_i, 'r') as z:
