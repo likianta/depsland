@@ -12,8 +12,8 @@ from . import paths
 
 
 class T:
-    PopenArgs = t.Iterable[str]
     PipExecutableArgs = t.Tuple[str, ...]
+    PopenArgs = t.Iterable[str]
 
 
 class Pip:
@@ -54,11 +54,10 @@ class Pip:
     def download_r(self, file: str, dest=paths.PyPI.downloads) -> None:
         self.run(*self._template.pip_download_r(file, dest))
     
-    def install(self, name: str, version='',
-                dest=paths.Python.site_packages) -> None:
+    def install(self, name: str, version='', dest=paths.PyPI.installed) -> None:
         self.run(*self._template.pip_install(name, version, dest))
     
-    def install_r(self, file: str, dest=paths.Python.site_packages) -> None:
+    def install_r(self, file: str, dest=paths.PyPI.installed) -> None:
         self.run(*self._template.pip_install_r(file, dest))
     
     # -------------------------------------------------------------------------
@@ -138,8 +137,6 @@ class CommandTemplate:
             host = re.search(r'https?://([^/]+)', index_url).group(1)
         
         self._pip = pip
-        # setup options
-        self._template = ' '.join(pip) + ' {action} {name} {options}'
         
         self._pip_options = tuple(compose_cmd(
             f'--cache-dir', cache_dir,
@@ -159,7 +156,10 @@ class CommandTemplate:
             ('--find-links', local_dir),
             ('--index-url', index_url),
         ))
-        self._pip_install_options = self._pip_download_options
+        self._pip_install_options = (
+            *self._pip_download_options,
+            '--no-warn-script-location',
+        )
     
     # -------------------------------------------------------------------------
     
