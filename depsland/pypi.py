@@ -1,57 +1,193 @@
-import os
-import re
-from time import time
+import atexit
 
-from lk_logger import lk
-from pkginfo import SDist
-from pkginfo import Wheel
-from .data_struct import PackageInfo
-from .data_struct import Requirement
-from .data_struct.special_versions import LATEST
-from .paths import pypi_model
-from .pip import default_pip
-from .typehint import *
-from .utils import find_best_matched_version
-from .utils import sort_versions
-from .utils import unzip_file
+import re
+import typing as t
+from lk_utils import dumps
+from lk_utils import fs
+from lk_utils import loads
+from os.path import exists
+from . import utils
+from .normalization import T as T0
+from .normalization import VersionSpec
+from .paths import pypi as pypi_paths
+from .pip import Pip
+from .pip import pip as _default_pip
+from .utils import verspec
+
+__all__ = ['pypi']
+
+
+class T:
+    Name = T0.Name
+    NameId = str  # f'{Name}-{FixedVersion}'
+    Path = str
+    Pip = Pip
+    Version = T0.Version
+    VersionSpecs = t.Iterable[VersionSpec]
+    
+    Location = Path
+    Packages = t.Dict[Name, VersionSpecs]
+    
+    # indexes
+    DependenciesIndex = t.Dict[NameId, t.List[NameId]]
+    Name2Versions = t.Dict[Name, t.List[Version]]
+    #   t.List[...]: a sorted versions list, from new to old.
+    NameId2Paths = t.Dict[Version, t.Tuple[Path, Path]]
+    #   t.List[...]: tuple[downloaded_path, installed_path]
+    Updates = t.Dict[Name, int]
 
 
 class LocalPyPI:
-    pip: TPip
+    pip: T.Pip
     
-    name_versions: TNameVersions
-    # locations: TLocationsIndex
-    dependencies: TDependenciesIndex
-    updates: TUpdates
+    name_2_versions: T.Name2Versions
+    name_id_2_paths: T.NameId2Paths
+    # locations: T.LocationsIndex
+    dependencies: T.DependenciesIndex
+    updates: T.Updates
     
     # # update_freq = 60 * 60 * 24 * 7  # one week
     update_freq = -1
     
-    def __init__(self, pip: TPip):
+    def __init__(self, pip=_default_pip):
         self.pip = pip
-        a, b, c = pypi_model.load_indexed_data()
-        self.name_versions = a
-        # self.locations = b
-        self.dependencies = b
-        self.updates = c
+        self._load_index()
+        atexit.register(self._save_index)
     
-    def reload_indexed_data(self):
-        a, b, c = pypi_model.load_indexed_data()
-        self.name_versions = a
-        # self.locations = b
-        self.dependencies = b
-        self.updates = c
+    def _load_index(self):
+        self.name_2_versions = loads(pypi_paths.name_2_versions)
+        self.name_id_2_paths = loads(pypi_paths.name_id_2_paths)
+        # self.locations = loads(pypi_paths.locations)
+        self.dependencies = loads(pypi_paths.dependencies)
+        self.updates = loads(pypi_paths.updates)
     
-    def analyse_requirement(self, req: TRequirement) -> TPackageInfo:
+    def _save_index(self) -> None:
+        dumps(self.name_2_versions, pypi_paths.name_2_versions)
+        dumps(self.name_id_2_paths, pypi_paths.name_id_2_paths)
+        dumps(self.dependencies, pypi_paths.dependencies)
+        dumps(self.updates, pypi_paths.updates)
+    
+    # -------------------------------------------------------------------------
+    
+    def download(
+            self,
+            packages: T.Packages,
+            include_dependencies=False,
+    ) -> t.Iterator[t.Tuple[T.Name, T.Version, T.Path]]:
+        # downloaded: t.Dict[T.NameId, T.Path] = kwargs.get('_downloaded', {})
+        
+        # noinspection PyTypeChecker
+        for name, specs in packages.items():
+            proper_existed_version = verspec.find_proper_version(
+                request=specs,
+                candidates=self.name_2_versions[name]
+            )
+            if proper_existed_version:
+                name_id = f'{name}-{proper_existed_version}'
+                filepath = self.name_id_2_paths[name_id][0]
+                yield name, proper_existed_version, filepath
+                continue
+            
+            # start downloading
+            for filepath, is_new in self._download(
+                    name, specs, include_dependencies
+            ):
+                if is_new:
+                    filename = fs.filename(filepath)
+                    version = filename.split('-')[1]
+                    name_id = f'{name}-{version}'
+                    self.name_2_versions[name].insert(0, version)
+                    self.name_id_2_paths[name_id] = (filepath, '')
+                    yield name, version, filepath
+                # else:
+                #     filename = fs.filename(filepath)
+                #     version = filename.split('-')[1]
+                #     assert version in self.name_2_versions[name]
+                #     assert f'{name}-{version}' in self.version_2_path
+    
+    def install(self, packages: T.Packages, include_dependencies=False) \
+            -> t.Iterator[T.NameId]:
+        for name, version, downloaded_path in self.download(
+                packages, include_dependencies
+        ):
+            name_id = f'{name}-{version}'
+            installed_path = self.name_id_2_paths[name_id][1]
+            if installed_path:
+                yield name_id
+                continue
+            else:
+                installed_path = '{}/{}/{}'.format(
+                    pypi_paths.installed,
+                    name,
+                    version
+                )
+                self.pip.run(
+                    'install', downloaded_path,
+                    '--no-deps', '--no-index',
+                    ('-t', installed_path),
+                    ('--find-links', pypi_paths.downloads),
+                )
+                self.name_id_2_paths[name_id] = \
+                    (downloaded_path, installed_path)
+                yield name_id
+    
+    def linking(self, name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
+        for nid in name_ids:
+            installed_path = self.name_id_2_paths[nid][1]
+            assert exists(installed_path)
+            try:
+                utils.mklinks(installed_path, dst_dir, force=False)
+            except FileExistsError:
+                utils.mergelinks(installed_path, dst_dir, overwrite=None)
+    
+    # -------------------------------------------------------------------------
+    
+    def _download(
+            self, name: T.Name, specs: T.VersionSpecs,
+            include_dependencies=False,
+    ) -> t.Iterator[t.Tuple[T.Path, bool]]:
+        """
+        return: iter[tuple[abspath_of_whl_or_tar_file, is_new_file]]
+        """
+        response = self.pip.download(
+            name=name,
+            version=','.join(x.spec for x in specs),
+            dest=pypi_paths.downloads,
+            no_deps=not include_dependencies,
+        )
+        ''' e.g. 1:
+                Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+                ...
+                  Saved <abspath>
+            e.g. 2:
+                Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+                ...
+                  File was already downloaded <abspath>
+        '''
+        pattern1 = re.compile(r'(?<=File was already downloaded ).+')
+        pattern2 = re.compile(r'(?<=Saved ).+')
+        for m in pattern1.finditer(response):
+            yield m.group(), False
+        for m in pattern2.finditer(response):
+            yield m.group(), True
+    
+    def _extract_dependencies(self, whl_or_tar_file: T.Path) -> T.VersionSpecs:
+        pass
+    
+    # -------------------------------------------------------------------------
+    # DELETE BELOW
+    
+    ''' 
+    def analyse_requirement(self, req: T.Requirement) -> T.PackageInfo:
         # if version doesn't in self.name_versions, or the version requests
         # latest but local repository is outdated, we should refresh local
         # repository.
         version = self._get_local_matched_version(req)
         if version:
-            lk.loga('found requirement in local repo', req)
+            print('found requirement in local repo', req)
             req.set_fixed_version(version)
         else:
-            lk.loga('request requirement from pip (online)', req)
+            print('request requirement from pip (online)', req)
             req = self._refresh_local_repo(req)
         
         name, version, name_id = req.name, req.version, req.name_id
@@ -61,7 +197,11 @@ class LocalPyPI:
             dependencies=self.dependencies[name_id]
         )
     
-    def get_all_dependencies(self, name_id, holder=None) -> List[TNameId]:
+    def get_all_dependencies(
+            self,
+            name_id: T.NameId,
+            holder: t.Optional[t.List[T.NameId]] = None
+    ) -> t.List[T.NameId]:
         if holder is None:
             holder = []
         for dep_name_id in self.dependencies[name_id]:
@@ -72,13 +212,17 @@ class LocalPyPI:
         return holder
     
     @staticmethod
-    def get_location(name_id) -> TLocation:
-        out = pypi_model.extraced + '/' + name_id
+    def get_location(name_id: T.NameId) -> T.Location:
+        out = pypi_paths.extracted + '/' + name_id
         assert os.path.exists(out)  # this dir is generated by
         #   `self._refresh_local_repo:MARK@20210918100418`
         return out
     
-    def _get_local_matched_version(self, req, check_outdated=True):
+    def _get_local_matched_version(
+            self,
+            req: T.Requirement,
+            check_outdated=True
+    ):
         """
         
         Notice:
@@ -92,15 +236,15 @@ class LocalPyPI:
             exists to avoid saving an existed verison which may cause a
             FileExistsError.
         """
-        if req.name not in self.name_versions:
+        if req.name not in self.name_2_versions:
             return None
         if req.version_spec == LATEST:
             if check_outdated and self._is_outdated(req.name):
                 return None
-        version_list = self.name_versions[req.name]
+        version_list = self.name_2_versions[req.name]
         return find_best_matched_version(req.version_spec, version_list)
     
-    def _is_outdated(self, name):
+    def _is_outdated(self, name: T.Name) -> bool:
         if self.update_freq == -1:
             return False  # never outdated
         if t := self.updates.get(name):
@@ -108,13 +252,13 @@ class LocalPyPI:
                 return False
         return True
     
-    def _refresh_local_repo(self, req: TRequirement):
+    def _refresh_local_repo(self, req: T.Requirement) -> T.Requirement:
         _req = req
         
         deps = {}
         available_namespace = {}
         
-        for path in self._download(req.raw_name, pypi_model.downloads):
+        for path in self._download(req.raw_name, pypi_paths.downloads):
             if path.endswith(('.whl', '.zip')):
                 pkg = Wheel(path)
             elif path.endswith(('.tar.gz', '.tar')):
@@ -131,19 +275,21 @@ class LocalPyPI:
             self.updates[name] = int(time())
             
             # self.name_versions
-            if version in self.name_versions[name]:
-                lk.loga('local repo satisfies requirement', name_id)
+            if version in self.name_2_versions[name]:
+                print('local repo satisfies requirement', name_id)
                 continue
             else:
-                self.name_versions[name].append(version)
-                sort_versions(self.name_versions[name])
+                self.name_2_versions[name].append(version)
+                sort_versions(self.name_2_versions[name])
             
             try:  # MARK: 20210918100418
-                loc = pypi_model.mkdir(name_id)
+                loc = '{}/{}'.format(pypi_paths.extracted, name_id)
+                if not os.path.exists(loc):
+                    os.mkdir(loc)
             except FileExistsError:
                 pass
             else:
-                unzip_file(path, loc)
+                ziptool.unzip_file(path, loc)
             
             # self.dependencies
             deps[name_id] = pkg.requires_dist
@@ -155,11 +301,12 @@ class LocalPyPI:
         )
         _req.set_fixed_version(available_namespace[_req.name])
         
+        # noinspection PyTypeChecker
         for name_id, requires_dist in deps.items():
             for raw_name in requires_dist:
                 # # excluded names
                 # if re.search(r'\bextra\b *==', raw_name):
-                #     lk.loga('exclude extra package', raw_name)
+                #     print('exclude extra package', raw_name)
                 #     continue
                 
                 dep = Requirement(raw_name)
@@ -167,8 +314,8 @@ class LocalPyPI:
                 if dep.name not in available_namespace:
                     # it means this dep is an invalid package (authorized by
                     # pip download)
-                    lk.loga('invalid package recorded in requires_dist but not '
-                            'downloaded by pip-download', dep.raw_name)
+                    print('invalid package recorded in requires_dist but not '
+                          'downloaded by pip-download', dep.raw_name)
                     continue
                 
                 version = available_namespace[dep.name]
@@ -177,59 +324,36 @@ class LocalPyPI:
         
         return _req
     
-    def _download(self, raw_name, dst_dir):
+    def _download_one(self, name: T.Name, version: str, dst_dir: T.Path) -> str:
         """
-        Returns:
-            Union[path, empty_string]
-                path: new downloaded file path
-                empty_string: the requested file already exists in local
+        args:
+            version: a version includes a version spec, e.g. '>=1.0.0'
+                (https://pip.pypa.io/en/stable/cli/pip_install/#requirement
+                -specifiers)
+                
+        returns: str path_or_empty
+            if path returned, it means a new package is requested to download.
+            if empty, it means the requested package already exists in local.
         """
-        lk.loga('downloading package (this takes a few seconds/minutes...)',
-                raw_name)
-        # use quotes around `raw_name` because `raw_name` includes version
-        # specifiers (like '>', '<', etc.) which should be wrapped when using
-        # in shell. (https://pip.pypa.io/en/stable/cli/pip_install/#requirement
-        # -specifiers)
-        ret = self.pip.download(f'"{raw_name}"', dst_dir)
-        r'''Example:
-            Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
-            Collecting lk-utils
-              File was already downloaded e:\downloads\test_20210826_155333\lk_u
-              tils-1.4.4-py38-none-any.whl
-            Collecting lk-logger<4.0,>=3.6
-              File was already downloaded e:\downloads\test_20210826_155333\lk_l
-              ogger-3.6.3-py3-none-any.whl
-            Collecting xlsxwriter<2.0,>=1.3
-              File was already downloaded e:\downloads\test_20210826_155333\Xlsx
-              Writer-1.4.5-py2.py3-none-any.whl
-            Collecting xlrd==1.2
-              Using cached https://pypi.tuna.tsinghua.edu.cn/packages/b0/16/6357
-              6a1a001752e34bf8ea62e367997530dc553b689356b9879339cf45a4/xlrd-1.2.
-              0-py2.py3-none-any.whl (103 kB)
-            Saved e:\downloads\test_20210826_155333\xlrd-1.2.0-py2.py3-none-any.
-            whl
-            Successfully downloaded lk-utils xlrd lk-logger xlsxwriter
-        '''
-        
+        reponse = self.pip.download(name, version, dst_dir, no_deps=True)
+        """ e.g. 1:
+                Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+                ...
+                  Saved <abspath>
+            e.g. 2:
+                Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+                ...
+                  File was already downloaded <abspath>
+        """
         pattern1 = re.compile(r'(?<=Saved ).+')
         pattern2 = re.compile(r'(?<=File was already downloaded ).+')
-        
-        for m in pattern1.finditer(ret):
-            path = m.group().strip()
-            lk.logt('[D0108]', 'new file downloaded', os.path.basename(path))
-            yield path
-        
-        for m in pattern2.finditer(ret):
-            path = m.group().strip()
-            lk.logt('[D0109]', 'file already exists', os.path.basename(path))
-            yield path
-    
-    def save(self):
-        pypi_model.save_indexed_data(
-            self.name_versions, self.dependencies, self.updates
-        )
+        if m := pattern1.search(reponse):
+            return m.group()
+        elif pattern2.search(reponse):
+            return ''
+        else:
+            raise Exception(reponse)
+    '''
 
 
-local_pypi = LocalPyPI(default_pip)
-
-__all__ = ['local_pypi']
+pypi = LocalPyPI()
