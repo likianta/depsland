@@ -1,5 +1,3 @@
-import atexit
-
 import re
 import typing as t
 from lk_utils import dumps
@@ -9,6 +7,7 @@ from os.path import exists
 from . import utils
 from .normalization import T as T0
 from .normalization import VersionSpec
+from .normalization import normalize_name
 from .paths import pypi as pypi_paths
 from .pip import Pip
 from .pip import pip as _default_pip
@@ -29,7 +28,7 @@ class T:
     Packages = t.Dict[Name, VersionSpecs]
     
     # indexes
-    DependenciesIndex = t.Dict[NameId, t.List[NameId]]
+    Dependencies = t.Dict[NameId, t.List[NameId]]
     Name2Versions = t.Dict[Name, t.List[Version]]
     #   t.List[...]: a sorted versions list, from new to old.
     NameId2Paths = t.Dict[Version, t.Tuple[Path, Path]]
@@ -43,7 +42,7 @@ class LocalPyPI:
     name_2_versions: T.Name2Versions
     name_id_2_paths: T.NameId2Paths
     # locations: T.LocationsIndex
-    dependencies: T.DependenciesIndex
+    dependencies: T.Dependencies
     updates: T.Updates
     
     # # update_freq = 60 * 60 * 24 * 7  # one week
@@ -52,7 +51,7 @@ class LocalPyPI:
     def __init__(self, pip=_default_pip):
         self.pip = pip
         self._load_index()
-        atexit.register(self._save_index)
+        # atexit.register(self.save_index)
     
     def _load_index(self):
         self.name_2_versions = loads(pypi_paths.name_2_versions)
@@ -61,7 +60,7 @@ class LocalPyPI:
         self.dependencies = loads(pypi_paths.dependencies)
         self.updates = loads(pypi_paths.updates)
     
-    def _save_index(self) -> None:
+    def save_index(self) -> None:
         dumps(self.name_2_versions, pypi_paths.name_2_versions)
         dumps(self.name_id_2_paths, pypi_paths.name_id_2_paths)
         dumps(self.dependencies, pypi_paths.dependencies)
@@ -74,36 +73,52 @@ class LocalPyPI:
             packages: T.Packages,
             include_dependencies=False,
     ) -> t.Iterator[t.Tuple[T.Name, T.Version, T.Path]]:
-        # downloaded: t.Dict[T.NameId, T.Path] = kwargs.get('_downloaded', {})
-        
         # noinspection PyTypeChecker
         for name, specs in packages.items():
-            proper_existed_version = verspec.find_proper_version(
-                request=specs,
-                candidates=self.name_2_versions[name]
-            )
-            if proper_existed_version:
-                name_id = f'{name}-{proper_existed_version}'
-                filepath = self.name_id_2_paths[name_id][0]
-                yield name, proper_existed_version, filepath
-                continue
+            if name in self.name_2_versions:
+                proper_existed_version = verspec.find_proper_version(
+                    request=specs,
+                    candidates=self.name_2_versions[name]
+                )
+                if proper_existed_version:
+                    name_id = f'{name}-{proper_existed_version}'
+                    filepath = self.name_id_2_paths[name_id][0]
+                    yield name, proper_existed_version, filepath
+                    
+                    if include_dependencies:
+                        for nid in self.dependencies[name_id]:
+                            a, b = nid.split('-', 1)
+                            yield a, b, self.name_id_2_paths[nid][0]
+                    continue
             
             # start downloading
+            dependencies: t.List[T.NameId] = []
+            source_name = name
+            source_name_id = ''
+            # del name  # variable `name` is released
             for filepath, is_new in self._download(
-                    name, specs, include_dependencies
+                    source_name, specs, include_dependencies
             ):
+                filename = fs.filename(filepath)
+                #   e.g. 'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl'
+                name, version, _ = filename.split('-', 2)
+                name = normalize_name(name)  # e.g. 'PyYAML' -> 'pyyaml'
+                name_id = normalize_name(f'{name}-{version}')
+                
                 if is_new:
-                    filename = fs.filename(filepath)
-                    version = filename.split('-')[1]
-                    name_id = f'{name}-{version}'
                     self.name_2_versions[name].insert(0, version)
                     self.name_id_2_paths[name_id] = (filepath, '')
                     yield name, version, filepath
                 # else:
-                #     filename = fs.filename(filepath)
-                #     version = filename.split('-')[1]
                 #     assert version in self.name_2_versions[name]
-                #     assert f'{name}-{version}' in self.version_2_path
+                #     assert name_id in self.version_2_path
+                
+                if name == source_name:
+                    source_name_id = name_id
+                else:
+                    dependencies.append(name_id)
+            assert source_name_id
+            self.dependencies[source_name_id] = dependencies
     
     def install(self, packages: T.Packages, include_dependencies=False) \
             -> t.Iterator[T.NameId]:
@@ -132,6 +147,9 @@ class LocalPyPI:
                 yield name_id
     
     def linking(self, name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
+        print(':d', f'linking environment packages to {dst_dir}')
+        print(':l', name_ids)
+        
         for nid in name_ids:
             installed_path = self.name_id_2_paths[nid][1]
             assert exists(installed_path)
