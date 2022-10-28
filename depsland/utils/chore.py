@@ -1,21 +1,16 @@
 import hashlib
 import os
-from packaging.version import Version
 from uuid import uuid1
-from ..paths import temp_dir
+from .. import paths
+
+_temp_dir = paths.Project.temp
 
 
-def compare_version(v0: str, comp: str, v1: str) -> bool:
-    v0, v1 = map(Version, (v0, v1))
-    if eval(f'v0 {comp} v1', {'v0': v0, 'v1': v1}):
-        return True
-    return False
-
-
-def create_temporary_directory(root=temp_dir) -> str:
-    out = f'{root}/{uuid1().hex}'
+def create_temporary_directory(root=_temp_dir) -> str:
+    random_name = uuid1().hex
+    out = f'{root}/{random_name}'
     os.mkdir(out)
-    print(':vp', 'a temp dir is created', out)
+    print(':vp', 'a temp dir is created', f'<depsland>/temp/{random_name}')
     return out
 
 

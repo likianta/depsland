@@ -1,20 +1,11 @@
 import os
+import typing as t
+
 from os.path import exists
 from pathlib import Path
 
-from lk_logger import lk
 
-
-class T:
-    import typing as t
-    FileExistScheme = t.Literal['error', 'keep', 'overwrite']
-    List = t.List
-    Optional = t.Optional
-    Path = str
-    Paths = t.List[Path]
-
-
-def mklink(src: T.Path, dst: T.Path, force=False) -> T.Path:
+def mklink(src: str, dst: str, force=False) -> str:
     """
     references:
         common method to create symlink:
@@ -29,17 +20,17 @@ def mklink(src: T.Path, dst: T.Path, force=False) -> T.Path:
     return dst
 
 
-def mklinks(src_dir: T.Path, dst_dir: T.Path,
-            names: T.Optional[T.List[str]] = None,
-            force=False) -> T.Paths:
+def mklinks(src_dir: str, dst_dir: str,
+            names: t.Optional[t.List[str]] = None,
+            force=False) -> t.List[str]:
     out = []
     for n in (names or os.listdir(src_dir)):
         out.append(mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}', force=force))
     return out
 
 
-def mergelink(src_dir: T.Path, dst_dir: T.Path, new_dir: T.Path,
-              file_exist_scheme: T.FileExistScheme = 'error') -> T.Path:
+def mergelink(src_dir: str, dst_dir: str, new_dir: str,
+              overwrite: bool = None) -> str:
     src_names = os.listdir(src_dir)
     dst_names = os.listdir(dst_dir)
     
@@ -52,15 +43,16 @@ def mergelink(src_dir: T.Path, dst_dir: T.Path, new_dir: T.Path,
                 os.mkdir(sub_new_path)
                 mergelink(
                     sub_src_path, sub_dst_path, sub_new_path,
-                    file_exist_scheme
+                    overwrite
                 )
             else:
-                if file_exist_scheme == 'error':
-                    raise FileExistsError(sub_dst_path)
-                elif file_exist_scheme == 'keep':
-                    mklink(sub_dst_path, sub_new_path)
-                elif file_exist_scheme == 'overwrite':
-                    mklink(sub_src_path, sub_new_path)
+                match overwrite:
+                    case None:
+                        mklink(sub_dst_path, sub_new_path)
+                    case True:
+                        mklink(sub_src_path, sub_new_path)
+                    case False:
+                        raise FileExistsError(sub_dst_path)
         else:
             mklink(sub_src_path, sub_new_path)
     
@@ -79,8 +71,8 @@ def mergelink(src_dir: T.Path, dst_dir: T.Path, new_dir: T.Path,
     return new_dir
 
 
-def mergelinks(src_dir: T.Path, dst_dir: T.Path,
-               file_exist_scheme: T.FileExistScheme = 'error') -> T.Paths:
+def mergelinks(src_dir: str, dst_dir: str,
+               overwrite: bool = None) -> t.List[str]:
     out = []
     dst_names = os.listdir(dst_dir)
     
@@ -90,7 +82,7 @@ def mergelinks(src_dir: T.Path, dst_dir: T.Path,
         
         if n in dst_names:
             if os.path.isdir(src_path):
-                lk.logt('[D2205]', f'merging "{n}" ({src_dir} -> {dst_dir})')
+                print(':v', f'merging "{n}" ({src_dir} -> {dst_dir})')
                 
                 temp = dst_path
                 while exists(temp):
@@ -103,15 +95,16 @@ def mergelinks(src_dir: T.Path, dst_dir: T.Path,
                     os.mkdir(new_path)
                 # os.makedirs(new_path, exist_ok=True)
                 
-                mergelink(src_path, dst_path, new_path, file_exist_scheme)
+                mergelink(src_path, dst_path, new_path, overwrite)
             else:
-                if file_exist_scheme == 'error':
-                    raise FileExistsError(dst_path)
-                elif file_exist_scheme == 'keep':
-                    pass
-                elif file_exist_scheme == 'override':
-                    os.remove(dst_path)
-                    mklink(src_path, dst_path)
+                match overwrite:
+                    case None:
+                        pass
+                    case True:
+                        os.remove(dst_path)
+                        mklink(src_path, dst_path)
+                    case False:
+                        raise FileExistsError(dst_path)
         else:
             mklink(src_path, dst_path, force=False)
         
