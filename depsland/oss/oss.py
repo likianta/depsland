@@ -3,15 +3,15 @@ from lk_utils import loads
 from os.path import basename
 from oss2 import Auth
 from oss2 import Bucket
-from ..paths import Conf
+from ..paths import conf as conf_paths
 
 
 def get_oss_server() -> 'Oss':
-    return _get_oss(loads(Conf.oss_server))
+    return _get_oss(loads(conf_paths.oss_server))
 
 
 def get_oss_client() -> 'Oss':
-    return _get_oss(loads(Conf.oss_client))
+    return _get_oss(loads(conf_paths.oss_client))
 
 
 def _get_oss(config: dict) -> 'Oss':
@@ -46,7 +46,7 @@ class Oss:
                 self._update_progress, f'uploading {name}'
             )
         )
-        print(':rpt', f'done [cyan]({name})[/]')
+        print(':rpt', f'upload done [cyan]({name})[/]')
     
     def download(self, link: str, file: str):
         name = basename(file)
@@ -56,7 +56,7 @@ class Oss:
                 self._update_progress, f'downloading {name}'
             )
         )
-        print(':rpt', f'done [cyan]({name})[/]')
+        print(':rpt', f'download done [cyan]({name})[/]')
     
     def delete(self, link: str):
         self._bucket.delete_object(link)
@@ -82,7 +82,7 @@ class OssPath:
     @property
     def manifest(self) -> str:
         return f'apps/{self.appid}/manifest.pkl'
-
+    
     @property
     def assets(self) -> str:
         return f'apps/{self.appid}/assets'

@@ -1,53 +1,131 @@
 """
-References:
-    ~/venv_home/readme.md
+ref: ~/docs/project-structure.md
 """
 import os
-import typing as t
 from lk_utils import dumps
-from lk_utils import loads
 from lk_utils.filesniff import normpath
-from os import mkdir
 from os.path import dirname
 from os.path import exists
-from platform import system
-from .data_struct import PyVersion
 
 __all__ = [
-    'platform',
-    'apps_dir', 'conf_dir', 'curr_dir', 'home_dir',
-    'pakg_dir', 'proj_dir', 'pypi_dir', 'temp_dir',
-    'VEnvSourceModel', 'VEnvDistModel', 'EmbedAssetsModel', 'LocalPyPIModel',
-    # 'assets_model', 'pypi_model', 'src_model',
+    'apps', 'conf', 'project', 'pypi', 'python', 'temp',
 ]
 
+_CURR_DIR = normpath(dirname(__file__), force_abspath=True)
+_PROJ_DIR = normpath(dirname(_CURR_DIR))
+_IS_WINDOWS = os.name == 'nt'
 
-class T:  # 'TypeHint'
-    Platform = t.Literal['darwin', 'linux', 'windows']
-    PyVersion = PyVersion
+
+class _PathIndex:  # DELETE
+    root: str
     
-    Name = str  # e.g. 'numpy'
-    NameId = str  # e.g. 'numpy-1.15.4'
-    NameVersions = t.Dict[Name, t.List[PyVersion]]
-    Dependencies = t.List[NameId]
-    DependenciesIndex = t.Dict[NameId, Dependencies]
-    Updates = t.Dict[NameId, int]
+    def __init__(self):
+        self._build_dirs()
+    
+    def _build_dirs(self):
+        pass
 
 
-# noinspection PyTypeChecker
-platform = system().lower()  # type: T.Platform
-
-curr_dir = normpath(dirname(__file__))  # current dir
-pakg_dir = curr_dir  # depsland package dir
-proj_dir = dirname(pakg_dir)  # depsland project dir
-
-apps_dir = f'{proj_dir}/apps'
-conf_dir = f'{proj_dir}/conf'
-home_dir = f'{proj_dir}/venv_home'  # project venv_home dir
-pypi_dir = f'{proj_dir}/pypi'  # project pypi dir
-temp_dir = f'{proj_dir}/temp'
+class Project(_PathIndex):
+    root = f'{_PROJ_DIR}'
+    # below attrs follow alphabetical order
+    apps = f'{root}/apps'
+    # cache = f'{root}/cache'
+    conf = f'{root}/conf'
+    project = f'{root}'
+    pypi = f'{root}/pypi'
+    python = f'{root}/python'
+    temp = f'{root}/temp'
 
 
+# -----------------------------------------------------------------------------
+
+class Apps(_PathIndex):
+    root = f'{_PROJ_DIR}/apps'
+    venv = f'{root}/venv'
+    _packages = f'{root}/venv/{{appid}}/packages'
+    
+    def make_package(self, appid: str) -> str:
+        package = self._packages.format(appid=appid)
+        if not exists(package):
+            os.makedirs(package)
+        return package
+
+
+class Conf(_PathIndex):
+    root = f'{_PROJ_DIR}/conf'
+    oss_client = f'{root}/oss_client.yaml'
+    oss_server = f'{root}/oss_server.yaml'
+    pip = f'{root}/pip.yaml'
+
+
+class OSS:
+    root = 'apps'
+    assets: str
+    manifest: str
+    
+    def __init__(self, appid: str):
+        self.assets = f'{self.root}/{appid}/assets'
+        self.manifest = f'{self.root}/{appid}/manifest.pkl'
+
+    @property
+    def appid(self) -> str:
+        return self.assets.split('/')[-2]
+
+    def __str__(self):
+        return f'<bucket:/depsland/apps/{self.appid}>'
+
+
+class PyPI:
+    root = f'{_PROJ_DIR}/pypi'
+    
+    cache = f'{root}/cache'
+    downloads = f'{root}/downloads'
+    # extracted = f'{root}/extracted'
+    index = f'{root}/index'
+    installed = f'{root}/installed'
+    
+    dependencies = f'{root}/index/dependencies.json'
+    # locations = f'{root}/index/locations.json'
+    name_2_versions = f'{root}/index/name_2_versions.json'
+    name_id_2_paths = f'{root}/index/name_id_2_paths.json'
+    updates = f'{root}/index/updates.json'
+    
+    def __init__(self):
+        if not exists(self.index):
+            os.mkdir(self.index)
+            dumps({}, self.dependencies)
+            dumps({}, self.name_2_versions)
+            dumps({}, self.name_id_2_paths)
+            dumps({}, self.updates)
+
+
+class Python(_PathIndex):
+    root = f'{_PROJ_DIR}/python'
+    if _IS_WINDOWS:
+        raise NotImplementedError
+    else:
+        pip = f'{root}/bin/pip'
+        python = f'{root}/bin/python3.10'
+        site_packages = f'{root}/lib/python3.10/site-packages'
+
+
+class Temp(_PathIndex):
+    root = f'{_PROJ_DIR}/temp'
+    unittests = f'{root}/unittests'
+
+
+apps = Apps()
+conf = Conf()
+# oss = OSS(<appid>)  # FIXME: this cannot be instantiated here
+project = Project()
+pypi = PyPI()
+python = Python()
+temp = Temp()
+
+# -----------------------------------------------------------------------------
+
+''' DELETE
 class _PathModel:
     pyversion: T.PyVersion
     platform: T.Platform
@@ -336,3 +414,4 @@ class LocalPyPIModel(_PathModel):
 # assets_model = EmbedAssetsModel(PyVersion('3.9'))
 # pypi_model = LocalPyPIModel()
 # src_model = VEnvSourceModel(PyVersion('3.9'), platform)
+'''

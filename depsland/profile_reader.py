@@ -6,7 +6,7 @@ from lk_utils import loads
 from os.path import exists
 from . import paths
 
-_apps_dir = paths.Project.apps
+_apps_dir = paths.project.apps
 
 
 # noinspection PyTypedDict
