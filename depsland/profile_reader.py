@@ -65,6 +65,17 @@ def get_app_info(manifest_file: T.ManifestFile) -> T.Appinfo:
     return data_o
 
 
+def init_manifest(appid: str, name: str) -> T.Manifest:
+    return {
+        'appid'          : appid,
+        'name'           : name,
+        'version'        : '0.0.0',
+        'start_directory': '',
+        'assets'         : {},
+        'dependencies'   : {},
+    }
+
+
 def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest:
     manifest_file = fs.normpath(manifest_file, force_abspath=True)
     manifest_dir = fs.parent_path(manifest_file)

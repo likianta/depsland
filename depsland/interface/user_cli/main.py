@@ -9,6 +9,8 @@ from ...normalization import normalize_version_spec
 from ...oss import OssPath
 from ...oss import get_oss_client
 from ...oss.uploader import T as T0
+from ...profile_reader import init_manifest
+from ...profile_reader import load_manifest
 from ...pypi import pypi
 from ...utils import create_temporary_directory
 from ...utils import ziptool
@@ -89,3 +91,29 @@ def install(appid: str) -> T.Path:
         fs.remove_tree(dir_m)
     fs.move(manifest_file, f'{dir_o}/manifest.pkl', True)
     return dir_o
+
+
+def _install_files(dir_new: T.Path, dir_old: T.Path):
+    manifest_new = load_manifest(f'{dir_new}/manifest.pkl')
+    if dir_old:
+        manifest_old = load_manifest(f'{dir_old}/manifest.pkl')
+    else:
+        manifest_old = init_manifest(
+            manifest_new['appid'], manifest_new['name']
+        )
+    
+    # compare assets
+    def is_same() -> bool:
+        # nonlocal relpath_i, info_i
+        if relpath_i in manifest_old['assets']:
+            relpath_j = relpath_i
+            info_j = manifest_old['assets'][relpath_j]
+            return info_i.key == info_j.key
+        return False
+    
+    # noinspection PyTypeChecker
+    for relpath_i, info_i in manifest_new['assets'].items():
+        if is_same():
+            pass  # copy from old
+        else:
+            pass  # download from oss
