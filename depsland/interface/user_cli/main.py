@@ -6,12 +6,12 @@ from ... import config
 from ... import paths
 from ...normalization import normalize_name
 from ...normalization import normalize_version_spec
-from ...oss import get_oss_client, OssPath
+from ...oss import OssPath
+from ...oss import get_oss_client
 from ...oss.uploader import T as T0
 from ...pypi import pypi
 from ...utils import create_temporary_directory
 from ...utils import ziptool
-
 
 cli = CommandLineInterface()
 
@@ -25,6 +25,7 @@ class T:
 def install(appid: str) -> T.Path:
     """
     depsland install <url>
+    TODO: compare with old version, and download only different files.
     """
     dir_m: T.Path = create_temporary_directory()
     dir_o: T.Path
@@ -82,8 +83,9 @@ def install(appid: str) -> T.Path:
     
     name_ids = tuple(pypi.install(packages, include_dependencies=True))
     pypi.save_index()
-    pypi.linking(name_ids, paths.apps.make_packages(appid))
+    pypi.linking(name_ids, paths.apps.make_packages(appid, clear_exists=True))
     
     if not config.debug_mode:
         fs.remove_tree(dir_m)
+    fs.move(manifest_file, f'{dir_o}/manifest.pkl', True)
     return dir_o

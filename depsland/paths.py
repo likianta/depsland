@@ -4,7 +4,7 @@ ref: ~/docs/project-structure.md
 import os
 from collections import defaultdict
 from lk_utils import dumps
-from lk_utils.filesniff import normpath
+from lk_utils import fs
 from os.path import dirname
 from os.path import exists
 
@@ -12,8 +12,8 @@ __all__ = [
     'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'temp',
 ]
 
-_CURR_DIR = normpath(dirname(__file__), force_abspath=True)
-_PROJ_DIR = normpath(dirname(_CURR_DIR))
+_CURR_DIR = fs.normpath(dirname(__file__), force_abspath=True)
+_PROJ_DIR = fs.normpath(dirname(_CURR_DIR))
 _IS_WINDOWS = os.name == 'nt'
 
 
@@ -46,9 +46,13 @@ class Apps(_PathIndex):
     venv = f'{root}/.venv'
     _packages = f'{root}/.venv/{{appid}}/packages'
     
-    def make_packages(self, appid: str) -> str:
+    def make_packages(self, appid: str, clear_exists=False) -> str:
         packages = self._packages.format(appid=appid)
-        if not exists(packages):
+        if exists(packages):
+            if clear_exists:
+                fs.remove_tree(packages)
+                os.mkdir(packages)
+        else:
             os.makedirs(packages)
         return packages
 

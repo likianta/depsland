@@ -1,8 +1,9 @@
-import re
 import semver  # https://github.com/python-semver/python-semver
 import typing as t
 from ..normalization import T
 from ..normalization import VersionSpec
+from ..normalization import normalize_name
+from ..normalization import normalize_version_spec
 
 
 def compare_version(v0: str, comp: str, v1: str) -> bool:
@@ -15,7 +16,7 @@ def compare_version(v0: str, comp: str, v1: str) -> bool:
 
 
 def find_proper_version(
-        request: t.Iterable[VersionSpec],
+        *verspecs: VersionSpec,
         candidates: t.Sequence[T.Version]
 ) -> t.Optional[str]:
     """
@@ -23,38 +24,36 @@ def find_proper_version(
         request: ('1.2.3', '>=')
         candidates: a sorted list of version strings, from new to old.
     """
+    assert len(verspecs)
     if not candidates:
         return None
-    
-    ver_str, comp = request
-    
-    if comp == '':
+    if len(verspecs) == 1 and verspecs[0].version == '':
         return candidates[0]
-    if ver_str == 'latest' or ver_str == '*':
-        assert comp == '=='
-        return candidates[0]
-    if '*' in ver_str:
-        assert comp in ('>=', '==')
-        assert (m := re.search('((?:\d\.)+)\*$', ver_str)), \
-            'the asterisk symbol could only be in minor or patch position'
-        comp = '>='  # noqa
-        minor_or_patch = 'minor' if m.group(1).count('.') == 1 else 'patch'
-        bottom_ver = semver.Version.parse(ver_str)
-        if minor_or_patch == 'minor':
-            bumped_ver = bottom_ver.bump_major()
-        else:
-            bumped_ver = bottom_ver.bump_minor()
-        for ver in map(semver.Version.parse, candidates):
-            if bottom_ver <= ver < bumped_ver:
-                assert str(ver) in candidates
-                return str(ver)
+    
+    filtered_candidates = []
+    for spec in verspecs:
+        for candidate in candidates:
+            if compare_version(spec.version, spec.comparator, candidate):
+                if len(verspecs) == 1:
+                    return candidate
+                filtered_candidates.append(candidate)
+        if filtered_candidates:
+            candidates = filtered_candidates
+            filtered_candidates = []
         else:
             return None
-    else:
-        assert comp in ('>=', '>', '==', '<', '<=')
-        ver_str_0 = ver_str
-        for ver_str_1 in candidates:
-            if compare_version(ver_str_0, comp, ver_str_1):
-                return ver_str_1
-        else:
-            return None
+    assert filtered_candidates
+    return filtered_candidates[0]
+
+
+def get_verspec_from_filename(filename: str) -> VersionSpec:
+    # e.g. 'PySide6-6.0.0-cp39-cp39-win_amd64.whl'
+    a, b, _ = filename.split('-', 2)
+    # -> ['PySide6', '6.0.0', 'cp39-cp39-win_amd64.whl']
+    name = normalize_name(a)
+    # -> 'pyside6'
+    verspec_ = tuple(normalize_version_spec(name, b))
+    assert len(verspec_) == 1
+    verspec = verspec_[0]
+    # -> VersionSpec<'pyside6==6.0.0'>
+    return verspec

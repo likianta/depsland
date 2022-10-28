@@ -13,7 +13,7 @@ from .pip import Pip
 from .pip import pip as _default_pip
 from .utils import verspec
 
-__all__ = ['pypi']
+__all__ = ['T', 'pypi']
 
 
 class T:
@@ -77,8 +77,7 @@ class LocalPyPI:
         for name, specs in packages.items():
             if name in self.name_2_versions:
                 proper_existed_version = verspec.find_proper_version(
-                    request=specs,
-                    candidates=self.name_2_versions[name]
+                    *specs, candidates=self.name_2_versions[name]
                 )
                 if proper_existed_version:
                     name_id = f'{name}-{proper_existed_version}'

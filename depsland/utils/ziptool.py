@@ -56,8 +56,10 @@ def unzip_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
     if len(dlist) == 1:
         x = dlist[0]
         if os.path.isdir(f'{dir_o}/{x}'):
+            # print(os.listdir(f'{dir_o}/{x}'), ':v')
             if x == dirname_o:
-                print(f'move up sub folder ({x}) to be parent')
+                print(f'move up sub folder [cyan]({x})[/] to be parent',
+                      ':vspr')
                 dir_m = f'{dir_o}_tmp'
                 assert not os.path.exists(dir_m)
                 os.rename(dir_o, dir_m)
