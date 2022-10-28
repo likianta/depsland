@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "depsland"
+version = "0.0.0"
+description = ""
+readme = ""
+authors = ["Likianta <likianta@foxmail.com>"]
+license = "MIT"
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
+default = true
+
+[tool.poetry.dependencies]
+python = "^3.10"
+argsense = ""
+lk-logger = "^5.4.6a0"
+lk-utils = "^2.5.0b5"
+oss2 = ""
+pip = ""
+pyyaml = ""
+semver = "^3.0.0dev3"
+wheel = ""
+
+[tool.poetry.extras]
+
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
