@@ -2,13 +2,14 @@
 ref: ~/docs/project-structure.md
 """
 import os
+from collections import defaultdict
 from lk_utils import dumps
 from lk_utils.filesniff import normpath
 from os.path import dirname
 from os.path import exists
 
 __all__ = [
-    'apps', 'conf', 'project', 'pypi', 'python', 'temp',
+    'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'temp',
 ]
 
 _CURR_DIR = normpath(dirname(__file__), force_abspath=True)
@@ -42,14 +43,14 @@ class Project(_PathIndex):
 
 class Apps(_PathIndex):
     root = f'{_PROJ_DIR}/apps'
-    venv = f'{root}/venv'
-    _packages = f'{root}/venv/{{appid}}/packages'
+    venv = f'{root}/.venv'
+    _packages = f'{root}/.venv/{{appid}}/packages'
     
-    def make_package(self, appid: str) -> str:
-        package = self._packages.format(appid=appid)
-        if not exists(package):
-            os.makedirs(package)
-        return package
+    def make_packages(self, appid: str) -> str:
+        packages = self._packages.format(appid=appid)
+        if not exists(packages):
+            os.makedirs(packages)
+        return packages
 
 
 class Conf(_PathIndex):
@@ -59,21 +60,29 @@ class Conf(_PathIndex):
     pip = f'{root}/pip.yaml'
 
 
-class OSS:
+class Oss:
     root = 'apps'
     assets: str
     manifest: str
+    _appid: str = ''
     
-    def __init__(self, appid: str):
-        self.assets = f'{self.root}/{appid}/assets'
-        self.manifest = f'{self.root}/{appid}/manifest.pkl'
-
-    @property
-    def appid(self) -> str:
-        return self.assets.split('/')[-2]
-
+    def set_appid(self, appid: str) -> 'Oss':
+        self._appid = appid
+        return self
+    
     def __str__(self):
-        return f'<bucket:/depsland/apps/{self.appid}>'
+        assert self._appid
+        return f'<oss://depsland/apps/{self._appid}>'
+    
+    @property
+    def assets(self) -> str:
+        assert self._appid
+        return f'{self.root}/{self._appid}/assets'
+    
+    @property
+    def manifest(self) -> str:
+        assert self._appid
+        return f'{self.root}/{self._appid}/manifest.pkl'
 
 
 class PyPI:
@@ -85,17 +94,21 @@ class PyPI:
     index = f'{root}/index'
     installed = f'{root}/installed'
     
-    dependencies = f'{root}/index/dependencies.json'
-    # locations = f'{root}/index/locations.json'
-    name_2_versions = f'{root}/index/name_2_versions.json'
-    name_id_2_paths = f'{root}/index/name_id_2_paths.json'
-    updates = f'{root}/index/updates.json'
+    dependencies = f'{root}/index/dependencies.pkl'
+    # locations = f'{root}/index/locations.pkl'
+    name_2_versions = f'{root}/index/name_2_versions.pkl'
+    name_id_2_paths = f'{root}/index/name_id_2_paths.pkl'
+    updates = f'{root}/index/updates.pkl'
     
     def __init__(self):
+        # TODO: move this to `depsland setup` stage.
         if not exists(self.index):
             os.mkdir(self.index)
-            dumps({}, self.dependencies)
-            dumps({}, self.name_2_versions)
+            dumps(defaultdict(list), self.dependencies)
+            dumps(defaultdict(list), self.name_2_versions)
+            # dumps(defaultdict(lambda : ('', '')), self.name_id_2_paths)
+            # dumps(defaultdict(lambda : 0), self.updates)
+            #   FIXME: local lambda cannot be pickled.
             dumps({}, self.name_id_2_paths)
             dumps({}, self.updates)
 
@@ -112,12 +125,13 @@ class Python(_PathIndex):
 
 class Temp(_PathIndex):
     root = f'{_PROJ_DIR}/temp'
-    unittests = f'{root}/unittests'
+    fake_oss_storage = f'{root}/.fake_oss_storage'
+    unittests = f'{root}/.unittests'
 
 
 apps = Apps()
 conf = Conf()
-# oss = OSS(<appid>)  # FIXME: this cannot be instantiated here
+oss = Oss()
 project = Project()
 pypi = PyPI()
 python = Python()

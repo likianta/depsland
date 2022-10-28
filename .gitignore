@@ -15,7 +15,7 @@
 /dist/
 /pypi/*/[^.]*
 /python/*
-/temp/*
+/temp/*/*
 /test/
 /tests/
 /venv_home/*/[^.]*
@@ -27,4 +27,6 @@ __pycache__/
 !/apps/.gitkeep
 !/python/README.md
 !/python/README.zh.md
+!/temp/.fake_oss_storage/.gitkeep
+!/temp/.unittests/.gitkeep
 !/temp/.gitkeep

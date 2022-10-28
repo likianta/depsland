@@ -1,23 +1,7 @@
 from functools import partial
-from lk_utils import loads
 from os.path import basename
 from oss2 import Auth
 from oss2 import Bucket
-from ..paths import conf as conf_paths
-
-
-def get_oss_server() -> 'Oss':
-    return _get_oss(loads(conf_paths.oss_server))
-
-
-def get_oss_client() -> 'Oss':
-    return _get_oss(loads(conf_paths.oss_client))
-
-
-def _get_oss(config: dict) -> 'Oss':
-    assert all(config.values()), 'the oss config is not prepared!'
-    # noinspection PyArgumentList
-    return Oss(**config)
 
 
 class Oss:
@@ -35,7 +19,7 @@ class Oss:
         """ make link for sharing. """
         return self._bucket.sign_url('GET', key, 3600)
     
-    def upload(self, file: str, link: str):
+    def upload(self, file: str, link: str) -> None:
         """
         warning: if target exists, will overwrite.
         """
@@ -48,7 +32,7 @@ class Oss:
         )
         print(':rpt', f'upload done [cyan]({name})[/]')
     
-    def download(self, link: str, file: str):
+    def download(self, link: str, file: str) -> None:
         name = basename(file)
         # noinspection PyUnusedLocal
         resp = self._bucket.get_object_to_file(
@@ -58,7 +42,7 @@ class Oss:
         )
         print(':rpt', f'download done [cyan]({name})[/]')
     
-    def delete(self, link: str):
+    def delete(self, link: str) -> None:
         self._bucket.delete_object(link)
     
     @staticmethod
@@ -70,19 +54,3 @@ class Oss:
             description,
             bytes_consumed / total_bytes
         ), end='\r')
-
-
-class OssPath:
-    def __init__(self, appid: str):
-        self.appid = appid
-    
-    def __str__(self):
-        return f'<bucket:/depsland/apps/{self.appid}>'
-    
-    @property
-    def manifest(self) -> str:
-        return f'apps/{self.appid}/manifest.pkl'
-    
-    @property
-    def assets(self) -> str:
-        return f'apps/{self.appid}/assets'
