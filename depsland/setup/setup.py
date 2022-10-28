@@ -1,23 +1,28 @@
 """
 Deploy depsland on client computer and make sure depsland integrity.
 """
+import sys
+
 import os
 import shutil
-import sys
+from depsland import paths
+from depsland.setup import setup_embed_python
+from lk_utils import dumps
+from lk_utils import loads
 from os.path import dirname
 from os.path import exists
 from os.path import normpath
 from textwrap import dedent
 
-from depsland.paths import *
-from depsland.setup import setup_embed_python
-from lk_logger import lk
-from lk_utils import dumps
-from lk_utils import loads
+proj_dir = paths.project.root
+platform = sys.platform.lower()
+
+src_model = ...
+assets_model = ...
 
 
 def _fuzzy_find_path(name):
-    parent_dir = proj_dir
+    parent_dir = paths.project.root
     for try_times in range(2):
         parent_dir = dirname(parent_dir)
         if exists(out := f'{parent_dir}/{name}'):
@@ -31,7 +36,7 @@ def main(pyversion='python39'):
     
     curr_build_dir = _fuzzy_find_path('build')
     if exists(f'{curr_build_dir}/setup_done.txt'):
-        lk.logt('[I4139]', dedent('''
+        print(':v2', dedent('''
             Despland has been installed on your computer.
             For re-installation, you can delete '~/build/setup_done.txt' then
             run 'setup.exe' again.
@@ -49,7 +54,7 @@ def main(pyversion='python39'):
     
     if '%DEPSLAND%' not in os.getenv('PATH') and \
             env_var not in os.getenv('PATH'):
-        lk.logt('[I4239]', '\n    ' + '\n    '.join((
+        print(':v2', '\n    ' + '\n    '.join((
             'THE NEXT STEP:',
             '    (Suggest) You can add "%DEPSLAND%" to your system environment '
             'PATH mannually. Then test it in the CMD:',
@@ -76,7 +81,7 @@ def _build_dirs():
             f'{proj_dir}/pypi/index',
     ):
         if not exists(d):
-            lk.loga('mkdir', d)
+            print('mkdir', d)
             os.mkdir(d)
     
     src_model.build_dirs()
@@ -123,8 +128,8 @@ def _add_to_system_environment():
     """
     depsland_entrance = normpath(proj_dir)
     os.system('setx DEPSLAND "{}"'.format(depsland_entrance))
-    lk.loga('Added DEPSLAND to environment variable\n'
-            + f'DEPSLAND => {depsland_entrance}')
+    print(f'Added DEPSLAND to environment variable\n'
+          f'DEPSLAND => {depsland_entrance}')
     return depsland_entrance
 
 
@@ -156,5 +161,4 @@ def _store_launching_info_in_program_data_dir(bat_file):
 
 
 if __name__ == '__main__':
-    lk.lite_mode = True
     main('python39')

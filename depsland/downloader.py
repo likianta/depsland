@@ -1,5 +1,5 @@
 import os
-import typehint as t
+import typing as t
 from functools import partial
 from urllib import request
 

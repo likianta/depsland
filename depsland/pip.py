@@ -3,12 +3,12 @@ a wrapper for pip command.
 """
 import re
 import typing as t
-from lk_utils import loads
 from lk_utils.filesniff import normpath
 from lk_utils.subproc import compose_cmd
 from lk_utils.subproc import run_cmd_args
 from yaml import safe_load as yaml_safe_load
 from . import paths
+from .config import app_settings
 
 
 class T:
@@ -22,7 +22,7 @@ class Pip:
     
     def __init__(self, pip: T.PipExecutableArgs, local: str):
         self._pip_exec = pip
-        pip_conf = loads(paths.conf.pip)
+        pip_conf = app_settings['pip']
         self._template = CommandTemplate(pip, local, **pip_conf)
     
     def update_pip_options(self, **options):

@@ -57,3 +57,31 @@ def get_verspec_from_filename(filename: str) -> VersionSpec:
     verspec = verspec_[0]
     # -> VersionSpec<'pyside6==6.0.0'>
     return verspec
+
+
+# TODO (refactor) or DELETE
+def sort_versions(versions: t.List[T.Version], reverse=True):
+    """
+    References:
+        Sort versions in Python:
+            https://stackoverflow.com/questions/12255554/sort-versions-in-python
+            /12255578
+        The LooseVersion and StrictVersion difference:
+            https://www.python.org/dev/peps/pep-0386/
+    """
+    
+    def _normalize_version(v: t.Union[str, T.Version]):
+        # TODO: the incoming `param:v` type must be TVersion; TNameId should be
+        #   removed.
+        if '-' in v:
+            v = v.split('-', 1)[-1]
+        if v in ('', '*', 'latest'):
+            return '999999.999.999'
+        else:
+            return v
+    
+    versions.sort(key=lambda v: semver.Version.parse(_normalize_version(v)),
+                  # `x` type is Union[TNameId, TVersion], for TNameId we
+                  # need to split out the name part.
+                  reverse=reverse)
+    return versions

@@ -1,11 +1,10 @@
 import os
 import shutil
 
-from lk_logger import lk
-from .paths import VEnvDistModel
-from .paths import VEnvSourceModel
-from .paths import src_model
-from .pypi import local_pypi
+# from .paths import VEnvDistModel
+# from .paths import VEnvSourceModel
+# from .paths import src_model
+from .pypi import pypi
 from .setup import setup_embed_python
 from .typehint import *
 from .utils import mergelinks
@@ -31,22 +30,21 @@ def create_venv(venv_name: str, requirements: List[TRequirement]):
         _init_venv_dir(src_model, dst_model)
         for loc in _install_requirements(requirements):  # loc: 'location'
             loc_name = os.path.basename(loc)
-            lk.log('add package to venv', loc_name)
+            print(':s', 'add package to venv', loc_name)
             try:
                 mklinks(loc, dst_model.site_packages, force=False)
             except FileExistsError:
-                lk.logt('[I1457]', 'merging existed target venv', loc_name)
-                mergelinks(loc, dst_model.site_packages,
-                           file_exist_scheme='keep')
+                print(':v2', 'merging existed target venv', loc_name)
+                mergelinks(loc, dst_model.site_packages)
     except Exception as e:
         if os.path.exists(dst_model.home):
-            lk.logt('[W5630]', 'creating venv failed, withdraw target venv',
-                    dst_model.home)
+            print(':v3', 'creating venv failed, withdraw target venv',
+                  dst_model.home)
             shutil.rmtree(dst_model.home)
         raise e
     finally:
-        lk.loga('save updated local pypi indexed data')
-        local_pypi.save()
+        print('save updated local pypi indexed data')
+        pypi.save()
     return dst_model.home
 
 
@@ -73,19 +71,18 @@ def _init_venv_dir(src_model: VEnvSourceModel,
 
 
 def _install_requirements(requirements: List[TRequirement]):
-    lk.loga('installing requirements', len(requirements))
-    lk.logp(requirements)
+    print('installing requirements', len(requirements))
+    print(':l', requirements)
     
     pkg_list = []  # type: list[TPackageInfo]
-    with lk.counting(len(requirements)):
-        for req in requirements:
-            lk.logax(req)
-            pkg_list.append(local_pypi.analyse_requirement(req))
+    for req in requirements:
+        print(':i', req)
+        pkg_list.append(pypi.analyse_requirement(req))
     
     all_pkgs = set()
     for pkg in pkg_list:
         all_pkgs.add(pkg.name_id)
         all_pkgs.update(pkg.dependencies)
     for name_id in all_pkgs:
-        loc = local_pypi.get_location(name_id)
+        loc = pypi.get_location(name_id)
         yield loc
