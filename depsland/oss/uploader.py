@@ -5,8 +5,8 @@ from collections import namedtuple
 from lk_utils import dumps
 from lk_utils import fs
 from uuid import uuid1
-from .oss import OssPath
-from .oss import get_oss_server
+from .get_oss import OssPath
+from .get_oss import get_oss_server
 from .. import config
 from ..profile_reader import T as T0
 from ..profile_reader import load_manifest

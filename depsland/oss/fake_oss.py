@@ -11,12 +11,14 @@ class FakeOss(Oss):
     
     def upload(self, file: str, link: str) -> None:
         dst_name = fs.filename(link)
-        assert dst_name.endswith(('.zip', '.fzip'))
+        assert dst_name.endswith(('.zip', '.fzip', '.pkl')), link
         fs.copy_file(file, f'{self._root}/{dst_name}')
-        print(':rpt', f'upload done [cyan]({fs.basename(file)})[/]')
+        print(':rpt', f'[magenta](fake_oss) upload done '
+                      f'[cyan]({fs.basename(file)})[/][/]')
     
     def download(self, link: str, file: str) -> None:
         src_name = fs.filename(link)
-        assert src_name.endswith(('.zip', '.fzip'))
+        assert src_name.endswith(('.zip', '.fzip', '.pkl')), link
         fs.copy_file(f'{self._root}/{src_name}', file)
-        print(':rpt', f'download done [cyan]({fs.basename(file)})[/]')
+        print(':rpt', f'[magenta](fake_oss) download done '
+                      f'[cyan]({fs.basename(file)})[/][/]')
