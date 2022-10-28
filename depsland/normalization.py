@@ -20,6 +20,9 @@ class VersionSpec:
     version: T.Version
     comparator: str  # '>=', '>', '==', '<', '<=', '!=', '~=', ''
     
+    def __str__(self):
+        return f'VersionSpec<{self.full_spec}>'
+    
     @property
     def spec(self) -> str:  # e.g. '>=5.4.6a0'
         return f'{self.comparator}{self.version}'
@@ -57,12 +60,17 @@ def normalize_version_spec(
         'any'           ->  <spec of ''>
         '*'             ->  <spec of ''>
     """
+    if not raw_verspec:
+        yield VersionSpec(name, '', '')
+        return
+    
     pattern_to_split_comp_and_ver = re.compile(r'([<>=!~]+)(.+)')
     
     for part in raw_verspec.split(','):
         comp, ver = pattern_to_split_comp_and_ver.search(part).groups()
         
         if ver in ('latest', 'any', '*'):
+            assert comp == '=='
             yield VersionSpec(
                 name=name,
                 version='',
