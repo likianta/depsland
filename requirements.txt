@@ -3,11 +3,13 @@ pip
 wheel
 
 argsense
+# cmp-version
 # embed-python-manager
-lambda-ex
+# lambda-ex
 lk-logger >= 5.4.6a0
-lk-utils >= 2.5.0b4
+lk-utils >= 2.5.0b5
 oss2
 packaging
-# pkginfo
+pkginfo
 pyyaml
+semver >= 3.0.0dev3

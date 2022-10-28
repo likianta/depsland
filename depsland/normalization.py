@@ -1,40 +1,96 @@
 import re
+import semver
+import typing as t
+from dataclasses import dataclass
 
-from .data_struct.special_versions import LATEST
+
+class T:
+    RawName = str  # e.g. 'lk-logger', 'PySide6', etc.
+    RawVersionSpec = str  # e.g. '>=5.4.6a0'
+    
+    Name = str  # e.g. 'lk_logger', 'pyside6', etc.
+    Version = str  # a semantic version
+    VersionSpec = t.ForwardRef('VersionSpec')
 
 
-def normalize_raw_name(raw_name: str):
+@dataclass
+class VersionSpec:
     # https://pip.pypa.io/en/stable/cli/pip_install/#requirement-specifiers
-    # note: use quotes around specifiers in the shell when using '>', '<', etc.
-    return (
-        raw_name
-            .lower()
-            # .replace(' ', '')
-            .replace('(', '')
-            .replace(')', '')
-            .strip()
-    )
-
-
-def normalize_name(name: str):
-    """ Normalize name. """
-    # return name.lower().replace('_', '-')
-    return name.lower().replace('-', '_')
-
-
-def normalize_version_spec(version_spec: str):
-    """ Normalize verison specifier. """
-    version_spec = version_spec.replace(' ', '')
-    if ';' in version_spec:  # e.g. ">=0.15.2;extra=='uvloop'"
-        version_spec = version_spec.split(';')[0]
+    name: T.Name  # e.g. 'lk_logger'
+    version: T.Version
+    comparator: str  # '>=', '>', '==', '<', '<=', '!=', '~=', ''
     
-    if version_spec in ('', '*', '==*'):
-        return LATEST
+    @property
+    def spec(self) -> str:  # e.g. '>=5.4.6a0'
+        return f'{self.comparator}{self.version}'
     
-    if version_spec.startswith('['):  # e.g. '[toml]>=5.0.2'
-        if version_spec.endswith(']'):
-            return LATEST
+    @property
+    def full_spec(self) -> str:  # e.g. 'lk_logger>=5.4.6a0'
+        return f'{self.name}{self.comparator}{self.version}'
+
+
+def split_name_and_verspec(text: str) -> t.Tuple[T.RawName, T.RawVersionSpec]:
+    text = text.replace(' ', '')
+    pattern = re.compile(r'([-\w]+)(.*)')
+    raw_name, verspec = pattern.match(text).groups()
+    return raw_name, verspec
+
+
+def normalize_name(raw_name: T.RawName) -> T.Name:
+    """
+    e.g. 'lk-logger' -> 'lk_logger'
+         'PySide6' -> 'pyside6'
+    """
+    return raw_name.strip().lower().replace('-', '_')
+
+
+def normalize_version_spec(
+        name: T.Name, raw_verspec: T.RawVersionSpec
+) -> t.Iterator[T.VersionSpec]:
+    """
+    e.g.
+        '>=4.5.0'       ->  <spec of '>=4.5.0'>
+        '>=4.5,<5.0'    ->  <spec of '>=4.5.0,<5.0.0'>
+        '==4.*'         ->  <spec of '>=4.0,<5.0'>
+        '==4.3.*'       ->  <spec of '>=4.3.0,<4.4.0'>
+        'latest'        ->  <spec of ''>
+        'any'           ->  <spec of ''>
+        '*'             ->  <spec of ''>
+    """
+    pattern_to_split_comp_and_ver = re.compile(r'([<>=!~]+)(.+)')
+    
+    for part in raw_verspec.split(','):
+        comp, ver = pattern_to_split_comp_and_ver.search(part).groups()
+        
+        if ver in ('latest', 'any', '*'):
+            yield VersionSpec(
+                name=name,
+                version='',
+                comparator='',
+            )
+        
+        elif '*' not in ver:
+            yield VersionSpec(
+                name=name,
+                version=ver,
+                comparator=comp,
+            )
+        
         else:
-            version_spec = version_spec.split(']')[-1]
-    
-    return re.search(r'[-.,><=!\w]+', version_spec).group()
+            assert comp in ('>=', '==')
+            assert (m := re.search('((?:\d\.)+)\*$', ver)), \
+                'the asterisk symbol could only be in minor or patch position'
+            minor_or_patch = 'minor' if m.group(1).count('.') == 1 else 'patch'
+            bottom_ver = semver.Version.parse(ver)
+            bumped_ver = (bottom_ver.bump_major() if minor_or_patch == 'minor'
+                          else bottom_ver.bump_minor())
+            yield VersionSpec(
+                name=name,
+                version=str(bottom_ver),
+                comparator='>='
+            )
+            yield VersionSpec(
+                name=name,
+                version=str(bumped_ver),
+                comparator='<'
+            )
