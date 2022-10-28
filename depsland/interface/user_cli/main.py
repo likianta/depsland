@@ -2,6 +2,7 @@ import os
 from argsense import CommandLineInterface
 from lk_utils import fs
 from lk_utils import loads
+from ... import config
 from ... import paths
 from ...normalization import normalize_name
 from ...normalization import normalize_version_spec
@@ -50,11 +51,11 @@ def install(appid: str) -> T.Path:
         raise FileExistsError(dir_o)
     
     # assets (make dirs)
-    paths_to_be_generated = set(
-        fs.normpath(f'{dir_m}/{k}')
+    paths_to_be_generated = sorted(set(
+        fs.normpath(f'{dir_o}/{k}')
         for k, v in manifest['assets'].items()  # noqa
         if v.file_type == 'dir'
-    )
+    ))
     print(':l', paths_to_be_generated)
     [os.makedirs(x, exist_ok=True) for x in paths_to_be_generated]
     
@@ -68,6 +69,7 @@ def install(appid: str) -> T.Path:
         print('oss download', '{} -> {}'.format(link, zipped))
         oss.download(link, zipped)
         unzipped = fs.normpath('{}/{}'.format(dir_o, relpath))
+        # print(':vl', zipped, unzipped)
         ziptool.unzip_file(zipped, unzipped, overwrite=True)
     
     # dependencies
@@ -76,8 +78,12 @@ def install(appid: str) -> T.Path:
         name = normalize_name(name)
         vspecs = tuple(normalize_version_spec(name, vspec))
         packages[name] = vspecs
-    name_ids = tuple(pypi.install(packages, include_dependencies=True))
-    pypi.linking(name_ids, paths.apps.make_package(appid))
+    print(':vl', packages)
     
-    fs.remove_tree(dir_m)
+    name_ids = tuple(pypi.install(packages, include_dependencies=True))
+    pypi.save_index()
+    pypi.linking(name_ids, paths.apps.make_packages(appid))
+    
+    if not config.debug_mode:
+        fs.remove_tree(dir_m)
     return dir_o
