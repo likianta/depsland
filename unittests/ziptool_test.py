@@ -6,7 +6,7 @@ from depsland.utils import ziptool
 
 @cli.cmd()
 def test_unzip_and_move_up():
-    a = utils.create_temporary_directory()
+    a = utils.make_temp_dir()
     b = f'{a}/b'
     c = f'{a}/b/c.txt'
     d = f'{a}/d.zip'

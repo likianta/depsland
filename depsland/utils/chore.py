@@ -6,14 +6,6 @@ from .. import paths
 _temp_dir = paths.Project.temp
 
 
-def create_temporary_directory(root=_temp_dir) -> str:
-    random_name = uuid1().hex
-    out = f'{root}/{random_name}'
-    os.mkdir(out)
-    print(':vp', 'a temp dir is created', f'<depsland>/temp/{random_name}')
-    return out
-
-
 def get_file_hash(filepath: str) -> str:
     """
     If file is too big, read the first 8192 bytes.
@@ -31,3 +23,11 @@ def get_file_hash(filepath: str) -> str:
 
 def get_updated_time(path: str) -> int:
     return int(os.path.getmtime(path))
+
+
+def make_temp_dir(root=_temp_dir) -> str:
+    random_name = uuid1().hex
+    out = f'{root}/{random_name}'
+    os.mkdir(out)
+    print(':vp', 'a temp dir is created', f'<depsland>/temp/{random_name}')
+    return out

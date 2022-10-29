@@ -12,7 +12,7 @@ from ...oss import OssPath
 from ...oss import get_oss_client
 from ...oss.uploader import T as T0
 from ...pypi import pypi
-from ...utils import create_temporary_directory
+from ...utils import make_temp_dir
 from ...utils import ziptool
 
 cli = CommandLineInterface()
@@ -29,7 +29,7 @@ def install(appid: str) -> T.Path:
     depsland install <url>
     TODO: compare with old version, and download only different files.
     """
-    dir_m: T.Path = create_temporary_directory()
+    dir_m: T.Path = make_temp_dir()
     dir_o: T.Path
     
     oss = get_oss_client()

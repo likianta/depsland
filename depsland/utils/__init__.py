@@ -1,6 +1,6 @@
 from . import verspec
 from . import ziptool
-from .chore import create_temporary_directory
+from .chore import make_temp_dir
 from .chore import get_file_hash
 from .chore import get_updated_time
 from .mklink import mergelink

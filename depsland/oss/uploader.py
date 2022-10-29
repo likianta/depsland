@@ -11,7 +11,7 @@ from .. import config
 from ..manifest import T as T0
 from ..manifest import load_manifest
 from ..utils import compare_version
-from ..utils import create_temporary_directory
+from ..utils import make_temp_dir
 from ..utils import get_file_hash
 from ..utils import get_updated_time
 from ..utils import ziptool
@@ -122,7 +122,7 @@ def _find_differences(
         manifest_new: T.ManifestA, manifest_old: T.ManifestB,
         saved_file: T.Path,
 ) -> T.DiffResult:
-    temp_dir = create_temporary_directory()
+    temp_dir = make_temp_dir()
     root_dir_i = manifest_new['start_directory']
     saved_data: T.ManifestB = {
         'appid'       : manifest_new['appid'],
@@ -214,14 +214,14 @@ def _compress(path_i: T.Path, file_o: T.Path) -> T.Path:
 
 def _copy_assets(path_i: T.Path, root_dir_o: str, scheme: T.Scheme) -> T.Path:
     def safe_make_folder(dirname: str) -> str:
-        sub_temp_dir = create_temporary_directory(root_dir_o)
+        sub_temp_dir = make_temp_dir(root_dir_o)
         os.mkdir(out := '{}/{}'.format(sub_temp_dir, dirname))
         return out
     
     if os.path.isdir(path_i):
         dir_o = safe_make_folder(os.path.basename(path_i))
     else:
-        sub_temp_dir = create_temporary_directory(root_dir_o)
+        sub_temp_dir = make_temp_dir(root_dir_o)
         file_o = '{}/{}'.format(sub_temp_dir, os.path.basename(path_i))
         fs.make_link(path_i, file_o)
         return file_o
