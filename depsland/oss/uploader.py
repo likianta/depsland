@@ -8,8 +8,8 @@ from uuid import uuid1
 from .get_oss import OssPath
 from .get_oss import get_oss_server
 from .. import config
-from ..profile_reader import T as T0
-from ..profile_reader import load_manifest
+from ..manifest import T as T0
+from ..manifest import load_manifest
 from ..utils import compare_version
 from ..utils import create_temporary_directory
 from ..utils import get_file_hash

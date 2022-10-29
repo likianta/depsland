@@ -5,9 +5,9 @@ from lk_utils import dumps, loads
 from lk_utils import fs
 from os.path import exists
 from ... import paths
+from ...manifest import T
+from ...manifest import get_app_info
 from ...oss import upload as upload_assets
-from ...profile_reader import T
-from ...profile_reader import get_app_info
 
 cli = CommandLineInterface('depsland.dev_cli')
 
