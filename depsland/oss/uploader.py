@@ -33,7 +33,7 @@ class T:
         'assets'      : t.Dict[
             Path,  # must be relative path
             Info := t.NamedTuple('Info', (
-                ('file_type', t.Literal['file', 'dir']),
+                ('type', t.Literal['file', 'dir']),
                 ('scheme', Scheme),
                 ('updated_time', int),
                 ('hash', t.Optional[str]),
@@ -59,7 +59,7 @@ class T:
 
 
 Info = namedtuple('Info', (
-    'file_type', 'scheme', 'updated_time', 'hash', 'key'
+    'type', 'scheme', 'updated_time', 'hash', 'key'
 ))
 
 
@@ -137,7 +137,7 @@ def _find_differences(
     
     def get_new_info(path_i: str, scheme_i) -> T.Info:
         return Info(
-            file_type=(t := 'file' if fs.isfile(path_i) else 'dir'),
+            type=(t := 'file' if fs.isfile(path_i) else 'dir'),
             scheme=scheme_i,
             updated_time=get_updated_time(path_i),
             hash=get_file_hash(path_i) if t == 'file' else None,
@@ -173,7 +173,7 @@ def _find_differences(
         else:
             path_o = _copy_assets(path_i, temp_dir, scheme_i)
             path_o = _compress(path_o, path_o + (
-                '.zip' if info_new.file_type == 'dir' else '.fzip'
+                '.zip' if info_new.type == 'dir' else '.fzip'
             ))
             if info_old is None:
                 yield ('append',

@@ -57,7 +57,7 @@ def install(appid: str) -> T.Path:
     paths_to_be_generated = sorted(set(
         fs.normpath(f'{dir_o}/{k}')
         for k, v in manifest['assets'].items()  # noqa
-        if v.file_type == 'dir'
+        if v.type == 'dir'
     ))
     print(':l', paths_to_be_generated)
     [os.makedirs(x, exist_ok=True) for x in paths_to_be_generated]
@@ -67,7 +67,7 @@ def install(appid: str) -> T.Path:
         link = '{}/{}'.format(oss_path.assets, info.key)
         zipped = fs.normpath('{}/{}{}'.format(
             dir_m, relpath,
-            '.zip' if info.file_type == 'dir' else '.fzip'
+            '.zip' if info.type == 'dir' else '.fzip'
         ))
         print('oss download', '{} -> {}'.format(link, zipped))
         oss.download(link, zipped)
@@ -94,7 +94,7 @@ def install(appid: str) -> T.Path:
 
 
 def _install_files(dir_new: T.Path, dir_old: T.Path):
-    manifest_new = load_manifest(f'{dir_new}/manifest.pkl')
+    manifest_new: T.Manifest = load_manifest(f'{dir_new}/manifest.pkl')
     if dir_old:
         manifest_old = load_manifest(f'{dir_old}/manifest.pkl')
     else:
@@ -114,6 +114,7 @@ def _install_files(dir_new: T.Path, dir_old: T.Path):
     # noinspection PyTypeChecker
     for relpath_i, info_i in manifest_new['assets'].items():
         if is_same():
-            pass  # copy from old
+            if info_i.type == 'file':
+                pass
         else:
             pass  # download from oss
