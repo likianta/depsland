@@ -13,14 +13,14 @@ default = true
 
 [tool.poetry.dependencies]
 python = "^3.10"
-argsense = ""
+argsense = "*"
 lk-logger = "^5.4.6a0"
-lk-utils = "^2.5.0b5"
-oss2 = ""
-pip = ""
-pyyaml = ""
+lk-utils = "~2.5.0b5"
+oss2 = "*"
+pip = "*"
+pyyaml = "*"
 semver = "^3.0.0dev3"
-wheel = ""
+wheel = "*"
 
 [tool.poetry.extras]
 
