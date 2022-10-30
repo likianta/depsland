@@ -114,7 +114,9 @@ class PyPI:
 class Python:
     root = f'{_PROJ_DIR}/python'
     if _IS_WINDOWS:
-        raise NotImplementedError
+        pip = f'{root}/Scripts/pip.exe'
+        python = f'{root}/python.exe'
+        site_packages = f'{root}/Lib/site-packages'
     else:
         pip = f'{root}/bin/pip'
         python = f'{root}/bin/python3.10'
