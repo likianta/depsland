@@ -6,7 +6,7 @@ argsense
 # embed-python-manager
 # lambda-ex
 lk-logger >= 5.4.6a0
-lk-utils >= 2.5.0b5
+lk-utils >= 2.5.0b7
 oss2
 # packaging
 # pkginfo
