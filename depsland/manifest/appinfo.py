@@ -1,15 +1,15 @@
 import os
 import typing as t
+from os.path import exists
+
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
-from os.path import exists
+
 from .manifest import T as T0
 from .manifest import dump_manifest
 from .manifest import load_manifest
 from .. import paths
-
-_apps_dir = paths.project.apps
 
 
 class T:
@@ -32,7 +32,7 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
         'version': data_i['version'],
         'src_dir': fs.dirpath(manifest_file),
         'dst_dir': '{}/{}/{}'.format(
-            _apps_dir,
+            paths.project.apps,
             data_i['appid'],
             data_i['version']
         ),
@@ -43,9 +43,7 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
     dump_manifest(data_i, f'{d}/manifest.json')
     
     # update history
-    history_file = '{}/{}/released_history.json'.format(
-        _apps_dir, data_i['appid']
-    )
+    history_file = paths.apps.get_history_versions(data_o['appid'])
     if exists(history_file):
         data_o['history'] = loads(history_file)
     else:

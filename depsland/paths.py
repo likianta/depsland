@@ -34,7 +34,11 @@ class Project:
 class Apps:
     root = f'{_PROJ_DIR}/apps'
     venv = f'{root}/.venv'
+    _history_versions = f'{root}/{{appid}}/.history_versions.json'
     _packages = f'{root}/.venv/{{appid}}/packages'
+    
+    def get_history_versions(self, appid: str) -> str:
+        return self._history_versions.format(appid=appid)
     
     def make_packages(self, appid: str, clear_exists=False) -> str:
         packages = self._packages.format(appid=appid)
