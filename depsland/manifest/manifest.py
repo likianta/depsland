@@ -9,8 +9,8 @@ from lk_utils import loads
 class T:
     _AbsPath = str
     _RelPath = str  # path relative to manifest file's location.
+    _Scheme = str  # see details in `depsland.interface.dev_cli.uploader.T.Scheme`
     _Version = str
-    Scheme = t.Literal['root', 'all', 'top', 'top_files', 'top_folders']
     
     # manifest made by user
     ManifestA = t.TypedDict('ManifestA', {
@@ -28,7 +28,7 @@ class T:
         'appid'       : str,
         'name'        : str,
         'version'     : _Version,
-        'assets'      : t.Dict[_RelPath, Scheme],
+        'assets'      : t.Dict[_RelPath, _Scheme],
         'dependencies': t.Dict[str, str],
     })
     # manifest in runtime
@@ -38,17 +38,17 @@ class T:
         'name'           : str,
         'version'        : _Version,
         'start_directory': str,
-        'assets'         : t.Dict[_RelPath, Scheme],
+        'assets'         : t.Dict[_RelPath, _Scheme],
         'dependencies'   : t.Dict[str, str],
     })
     ManifestFile = str  # a '.json' or '.pkl' file
 
 
-def init_manifest(appid: str, name: str) -> T.ManifestC:
+def init_manifest(**kwargs) -> T.ManifestC:
     return {
-        'appid'          : appid,
-        'name'           : name,
-        'version'        : '0.0.0',
+        'appid'          : kwargs['appid'],
+        'name'           : kwargs['name'],
+        'version'        : kwargs.get('version', '0.0.0'),
         'start_directory': '',
         'assets'         : {},
         'dependencies'   : {},

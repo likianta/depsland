@@ -12,4 +12,5 @@ command list:
     depsland list
     depsland show <package>
 """
-from .main import cli
+from .cli import cli
+from .upload import main as upload_assets

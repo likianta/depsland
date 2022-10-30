@@ -1,13 +1,16 @@
 import os
 import re
-from argsense import CommandLineInterface
-from lk_utils import dumps, loads
-from lk_utils import fs
 from os.path import exists
+
+from argsense import CommandLineInterface
+from lk_utils import dumps
+from lk_utils import fs
+from lk_utils import loads
+
+from .upload import main as upload_assets
 from ... import paths
 from ...manifest import T
 from ...manifest import get_app_info
-from ...oss import upload as upload_assets
 
 cli = CommandLineInterface('depsland.dev_cli')
 
@@ -80,7 +83,3 @@ def upload(manifest_file: str = './manifest.json') -> None:
     dumps(appinfo['history'], '{}/{}/released_history.json'.format(
         paths.Project.apps, appinfo['appid'],
     ))
-
-
-if __name__ == '__main__':
-    cli.run()

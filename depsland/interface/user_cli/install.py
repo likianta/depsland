@@ -2,6 +2,7 @@ import os
 from argsense import CommandLineInterface
 from lk_utils import fs
 from lk_utils import loads
+from ..dev_cli.upload import T as T0
 from ... import config
 from ... import paths
 from ...manifest import init_manifest
@@ -10,7 +11,6 @@ from ...normalization import normalize_name
 from ...normalization import normalize_version_spec
 from ...oss import OssPath
 from ...oss import get_oss_client
-from ...oss.uploader import T as T0
 from ...pypi import pypi
 from ...utils import make_temp_dir
 from ...utils import ziptool
