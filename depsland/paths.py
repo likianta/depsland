@@ -23,6 +23,7 @@ class Project:
     apps = f'{root}/apps'
     # cache = f'{root}/cache'
     conf = f'{root}/conf'
+    dist = f'{root}/dist'
     project = f'{root}'
     pypi = f'{root}/pypi'
     python = f'{root}/python'

@@ -12,12 +12,13 @@
 /build/venv_packages.zip
 /conf/oss_*
 /deleted/
-/dist/
+/dist/*
 /pypi/*/[^.]*
 /python/*
 /temp/*/*
 /test/
 /tests/
+/unittests/data/hello_world_demo_project/manifest*
 /venv_home/*/[^.]*
 
 __pycache__/
@@ -25,6 +26,7 @@ __pycache__/
 
 !/.venv/readme-zh.md
 !/apps/.gitkeep
+!/dist/.gitkeep
 !/python/README.md
 !/python/README.zh.md
 !/temp/.fake_oss_storage/.gitkeep
