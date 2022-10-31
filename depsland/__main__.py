@@ -10,6 +10,31 @@ cli.add_cmd(rebuild_pypi_index, 'rebuild-pypi-index')
 
 
 @cli.cmd()
+def welcome():
+    from lk_logger.console import console
+    from rich.markdown import Markdown
+    from textwrap import dedent
+    from . import __date__
+    from . import __version__
+    
+    console.print(Markdown(dedent('''
+        # Depsland
+
+        Depsland is a python apps manager for non-developer users.
+        
+        - Version: {}
+        - Release date: {}
+        - Author: {}
+        - Official website: {}
+    ''').format(
+        __version__,
+        __date__,
+        'Likianta <likianta@foxmail.com>',
+        'https://github.com/likianta/depsland'
+    )))
+
+
+@cli.cmd()
 def upload(manifest='./manifest.json'):
     from .interface.dev_cli import upload
     upload(manifest)

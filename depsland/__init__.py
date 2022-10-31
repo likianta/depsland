@@ -18,4 +18,5 @@ from .pip import Pip
 from .pip import pip
 from .pypi import pypi
 
-__version__ = '0.1.0a17'
+__version__ = '0.1.0a19'
+__date__ = '2021-11-01'

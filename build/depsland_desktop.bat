@@ -1,3 +1,3 @@
 cd %~dp0
 set PYTHONPATH=%DEPSLAND%
-%DEPSLAND%\python\python.exe -m depsland -h
+%DEPSLAND%\python\python.exe -m depsland welcome
