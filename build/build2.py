@@ -1,3 +1,8 @@
+if 1:
+    import sys
+    from lk_utils import xpath
+    sys.path.insert(0, xpath('..', True))
+
 import os
 from collections import defaultdict
 from os.path import exists
@@ -14,7 +19,7 @@ print(':v2', f'depsland version: {__version__}')
 
 
 @cli.cmd()
-def main():
+def build(add_python_path=True):
     root_i = paths.project.root
     root_o = '{dist}/{version}'.format(
         dist=paths.project.dist,
@@ -51,10 +56,11 @@ def main():
                  f'{root_o}/conf/oss_client.yaml')
     fs.copy_tree(f'{root_i}/depsland',
                  f'{root_o}/depsland')
-    fs.make_link(f'{root_i}/python',
-                 f'{root_o}/python')
     fs.copy_tree(f'{root_i}/sidework',
                  f'{root_o}/sidework')
+    if add_python_path:
+        fs.make_link(f'{root_i}/python',
+                     f'{root_o}/python')
     
     # init files
     dumps(defaultdict(list), f'{root_o}/pypi/index/dependencies.pkl')
