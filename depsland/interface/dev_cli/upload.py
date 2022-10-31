@@ -7,7 +7,9 @@ from lk_utils import dumps
 from lk_utils import fs
 
 from ... import config
+from ... import paths
 from ...manifest import T as T0
+from ...manifest import get_app_info
 from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...oss import OssPath
@@ -69,11 +71,35 @@ Info = namedtuple('Info', (
 
 # -----------------------------------------------------------------------------
 
-def main(new_app_dir: str, old_app_dir: str) -> None:
-    manifest_new: T.ManifestA = load_manifest(f'{new_app_dir}/manifest.json')
+def main(manifest_file: str) -> None:
+    appinfo = get_app_info(manifest_file)
+    
+    if not appinfo['history']:
+        _upload(
+            new_src_dir=appinfo['src_dir'],
+            new_app_dir=appinfo['dst_dir'],
+            old_app_dir=''
+        )
+    else:
+        _upload(
+            new_src_dir=appinfo['src_dir'],
+            new_app_dir=appinfo['dst_dir'],
+            old_app_dir='{}/{}/{}'.format(
+                paths.Project.apps,
+                appinfo['appid'],
+                appinfo['history'][0]
+            )
+        )
+    
+    appinfo['history'].insert(0, appinfo['version'])
+    dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
+
+
+def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
+    manifest_new: T.ManifestA = load_manifest(f'{new_src_dir}/manifest.json')
     manifest_old: T.ManifestB = (
         load_manifest(f'{old_app_dir}/manifest.pkl') if old_app_dir
-        else init_manifest(**manifest_new)
+        else init_manifest(manifest_new['appid'], manifest_new['name'])
     )
     print(':l', manifest_new, manifest_old)
     _check_manifest(manifest_new, manifest_old)

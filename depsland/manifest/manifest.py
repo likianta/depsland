@@ -44,11 +44,11 @@ class T:
     ManifestFile = str  # a '.json' or '.pkl' file
 
 
-def init_manifest(**kwargs) -> T.ManifestC:
+def init_manifest(appid: str, appname: str) -> T.ManifestC:
     return {
-        'appid'          : kwargs['appid'],
-        'name'           : kwargs['name'],
-        'version'        : kwargs.get('version', '0.0.0'),
+        'appid'          : appid,
+        'name'           : appname,
+        'version'        : '0.0.0',
         'start_directory': '',
         'assets'         : {},
         'dependencies'   : {},

@@ -2,7 +2,7 @@ pip
 # setuptools
 wheel
 
-argsense
+argsense >= 0.5.0a0
 # embed-python-manager
 # lambda-ex
 lk-logger >= 5.4.6a0

@@ -56,7 +56,7 @@ def install(appid: str) -> T.Path:
         if dir_i:
             return load_manifest(f'{dir_i}/manifest.pkl')
         else:
-            return init_manifest(**manifest_new)
+            return init_manifest(manifest_new['appid'], manifest_new['name'])
     
     manifest_new = get_manifest_new()
     manifest_old = get_manifest_old()
