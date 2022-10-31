@@ -5,9 +5,10 @@ wheel
 argsense >= 0.5.0a0
 # embed-python-manager
 # lambda-ex
-lk-logger >= 5.4.6a0
+lk-logger >= 5.4.6
 lk-utils >= 2.5.0b9
 oss2
+rich
 # packaging
 # pkginfo
 pyyaml

@@ -10,7 +10,7 @@ cli.add_cmd(rebuild_pypi_index, 'rebuild-pypi-index')
 
 
 @cli.cmd()
-def welcome():
+def welcome(confirm_close=False):
     from lk_logger.console import console
     from rich.markdown import Markdown
     from textwrap import dedent
@@ -32,6 +32,9 @@ def welcome():
         'Likianta <likianta@foxmail.com>',
         'https://github.com/likianta/depsland'
     )))
+    
+    if confirm_close:
+        input('press enter to close window...')
 
 
 @cli.cmd()

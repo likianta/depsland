@@ -52,9 +52,15 @@
 
     截图:
 
-    ![image-20221031233240689](.assets/readme.zh/image-20221031233240689.png)
+    ![image-20221031233240689](.assets/readme.zh/image-20221031233240689.png "初次安装")
+    
+    ![image-20221101003716782](.assets/readme.zh/image-20221101003716782.png "升级")
 
 4.   测试是否安装成功:
+
      1.   确认桌面上出现了 "Depsland.exe" 的启动器
+
      2.   双击该启动器, 看是否会出现欢迎界面
+
+          ![image-20221101004226012](.assets/readme.zh/image-20221101004226012.png)
 

@@ -14,8 +14,8 @@ default = true
 [tool.poetry.dependencies]
 python = "^3.10"
 argsense = "*"
-lk-logger = "^5.4.6a0"
-lk-utils = "~2.5.0b5"
+lk-logger = "^5.4.6"
+lk-utils = "~2.5.0b9"
 oss2 = "*"
 pip = "*"
 pyyaml = "*"

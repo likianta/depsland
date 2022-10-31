@@ -1,9 +1,9 @@
 import os
+from os.path import exists
 
 import lk_logger
 from lk_utils import fs
 from lk_utils import run_cmd_args
-
 
 lk_logger.setup(quiet=True, show_source=False, show_funcname=False)
 
@@ -13,39 +13,59 @@ def main():
     
     dir_i = fs.xpath('..', True)
     dir_o = fs.normpath(os.environ['ProgramData'] + '/Depsland')
-    assert os.path.exists(f'{dir_i}/depsland')
-    if os.path.exists(dir_o):
+    dir_m = f'{dir_o}/backup'
+    
+    # -------------------------------------------------------------------------
+    
+    assert exists(f'{dir_i}/depsland')
+    if exists(dir_o):
         print('detect existed old version, remove...')
+        if not exists(dir_m):
+            os.mkdir(dir_m)
         for name in os.listdir(dir_o):
-            if name not in ('pypi', 'python'):
-                if os.path.isdir(x := f'{dir_o}/{name}'):
-                    fs.remove_tree(x)
-                else:
-                    os.remove(x)
-        fs.remove_tree(f'{dir_o}/python/Lib/site-packages')
-    
-    print(f'copying dir from "{dir_i}" to "{dir_o}" '
-          f'(this may take long time, please wait...)')
-    for name in os.listdir(dir_i):
-        if name not in ('pypi', 'python', 'setup.exe'):
-            print(':i', name)
-            fs.move(f'{dir_i}/{name}', f'{dir_o}/{name}')
-    print('moving python site-packages...', ':i')
-    if os.path.islink(f'{dir_i}/python'):  # TEST
-        fs.copy_tree(f'{dir_i}/python/Lib/site-packages',
-                     f'{dir_o}/python/Lib/site-packages')
+            if name == 'backup': continue
+            print(':ir', f'[red dim]{name}[/]')
+            fs.move(f'{dir_o}/{name}', f'{dir_m}/{name}', True)
+        print(':i0s')
     else:
-        fs.move(f'{dir_i}/python/Lib/site-packages',
-                f'{dir_o}/python/Lib/site-packages')
+        os.mkdir(dir_o)
     
-    # # create shortcut to desktop
-    # file_i = f'{dir_o}/depsland.exe'
-    # file_o = '{}/Desktop/depsland.lnk'.format(os.environ['USERPROFILE'])
+    # -------------------------------------------------------------------------
     
-    # add to environment variables
-    if not os.getenv('DEPSLAND'):
-        run_cmd_args('setx', 'DEPSLAND', dir_o.replace('/', '\\'))
-    print('added `DEPSLAND` to environment variables')
+    print(f'copying files from "{dir_i}" to "{dir_o}"')
+    print('this may take long time, please wait...', ':vs')
+    
+    for name in os.listdir(dir_i):
+        # assert name != 'backup'
+        if name == 'setup.exe':
+            continue
+        else:
+            print(':ir', f'[green]{name}[/]')
+            fs.move(f'{dir_i}/{name}', f'{dir_o}/{name}', True)
+    print(':i0s')
+    
+    if exists(dir_m):
+        print('restoring some old assets...')
+        print(':ir', f'[magenta]pypi[/]')
+        fs.move(f'{dir_m}/pypi', f'{dir_o}/pypi', True)
+        print(':i0s')
+        print('remove old version...')
+        fs.remove_tree(dir_m)
+    
+    # -------------------------------------------------------------------------
+    
+    print('create desktop executable')
+    file_i = f'{dir_o}/build/depsland_desktop.exe'
+    file_o = fs.normpath('{}/Desktop/Depsland.exe'
+                         .format(os.environ['USERPROFILE']))
+    fs.copy_file(file_i, file_o, True)
+    
+    # -------------------------------------------------------------------------
+    
+    print('add `DEPSLAND` to environment variables')
+    dir_o = dir_o.replace('/', '\\')
+    if os.getenv('DEPSLAND', '') != dir_o:
+        run_cmd_args('setx', 'DEPSLAND', dir_o)
     
     # if '%DEPSLAND%' not in os.environ['PATH']:
     #     print('add `%DEPSLAND%` to `%PATH%` variables')
@@ -58,7 +78,7 @@ def main():
 if __name__ == '__main__':
     try:
         main()
-    except Exception as e:
+    except:
         from lk_logger.console import console
         console.print_exception()
     finally:
