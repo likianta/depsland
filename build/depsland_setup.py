@@ -81,7 +81,7 @@ def main():
             winreg.KEY_ALL_ACCESS
         )
         value, _ = winreg.QueryValueEx(key, 'PATH')
-        value = f'{dir_o};{value}'
+        value = ';'.join((dir_o, f'{dir_o}/apps_launcher', value))
         winreg.SetValueEx(key, 'PATH', 0, winreg.REG_EXPAND_SZ, value)
         winreg.CloseKey(key)
     

@@ -30,6 +30,7 @@ def build(add_python_path=True):
     
     # make empty dirs
     os.mkdir(f'{root_o}/apps')
+    os.mkdir(f'{root_o}/apps_launcher')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/conf')
     # os.mkdir(f'{root_o}/depsland')
