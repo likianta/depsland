@@ -54,23 +54,36 @@ def main():
     
     # -------------------------------------------------------------------------
     
-    print('create desktop executable')
-    file_i = f'{dir_o}/build/depsland_desktop.exe'
+    print('create executables')
+    
+    file_i = f'{dir_o}/build/exe/desktop.exe'
     file_o = fs.normpath('{}/Desktop/Depsland.exe'
                          .format(os.environ['USERPROFILE']))
     fs.copy_file(file_i, file_o, True)
     
+    file_i = f'{dir_o}/build/exe/depsland.exe'
+    file_o = f'{dir_o}/depsland.exe'
+    fs.move(file_i, file_o, True)
+    
     # -------------------------------------------------------------------------
     
-    print('add `DEPSLAND` to environment variables')
     dir_o = dir_o.replace('/', '\\')
     if os.getenv('DEPSLAND', '') != dir_o:
+        print('add `DEPSLAND` to environment variables')
         run_cmd_args('setx', 'DEPSLAND', dir_o)
     
-    # if '%DEPSLAND%' not in os.environ['PATH']:
-    #     print('add `%DEPSLAND%` to `%PATH%` variables')
-    #     run_cmd_args('setx', 'PATH', '%PATH%;%DEPSLAND%')
-    # print('added to PATH variables')
+    if dir_o not in os.environ['PATH']:
+        print('add `DEPSLAND` to `PATH` (user variable)')
+        # edit user environment variables through windows registry
+        import winreg
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER, 'Environment', 0,
+            winreg.KEY_ALL_ACCESS
+        )
+        value, _ = winreg.QueryValueEx(key, 'PATH')
+        value = f'{dir_o};{value}'
+        winreg.SetValueEx(key, 'PATH', 0, winreg.REG_EXPAND_SZ, value)
+        winreg.CloseKey(key)
     
     print(':trf2', '[green]installation done[/]')
 
