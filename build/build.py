@@ -46,9 +46,9 @@ def build(add_python_path=True):
     os.mkdir(f'{root_o}/temp/.unittests')
     
     # copy files
-    fs.copy_file(f'{root_i}/build/depsland_desktop.exe',
-                 f'{root_o}/build/depsland_desktop.exe')
-    fs.copy_file(f'{root_i}/build/depsland_setup.exe',
+    fs.copy_file(f'{root_i}/build/exe/depsland.exe',
+                 f'{root_o}/build/exe/depsland.exe')
+    fs.copy_file(f'{root_i}/build/exe/setup.exe',
                  f'{root_o}/setup.exe')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
                  f'{root_o}/build/depsland_setup.py')
