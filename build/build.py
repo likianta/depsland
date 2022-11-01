@@ -32,6 +32,7 @@ def build(add_python_path=True):
     os.mkdir(f'{root_o}/apps')
     os.mkdir(f'{root_o}/apps_launcher')
     os.mkdir(f'{root_o}/build')
+    os.mkdir(f'{root_o}/build/exe')
     os.mkdir(f'{root_o}/conf')
     # os.mkdir(f'{root_o}/depsland')
     os.mkdir(f'{root_o}/docs')

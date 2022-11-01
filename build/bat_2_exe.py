@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 
 from argsense import cli
@@ -20,6 +21,8 @@ def bat_2_exe(file_i: str, file_o: str = '', icon: str = '', show_console=True):
         assert file_o.endswith('.exe')
     else:
         file_o = file_i.removesuffix('.bat') + '.exe'
+    if icon:
+        icon = os.path.abspath(icon)
     
     data_r: list[str] = loads(file_i).splitlines()
     data_w = ' && '.join(data_r).strip()

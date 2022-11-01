@@ -18,5 +18,5 @@ from .pip import Pip
 from .pip import pip
 from .pypi import pypi
 
-__version__ = '0.1.0a23'
-__date__ = '2021-11-01'
+__version__ = '0.1.0a25'
+__date__ = '2021-11-02'
