@@ -50,6 +50,8 @@ def build(add_python_path=True):
     # copy files
     fs.copy_file(f'{root_i}/build/exe/depsland.exe',
                  f'{root_o}/build/exe/depsland.exe')
+    fs.copy_file(f'{root_i}/build/exe/desktop.exe',
+                 f'{root_o}/build/exe/desktop.exe')
     fs.copy_file(f'{root_i}/build/exe/setup.exe',
                  f'{root_o}/setup.exe')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
