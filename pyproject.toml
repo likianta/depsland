@@ -1,8 +1,7 @@
 [tool.poetry]
 name = "depsland"
-version = "0.1.0a0"
+version = "0.1.0a30"
 description = ""
-readme = ""
 authors = ["Likianta <likianta@foxmail.com>"]
 license = "MIT"
 
@@ -13,13 +12,13 @@ default = true
 
 [tool.poetry.dependencies]
 python = "^3.10"
-argsense = "*"
+argsense = "^0.5.0a0"
 lk-logger = "^5.4.6"
-lk-utils = "~2.5.0b9"
+lk-utils = "~2.5.0b10"
 oss2 = "*"
-pip = "*"
 pyyaml = "*"
-semver = "^3.0.0dev3"
+rich = "*"
+semver = "3.0.0dev3"
 wheel = "*"
 
 [tool.poetry.extras]

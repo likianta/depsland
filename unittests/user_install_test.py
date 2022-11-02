@@ -3,7 +3,7 @@ import os
 from argsense import cli
 from depsland import config
 from depsland import paths
-from depsland.interface.user_cli.install import install
+from depsland.api.user_api.install import install
 from lk_utils import fs
 from lk_utils.time_utils import timestamp
 from lk_utils import loads

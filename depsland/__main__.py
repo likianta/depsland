@@ -1,7 +1,7 @@
 from argsense import CommandLineInterface
 
 from .doctor import rebuild_pypi_index
-from .interface.dev_cli import init
+from .api.dev_api import init
 
 cli = CommandLineInterface('depsland')
 
@@ -39,7 +39,7 @@ def welcome(confirm_close=False):
 
 @cli.cmd()
 def upload(manifest='./manifest.json'):
-    from .interface.dev_cli import upload
+    from .api.dev_api import upload
     upload(manifest)
 
 

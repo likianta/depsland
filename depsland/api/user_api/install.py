@@ -5,7 +5,7 @@ from argsense import CommandLineInterface
 from lk_utils import fs
 from lk_utils import loads
 
-from ..dev_cli.upload import T as T0
+from ..dev_api.upload import T as T0
 from ... import config
 from ... import paths
 from ...manifest import init_manifest
