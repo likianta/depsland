@@ -48,28 +48,15 @@ cli.add_cmd(init)
 
 
 @cli.cmd()
-def build(directory='.', icon='', gen_exe=True):
-    from lk_utils import dumps
-    from textwrap import dedent
-    command = dedent('''
-        @echo off
-        set PYTHONPATH={}:{}
-        %DEPSLAND%\python\python.exe %*
-    ''')
-    dumps(command, f'{directory}/launcher.bat')
-    if gen_exe:  # TEST: experimental
-        import sys
-        from lk_utils import xpath
-        sys.path.insert(0, xpath('../build', True))
-        from bat_2_exe import bat_2_exe  # noqa
-        bat_2_exe(f'{directory}/launcher.bat',
-                  f'{directory}/launcher.exe', icon)
+def build(manifest='manifest.json', icon='', gen_exe=True):
+    from .api.dev_api import build
+    build(_fix_manifest_path(manifest), icon, gen_exe)
 
 
 @cli.cmd()
 def upload(manifest='manifest.json'):
     from .api.dev_api import upload
-    upload(manifest)
+    upload(_fix_manifest_path(manifest))
 
 
 @cli.cmd()
@@ -90,6 +77,15 @@ def run(appid: str, version: str, filename: str, error_output='terminal'):
 # -----------------------------------------------------------------------------
 
 cli.add_cmd(rebuild_pypi_index, 'rebuild-pypi-index')
+
+
+def _fix_manifest_path(manifest: str):
+    from os.path import isdir
+    if isdir(manifest):
+        return f'{manifest}/manifest.json'
+    else:
+        return manifest
+
 
 if __name__ == '__main__':
     cli.run()

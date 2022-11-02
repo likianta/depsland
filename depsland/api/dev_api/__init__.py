@@ -12,5 +12,6 @@ command list:
     depsland list
     depsland show <package>
 """
+from .build import build
 from .init import init
 from .upload import main as upload
