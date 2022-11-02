@@ -189,7 +189,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
     command = dedent('''
         @echo off
         cd /d {app_dir}
-        set PYTHONPATH={app_dir}:{pkg_dir}
+        set PYTHONPATH={app_dir};{pkg_dir}
         {cmd} %*
     ''').strip().format(
         app_dir=r'{}\{}\{}'.format(
