@@ -24,6 +24,7 @@ cli = CommandLineInterface()
 
 class T:
     Manifest = T0.ManifestB
+    ManifestPypi = t.Dict[str, None]
     Oss = Oss
     Path = T0.Path
 
@@ -92,6 +93,7 @@ def install(appid: str) -> T.Path:
     # -------------------------------------------------------------------------
     
     _install_files(manifest_new, manifest_old, oss, oss_path, dir_m)
+    _install_custom_packages(manifest_new, manifest_old, oss, oss_path)
     _install_dependencies(manifest_new)
     
     if not config.debug_mode:
@@ -132,6 +134,26 @@ def _install_files(
         print('oss download', '{} -> {}'.format(path_i, path_m))
         oss.download(path_i, path_m)
         ziptool.unzip_file(path_m, path_o, overwrite=True)
+
+
+def _install_custom_packages(
+        manifest_new: T.Manifest,
+        manifest_old: T.Manifest,
+        oss: T.Oss,
+        oss_path: OssPath,
+) -> None:
+    pypi_new: T.ManifestPypi = manifest_new['pypi']
+    pypi_old: T.ManifestPypi = manifest_old['pypi']
+    downloads_dir = paths.pypi.downloads
+    
+    for name in pypi_new:
+        if name not in pypi_old:
+            if not os.path.exists(f'{downloads_dir}/{name}'):
+                print('download package (whl) from oss', name)
+                oss.download(
+                    f'{oss_path.pypi}/{name}',
+                    f'{downloads_dir}/{name}',
+                )
 
 
 def _install_dependencies(manifest: T.Manifest) -> None:
