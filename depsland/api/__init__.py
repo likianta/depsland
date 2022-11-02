@@ -5,3 +5,4 @@ from .dev_api import build
 from .dev_api import init
 from .dev_api import upload
 from .user_api import install
+from .user_api import uninstall

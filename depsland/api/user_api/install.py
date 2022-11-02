@@ -32,7 +32,7 @@ class T:
     Path = T0.Path
 
 
-def install(appid: str) -> T.Path:
+def main(appid: str) -> T.Path:
     """
     depsland install <url>
     """

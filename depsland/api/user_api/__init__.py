@@ -1,1 +1,2 @@
-from .install import install
+from .install import main as install
+from .uninstall import main as uninstall

@@ -1,7 +1,9 @@
 from argsense import CommandLineInterface
 
+from . import paths
 from .api.dev_api import init
 from .doctor import rebuild_pypi_index
+from .manifest import load_manifest
 
 cli = CommandLineInterface('depsland')
 
@@ -43,6 +45,7 @@ def welcome(confirm_close=False):
 
 
 # -----------------------------------------------------------------------------
+# ordered by lifecycle
 
 cli.add_cmd(init)
 
@@ -63,6 +66,25 @@ def upload(manifest='manifest.json'):
 def install(appid: str):
     from .api.user_api import install
     install(appid)
+
+
+@cli.cmd()
+def uninstall(appid: str):
+    from .api.user_api import uninstall
+    uninstall(appid)
+
+
+# -----------------------------------------------------------------------------
+
+@cli.cmd()
+def show(appid: str, version: str = None):
+    if version is None:
+        history = paths.apps.get_history_versions(appid)
+        version = history[0]
+        
+    dir_ = '{}/{}/{}'.format(paths.project.apps, appid, version)
+    manifest = load_manifest(f'{dir_}/manifest.pkl')
+    print(manifest, ':l')
 
 
 @cli.cmd()
