@@ -13,3 +13,5 @@ oss2
 pyyaml
 rich
 semver >= 3.0.0dev3
+
+# gen-exe  # windows only

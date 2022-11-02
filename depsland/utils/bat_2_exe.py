@@ -1,14 +1,11 @@
 import os.path
 from pathlib import Path
 
-from argsense import cli
-# pip install gen-exe
-from genexe.generate_exe import generate_exe  # noqa
 from lk_utils import loads
 
 
-@cli.cmd()
-def bat_2_exe(file_i: str, file_o: str = '', icon: str = '', show_console=True):
+def bat_2_exe(file_i: str, file_o: str = '',
+              icon: str = '', show_console=True) -> str:
     """
     args:
         file_i: a ".bat" file.
@@ -33,14 +30,13 @@ def bat_2_exe(file_i: str, file_o: str = '', icon: str = '', show_console=True):
     data_w = data_w.replace('%~dp0', '{EXE_DIR}').replace('%cd%', '{EXE_DIR}')
     if data_w.endswith('%*'): data_w = data_w[:-3]
     
+    # pip install gen-exe  # this is only available for windows
+    from genexe.generate_exe import generate_exe  # noqa
     generate_exe(
         target=Path(file_o),
         command=data_w,
         icon_file=Path(icon) if icon else None,
         show_console=show_console
     )
-
-
-if __name__ == '__main__':
-    # bat_2_exe('depsland_setup.bat', 'depsland_setup.exe')
-    cli.run(bat_2_exe)
+    
+    return file_o

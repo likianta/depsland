@@ -23,7 +23,12 @@ class T:
         #   anypath: abspath or relpath, '/' or '\\' both allowed.
         #   scheme: scheme or empty string. the empty means 'all'.
         'dependencies': t.Dict[str, str],  # dict[name, verspec]
-        'pypi'        : t.List[_AnyPath]  # list[anypath_to_python_wheel]
+        'pypi'        : t.List[_AnyPath],  # list[anypath_to_python_wheel]
+        'launcher'    : (Launcher := t.TypedDict('Launcher', {
+            'command'   : str,
+            'desktop'   : bool,
+            'start_menu': bool,
+        })),
     }, total=False)
     # manifest (B) made by program
     #   the difference between A and B:
@@ -37,6 +42,7 @@ class T:
         'assets'         : t.Dict[_RelPath, _Scheme],
         'dependencies'   : t.Dict[str, str],  # dict[name, verspec]
         'pypi'           : t.Dict[str, _AbsPath],  # dict[filename, abspath]
+        'launcher'       : Launcher,
     })
     ManifestFile = str  # a '.json' or '.pkl' file
 
@@ -50,6 +56,11 @@ def init_manifest(appid: str, appname: str) -> T.ManifestB:
         'assets'         : {},
         'dependencies'   : {},
         'pypi'           : {},
+        'launcher'       : {
+            'command'   : f'depsland show {appid} 0.0.0',
+            'desktop'   : False,
+            'start_menu': False,
+        },
     }
 
 
@@ -75,9 +86,17 @@ def load_manifest(manifest_file: T.ManifestFile,
         'name'           : data_i['name'],
         'version'        : data_i['version'],
         'start_directory': manifest_dir,
-        'assets'         : {},  # later, see below
+        'assets'         : {},  # update later, see below
         'dependencies'   : data_i.get('dependencies', {}),
-        'pypi'           : {},
+        'pypi'           : {},  # update later, see below
+        'launcher'       : {
+            'command'   : 'depsland show {} {}'.format(
+                data_o['appid'], data_o['version']
+            ),
+            'desktop'   : False,
+            'start_menu': False,
+            **data_i.get('launcher', {}),
+        }
     })
     
     # fill `assets` field

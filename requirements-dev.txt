@@ -1,6 +1,5 @@
 faker
 flet
-# gen-exe  # windows only
 # lk-qtquick-scaffold
 pip-autoremove
 pyportable-installer >= 4.4.3

@@ -9,7 +9,7 @@ from os.path import dirname
 from os.path import exists
 
 __all__ = [
-    'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'temp',
+    'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'system', 'temp',
 ]
 
 _CURR_DIR = fs.normpath(dirname(__file__), force_abspath=True)
@@ -17,10 +17,25 @@ _PROJ_DIR = fs.normpath(dirname(_CURR_DIR))
 _IS_WINDOWS = os.name == 'nt'
 
 
+class System:
+    if _IS_WINDOWS:
+        desktop = fs.normpath(os.environ['USERPROFILE'] + '/Desktop')
+        home = fs.normpath(os.environ['USERPROFILE'])
+        program_data = fs.normpath(os.environ['ProgramData'])
+        start_menu = fs.normpath(
+            os.environ['APPDATA']
+            + '/Microsoft/Windows/Start Menu/Programs'
+        )
+        temp = fs.normpath(os.environ['TEMP'])
+    else:
+        pass  # raise NotImplementedError
+
+
 class Project:
     root = f'{_PROJ_DIR}'
     # below attrs follow alphabetical order
     apps = f'{root}/apps'
+    apps_launcher = f'{root}/apps_launcher'
     # cache = f'{root}/cache'
     conf = f'{root}/conf'
     dist = f'{root}/dist'
@@ -142,4 +157,5 @@ oss = Oss()
 project = Project()
 pypi = PyPI()
 python = Python()
+system = System()
 temp = Temp()

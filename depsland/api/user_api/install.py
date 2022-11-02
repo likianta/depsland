@@ -1,6 +1,8 @@
 import os
 import typing as t
+from textwrap import dedent
 
+from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 
@@ -16,6 +18,7 @@ from ...oss import Oss
 from ...oss import OssPath
 from ...oss import get_oss_client
 from ...pypi import pypi
+from ...utils import bat_2_exe
 from ...utils import make_temp_dir
 from ...utils import ziptool
 
@@ -93,12 +96,15 @@ def install(appid: str) -> T.Path:
     _install_files(manifest_new, manifest_old, oss, oss_path, dir_m)
     _install_custom_packages(manifest_new, manifest_old, oss, oss_path)
     _install_dependencies(manifest_new)
+    _create_launcher(manifest_new)
     
     fs.move(f'{dir_m}/manifest.pkl', f'{dir_o}/manifest.pkl', True)
     if not config.debug_mode:
         fs.remove_tree(dir_m)
     return dir_o
 
+
+# -----------------------------------------------------------------------------
 
 def _install_files(
         manifest_new: T.Manifest,
@@ -168,6 +174,52 @@ def _install_dependencies(manifest: T.Manifest) -> None:
     pypi.linking(name_ids, paths.apps.make_packages(
         manifest['appid'], clear_exists=True
     ))
+
+
+def _create_launcher(manifest: T.Manifest) -> None:
+    appid = manifest['appid']
+    version = manifest['version']
+    command = manifest['launcher']['command']
+    if command.startswith('py '):
+        command = command.replace(
+            'py', '%DEPSLAND%\python\python.exe', 1
+        )
+    
+    # bat command
+    command = dedent('''
+        @echo off
+        cd /d {app_dir}
+        set PYTHONPATH={app_dir}:{pkg_dir}
+        {cmd} %*
+    ''').strip().format(
+        app_dir=r'{}\{}\{}'.format(
+            r'%DEPSLAND%\apps', appid, version
+        ),
+        pkg_dir=r'{}\.venv\{}\packages'.format(
+            r'%DEPSLAND%\apps', appid
+        ),
+        cmd=command,
+    )
+    
+    # bat to exe
+    dumps(command, bat_file := '{}/{}.bat'.format(
+        paths.project.apps_launcher,
+        appid
+    ))
+    # TODO: how to add icon, and control whether to show console?
+    exe_file = bat_2_exe(bat_file)
+    fs.remove_file(bat_file)
+    
+    # shortcut to desktop and start menu
+    if manifest['launcher']['desktop']:
+        fs.copy_file(exe_file, '{}/{}.exe'.format(
+            paths.system.desktop, manifest['name']
+        ))
+    if manifest['launcher']['start_menu']:
+        # WARNING: not tested
+        fs.copy_file(exe_file, '{}/{}.exe'.format(
+            paths.system.start_menu, manifest['name']
+        ))
 
 
 # -----------------------------------------------------------------------------

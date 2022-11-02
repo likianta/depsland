@@ -4,6 +4,7 @@ from lk_utils import dumps
 from lk_utils import fs
 
 from ...manifest import load_manifest
+from ...utils import bat_2_exe
 
 
 def build(manifest_file: str, icon='', gen_exe=True) -> None:
@@ -12,9 +13,9 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
     manifest = load_manifest(file_i)
 
     command = dedent('''
-            @echo off
-            set PYTHONPATH={}:{}
-            %DEPSLAND%\python\python.exe %*
+        @echo off
+        set PYTHONPATH={}:{}
+        %DEPSLAND%\python\python.exe %*
     ''').strip().format(
         r'{}\{}\{}'.format(
             r'%DEPSLAND%\apps', manifest['appid'], manifest['version']
@@ -27,9 +28,5 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
     dumps(command, f'{dir_i}/launcher.bat')
     
     if gen_exe:  # TEST: experimental
-        import sys
-        from lk_utils import xpath
-        sys.path.insert(0, xpath('../build', True))
-        from bat_2_exe import bat_2_exe  # noqa
         bat_2_exe(f'{dir_i}/launcher.bat',
                   f'{dir_i}/launcher.exe', icon)

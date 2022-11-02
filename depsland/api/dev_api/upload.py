@@ -52,6 +52,11 @@ class T:
         'dependencies'   : t.Dict[str, str],
         'pypi'           : t.Dict[str, None],
         #   the values are meaningless, just for compatible with ManifestA.
+        'launcher'       : t.TypedDict('Launcher', {
+            'command'   : str,
+            'desktop'   : bool,
+            'start_menu': bool,
+        }),
     })
     
     Action = t.Literal['append', 'update', 'delete']
@@ -171,9 +176,10 @@ def _find_assets_differences(
         'name'           : manifest_new['name'],
         'version'        : manifest_new['version'],
         'start_directory': fs.parent_path(saved_file),
-        'assets'         : {},
+        'assets'         : {},  # update later
         'dependencies'   : manifest_new['dependencies'],
         'pypi'           : {x: None for x in manifest_new['pypi'].keys()},
+        'launcher'       : manifest_new['launcher'],
     }
     
     assets_new = manifest_new['assets']

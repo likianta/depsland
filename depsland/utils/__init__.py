@@ -1,5 +1,6 @@
 from . import verspec
 from . import ziptool
+from .bat_2_exe import bat_2_exe
 from .chore import make_temp_dir
 from .chore import get_file_hash
 from .chore import get_updated_time
