@@ -3,27 +3,33 @@ a wrapper for pip command.
 """
 import re
 import typing as t
+
 from lk_utils.filesniff import normpath
 from lk_utils.subproc import compose_cmd
 from lk_utils.subproc import run_cmd_args
 from yaml import safe_load as yaml_safe_load
+
 from . import paths
 from .config import app_settings
 
 
 class T:
-    PipExecutableArgs = t.Tuple[str, ...]
+    PipCommand = t.Tuple[str, ...]  # e.g. ('python3', '-m', 'pip')
     PopenArgs = t.Iterable[str]
 
 
 class Pip:
-    _pip_exec: T.PipExecutableArgs
+    _pip_exec: T.PipCommand
     _template: 'CommandTemplate'
     
-    def __init__(self, pip: T.PipExecutableArgs, local: str):
-        self._pip_exec = pip
-        pip_conf = app_settings['pip']
-        self._template = CommandTemplate(pip, local, **pip_conf)
+    def __init__(
+            self,
+            pip_cmd: T.PipCommand,
+            pip_conf=app_settings['pip'],
+            local=paths.pypi.downloads,
+    ):
+        self._pip_exec = pip_cmd
+        self._template = CommandTemplate(pip_cmd, local, **pip_conf)
     
     def update_pip_options(self, **options):
         # noinspection PyArgumentList
@@ -77,7 +83,7 @@ class Pip:
     # -------------------------------------------------------------------------
     
     def show_dependencies(self, name: str) -> t.List[str]:
-        resp = self._run(self._template.pip_show(name))
+        resp = self._run(*self._template.pip_show(name))
         #   it can be considered as a YAML string.
         data: dict = yaml_safe_load(resp)
         if data['Requires']:
@@ -88,7 +94,7 @@ class Pip:
             return []
     
     def show_locations(self, name: str) -> t.Set[str]:
-        resp = self._run(self._template.pip_show_f(name))
+        resp = self._run(*self._template.pip_show_f(name))
         r''' e.g.
             Name: lk-logger
             Version: 3.6.3
@@ -135,22 +141,29 @@ class CommandTemplate:
     
     def __init__(
             self,
-            pip: T.PipExecutableArgs,
+            pip_cmd: T.PipCommand,
             local_dir: str = paths.pypi.downloads,
             cache_dir: str = paths.pypi.cache,
             *,
             index_url: str = 'https://pypi.python.org/simple/',
+            local_first: bool = False,
             offline: bool = False,
             quiet: bool = False,
             **_,
     ):
+        # extend parameters
         if offline:
             host = ''
+            local_first = True
         else:
             assert index_url
             host = re.search(r'https?://([^/]+)', index_url).group(1)
+        if local_first:
+            url_indexes = (local_dir, index_url)
+        else:
+            url_indexes = (index_url, local_dir)
         
-        self._pip = pip
+        self._pip = pip_cmd
         
         self._pip_options = tuple(compose_cmd(
             f'--cache-dir', cache_dir,
@@ -168,7 +181,8 @@ class CommandTemplate:
             f'--no-index' if offline else '',
             # f'--only-binary=:all:',
             ('--find-links', local_dir),
-            ('--index-url', index_url),
+            ('--index-url', url_indexes[0]),
+            ('--extra-index-url', url_indexes[1]),
         ))
         self._pip_install_options = (
             *self._pip_download_options,
@@ -221,6 +235,6 @@ class CommandTemplate:
 
 
 pip = Pip(
-    pip=(paths.python.python, '-m', 'pip'),
+    pip_cmd=(paths.python.python, '-m', 'pip'),
     local=paths.pypi.downloads,
 )
