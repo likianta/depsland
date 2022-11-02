@@ -14,15 +14,16 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
 
     command = dedent('''
         @echo off
-        set PYTHONPATH={}:{}
-        %DEPSLAND%\python\python.exe %*
+        set PYTHONPATH={app_dir};{pkg_dir}
+        {py} %*
     ''').strip().format(
-        r'{}\{}\{}'.format(
+        app_dir=r'{}\{}\{}'.format(
             r'%DEPSLAND%\apps', manifest['appid'], manifest['version']
         ),
-        r'{}\.venv\{}\packages'.format(
+        pkg_dir=r'{}\.venv\{}\packages'.format(
             r'%DEPSLAND%\apps', manifest['appid']
         ),
+        py='%DEPSLAND%\python\python.exe',
     )
     
     dumps(command, f'{dir_i}/launcher.bat')
