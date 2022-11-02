@@ -42,5 +42,5 @@ current_dir
 # 安装依赖
 
 ```sh
-python/bin/python3.10 -m pip install -r requirements.txt --no-warn-script-location
+python/bin/python3.10 -m pip install --no-warn-script-location --disable-pip-version-check -r requirements.txt
 ```

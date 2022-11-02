@@ -16,7 +16,6 @@
 /pypi/*/[^.]*
 /python/*
 /temp/*/*
-/test/
 /tests/
 /unittests/data/hello_world_demo_project/manifest*
 /venv_home/*/[^.]*
