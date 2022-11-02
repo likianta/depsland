@@ -8,6 +8,7 @@ from lk_utils import loads
 
 from ..dev_api.upload import AssetInfo
 from ..dev_api.upload import T as T0
+from ..dev_api.upload import _is_same_info  # noqa
 from ... import config
 from ... import paths
 from ...manifest import init_manifest
@@ -119,7 +120,7 @@ def _install_files(
         if key_1 in manifest_old['assets']:
             key_0 = key_1
             info_0 = manifest_old['assets'][key_0]
-            if _compare_info(info_1, info_0):
+            if _is_same_info(info_1, info_0):
                 path_0 = f'{root_0}/{key_0}'
                 path_1 = f'{root_1}/{key_1}'
                 if info_1.type == 'dir':
@@ -223,20 +224,6 @@ def _create_launcher(manifest: T.Manifest) -> None:
 
 
 # -----------------------------------------------------------------------------
-
-def _compare_info(info_new: T.AssetInfo, info_old: T.AssetInfo) -> bool:
-    # return: True for same, False for not same.
-    if info_new.type != info_old.type:
-        return False
-    if info_new.type == 'dir':
-        if info_new.updated_time != info_old.updated_time:
-            return False
-    else:
-        if info_new.updated_time != info_old.updated_time:
-            if info_new.hash != info_old.hash:
-                return False
-    return True
-
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[T.Path]:
     dir_ = '{}/{}'.format(paths.project.apps, appid)
