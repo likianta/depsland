@@ -66,7 +66,7 @@ class T:
     ]
 
 
-AssetInfo = namedtuple('Info', (
+AssetInfo = namedtuple('AssetInfo', (
     'type', 'scheme', 'updated_time', 'hash', 'uid'
 ))
 
