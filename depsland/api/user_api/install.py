@@ -1,7 +1,6 @@
 import os
 import typing as t
 
-from argsense import CommandLineInterface
 from lk_utils import fs
 from lk_utils import loads
 
@@ -19,8 +18,6 @@ from ...pypi import pypi
 from ...utils import make_temp_dir
 from ...utils import ziptool
 
-cli = CommandLineInterface()
-
 
 class T:
     Manifest = T0.ManifestB
@@ -29,7 +26,6 @@ class T:
     Path = T0.Path
 
 
-@cli.cmd()
 def install(appid: str) -> T.Path:
     """
     depsland install <url>
@@ -49,7 +45,7 @@ def install(appid: str) -> T.Path:
         file_i = oss_path.manifest
         file_o = f'{dir_m}/manifest.pkl'
         oss.download(file_i, file_o)
-        return loads(file_o)
+        return load_manifest(file_o)
     
     def get_manifest_old() -> T.Manifest:
         nonlocal dir_i, manifest_new
@@ -79,7 +75,7 @@ def install(appid: str) -> T.Path:
         
         paths_to_be_generated = sorted(set(
             fs.normpath(f'{dir_o}/{k}')
-            for k, v in manifest['assets'].items()  # noqa
+            for k, v in manifest_new['assets'].items()  # noqa
             if v.type == 'dir'
         ))
         print(':l', paths_to_be_generated)
@@ -96,9 +92,9 @@ def install(appid: str) -> T.Path:
     _install_custom_packages(manifest_new, manifest_old, oss, oss_path)
     _install_dependencies(manifest_new)
     
+    fs.move(f'{dir_m}/manifest.pkl', f'{dir_o}/manifest.pkl', True)
     if not config.debug_mode:
         fs.remove_tree(dir_m)
-    fs.move(f'{dir_m}/manifest.pkl', f'{dir_o}/manifest.pkl', True)
     return dir_o
 
 
@@ -127,7 +123,8 @@ def _install_files(
         # download from oss
         path_i = '{}/{}'.format(oss_path.assets, info_1.uid)  # an url
         path_m = fs.normpath('{}/{}{}'.format(  # an intermediate file (zip)
-            temp_dir, key_1, '.zip' if info_1.type == 'dir' else '.fzip'
+            temp_dir, fs.filename(key_1),
+            '.zip' if info_1.type == 'dir' else '.fzip'
         ))
         path_o = '{}/{}'.format(root_1, key_1)  # final file or dir
         

@@ -1,3 +1,5 @@
+import re
+
 import semver  # https://github.com/python-semver/python-semver
 import typing as t
 from ..normalization import T
@@ -6,11 +8,13 @@ from ..normalization import normalize_name
 from ..normalization import normalize_version_spec
 
 
-def compare_version(v0: str, comp: str, v1: str) -> bool:
+def compare_version(v0: str, comp: str, v1: str, _patch=True) -> bool:
     """
     args:
         comp: '>=', '>', '==', '<', '<='
     """
+    if _patch:
+        v0, v1 = map(_minor_fix_version_form, (v0, v1))
     r: int = semver.compare(v0, v1)  # -1, 0, 1
     return eval(f'r {comp} 0', {'r': r})
 
@@ -59,6 +63,11 @@ def get_verspec_from_filename(filename: str) -> VersionSpec:
     return verspec
 
 
+def semver_parse(ver: str) -> semver.Version:
+    ver = _minor_fix_version_form(ver)
+    return semver.Version.parse(ver)
+
+
 # TODO (refactor) or DELETE
 def sort_versions(versions: t.List[T.Version], reverse=True):
     """
@@ -80,8 +89,18 @@ def sort_versions(versions: t.List[T.Version], reverse=True):
         else:
             return v
     
-    versions.sort(key=lambda v: semver.Version.parse(_normalize_version(v)),
-                  # `x` type is Union[TNameId, TVersion], for TNameId we
-                  # need to split out the name part.
-                  reverse=reverse)
+    versions.sort(
+        key=lambda v: semver_parse(_normalize_version(v)),
+        # `x` type is Union[TNameId, TVersion], for TNameId we
+        # need to split out the name part.
+        reverse=reverse
+    )
     return versions
+
+
+def _minor_fix_version_form(raw_verspec: str) -> str:
+    patch = re.compile(r'(\d)([a-zA-Z])')
+    if patch.search(raw_verspec):
+        raw_verspec = patch.sub(lambda m: '-'.join(m.groups()), raw_verspec)
+        #   e.g. '0.1.0b3' -> '0.1.0-b3'
+    return raw_verspec

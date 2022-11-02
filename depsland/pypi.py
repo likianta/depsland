@@ -84,6 +84,7 @@ class LocalPyPI:
                 if proper_existed_version:
                     name_id = f'{name}-{proper_existed_version}'
                     filepath = self.name_id_2_paths[name_id][0]
+                    print(':v', 'found package from local', name_id)
                     yield name, proper_existed_version, filepath
                     
                     if include_dependencies:
@@ -93,6 +94,7 @@ class LocalPyPI:
                     continue
             
             # start downloading
+            print('download package via pip', name)
             dependencies: t.List[T.NameId] = []
             source_name = name
             source_name_id = ''
@@ -104,7 +106,8 @@ class LocalPyPI:
                 #   e.g. 'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl'
                 name, version, _ = filename.split('-', 2)
                 name = normalize_name(name)  # e.g. 'PyYAML' -> 'pyyaml'
-                name_id = normalize_name(f'{name}-{version}')
+                name_id = f'{name}-{version}'
+                print(':v', 'downloaded package via pip', name_id)
                 
                 if is_new:
                     self.name_2_versions[name].insert(0, version)

@@ -10,6 +10,14 @@ cli.add_cmd(rebuild_pypi_index, 'rebuild-pypi-index')
 
 
 @cli.cmd()
+def version():
+    from . import __version__, __date__
+    print('[cyan b]v{}[/] [dim](released at {})[/]'.format(
+        __version__, __date__
+    ), ':rs1')
+
+
+@cli.cmd()
 def welcome(confirm_close=False):
     from lk_logger.console import console
     from rich.markdown import Markdown
@@ -38,9 +46,15 @@ def welcome(confirm_close=False):
 
 
 @cli.cmd()
-def upload(manifest='./manifest.json'):
+def upload(manifest='manifest.json'):
     from .api.dev_api import upload
     upload(manifest)
+
+
+@cli.cmd()
+def install(appid: str):
+    from .api.user_api import install
+    install(appid)
 
 
 if __name__ == '__main__':

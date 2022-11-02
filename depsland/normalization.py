@@ -1,5 +1,4 @@
 import re
-import semver
 import typing as t
 from dataclasses import dataclass
 
@@ -64,6 +63,8 @@ def normalize_version_spec(
         yield VersionSpec(name, '', '')
         return
     
+    from .utils.verspec import semver_parse
+    
     pattern_to_split_comp_and_ver = re.compile(r'([<>=!~]*)(.+)')
     
     for part in raw_verspec.split(','):
@@ -88,10 +89,10 @@ def normalize_version_spec(
         
         else:
             assert comp in ('>=', '==')
-            assert (m := re.search('((?:\d\.)+)\*$', ver)), \
+            assert (m := re.search(r'((?:\d\.)+)\*$', ver)), \
                 'the asterisk symbol could only be in minor or patch position'
             minor_or_patch = 'minor' if m.group(1).count('.') == 1 else 'patch'
-            bottom_ver = semver.Version.parse(ver)
+            bottom_ver = semver_parse(ver)
             bumped_ver = (bottom_ver.bump_major() if minor_or_patch == 'minor'
                           else bottom_ver.bump_minor())
             yield VersionSpec(

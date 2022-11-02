@@ -158,10 +158,10 @@ class CommandTemplate:
         else:
             assert index_url
             host = re.search(r'https?://([^/]+)', index_url).group(1)
-        if local_first:
-            url_indexes = (local_dir, index_url)
-        else:
-            url_indexes = (index_url, local_dir)
+        # if local_first:
+        #     url_indexes = (local_dir, index_url)
+        # else:
+        #     url_indexes = (index_url, local_dir)
         
         self._pip = pip_cmd
         
@@ -181,8 +181,9 @@ class CommandTemplate:
             f'--no-index' if offline else '',
             # f'--only-binary=:all:',
             ('--find-links', local_dir),
-            ('--index-url', url_indexes[0]),
-            ('--extra-index-url', url_indexes[1]),
+            ('--index-url', index_url),
+            # ('--index-url', url_indexes[0]),
+            # ('--extra-index-url', url_indexes[1]),
         ))
         self._pip_install_options = (
             *self._pip_download_options,
