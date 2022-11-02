@@ -57,7 +57,7 @@ def init_manifest(appid: str, appname: str) -> T.ManifestB:
         'dependencies'   : {},
         'pypi'           : {},
         'launcher'       : {
-            'command'   : f'depsland show {appid} 0.0.0',
+            'command'   : f'depsland show {appid}',
             'desktop'   : False,
             'start_menu': False,
         },
@@ -91,7 +91,7 @@ def load_manifest(manifest_file: T.ManifestFile,
         'pypi'           : {},  # update later, see below
         'launcher'       : {
             'command'   : 'depsland show {} {}'.format(
-                data_o['appid'], data_o['version']
+                data_i['appid'], data_i['version']
             ),
             'desktop'   : False,
             'start_menu': False,
