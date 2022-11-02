@@ -41,6 +41,9 @@ class Apps:
     def get_history_versions(self, appid: str) -> str:
         return self._history_versions.format(appid=appid)
     
+    def get_packages(self, appid: str) -> str:
+        return self._packages.format(appid=appid)
+    
     def make_packages(self, appid: str, clear_exists=False) -> str:
         packages = self._packages.format(appid=appid)
         if exists(packages):

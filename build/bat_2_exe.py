@@ -2,7 +2,8 @@ import os.path
 from pathlib import Path
 
 from argsense import cli
-from genexe.generate_exe import generate_exe
+# pip install gen-exe
+from genexe.generate_exe import generate_exe  # noqa
 from lk_utils import loads
 
 

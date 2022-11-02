@@ -1,12 +1,9 @@
 from argsense import CommandLineInterface
 
-from .doctor import rebuild_pypi_index
 from .api.dev_api import init
+from .doctor import rebuild_pypi_index
 
 cli = CommandLineInterface('depsland')
-
-cli.add_cmd(init)
-cli.add_cmd(rebuild_pypi_index, 'rebuild-pypi-index')
 
 
 @cli.cmd()
@@ -45,6 +42,30 @@ def welcome(confirm_close=False):
         input('press enter to close window...')
 
 
+# -----------------------------------------------------------------------------
+
+cli.add_cmd(init)
+
+
+@cli.cmd()
+def build(directory='.', icon='', gen_exe=True):
+    from lk_utils import dumps
+    from textwrap import dedent
+    command = dedent('''
+        @echo off
+        set PYTHONPATH={}:{}
+        %DEPSLAND%\python\python.exe %*
+    ''')
+    dumps(command, f'{directory}/launcher.bat')
+    if gen_exe:  # TEST: experimental
+        import sys
+        from lk_utils import xpath
+        sys.path.insert(0, xpath('../build', True))
+        from bat_2_exe import bat_2_exe  # noqa
+        bat_2_exe(f'{directory}/launcher.bat',
+                  f'{directory}/launcher.exe', icon)
+
+
 @cli.cmd()
 def upload(manifest='manifest.json'):
     from .api.dev_api import upload
@@ -56,6 +77,19 @@ def install(appid: str):
     from .api.user_api import install
     install(appid)
 
+
+@cli.cmd()
+def run(appid: str, version: str, filename: str, error_output='terminal'):
+    from lk_utils import loads
+    from .launcher import run
+    from .paths import project
+    file = '{}/{}/{}/{}'.format(project.apps, appid, version, filename)
+    run(appid, version, loads(file), error_output)
+
+
+# -----------------------------------------------------------------------------
+
+cli.add_cmd(rebuild_pypi_index, 'rebuild-pypi-index')
 
 if __name__ == '__main__':
     cli.run()
