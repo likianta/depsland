@@ -46,8 +46,9 @@ def main():
     
     if exists(dir_m):
         print('restoring some old assets...')
-        print(':ir', f'[magenta]pypi[/]')
-        fs.move(f'{dir_m}/pypi', f'{dir_o}/pypi', True)
+        for name in ('apps', 'apps_launcher', 'pypi'):
+            print(':ir', f'[magenta]{name}[/]')
+            fs.move(f'{dir_m}/{name}', f'{dir_o}/{name}', True)
         print(':i0s')
         print('remove old version...')
         fs.remove_tree(dir_m)
