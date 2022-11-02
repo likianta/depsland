@@ -21,7 +21,7 @@ class T:
         'dst_dir': str,  # abspath
         'history': t.List[str],  # list[str version]
     })
-    Manifest = T0.ManifestC
+    Manifest = T0.ManifestB
 
 
 def get_app_info(manifest_file: str) -> T.Appinfo:

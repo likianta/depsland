@@ -41,3 +41,7 @@ class OssPath:
     @property
     def assets(self) -> str:
         return f'apps/{self.appid}/assets'
+
+    @property
+    def pypi(self) -> str:
+        return f'apps/{self.appid}/pypi'

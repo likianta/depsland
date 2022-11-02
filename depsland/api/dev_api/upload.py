@@ -49,7 +49,9 @@ class T:
                 #   the uid will be used as key to filename in oss.
             ))
         ],
-        'dependencies'   : t.Dict[str, str]
+        'dependencies'   : t.Dict[str, str],
+        'pypi'           : t.Dict[str, None],
+        #   the values are meaningless, just for compatible with ManifestA.
     })
     
     Action = t.Literal['append', 'update', 'delete']
@@ -64,7 +66,7 @@ class T:
     ]
 
 
-Info = namedtuple('Info', (
+AssetInfo = namedtuple('Info', (
     'type', 'scheme', 'updated_time', 'hash', 'uid'
 ))
 
@@ -111,7 +113,7 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     oss_path = OssPath(manifest_new['appid'])
     print(oss_path)
     
-    for action, zipped_file, (old_uid, new_uid) in _find_differences(
+    for action, zipped_file, (old_uid, new_uid) in _find_assets_differences(
             manifest_new, manifest_old,
             saved_file=(manifest_new_pkl := f'{new_app_dir}/manifest.pkl'),
     ):
@@ -129,6 +131,22 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
                 oss.upload(zipped_file, f'{oss_path.assets}/{new_uid}')
             case 'delete':
                 oss.delete(f'{oss_path.assets}/{old_uid}')
+    print(':i0s')
+    
+    for action, whl_name, whl_path in _find_pypi_differences(
+            manifest_new, manifest_old
+    ):
+        print(':sri', action, '[{}]{}[/]'.format(
+            'green' if action == 'append' else 'red',
+            whl_name
+        ))
+        if config.debug_mode:
+            continue
+        match action:
+            case 'append':
+                oss.upload(whl_path, f'{oss_path.pypi}/{whl_name}')
+            case 'delete':
+                oss.delete(f'{oss_path.pypi}/{whl_name}')
     
     assert os.path.exists(manifest_new_pkl)
     oss.upload(manifest_new_pkl, oss_path.manifest)
@@ -142,7 +160,7 @@ def _check_manifest(
     assert compare_version(v_new, '>', v_old), (v_new, v_old)
 
 
-def _find_differences(
+def _find_assets_differences(
         manifest_new: T.ManifestA, manifest_old: T.ManifestB,
         saved_file: T.Path,
 ) -> T.DiffResult:
@@ -155,13 +173,14 @@ def _find_differences(
         'start_directory': fs.parent_path(saved_file),
         'assets'         : {},
         'dependencies'   : manifest_new['dependencies'],
+        'pypi'           : {x: None for x in manifest_new['pypi'].keys()},
     }
     
     assets_new = manifest_new['assets']
     assets_old = manifest_old['assets']
     
     def get_new_info(abspath: T.Path, scheme: T.Scheme) -> T.Info:
-        return Info(  # noqa
+        return AssetInfo(  # noqa
             type=(t := 'file' if fs.isfile(abspath) else 'dir'),
             scheme=scheme,
             updated_time=get_updated_time(abspath),
@@ -203,6 +222,23 @@ def _find_differences(
     print(':lv', saved_data)
     dumps(saved_data, saved_file)
     fs.remove_tree(temp_dir)
+
+
+def _find_pypi_differences(
+        manifest_new: T.ManifestA, manifest_old: T.ManifestB
+) -> t.Iterator[t.Tuple[T.Action, str, t.Optional[T.Path]]]:
+    """
+    this function is much simpler than `_find_assets_differences`.
+    yields: iter[tuple[literal['delete', 'append'], filename, filepath]]
+    """
+    pypi_new: t.Dict[str, str] = manifest_new['pypi']
+    pypi_old: t.Dict[str, None] = manifest_old['pypi']
+    for fn in pypi_old:
+        if fn not in pypi_new:
+            yield 'delete', fn, None
+    for fn, fp in pypi_new.items():
+        if fn not in pypi_old:
+            yield 'append', fn, fp
 
 
 # -----------------------------------------------------------------------------

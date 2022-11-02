@@ -60,6 +60,9 @@ class Conf:
 
 
 class Oss:
+    # TODO or DELETE: this class has no usage. currently we are using
+    #   `./oss/get_oss.py > class OssPath`.
+    #   consider remove one of them, or merge them.
     root = 'apps'
     assets: str
     manifest: str
