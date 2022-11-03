@@ -22,6 +22,8 @@ def get_file_hash(filepath: str) -> str:
 
 
 def get_updated_time(path: str) -> int:
+    if os.path.islink(path):
+        path = os.path.realpath(path)
     return int(os.path.getmtime(path))
 
 
