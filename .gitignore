@@ -1,5 +1,4 @@
 /.idea/
-/.venv/*
 /apps/*
 /build/assets.zip
 /build/assets/[^.]*
@@ -18,12 +17,10 @@
 /temp/*/*
 /tests/
 /unittests/data/hello_world_demo_project/manifest*
-/venv_home/*/[^.]*
 
 __pycache__/
 .DS_Store
 
-!/.venv/readme-zh.md
 !/apps/.gitkeep
 !/dist/.gitkeep
 !/python/README.md
