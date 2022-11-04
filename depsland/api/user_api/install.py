@@ -189,7 +189,6 @@ def _create_launcher(manifest: T.Manifest) -> None:
     # bat command
     command = dedent('''
         @echo off
-        cd /d {app_dir}
         set PYTHONPATH={app_dir};{pkg_dir}
         {cmd} %*
     ''').strip().format(
