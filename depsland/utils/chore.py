@@ -22,9 +22,16 @@ def get_file_hash(filepath: str) -> str:
 
 
 def get_updated_time(path: str) -> int:
+    if os.path.isfile(path):
+        return int(os.path.getmtime(path))
     if os.path.islink(path):
         path = os.path.realpath(path)
-    return int(os.path.getmtime(path))
+    # assert os.path.isdir(path)
+    # https://stackoverflow.com/questions/29685069/get-the-last-modified-date-of
+    # -a-directory-including-subdirectories-using-pytho
+    return max(map(int, map(
+        os.path.getmtime, (root for root, _, _ in os.walk(path))
+    )))
 
 
 def make_temp_dir(root=_temp_dir) -> str:
