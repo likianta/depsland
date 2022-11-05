@@ -59,6 +59,8 @@ def main(appid: str) -> T.Path:
         if dir_i:
             return load_manifest(f'{dir_i}/manifest.pkl')
         else:
+            print('no previous version found, it may be your first time to '
+                  f'install {appid}')
             return init_manifest(manifest_new['appid'], manifest_new['name'])
     
     manifest_new = get_manifest_new()
