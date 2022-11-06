@@ -11,7 +11,7 @@ from ..normalization import normalize_version_spec
 def compare_version(v0: str, comp: str, v1: str, _patch=True) -> bool:
     """
     args:
-        comp: '>=', '>', '==', '<', '<='
+        comp: '>', '>=', '==', '<=', '<'
     """
     if _patch:
         v0, v1 = map(_minor_fix_version_form, (v0, v1))

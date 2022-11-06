@@ -73,6 +73,7 @@ class Apps:
 class Conf:
     root = f'{_PROJ_DIR}/conf'
     depsland = f'{root}/depsland.yaml'
+    manifest = f'{root}/manifest.pkl'
     oss_client = f'{root}/oss_client.yaml'
     oss_server = f'{root}/oss_server.yaml'
 
@@ -148,6 +149,7 @@ class Python:
 class Temp:
     root = f'{_PROJ_DIR}/temp'
     fake_oss_storage = f'{root}/.fake_oss_storage'
+    self_update = f'{root}/.self_update'
     unittests = f'{root}/.unittests'
 
 

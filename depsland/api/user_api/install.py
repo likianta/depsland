@@ -185,7 +185,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
     command = manifest['launcher']['command']
     if command.startswith('py '):
         command = command.replace(
-            'py', '%DEPSLAND%\python\python.exe', 1
+            'py', r'%DEPSLAND%\python\python.exe', 1
         )
     
     # bat command
