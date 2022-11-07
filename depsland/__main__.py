@@ -53,19 +53,25 @@ cli.add_cmd(init)
 @cli.cmd()
 def build(manifest='manifest.json', icon='', gen_exe=True):
     from .api.dev_api import build
-    build(_fix_manifest_path(manifest), icon, gen_exe)
+    build(_fix_manifest_param(manifest), icon, gen_exe)
 
 
 @cli.cmd()
 def upload(manifest='manifest.json'):
     from .api.dev_api import upload
-    upload(_fix_manifest_path(manifest))
+    upload(_fix_manifest_param(manifest))
 
 
 @cli.cmd()
 def install(appid: str):
     from .api.user_api import install
     install(appid)
+
+
+@cli.cmd()
+def self_upgrade():
+    from .api import self_upgrade
+    self_upgrade()
 
 
 @cli.cmd()
@@ -101,7 +107,7 @@ def run(appid: str, version: str, filename: str, error_output='terminal'):
 cli.add_cmd(rebuild_pypi_index, 'rebuild-pypi-index')
 
 
-def _fix_manifest_path(manifest: str):
+def _fix_manifest_param(manifest: str):
     from os.path import isdir
     if isdir(manifest):
         return f'{manifest}/manifest.json'
