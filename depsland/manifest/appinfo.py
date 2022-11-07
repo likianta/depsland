@@ -12,7 +12,7 @@ from .manifest import load_manifest
 from .. import paths
 
 
-class T:
+class T(T0):
     Appinfo = t.TypedDict('Appinfo', {
         'appid'  : str,
         'name'   : str,
@@ -21,7 +21,7 @@ class T:
         'dst_dir': str,  # abspath
         'history': t.List[str],  # list[str version]
     })
-    Manifest = T0.ManifestB
+    Manifest = T0.Manifest1
 
 
 def get_app_info(manifest_file: str) -> T.Appinfo:
