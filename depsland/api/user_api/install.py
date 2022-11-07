@@ -6,12 +6,12 @@ from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 
-from ..dev_api.upload import AssetInfo
-from ..dev_api.upload import T as T0
-from ..dev_api.upload import _is_same_info  # noqa
 from ... import config
 from ... import paths
+from ...manifest import T as T0
+from ...manifest import compare_manifests
 from ...manifest import init_manifest
+from ...manifest import init_target_tree
 from ...manifest import load_manifest
 from ...normalization import normalize_name
 from ...normalization import normalize_version_spec
@@ -25,11 +25,11 @@ from ...utils import ziptool
 
 
 class T:
-    AssetInfo = AssetInfo
-    Manifest = T0.ManifestB
+    AssetInfo = T0.AssetInfo
+    Manifest = T0.Manifest1
     ManifestPypi = t.Dict[str, None]
     Oss = Oss
-    Path = T0.Path
+    Path = str
 
 
 def main(appid: str) -> T.Path:
@@ -81,15 +81,8 @@ def main(appid: str) -> T.Path:
             # FIXME: ask user turn to upgrade or reinstall command.
             raise FileExistsError(dir_o)
         
-        paths_to_be_generated = sorted(set(
-            fs.normpath(f'{dir_o}/{k}')
-            for k, v in manifest_new['assets'].items()  # noqa
-            if v.type == 'dir'
-        ))
-        print(':l', paths_to_be_generated)
-        [os.makedirs(x, exist_ok=True) for x in paths_to_be_generated]
-        
         manifest_new['start_directory'] = dir_o
+        init_target_tree(manifest_new, dir_o)
         return dir_o
     
     dir_o = init_dir_o()
@@ -116,32 +109,36 @@ def _install_files(
         oss_path: OssPath,
         temp_dir: T.Path
 ) -> None:
-    root_0 = manifest_old['start_directory']
-    root_1 = manifest_new['start_directory']
-    for key_1, info_1 in manifest_new['assets'].items():
-        if key_1 in manifest_old['assets']:
-            key_0 = key_1
-            info_0 = manifest_old['assets'][key_0]
-            if _is_same_info(info_1, info_0):
-                path_0 = f'{root_0}/{key_0}'
-                path_1 = f'{root_1}/{key_1}'
-                if info_1.type == 'dir':
-                    fs.copy_tree(path_0, path_1)  # TODO: overwrite=True
+    root0 = manifest_old['start_directory']
+    root1 = manifest_new['start_directory']
+    
+    diff = compare_manifests(manifest_new, manifest_old)
+    
+    for action, relpath, (info0, info1) in diff['assets']:
+        match action:
+            case x if x in ('append', 'update'):
+                # download from oss
+                path_i = '{}/{}'.format(oss_path.assets, info1.uid)  # an url
+                path_m = fs.normpath('{}/{}.{}'.format(
+                    # an intermediate file (zip)
+                    temp_dir, info1.uid,
+                    'zip' if info1.type == 'dir' else 'fzip'
+                ))
+                path_o = f'{root1}/{relpath}'  # a file or a directory
+                
+                print('oss download', '{} -> {}'.format(path_i, path_m))
+                oss.download(path_i, path_m)
+                ziptool.decompress_file(path_m, path_o, overwrite=True)
+            case 'delete':
+                pass
+            case 'ignore':
+                path0 = f'{root0}/{relpath}'
+                path1 = f'{root1}/{relpath}'
+                if info1.type == 'dir':
+                    fs.copy_tree(path0, path1, True)
                 else:
-                    fs.copy_file(path_0, path_1, True)
-                continue
-        
-        # download from oss
-        path_i = '{}/{}'.format(oss_path.assets, info_1.uid)  # an url
-        path_m = fs.normpath('{}/{}{}'.format(  # an intermediate file (zip)
-            temp_dir, fs.filename(key_1),
-            '.zip' if info_1.type == 'dir' else '.fzip'
-        ))
-        path_o = '{}/{}'.format(root_1, key_1)  # final file or dir
-        
-        print('oss download', '{} -> {}'.format(path_i, path_m))
-        oss.download(path_i, path_m)
-        ziptool.unzip_file(path_m, path_o, overwrite=True)
+                    fs.copy_file(path0, path1, True)
+                #   TODO: shall we use `fs.move` to make it faster?
 
 
 def _install_custom_packages(
@@ -150,12 +147,12 @@ def _install_custom_packages(
         oss: T.Oss,
         oss_path: OssPath,
 ) -> None:
-    pypi_new: T.ManifestPypi = manifest_new['pypi']
-    pypi_old: T.ManifestPypi = manifest_old['pypi']
+    pypi0: T.ManifestPypi = manifest_old['pypi']
+    pypi1: T.ManifestPypi = manifest_new['pypi']
     downloads_dir = paths.pypi.downloads
     
-    for name in pypi_new:
-        if name not in pypi_old:
+    for name in pypi1:
+        if name not in pypi0:
             if not os.path.exists(f'{downloads_dir}/{name}'):
                 print('download package (whl) from oss', name)
                 oss.download(
@@ -164,9 +161,15 @@ def _install_custom_packages(
                 )
 
 
-def _install_dependencies(manifest: T.Manifest) -> None:
+def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
+    if dst_dir is None:
+        dst_dir = paths.apps.make_packages(
+            manifest['appid'], clear_exists=True
+        )
+    # note: make sure `dst_dir` does exist.
+    
     packages = {}
-    for name, vspec in manifest['dependencies'].items():  # noqa
+    for name, vspec in manifest['dependencies'].items():
         name = normalize_name(name)
         vspecs = tuple(normalize_version_spec(name, vspec))
         packages[name] = vspecs
@@ -174,9 +177,7 @@ def _install_dependencies(manifest: T.Manifest) -> None:
     
     name_ids = tuple(pypi.install(packages, include_dependencies=True))
     pypi.save_index()
-    pypi.linking(name_ids, paths.apps.make_packages(
-        manifest['appid'], clear_exists=True
-    ))
+    pypi.linking(name_ids, dst_dir)
 
 
 def _create_launcher(manifest: T.Manifest) -> None:
