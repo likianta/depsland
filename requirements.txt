@@ -7,6 +7,7 @@ argsense >= 0.5.0a0
 # lambda-ex
 lk-logger >= 5.4.6
 lk-utils >= 2.5.0b13
+# neoprint >= 0.1.0b0
 oss2
 # packaging
 # pkginfo
