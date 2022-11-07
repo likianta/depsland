@@ -3,7 +3,7 @@ import os
 from uuid import uuid1
 from .. import paths
 
-_temp_dir = paths.Project.temp
+_temp_dir = paths.project.temp
 
 
 def get_file_hash(filepath: str) -> str:

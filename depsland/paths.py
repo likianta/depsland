@@ -19,6 +19,8 @@ _IS_WINDOWS = os.name == 'nt'
 
 class System:
     if _IS_WINDOWS:
+        depsland = fs.normpath(os.getenv('DEPSLAND', None))
+        depsland_bak = f'{depsland}.bak'
         desktop = fs.normpath(os.environ['USERPROFILE'] + '/Desktop')
         home = fs.normpath(os.environ['USERPROFILE'])
         program_data = fs.normpath(os.environ['ProgramData'])
@@ -149,7 +151,7 @@ class Python:
 class Temp:
     root = f'{_PROJ_DIR}/temp'
     fake_oss_storage = f'{root}/.fake_oss_storage'
-    self_update = f'{root}/.self_update'
+    self_upgrade = f'{root}/.self_upgrade'
     unittests = f'{root}/.unittests'
 
 
