@@ -16,7 +16,6 @@ from ...manifest import load_manifest
 from ...normalization import normalize_name
 from ...normalization import normalize_version_spec
 from ...oss import Oss
-from ...oss import OssPath
 from ...oss import get_oss_client
 from ...pypi import pypi
 from ...utils import bat_2_exe
@@ -41,15 +40,14 @@ def main(appid: str) -> t.Optional[T.Path]:
     dir_m: T.Path = make_temp_dir()  # a temp dir to store downloaded assets
     dir_o: T.Path  # the dir to the new version
     
-    oss = get_oss_client()
-    oss_path = OssPath(appid)
-    print(oss_path)
+    oss = get_oss_client(appid)
+    print(oss.path)
     
     # -------------------------------------------------------------------------
     
     def get_manifest_new() -> T.Manifest:
-        nonlocal dir_m, oss, oss_path
-        file_i = oss_path.manifest
+        nonlocal dir_m, oss
+        file_i = oss.path.manifest
         file_o = f'{dir_m}/manifest.pkl'
         oss.download(file_i, file_o)
         return load_manifest(file_o)
@@ -93,8 +91,8 @@ def main(appid: str) -> t.Optional[T.Path]:
     
     # -------------------------------------------------------------------------
     
-    _install_files(manifest_new, manifest_old, oss, oss_path, dir_m)
-    _install_custom_packages(manifest_new, manifest_old, oss, oss_path)
+    _install_files(manifest_new, manifest_old, oss, dir_m)
+    _install_custom_packages(manifest_new, manifest_old, oss)
     _install_dependencies(manifest_new)
     _create_launcher(manifest_new)
     
@@ -119,7 +117,6 @@ def _install_files(
         manifest_new: T.Manifest,
         manifest_old: T.Manifest,
         oss: T.Oss,
-        oss_path: OssPath,
         temp_dir: T.Path
 ) -> None:
     root0 = manifest_old['start_directory']
@@ -131,7 +128,7 @@ def _install_files(
         match action:
             case x if x in ('append', 'update'):
                 # download from oss
-                path_i = '{}/{}'.format(oss_path.assets, info1.uid)  # an url
+                path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
                 path_m = fs.normpath('{}/{}.{}'.format(
                     # an intermediate file (zip)
                     temp_dir, info1.uid,
@@ -158,7 +155,6 @@ def _install_custom_packages(
         manifest_new: T.Manifest,
         manifest_old: T.Manifest,
         oss: T.Oss,
-        oss_path: OssPath,
 ) -> None:
     pypi0: T.ManifestPypi = manifest_old['pypi']
     pypi1: T.ManifestPypi = manifest_new['pypi']
@@ -169,7 +165,7 @@ def _install_custom_packages(
             if not os.path.exists(f'{downloads_dir}/{name}'):
                 print('download package (whl) from oss', name)
                 oss.download(
-                    f'{oss_path.pypi}/{name}',
+                    f'{oss.path.pypi}/{name}',
                     f'{downloads_dir}/{name}',
                 )
 

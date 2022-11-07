@@ -10,7 +10,6 @@ from ...manifest import dump_manifest
 from ...manifest import get_app_info
 from ...manifest import init_manifest
 from ...manifest import load_manifest
-from ...oss import OssPath
 from ...oss import get_oss_server
 from ...utils import compare_version
 from ...utils import make_temp_dir
@@ -66,9 +65,8 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     
     temp_dir = make_temp_dir()
     
-    oss = get_oss_server()
-    oss_path = OssPath(manifest_new['appid'])
-    print(oss_path)
+    oss = get_oss_server(manifest_new['appid'])
+    print(oss.path)
     
     diff = compare_manifests(manifest_new, manifest_old)
     
@@ -90,13 +88,13 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
         
         match action:
             case 'append':
-                oss.upload(zipped_file, f'{oss_path.assets}/{info1.uid}')
+                oss.upload(zipped_file, f'{oss.path.assets}/{info1.uid}')
             case 'update':
                 # delete old, upload new.
-                oss.delete(f'{oss_path.assets}/{info0.uid}')
-                oss.upload(zipped_file, f'{oss_path.assets}/{info1.uid}')
+                oss.delete(f'{oss.path.assets}/{info0.uid}')
+                oss.upload(zipped_file, f'{oss.path.assets}/{info1.uid}')
             case 'delete':
-                oss.delete(f'{oss_path.assets}/{info0.uid}')
+                oss.delete(f'{oss.path.assets}/{info0.uid}')
     print(':i0s')
     
     # for action, name, verspec in diff['dependencies']:
@@ -109,14 +107,14 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
         ))
         match action:
             case 'append':
-                oss.upload(whl_file, f'{oss_path.pypi}/{whl_name}')
+                oss.upload(whl_file, f'{oss.path.pypi}/{whl_name}')
             case 'delete':
-                oss.delete(f'{oss_path.pypi}/{whl_name}')
+                oss.delete(f'{oss.path.pypi}/{whl_name}')
     print(':i0s')
     
     manifest_new['pypi'] = {k: None for k in manifest_new['pypi'].keys()}
     dump_manifest(manifest_new, x := f'{new_app_dir}/manifest.pkl')
-    oss.upload(x, oss_path.manifest)
+    oss.upload(x, oss.path.manifest)
     
     fs.remove_tree(temp_dir)
 

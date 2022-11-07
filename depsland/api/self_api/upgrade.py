@@ -10,7 +10,6 @@ from ... import paths
 from ...manifest import T as T0
 from ...manifest import init_target_tree
 from ...manifest import load_manifest
-from ...oss import OssPath
 from ...oss import get_oss_client
 from ...utils import compare_version
 from ...utils import make_temp_dir
@@ -22,11 +21,10 @@ class T:
 
 
 def main() -> None:
-    oss = get_oss_client()
-    oss_path = OssPath(appid='depsland')
+    oss = get_oss_client(appid='depsland')
     
-    if not (x := _get_manifests(oss, oss_path)):
-        print('no updates available.')
+    if not (x := _get_manifests(oss)):
+        print('no updates available')
         return
     else:
         manifest0: T.Manifest
@@ -39,16 +37,16 @@ def main() -> None:
     
     temp_dir = make_temp_dir(root=f'{dir0}/temp')
     
-    _install_files(manifest1, manifest0, oss, oss_path, temp_dir)
-    _install_custom_packages(manifest1, manifest0, oss, oss_path)
+    _install_files(manifest1, manifest0, oss, temp_dir)
+    _install_custom_packages(manifest1, manifest0, oss)
     _install_dependencies(manifest1, dst_dir=paths.python.site_packages)
     
     fs.remove_tree(dir0)
 
 
-def _get_manifests(oss, oss_path) -> T.CheckUpdatesResult:
+def _get_manifests(oss) -> T.CheckUpdatesResult:
     oss.download(
-        oss_path.manifest,
+        oss.path.manifest,
         latest_manifest_file := f'{paths.temp.self_upgrade}/manifest.pkl'
     )
     
