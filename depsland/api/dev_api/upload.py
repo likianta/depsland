@@ -74,28 +74,29 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     
     # -------------------------------------------------------------------------
     
-    for action, abspath, (info_old, info_new) in diff['assets']:
+    for action, relpath, (info0, info1) in diff['assets']:
         #   the abspath could either be a file or a directory.
-        print(':sri', action, fs.basename(abspath),
-              f'[dim]([red]{info_old.uid}[/] -> [green]{info_new.uid}[/])[/]')
+        print(':sri', action, relpath,
+              f'[dim]([red]{info0.uid}[/] -> [green]{info1.uid}[/])[/]')
         
-        if info_new is not None:  # i.e. action != 'delete'
-            temp_path = _copy_assets(abspath, temp_dir, info_new.scheme)
+        if info1 is not None:  # i.e. action != 'delete'
+            source_path = f'{new_src_dir}/{relpath}'
+            temp_path = _copy_assets(source_path, temp_dir, info1.scheme)
             zipped_file = _compress(temp_path, temp_path + (
-                '.zip' if info_new.type == 'dir' else '.fzip'
+                '.zip' if info1.type == 'dir' else '.fzip'
             ))
         else:
             zipped_file = ''
         
         match action:
             case 'append':
-                oss.upload(zipped_file, f'{oss_path.assets}/{info_new.uid}')
+                oss.upload(zipped_file, f'{oss_path.assets}/{info1.uid}')
             case 'update':
                 # delete old, upload new.
-                oss.delete(f'{oss_path.assets}/{info_old.uid}')
-                oss.upload(zipped_file, f'{oss_path.assets}/{info_new.uid}')
+                oss.delete(f'{oss_path.assets}/{info0.uid}')
+                oss.upload(zipped_file, f'{oss_path.assets}/{info1.uid}')
             case 'delete':
-                oss.delete(f'{oss_path.assets}/{info_old.uid}')
+                oss.delete(f'{oss_path.assets}/{info0.uid}')
     print(':i0s')
     
     # for action, name, verspec in diff['dependencies']:

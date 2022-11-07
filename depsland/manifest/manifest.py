@@ -100,7 +100,7 @@ class T:
     AssetsDiff = t.Iterator[
         t.Tuple[
             Action,
-            _AbsPath,
+            _RelPath,
             t.Tuple[t.Optional[AssetInfo], t.Optional[AssetInfo]]
             #   tuple[old_info, new_info]
         ]
@@ -263,7 +263,7 @@ def init_target_tree(manifest: T.Manifest1, root_dir: str = None) -> None:
 def compare_manifests(new: T.Manifest1, old: T.Manifest1) -> T.ManifestDiff:
     return {
         'assets'      : _compare_assets(
-            new['assets'], old['assets'], new['start_directory']
+            new['assets'], old['assets']
         ),
         'dependencies': _compare_dependencies(
             new['dependencies'], old['dependencies']
@@ -275,7 +275,7 @@ def compare_manifests(new: T.Manifest1, old: T.Manifest1) -> T.ManifestDiff:
 
 
 def _compare_assets(
-        new: T.Assets1, old: T.Assets1, start_directory: str
+        new: T.Assets1, old: T.Assets1
 ) -> T.AssetsDiff:
     def is_same(new: T.AssetInfo, old: T.AssetInfo) -> bool:
         if new.scheme != old.scheme:
@@ -292,12 +292,12 @@ def _compare_assets(
     
     for key1, info1 in new.items():
         if key1 not in old:
-            yield 'append', f'{start_directory}/{key1}', (None, info1)
+            yield 'append', key1, (None, info1)
         info0 = old[key1]
         if not is_same(info1, info0):
-            yield 'update', f'{start_directory}/{key1}', (info0, info1)
+            yield 'update', key1, (info0, info1)
         else:
-            yield 'ignore', f'{start_directory}/{key1}', (info0, info1)
+            yield 'ignore', key1, (info0, info1)
 
 
 def _compare_dependencies(
