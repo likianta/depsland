@@ -25,7 +25,7 @@ def main() -> None:
     oss = get_oss_client()
     oss_path = OssPath(appid='depsland')
     
-    if not (x := _check_updates(oss, oss_path)):
+    if not (x := _get_manifests(oss, oss_path)):
         print('no updates available.')
         return
     else:
@@ -42,9 +42,11 @@ def main() -> None:
     _install_files(manifest1, manifest0, oss, oss_path, temp_dir)
     _install_custom_packages(manifest1, manifest0, oss, oss_path)
     _install_dependencies(manifest1, dst_dir=paths.python.site_packages)
+    
+    fs.remove_tree(dir0)
 
 
-def _check_updates(oss, oss_path) -> T.CheckUpdatesResult:
+def _get_manifests(oss, oss_path) -> T.CheckUpdatesResult:
     oss.download(
         oss_path.manifest,
         latest_manifest_file := f'{paths.temp.self_upgrade}/manifest.pkl'

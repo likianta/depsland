@@ -20,6 +20,7 @@ from ...oss import OssPath
 from ...oss import get_oss_client
 from ...pypi import pypi
 from ...utils import bat_2_exe
+from ...utils import compare_version
 from ...utils import make_temp_dir
 from ...utils import ziptool
 
@@ -32,7 +33,7 @@ class T:
     Path = str
 
 
-def main(appid: str) -> T.Path:
+def main(appid: str) -> t.Optional[T.Path]:
     """
     depsland install <url>
     """
@@ -66,6 +67,9 @@ def main(appid: str) -> T.Path:
     manifest_new = get_manifest_new()
     manifest_old = get_manifest_old()
     print(':l', manifest_new)
+    if _check_update(manifest_new, manifest_old) is False:
+        print('no update available', ':v4s')
+        return None
     
     # -------------------------------------------------------------------------
     
@@ -98,6 +102,15 @@ def main(appid: str) -> T.Path:
     if not config.debug_mode:
         fs.remove_tree(dir_m)
     return dir_o
+
+
+def _check_update(
+        manifest_new: T.Manifest,
+        manifest_old: T.Manifest,
+) -> bool:
+    return compare_version(
+        manifest_new['version'], '>', manifest_old['version']
+    )
 
 
 # -----------------------------------------------------------------------------
