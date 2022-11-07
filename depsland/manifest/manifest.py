@@ -60,9 +60,9 @@ class T:
     # -------------------------------------------------------------------------
     
     # Manifest0
-    #   Manifest0 is a json-compatible dict. it is either made by user or
-    #   dumped by `def dump_manifest` function (when caller passes a '.json'
-    #   file param to it).
+    #   this is a json-compatible dict. it is either made by user or dumped by
+    #   `def dump_manifest` function (when caller passes a '.json' file param
+    #   to it).
     Manifest0 = t.TypedDict('Manifest0', {
         'appid'       : str,
         'name'        : str,
@@ -74,8 +74,8 @@ class T:
     }, total=False)
     
     # Manifest1
-    #   Manifest1 is main data structure for program to use. it is loaded from
-    #   a '.pkl' file, or parsed from a '.json' file (i.e. Manifest0 data).
+    #   this is main data structure for program to use. it is loaded from a
+    #   '.pkl' file, or parsed from a '.json' file (i.e. Manifest0 data).
     #   the differences between ~0 and ~1 are:
     #       1. ~1 has a unified path form.
     #       2. ~1 has an extra key 'start_directory'.

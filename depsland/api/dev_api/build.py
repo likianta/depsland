@@ -23,7 +23,7 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
         pkg_dir=r'{}\.venv\{}\packages'.format(
             r'%DEPSLAND%\apps', manifest['appid']
         ),
-        py='%DEPSLAND%\python\python.exe',
+        py=r'%DEPSLAND%\python\python.exe',
     )
     
     dumps(command, f'{dir_i}/launcher.bat')

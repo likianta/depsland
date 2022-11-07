@@ -20,6 +20,7 @@ def download(dst: str, src: str, overwrite: T.Overwrite = None) -> None:
                 raise FileExistsError(src)
     
     # https://blog.csdn.net/weixin_39790282/article/details/90170218
+    # noinspection PyTypeChecker
     request.urlretrieve(dst, src, partial(_progress, f'downloading {src}'))
     print(f'done ({src}', ':t')
 
