@@ -14,6 +14,7 @@ __all__ = [
     'compare_manifests',
     'dump_manifest',
     'init_manifest',
+    'init_target_tree',
     'load_manifest'
 ]
 
@@ -94,7 +95,7 @@ class T:
     
     # -------------------------------------------------------------------------
     
-    Action = t.Literal['append', 'update', 'delete'],
+    Action = t.Literal['append', 'update', 'delete', 'ignore']
     
     AssetsDiff = t.Iterator[
         t.Tuple[
@@ -244,6 +245,20 @@ def _simplify_assets(assets1: T.Assets1) -> T.Assets0:
 
 
 # -----------------------------------------------------------------------------
+# more
+
+def init_target_tree(manifest: T.Manifest1, root_dir: str = None) -> None:
+    if not root_dir:
+        root_dir = manifest['start_directory']
+    print('init making tree', root_dir)
+    paths_to_be_created = sorted(set(
+        fs.normpath(f'{root_dir}/{k}')
+        for k, v in manifest['assets'].items()
+        if v.type == 'dir'
+    ))
+    print(':l', paths_to_be_created)
+    [os.makedirs(x, exist_ok=True) for x in paths_to_be_created]
+
 
 def compare_manifests(new: T.Manifest1, old: T.Manifest1) -> T.ManifestDiff:
     return {
@@ -278,10 +293,11 @@ def _compare_assets(
     for key1, info1 in new.items():
         if key1 not in old:
             yield 'append', f'{start_directory}/{key1}', (None, info1)
+        info0 = old[key1]
+        if not is_same(info1, info0):
+            yield 'update', f'{start_directory}/{key1}', (info0, info1)
         else:
-            info0 = old[key1]
-            if not is_same(info1, info0):
-                yield 'update', f'{start_directory}/{key1}', (info0, info1)
+            yield 'ignore', f'{start_directory}/{key1}', (info0, info1)
 
 
 def _compare_dependencies(
@@ -293,10 +309,11 @@ def _compare_dependencies(
     for name1, verspec1 in new.items():
         if name1 not in old:
             yield 'append', (name1, verspec1)
+        verspec0 = old[name1]
+        if verspec1 != verspec0:
+            yield 'update', (name1, verspec1)
         else:
-            verspec0 = old[name1]
-            if verspec1 != verspec0:
-                yield 'update', (name1, verspec1)
+            yield 'ignore', (name1, verspec1)
 
 
 def _compare_pypi(
@@ -308,3 +325,5 @@ def _compare_pypi(
     for name1, path1 in new.items():  # path1 is a local abspath to a whl file.
         if name1 not in old:
             yield 'append', (name1, path1)
+        else:
+            yield 'ignore', (name1, path1)
