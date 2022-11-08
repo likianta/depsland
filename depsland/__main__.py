@@ -54,12 +54,28 @@ def init() -> None:
 
 
 @cli.cmd()
-def build(manifest='manifest.json', icon='', gen_exe=True) -> None:
+def build(manifest='.', icon='', gen_exe=True) -> None:
+    """
+    kwargs:
+        manifest (-m): a path to the project directory (suggested) or to a -
+            mainfest file.
+            if project directory is given, will search 'manifest.json' file -
+            under this dir.
+            [red dim]╰─ if no such file found, will raise a FileNotFound -
+            error.[/]
+            if a file is given, it must be '.json' type. depsland will treat -
+            its folder as the project directory.
+            [blue dim]╰─ if a file is given, the file name could be custom. -
+            (we suggest using 'manifest.json' as canondical.)[/]
+        icon: a '.ico' file (optional), suggest size above 128 * 128.
+            if you don't have '.ico' format, please use a convert tool (for -
+            example [u i]https://findicons.com/convert[/]) to get it.
+    """
     api.build(_fix_manifest_param(manifest), icon, gen_exe)
 
 
 @cli.cmd()
-def upload(manifest='manifest.json') -> None:
+def upload(manifest='.') -> None:
     api.upload(_fix_manifest_param(manifest))
 
 
@@ -172,11 +188,14 @@ def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
 
 
 def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
-    from os.path import isdir
+    from lk_utils.filesniff import normpath
+    from os.path import exists, isdir
     if isdir(manifest):
-        return f'{manifest}/manifest.json'
+        out = normpath(f'{manifest}/manifest.json', True)
     else:
-        return manifest
+        out = normpath(manifest, True)
+    assert exists(out)
+    return out
 
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
