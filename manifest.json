@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland",
-    "version": "0.2.0a5",
+    "version": "0.2.0b0",
     "assets": {
         "apps": "root",
         "apps/.venv": "root",

@@ -79,6 +79,10 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
             '[dim]([red]{}[/] -> [green]{}[/])[/]'.format(
                 info0 and info0.uid,
                 info1 and info1.uid,
+            ) if action != 'ignore'
+            else '[dim]({} -> {})[/]'.format(
+                info0 and info0.uid,
+                info1 and info1.uid,
             )
         )
         
@@ -107,7 +111,9 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     
     for action, (whl_name, whl_file) in diff['pypi']:
         print(':sri', action, '[{}]{}[/]'.format(
-            'green' if action == 'append' else 'red',
+            'green' if action == 'append'
+            else 'dim' if action == 'ignore'
+            else 'red',
             whl_name
         ))
         match action:
