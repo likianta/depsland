@@ -1,4 +1,5 @@
 import os
+import typing as t
 from os.path import exists
 
 import lk_logger
@@ -25,20 +26,28 @@ def main(do_replace_site_packages=True):
     _wind_up(dir_o)
     
     print(':trf2', '[green]installation done[/]')
-    
+
 
 def _choose_target_dir() -> str:
-    default = fs.normpath(os.environ['ProgramData'] + '/Depsland')
+    def find_if_last_version_exists() -> t.Optional[str]:
+        return os.getenv('DEPSLAND', None)
+    
+    default = (
+            find_if_last_version_exists()
+            or fs.normpath(os.environ['ProgramData'] + '/Depsland')
+    )
+    
     cmd = console.input(
         'please choose a location to install depsland. \n'
         '[dim](the deafult path is [magenta]{}[/])[/] \n'.format(default) +
         'press ENTER to use default path, or input a folder here: '
     ).strip()
+    
     if cmd == '':
         return default
     else:
         out = fs.normpath(cmd)
-        # make `out` should not exist
+        # make sure the user defined path should be empty or not exist.
         if exists(out):
             if os.listdir(out):
                 raise FileExistsError(out)
@@ -56,9 +65,16 @@ def _first_time_setup(dir_i: str, dir_o: str) -> None:
     for name in os.listdir(dir_i):
         if name == 'setup.exe':
             continue
+        
         print(':ir', f'[green]{name}[/]')
+        
         if name == 'python':
-            print('this may take a long time, please wait...', ':vs')
+            if os.path.islink(f'{dir_i}/{name}'):  # dev mode
+                fs.make_link(f'{dir_i}/{name}', f'{dir_o}/{name}')
+                continue
+            else:
+                print('this may take a long time, please wait...', ':vs')
+        
         if os.path.isfile(f'{dir_i}/{name}'):
             fs.copy_file(f'{dir_i}/{name}', f'{dir_o}/{name}')
         else:
@@ -89,14 +105,14 @@ def _incremental_setup(dir_i: str, dir_o: str,
     
     # copy new version
     print('copying files from "{}" to "{}"'.format(dir_i, dir_o))
-    print('this may take long time, please wait...', ':vs')
     for name in os.listdir(dir_i):
         # assert name != 'backup'
         if name == 'setup.exe':
             continue
         elif name == 'python':
+            print(':ir', f'[green]{name}[/]')
+            print('this may take long time, please wait...', ':vs')
             if do_replace_site_packages:
-                print(':ir', f'[green]{name}[/]')
                 fs.copy_tree(f'{dir_i}/python/Lib/site-packages',
                              f'{dir_o}/python/Lib/site-packages')
                 fs.copy_tree(f'{dir_i}/python/Scripts',
@@ -136,7 +152,7 @@ def _incremental_setup(dir_i: str, dir_o: str,
     fs.remove_tree(dir_m)
 
 
-def _wind_up(dir_: str):
+def _wind_up(dir_: str) -> None:
     print('create executables')
     
     file_i = f'{dir_}/build/exe/desktop.exe'
@@ -150,24 +166,61 @@ def _wind_up(dir_: str):
     
     # -------------------------------------------------------------------------
     # add `DEPSLAND` to environment variables
+    import winreg
     
     dir_ = dir_.replace('/', '\\')
-    if os.getenv('DEPSLAND', '') != dir_:
-        print('add `DEPSLAND` to environment variables')
-        run_cmd_args('setx', 'DEPSLAND', dir_)
+    print(':v', dir_)
     
-    if dir_ not in os.environ['PATH']:
-        print('add `DEPSLAND` to `PATH` (user variable)')
-        # edit user environment variables through Windows registry
-        import winreg
+    def get_environment_variables() -> t.Tuple[str, str]:
+        """
+        get environment variables from Windows registry.
+        
+        q: why not use `os.environ`?
+        a: `os.environ` may not update immediately if we are using a third
+            party file explorer, like total commander, xyplorer, etc.
+            ps: another way to resolve this is to restart the explorer.
+        """
         key = winreg.OpenKey(
             winreg.HKEY_CURRENT_USER, 'Environment', 0,
             winreg.KEY_ALL_ACCESS
         )
+        
+        try:
+            value, _ = winreg.QueryValueEx(key, 'DEPSLAND')
+        except FileNotFoundError:
+            value = ''
+        env_depsland = value
+        
         value, _ = winreg.QueryValueEx(key, 'PATH')
-        value = ';'.join((dir_, f'{dir_}\\apps_launcher', value))
-        #   FIXME: if old DEPSLAND is registered to PATH, remove it.
-        winreg.SetValueEx(key, 'PATH', 0, winreg.REG_EXPAND_SZ, value)
+        env_path = value
+        
+        return env_depsland, env_path
+    
+    env_depsland, env_path = get_environment_variables()
+    print(':v', env_depsland, env_path[:80] + '...')
+    
+    if env_depsland != dir_:
+        print('add `DEPSLAND` to environment variables')
+        run_cmd_args('setx', 'DEPSLAND', dir_)
+    
+    if dir_ not in env_path:
+        env_path = env_path.split(';')
+        
+        # remove old version
+        if env_depsland and env_depsland in env_path:
+            env_path.remove(env_depsland)
+            env_path.remove(env_depsland + '\\apps_launcher')
+        
+        print('add `DEPSLAND` to `PATH` (user variable)')
+        # edit user environment variables through Windows registry
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER, 'Environment', 0,
+            winreg.KEY_ALL_ACCESS
+        )
+        winreg.SetValueEx(
+            key, 'PATH', 0, winreg.REG_EXPAND_SZ,
+            ';'.join(filter(None, [dir_, dir_ + '\\apps_launcher'] + env_path))
+        )
         winreg.CloseKey(key)
 
 
