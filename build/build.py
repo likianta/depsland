@@ -14,6 +14,8 @@ from lk_utils import fs
 from depsland import __version__
 from depsland import bat_2_exe as _b2e
 from depsland import paths
+from depsland.manifest import dump_manifest
+from depsland.manifest import load_manifest
 from depsland.utils import ziptool
 
 print(':v2', f'depsland version: {__version__}')
@@ -46,6 +48,7 @@ def full_build(add_python_path=True):
     # os.mkdir(f'{root_o}/sidework')
     os.mkdir(f'{root_o}/temp')
     os.mkdir(f'{root_o}/temp/.fake_oss_storage')
+    os.mkdir(f'{root_o}/temp/.self_upgrade')
     os.mkdir(f'{root_o}/temp/.unittests')
     
     # copy files
@@ -70,6 +73,8 @@ def full_build(add_python_path=True):
                      f'{root_o}/python')
     
     # init files
+    dump_manifest(load_manifest(f'{root_i}/manifest.json'),
+                  f'{root_o}/manifest.pkl')
     dumps(defaultdict(list), f'{root_o}/pypi/index/dependencies.pkl')
     dumps(defaultdict(list), f'{root_o}/pypi/index/name_2_versions.pkl')
     dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')
@@ -106,6 +111,7 @@ def min_build(add_python_packages=False):
     # os.mkdir(f'{root_o}/sidework')
     os.mkdir(f'{root_o}/temp')
     os.mkdir(f'{root_o}/temp/.fake_oss_storage')
+    os.mkdir(f'{root_o}/temp/.self_upgrade')
     os.mkdir(f'{root_o}/temp/.unittests')
     
     # copy files
@@ -134,6 +140,8 @@ def min_build(add_python_packages=False):
         os.mkdir(f'{root_o}/python/Lib/site-packages')
     
     # init files
+    dump_manifest(load_manifest(f'{root_i}/manifest.json'),
+                  f'{root_o}/manifest.pkl')
     dumps(defaultdict(list), f'{root_o}/pypi/index/dependencies.pkl')
     dumps(defaultdict(list), f'{root_o}/pypi/index/name_2_versions.pkl')
     dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')

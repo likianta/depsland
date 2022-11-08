@@ -5,6 +5,7 @@ if True:
 from . import api
 from . import config
 from . import launcher
+from . import manifest
 from . import paths
 from . import utils
 from .api import init
@@ -15,5 +16,5 @@ from .pip import pip
 from .pypi import pypi
 from .utils import bat_2_exe
 
-__version__ = '0.2.0a6'
+__version__ = '0.2.0a7'
 __date__ = '2021-11-08'

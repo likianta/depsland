@@ -41,6 +41,8 @@ class Project:
     # cache = f'{root}/cache'
     conf = f'{root}/conf'
     dist = f'{root}/dist'
+    manifest_json = f'{root}/manifest.json'
+    manifest_pkl = f'{root}/manifest.pkl'
     project = f'{root}'
     pypi = f'{root}/pypi'
     python = f'{root}/python'
@@ -75,7 +77,6 @@ class Apps:
 class Conf:
     root = f'{_PROJ_DIR}/conf'
     depsland = f'{root}/depsland.yaml'
-    manifest = f'{root}/manifest.pkl'
     oss_client = f'{root}/oss_client.yaml'
     oss_server = f'{root}/oss_server.yaml'
 
