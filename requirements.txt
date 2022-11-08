@@ -1,18 +1,16 @@
-pip
+# note: the commmented lines are for special purpose (i.e. they are not meaningless).
+
+# pip
 # setuptools
 wheel
 
 argsense >= 0.5.0a0
-# embed-python-manager
-# lambda-ex
+# gen-exe  # windows only
 lk-logger >= 5.4.6
-lk-utils >= 2.5.0b13
+lk-utils >= 2.5.0b16
 # neoprint >= 0.1.0b0
 oss2
-# packaging
-# pkginfo
 pyyaml
 rich
 semver >= 3.0.0dev3
-
-# gen-exe  # windows only
+# textual
