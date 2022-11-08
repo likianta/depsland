@@ -19,7 +19,7 @@ _IS_WINDOWS = os.name == 'nt'
 
 class System:
     if _IS_WINDOWS:
-        depsland = fs.normpath(os.getenv('DEPSLAND', None))
+        depsland = fs.normpath(os.getenv('DEPSLAND', '<not_exists>'))
         depsland_bak = f'{depsland}.bak'
         desktop = fs.normpath(os.environ['USERPROFILE'] + '/Desktop')
         home = fs.normpath(os.environ['USERPROFILE'])

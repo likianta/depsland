@@ -11,14 +11,38 @@ cli = CommandLineInterface('depsland')
 
 @cli.cmd()
 def version() -> None:
-    from . import __version__, __date__
-    print('[cyan b]v{}[/] [dim](released at {})[/]'.format(
-        __version__, __date__
-    ), ':rs1')
+    """
+    show basic information about depsland.
+    """
+    # ref: the rich text (with gradient color) effect is copied from
+    #   likianta/lk-logger project.
+    from lk_logger.control import _blend_text  # noqa
+    from random import choice
+    from . import __date__, __path__, __version__
+
+    color_pairs_group = (
+        ('#0a87ee', '#9294f0'),  # calm blue -> light blue
+        ('#2d34f1', '#9294f0'),  # ocean blue -> light blue
+        ('#ed3b3b', '#d08bf3'),  # rose red -> violet
+        ('#f38cfd', '#d08bf3'),  # light magenta -> violet
+        ('#f47fa4', '#f49364'),  # cold sandy -> camel tan
+    )
+    
+    color_pair = choice(color_pairs_group)
+    colorful_title = _blend_text(
+        '♥ depsland v{} ♥'.format(__version__), color_pair
+    )
+    print(f'[b]{colorful_title}[/]', ':rs1')
+    
+    print(':rs1', '[cyan]released at [u]{}[/][/]'.format(__date__))
+    print(':rs1', '[magenta]located at [u]{}[/][/]'.format(__path__[0]))
 
 
 @cli.cmd()
 def welcome(confirm_close=False) -> None:
+    """
+    show welcome message and exit.
+    """
     from lk_logger.console import console
     from rich.markdown import Markdown
     from textwrap import dedent
@@ -52,6 +76,8 @@ def welcome(confirm_close=False) -> None:
 def init(manifest='.', app_name='', overwrite=False,
          auto_find_requirements=False) -> None:
     """
+    create a "manifest.json" file in project directory.
+    
     kwargs:
         manifest (-m): if directory of manifest not exists, it will be created.
         appname (-n): if not given, will use directory name as app name.
@@ -65,6 +91,10 @@ def init(manifest='.', app_name='', overwrite=False,
 @cli.cmd()
 def build(manifest='.', icon='', gen_exe=True) -> None:
     """
+    build your python application based on manifest file.
+    the build result is stored in "dist" directory.
+    [dim]if "dist" not exists, it will be auto created.[/]
+    
     kwargs:
         manifest (-m): a path to the project directory (suggested) or to a -
             mainfest file.
@@ -85,12 +115,17 @@ def build(manifest='.', icon='', gen_exe=True) -> None:
 
 @cli.cmd()
 def upload(manifest='.') -> None:
+    """
+    upload dist assets to oss.
+    """
     api.upload(_fix_manifest_param(manifest))
 
 
 @cli.cmd()
 def install(appid: str, upgrade=True, reinstall=False) -> None:
     """
+    install an app from oss by querying appid.
+    
     kwargs:
         upgrade (-u):
         reinstall (-r):
@@ -98,6 +133,8 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
     m0, m1 = _get_manifests(appid)
     
     if m0 is None:
+        from .manifest import init_manifest
+        m0 = init_manifest(m1['appid'], m1['name'])
         api.install2(m1, m0)
     elif _check_version(m1, m0):
         if upgrade:
@@ -123,8 +160,13 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
 
 @cli.cmd()
 def upgrade(appid: str) -> None:
+    """
+    upgrade an app from oss by querying appid.
+    """
     m0, m1 = _get_manifests(appid)
     if m0 is None:
+        from .manifest import init_manifest
+        m0 = init_manifest(m1['appid'], m1['name'])
         api.install2(m1, m0)
     elif _check_version(m1, m0):
         # install first, then uninstall old.
@@ -147,6 +189,9 @@ def upgrade(appid: str) -> None:
 
 @cli.cmd()
 def uninstall(appid: str, version: str = None) -> None:
+    """
+    uninstall an application.
+    """
     if version is None:
         version = _get_last_installed_version(appid)
     if version is None:
@@ -157,6 +202,9 @@ def uninstall(appid: str, version: str = None) -> None:
 
 @cli.cmd()
 def self_upgrade() -> None:
+    """
+    upgrade depsland itself.
+    """
     api.self_upgrade()
 
 
@@ -164,6 +212,9 @@ def self_upgrade() -> None:
 
 @cli.cmd()
 def show(appid: str, version: str = None) -> None:
+    """
+    show manifest of an app.
+    """
     from .manifest import load_manifest
     if version is None:
         history = paths.apps.get_history_versions(appid)
@@ -176,6 +227,9 @@ def show(appid: str, version: str = None) -> None:
 @cli.cmd()
 def run(appid: str, version: str, filename: str,
         error_output='terminal') -> None:
+    """
+    a general launcher to start an installed app.
+    """
     from lk_utils import loads
     from .launcher import run
     from .paths import project
@@ -185,6 +239,10 @@ def run(appid: str, version: str, filename: str,
 
 @cli.cmd()
 def rebuild_pypi_index() -> None:
+    """
+    rebuild local pypi index. this may resolve some historical problems caused -
+    by pip network issues.
+    """
     from .doctor import rebuild_pypi_index
     rebuild_pypi_index()
 
