@@ -31,19 +31,19 @@ def _choose_target_dir() -> str:
     default = fs.normpath(os.environ['ProgramData'] + '/Depsland')
     cmd = console.input(
         'please choose a location to install depsland. \n'
-        '[dim](the deafult path is [magenta{}[/])[/] \n'.format(default) +
-        'press ENTER to use default path, or input a empty folder here: '
+        '[dim](the deafult path is [magenta]{}[/])[/] \n'.format(default) +
+        'press ENTER to use default path, or input a folder here: '
     ).strip()
     if cmd == '':
         return default
     else:
-        out = cmd
-        if not exists(out):
-            os.mkdir(out)
-        else:
-            assert os.path.isdir(out) and len(os.listdir(out)) == 0, (
-                'target directory should be empty!', out
-            )
+        out = fs.normpath(cmd)
+        # make `out` should not exist
+        if exists(out):
+            if os.listdir(out):
+                raise FileExistsError(out)
+            else:
+                fs.remove_tree(out)
         return out
 
 
@@ -52,12 +52,13 @@ def _first_time_setup(dir_i: str, dir_o: str) -> None:
     os.mkdir(dir_o)
     
     print('copying files from "{}" to "{}"'.format(dir_i, dir_o))
-    print('this may take long time, please wait...', ':vs')
     
     for name in os.listdir(dir_i):
         if name == 'setup.exe':
             continue
         print(':ir', f'[green]{name}[/]')
+        if name == 'python':
+            print('this may take a long time, please wait...', ':vs')
         if os.path.isfile(f'{dir_i}/{name}'):
             fs.copy_file(f'{dir_i}/{name}', f'{dir_o}/{name}')
         else:
