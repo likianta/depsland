@@ -230,4 +230,5 @@ if __name__ == '__main__':
     except:
         console.print_exception()
     finally:
+        print(':f2s')
         input('press enter to close... ')
