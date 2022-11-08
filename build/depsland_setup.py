@@ -2,6 +2,7 @@ import os
 from os.path import exists
 
 import lk_logger
+from argsense import cli
 from lk_logger.console import console
 from lk_utils import fs
 from lk_utils import run_cmd_args
@@ -9,7 +10,8 @@ from lk_utils import run_cmd_args
 lk_logger.setup(quiet=True, show_source=False, show_funcname=False)
 
 
-def main():
+@cli.cmd()
+def main(do_replace_site_packages=True):
     assert os.name == 'nt', 'this script is only for Windows'
     
     dir_i = fs.xpath('..', True)
@@ -18,7 +20,7 @@ def main():
     if not exists(dir_o):
         _first_time_setup(dir_i, dir_o)
     else:
-        _incremental_setup(dir_i, dir_o)
+        _incremental_setup(dir_i, dir_o, do_replace_site_packages)
     
     _wind_up(dir_o)
     
@@ -62,7 +64,8 @@ def _first_time_setup(dir_i: str, dir_o: str) -> None:
             fs.copy_tree(f'{dir_i}/{name}', f'{dir_o}/{name}')
 
 
-def _incremental_setup(dir_i: str, dir_o: str) -> None:
+def _incremental_setup(dir_i: str, dir_o: str,
+                       do_replace_site_packages=True) -> None:
     dir_m = f'{dir_o}/backup'
     if not exists(dir_m):
         os.mkdir(dir_m)
@@ -72,7 +75,7 @@ def _incremental_setup(dir_i: str, dir_o: str) -> None:
     for name in os.listdir(dir_o):
         if name == 'backup':
             continue
-        elif name == 'python':
+        elif name == 'python' and do_replace_site_packages:
             print(':ir', f'[red dim]{name}[/]')
             fs.move(f'{dir_o}/python/Lib/site-packages',
                     f'{dir_m}/python-lib-site_packages', True)
@@ -91,11 +94,27 @@ def _incremental_setup(dir_i: str, dir_o: str) -> None:
         if name == 'setup.exe':
             continue
         elif name == 'python':
-            print(':ir', f'[green]{name}[/]')
-            fs.copy_tree(f'{dir_i}/python/Lib/site-packages',
-                         f'{dir_o}/python/Lib/site-packages')
-            fs.copy_tree(f'{dir_i}/python/Scripts',
-                         f'{dir_o}/python/Scripts')
+            if do_replace_site_packages:
+                print(':ir', f'[green]{name}[/]')
+                fs.copy_tree(f'{dir_i}/python/Lib/site-packages',
+                             f'{dir_o}/python/Lib/site-packages')
+                fs.copy_tree(f'{dir_i}/python/Scripts',
+                             f'{dir_o}/python/Scripts')
+            else:
+                if exists(x := f'{dir_i}/python/Lib/site-packages'):
+                    for sub_name in os.listdir(x):
+                        if os.path.isfile(f'{x}/{sub_name}'):
+                            fs.copy_file(
+                                f'{x}/{sub_name}',
+                                f'{dir_o}/python/Lib/site-packages/{sub_name}',
+                                True
+                            )
+                        else:
+                            fs.copy_tree(
+                                f'{x}/{sub_name}',
+                                f'{dir_o}/python/Lib/site-packages/{sub_name}',
+                                True,
+                            )
         else:
             print(':ir', f'[green]{name}[/]')
             if os.path.isfile(f'{dir_i}/{name}'):
@@ -153,7 +172,7 @@ def _wind_up(dir_: str):
 
 if __name__ == '__main__':
     try:
-        main()
+        cli.run(main)
     except:
         console.print_exception()
     finally:

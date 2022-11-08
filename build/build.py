@@ -12,6 +12,7 @@ from lk_utils import dumps
 from lk_utils import fs
 
 from depsland import __version__
+from depsland import bat_2_exe as _b2e
 from depsland import paths
 from depsland.utils import ziptool
 
@@ -83,7 +84,7 @@ def min_build(add_python_packages=False):
     root_i = paths.project.root
     root_o = '{dist}/{version}'.format(
         dist=paths.project.dist,
-        version=f'depsland-{__version__}'
+        version=f'depsland-{__version__}-(patch)'
     )
     assert not exists(root_o)
     os.mkdir(root_o)
@@ -128,6 +129,9 @@ def min_build(add_python_packages=False):
         os.mkdir(f'{root_o}/python/Lib')
         fs.make_link(f'{root_i}/python/Lib/site-packages',
                      f'{root_o}/python/Lib/site-packages')
+    else:
+        os.mkdir(f'{root_o}/python/Lib')
+        os.mkdir(f'{root_o}/python/Lib/site-packages')
     
     # init files
     dumps(defaultdict(list), f'{root_o}/pypi/index/dependencies.pkl')
@@ -136,6 +140,17 @@ def min_build(add_python_packages=False):
     dumps({}, f'{root_o}/pypi/index/updates.pkl')
     
     print(':t', 'see result at', fs.relpath(root_o))
+
+
+# -----------------------------------------------------------------------------
+
+@cli.cmd()
+def bat_2_exe(file_i: str):
+    """
+    args:
+        file_i: the file is ".bat" file, which is under ~/build/exe folder.
+    """
+    _b2e(file_i, icon=xpath('exe/launcher.ico'))
 
 
 @cli.cmd()
