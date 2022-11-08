@@ -60,6 +60,9 @@ def main(appid: str) -> t.Optional[T.Path]:
         else:
             print('no previous version found, it may be your first time to '
                   f'install {appid}')
+            print('[dim]be noted the first-time installation may consume a '
+                  'long time. depsland will try to reduce the consumption in '
+                  'the succeeding upgrades/installations.[/]', ':r')
             return init_manifest(manifest_new['appid'], manifest_new['name'])
     
     manifest_new = get_manifest_new()

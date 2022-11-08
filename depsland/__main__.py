@@ -242,6 +242,11 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     if x := _get_dir_to_last_installed_version(appid):
         manifest_old = load_manifest(f'{x}/manifest.pkl')
     else:
+        print('no previous version found, it may be your first time to install '
+              f'{appid}')
+        print('[dim]be noted the first-time installation may consume a long '
+              'time. depsland will try to reduce the consumption in the '
+              'succeeding upgrades/installations.[/]', ':r')
         manifest_old = None
 
     return manifest_old, manifest_new
