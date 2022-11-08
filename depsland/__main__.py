@@ -97,6 +97,30 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
 
 
 @cli.cmd()
+def upgrade(appid: str) -> None:
+    m0, m1 = _get_manifests(appid)
+    if m0 is None:
+        api.install2(m1, m0)
+    elif _check_version(m1, m0):
+        # install first, then uninstall old.
+        api.install(appid)
+        api.uninstall(appid, m0['version'])
+    else:
+        print('[green dim]no update available[/]', ':r')
+
+
+# @cli.cmd()
+# def reinstall(appid: str) -> None:
+#     # TODO: reinstall is not supported. the server side provides only latest
+#     #     verison. which may not be matched with local one.
+#     from .manifest import load_manifest
+#     if x := _get_dir_to_last_installed_version(appid):
+#         manifest0 = load_manifest(f'{x}/manifest.pkl')
+#         api.uninstall(appid, manifest0['version'])
+#         api.install(appid, manifest0['version'])
+
+
+@cli.cmd()
 def uninstall(appid: str, version: str = None) -> None:
     if version is None:
         version = _get_last_installed_version(appid)
