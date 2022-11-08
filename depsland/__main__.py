@@ -49,8 +49,17 @@ def welcome(confirm_close=False) -> None:
 # ordered by lifecycle
 
 @cli.cmd()
-def init() -> None:
-    api.init()
+def init(manifest='.', app_name='', overwrite=False,
+         auto_find_requirements=False) -> None:
+    """
+    kwargs:
+        manifest (-m): if directory of manifest not exists, it will be created.
+        appname (-n): if not given, will use directory name as app name.
+        auto_find_requirements (-a):
+        overwrite (-o):
+    """
+    api.init(_fix_manifest_param(manifest), app_name, overwrite,
+             auto_find_requirements)
 
 
 @cli.cmd()
@@ -194,7 +203,7 @@ def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
         out = normpath(f'{manifest}/manifest.json', True)
     else:
         out = normpath(manifest, True)
-    assert exists(out)
+        assert exists(out)
     return out
 
 
@@ -248,7 +257,7 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
               'time. depsland will try to reduce the consumption in the '
               'succeeding upgrades/installations.[/]', ':r')
         manifest_old = None
-
+    
     return manifest_old, manifest_new
 
 

@@ -15,13 +15,6 @@ def init(
         overwrite=False,
         auto_find_requirements=False
 ):
-    """
-    kwargs:
-        manifest (-m): if directory of manifest not exists, it will be created.
-        appname (-n): if not given, will use directory name as app name.
-        auto_find_requirements (-a):
-        overwrite (-o):
-    """
     # init/update parameters
     filepath = fs.normpath(manifest, True)
     dirpath = fs.parent_path(filepath)
@@ -52,6 +45,12 @@ def init(
         'version'     : '0.1.0',
         'assets'      : {},
         'dependencies': {},
+        'pypi'        : [],
+        'launcher'    : {
+            'command'   : f'depsland show {appid} 0.1.0',
+            'desktop'   : False,
+            'start_menu': False,
+        }
     }
     
     if auto_find_requirements:
