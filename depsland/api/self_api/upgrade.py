@@ -50,7 +50,7 @@ def _get_manifests(oss) -> T.CheckUpdatesResult:
         latest_manifest_file := f'{paths.temp.self_upgrade}/manifest.pkl'
     )
     
-    manifest0 = load_manifest(paths.conf.manifest)
+    manifest0 = load_manifest(paths.project.manifest_pkl)
     manifest1 = load_manifest(latest_manifest_file)
     
     if compare_version(manifest0['version'], '<', manifest1['version']):

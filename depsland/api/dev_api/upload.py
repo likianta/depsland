@@ -73,14 +73,11 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     # -------------------------------------------------------------------------
     
     for action, relpath, (info0, info1) in diff['assets']:
-        #   the abspath could either be a file or a directory.
+        if action == 'ignore':
+            continue
         print(
             ':sri', action, relpath,
             '[dim]([red]{}[/] -> [green]{}[/])[/]'.format(
-                info0 and info0.uid,
-                info1 and info1.uid,
-            ) if action != 'ignore'
-            else '[dim]({} -> {})[/]'.format(
                 info0 and info0.uid,
                 info1 and info1.uid,
             )
@@ -104,16 +101,15 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
                 oss.upload(zipped_file, f'{oss.path.assets}/{info1.uid}')
             case 'delete':
                 oss.delete(f'{oss.path.assets}/{info0.uid}')
-    print(':i0s')
     
     # for action, (name, verspec) in diff['dependencies']:
     #     pass
     
     for action, (whl_name, whl_file) in diff['pypi']:
+        if action == 'ignore':
+            continue
         print(':sri', action, '[{}]{}[/]'.format(
-            'green' if action == 'append'
-            else 'dim' if action == 'ignore'
-            else 'red',
+            'green' if action == 'append' else 'red',
             whl_name
         ))
         match action:

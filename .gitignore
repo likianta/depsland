@@ -7,7 +7,7 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
-/chore/
+/chore/custom_packages/*
 /conf/oss_*
 /deleted/
 /dist/*
@@ -22,6 +22,7 @@ __pycache__/
 
 !/apps/.venv/.gitkeep
 !/apps/.gitkeep
+!/chore/custom_packages/.gitkeep
 !/dist/.gitkeep
 !/python/README.md
 !/python/README.zh.md

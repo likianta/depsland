@@ -33,6 +33,7 @@ def full_build(add_python_path=True):
     
     # make empty dirs
     os.mkdir(f'{root_o}/apps')
+    os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/apps_launcher')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/build/exe')
@@ -80,7 +81,7 @@ def full_build(add_python_path=True):
     dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')
     dumps({}, f'{root_o}/pypi/index/updates.pkl')
     
-    print(':t', 'see result at', fs.relpath(root_o))
+    print(':t', 'see result at' + fs.relpath(root_o))
 
 
 @cli.cmd()
