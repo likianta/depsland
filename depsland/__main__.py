@@ -10,7 +10,7 @@ cli = CommandLineInterface('depsland')
 
 
 @cli.cmd()
-def version():
+def version() -> None:
     from . import __version__, __date__
     print('[cyan b]v{}[/] [dim](released at {})[/]'.format(
         __version__, __date__
@@ -18,7 +18,7 @@ def version():
 
 
 @cli.cmd()
-def welcome(confirm_close=False):
+def welcome(confirm_close=False) -> None:
     from lk_logger.console import console
     from rich.markdown import Markdown
     from textwrap import dedent
@@ -49,22 +49,22 @@ def welcome(confirm_close=False):
 # ordered by lifecycle
 
 @cli.cmd()
-def init():
+def init() -> None:
     api.init()
 
 
 @cli.cmd()
-def build(manifest='manifest.json', icon='', gen_exe=True):
+def build(manifest='manifest.json', icon='', gen_exe=True) -> None:
     api.build(_fix_manifest_param(manifest), icon, gen_exe)
 
 
 @cli.cmd()
-def upload(manifest='manifest.json'):
+def upload(manifest='manifest.json') -> None:
     api.upload(_fix_manifest_param(manifest))
 
 
 @cli.cmd()
-def install(appid: str, upgrade=True, reinstall=False):
+def install(appid: str, upgrade=True, reinstall=False) -> None:
     """
     kwargs:
         upgrade (-u):
@@ -76,8 +76,9 @@ def install(appid: str, upgrade=True, reinstall=False):
         api.install2(m1, m0)
     elif _check_version(m1, m0):
         if upgrade:
-            api.uninstall(appid, m0['version'])
+            # install first, then uninstall old.
             api.install(appid)
+            api.uninstall(appid, m0['version'])
         else:
             print('new version available but not installed. you can use '
                   '`depsland install -u {appid}` or `depsland upgrade {appid}` '
@@ -96,19 +97,24 @@ def install(appid: str, upgrade=True, reinstall=False):
 
 
 @cli.cmd()
-def uninstall(appid: str, version: str = None):
-    api.uninstall(appid)
+def uninstall(appid: str, version: str = None) -> None:
+    if version is None:
+        version = _get_last_installed_version(appid)
+    if version is None:
+        print(f'{appid} is already uninstalled.')
+        return
+    api.uninstall(appid, version)
 
 
 @cli.cmd()
-def self_upgrade():
+def self_upgrade() -> None:
     api.self_upgrade()
 
 
 # -----------------------------------------------------------------------------
 
 @cli.cmd()
-def show(appid: str, version: str = None):
+def show(appid: str, version: str = None) -> None:
     from .manifest import load_manifest
     if version is None:
         history = paths.apps.get_history_versions(appid)
@@ -119,7 +125,8 @@ def show(appid: str, version: str = None):
 
 
 @cli.cmd()
-def run(appid: str, version: str, filename: str, error_output='terminal'):
+def run(appid: str, version: str, filename: str,
+        error_output='terminal') -> None:
     from lk_utils import loads
     from .launcher import run
     from .paths import project
@@ -128,7 +135,7 @@ def run(appid: str, version: str, filename: str, error_output='terminal'):
 
 
 @cli.cmd()
-def rebuild_pypi_index():
+def rebuild_pypi_index() -> None:
     from .doctor import rebuild_pypi_index
     rebuild_pypi_index()
 
@@ -140,7 +147,7 @@ def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
     return compare_version(new['version'], '>', old['version'])
 
 
-def _fix_manifest_param(manifest: str):
+def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
     from os.path import isdir
     if isdir(manifest):
         return f'{manifest}/manifest.json'
@@ -149,15 +156,22 @@ def _fix_manifest_param(manifest: str):
 
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
+    from os.path import exists
+    last_ver = _get_last_installed_version(appid)
+    if last_ver:
+        dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
+        assert exists(dir_)
+        return dir_
+    return None
+
+
+def _get_last_installed_version(appid: str) -> t.Optional[str]:
     from lk_utils import loads
     from os.path import exists
-    dir_ = '{}/{}'.format(paths.project.apps, appid)
     history_file = paths.apps.get_history_versions(appid)
     if exists(history_file):
         last_ver = loads(history_file)[0]
-        out = f'{dir_}/{last_ver}'
-        assert exists(out)
-        return out
+        return last_ver
     return None
 
 

@@ -5,9 +5,9 @@ from lk_utils import fs
 from ... import paths
 
 
-def main(appid: str) -> None:
+def main(appid: str, version: str) -> None:
     for dir_ in (
-            '{}/{}'.format(paths.apps.root, appid),
+            '{}/{}/{}'.format(paths.apps.root, appid, version),
             '{}/{}'.format(paths.apps.venv, appid),
     ):
         if exists(dir_):
