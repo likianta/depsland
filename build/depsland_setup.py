@@ -2,6 +2,7 @@ import os
 from os.path import exists
 
 import lk_logger
+from lk_logger.console import console
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
@@ -12,7 +13,7 @@ def main():
     assert os.name == 'nt', 'this script is only for Windows'
     
     dir_i = fs.xpath('..', True)
-    dir_o = fs.normpath(os.environ['ProgramData'] + '/Depsland')
+    dir_o = _choose_target_dir()
     
     if not exists(dir_o):
         _first_time_setup(dir_i, dir_o)
@@ -22,6 +23,26 @@ def main():
     _wind_up(dir_o)
     
     print(':trf2', '[green]installation done[/]')
+    
+
+def _choose_target_dir() -> str:
+    default = fs.normpath(os.environ['ProgramData'] + '/Depsland')
+    cmd = console.input(
+        'please choose a location to install depsland. \n'
+        '[dim](the deafult path is [magenta{}[/])[/] \n'.format(default) +
+        'press ENTER to use default path, or input a empty folder here: '
+    ).strip()
+    if cmd == '':
+        return default
+    else:
+        out = cmd
+        if not exists(out):
+            os.mkdir(out)
+        else:
+            assert os.path.isdir(out) and len(os.listdir(out)) == 0, (
+                'target directory should be empty!', out
+            )
+        return out
 
 
 def _first_time_setup(dir_i: str, dir_o: str) -> None:
@@ -125,6 +146,7 @@ def _wind_up(dir_: str):
         )
         value, _ = winreg.QueryValueEx(key, 'PATH')
         value = ';'.join((dir_, f'{dir_}\\apps_launcher', value))
+        #   FIXME: if old DEPSLAND is registered to PATH, remove it.
         winreg.SetValueEx(key, 'PATH', 0, winreg.REG_EXPAND_SZ, value)
         winreg.CloseKey(key)
 
@@ -133,7 +155,6 @@ if __name__ == '__main__':
     try:
         main()
     except:
-        from lk_logger.console import console
         console.print_exception()
     finally:
         input('press enter to close... ')
