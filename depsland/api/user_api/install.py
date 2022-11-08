@@ -212,11 +212,21 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
 def _create_launcher(manifest: T.Manifest) -> None:
     appid = manifest['appid']
     version = manifest['version']
-    command = manifest['launcher']['command']
-    if command.startswith('py '):
-        command = command.replace(
-            'py', r'%DEPSLAND%\python\python.exe', 1
-        )
+    command: str = manifest['launcher']['command']
+    if command:
+        if command.startswith('py '):
+            if not command.startswith('py -m '):
+                # fix script path to be abspath
+                # e.g. 'py src/main.py'
+                #   -> 'py %DEPSLAND%/apps/{appid}/.../src/main.py'
+                command = 'py {app_dir}/{script}'.format(
+                    app_dir=f'%DEPSLAND%/apps/{appid}/{version}',
+                    script=command[3:]
+                )
+            # replace 'py' with python interpreter path.
+            command = command.replace(
+                'py', r'%DEPSLAND%\python\python.exe', 1
+            )
     
     # bat command
     command = dedent('''
