@@ -73,7 +73,7 @@ def install(appid: str, upgrade=True, reinstall=False):
     m0, m1 = _get_manifests(appid)
     
     if m0 is None:
-        api.install(appid)
+        api.install2(m1, m0)
     elif _check_version(m1, m0):
         if upgrade:
             api.uninstall(appid, m0['version'])
@@ -162,6 +162,8 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
 
 
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
+    from lk_utils import fs
+    from .manifest import init_target_tree
     from .manifest import load_manifest
     from .oss import get_oss_client
     from .utils import make_temp_dir
@@ -171,6 +173,14 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     oss = get_oss_client(appid)
     oss.download(oss.path.manifest, x := f'{temp_dir}/manifest.pkl')
     manifest_new = load_manifest(x)
+    manifest_new['start_directory'] = '{}/{}/{}'.format(
+        paths.project.apps,
+        manifest_new['appid'],
+        manifest_new['version']
+    )
+    init_target_tree(manifest_new)
+    fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
+    fs.remove_tree(temp_dir)
     
     if x := _get_dir_to_last_installed_version(appid):
         manifest_old = load_manifest(f'{x}/manifest.pkl')

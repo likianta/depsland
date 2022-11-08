@@ -102,6 +102,23 @@ def main(appid: str) -> t.Optional[T.Path]:
     return dir_o
 
 
+def main2(manifest_new: T.Manifest, manifest_old: T.Manifest) -> None:
+    """
+    TODO: leave one of `main` and `main2`, remove another one.
+    """
+    dir_m = make_temp_dir()
+    
+    oss = get_oss_client(manifest_new['appid'])
+    print(oss.path)
+    
+    _install_files(manifest_new, manifest_old, oss, dir_m)
+    _install_custom_packages(manifest_new, manifest_old, oss)
+    _install_dependencies(manifest_new)
+    _create_launcher(manifest_new)
+    
+    fs.remove_tree(dir_m)
+
+
 def _check_update(
         manifest_new: T.Manifest,
         manifest_old: T.Manifest,
