@@ -293,6 +293,7 @@ def _compare_assets(
     for key1, info1 in new.items():
         if key1 not in old:
             yield 'append', key1, (None, info1)
+            continue
         info0 = old[key1]
         if not is_same(info1, info0):
             yield 'update', key1, (info0, info1)
@@ -309,6 +310,7 @@ def _compare_dependencies(
     for name1, verspec1 in new.items():
         if name1 not in old:
             yield 'append', (name1, verspec1)
+            continue
         verspec0 = old[name1]
         if verspec1 != verspec0:
             yield 'update', (name1, verspec1)

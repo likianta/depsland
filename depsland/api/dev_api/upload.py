@@ -74,8 +74,13 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     
     for action, relpath, (info0, info1) in diff['assets']:
         #   the abspath could either be a file or a directory.
-        print(':sri', action, relpath,
-              f'[dim]([red]{info0.uid}[/] -> [green]{info1.uid}[/])[/]')
+        print(
+            ':sri', action, relpath,
+            '[dim]([red]{}[/] -> [green]{}[/])[/]'.format(
+                info0 and info0.uid,
+                info1 and info1.uid,
+            )
+        )
         
         if info1 is not None:  # i.e. action != 'delete'
             source_path = f'{new_src_dir}/{relpath}'
@@ -97,10 +102,10 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
                 oss.delete(f'{oss.path.assets}/{info0.uid}')
     print(':i0s')
     
-    # for action, name, verspec in diff['dependencies']:
+    # for action, (name, verspec) in diff['dependencies']:
     #     pass
     
-    for action, whl_name, whl_file in diff['pypi']:
+    for action, (whl_name, whl_file) in diff['pypi']:
         print(':sri', action, '[{}]{}[/]'.format(
             'green' if action == 'append' else 'red',
             whl_name
