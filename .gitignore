@@ -9,6 +9,7 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/venv_packages.zip
+/chore/
 /conf/oss_*
 /deleted/
 /dist/*
