@@ -27,5 +27,6 @@ __pycache__/
 !/python/README.md
 !/python/README.zh.md
 !/temp/.fake_oss_storage/.gitkeep
+!/temp/.self_upgrade/.gitkeep
 !/temp/.unittests/.gitkeep
 !/temp/.gitkeep
