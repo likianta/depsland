@@ -145,7 +145,7 @@ def _install_files(
     diff = compare_manifests(manifest_new, manifest_old)
     
     def download_from_oss(i: str, m: str, o: str) -> None:
-        print('{} -> {}'.format(i, fs.relpath(o, root1)))
+        print(fs.relpath(o, root1))
         oss.download(i, m)
         ziptool.decompress_file(m, o, overwrite=True)
     
@@ -167,9 +167,10 @@ def _install_files(
                 copy_from_old(path0, path1, info1.type)
                 continue
             else:
+                print('turn ignore to append action')
                 action = 'append'
         
-        if action == 'append':
+        if action in ('append', 'update'):
             path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
             path_m = fs.normpath('{}/{}.{}'.format(
                 # an intermediate file (zip)

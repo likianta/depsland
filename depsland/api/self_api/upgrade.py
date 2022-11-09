@@ -5,7 +5,6 @@ from lk_utils import fs
 
 from ... import paths
 from ...manifest import T as T0
-from ...manifest import dump_manifest
 from ...manifest import init_target_tree
 from ...manifest import load_manifest
 from ...oss import Oss
@@ -46,13 +45,16 @@ def main() -> None:
     
     # overwrite files from dir1 to dir0
     for name in os.listdir(dir1):
-        if name in ('apps', 'apps_launcher', 'pypi', 'python'):
+        if name in ('apps', 'apps_launcher', 'pypi', 'python', 'temp'):
             continue
         print(':i', name)
         fs.move(f'{dir1}/{name}', f'{dir0}/{name}', overwrite=True)
     
-    dump_manifest(load_manifest(f'{dir1}/manifest.json'),
-                  f'{dir0}/manifest.pkl')
+    fs.move(
+        f'{paths.temp.self_upgrade}/manifest.pkl',
+        f'{dir0}/manifest.pkl',
+        True
+    )
 
 
 def _get_manifests(oss) -> T.CheckUpdatesResult:
