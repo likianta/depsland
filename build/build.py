@@ -39,6 +39,7 @@ def full_build(add_python_path=True):
     os.mkdir(f'{root_o}/build/exe')
     os.mkdir(f'{root_o}/conf')
     # os.mkdir(f'{root_o}/depsland')
+    os.mkdir(f'{root_o}/dist')
     os.mkdir(f'{root_o}/docs')
     os.mkdir(f'{root_o}/pypi')
     os.mkdir(f'{root_o}/pypi/cache')

@@ -144,31 +144,40 @@ def _install_files(
     
     diff = compare_manifests(manifest_new, manifest_old)
     
+    def download_from_oss(i: str, m: str, o: str) -> None:
+        print('{} -> {}'.format(i, fs.relpath(o, root1)))
+        oss.download(i, m)
+        ziptool.decompress_file(m, o, overwrite=True)
+    
+    def copy_from_old(i: str, o: str, t: str) -> None:
+        # `o` must not be child path of `i`.
+        assert not o.startswith(i + '/')
+        print('{} -> {}'.format(i, fs.relpath(o, root1)))
+        # TODO: shall we use `fs.move` to make it faster?
+        if t == 'file':
+            fs.copy_file(i, o, True)
+        else:
+            fs.copy_tree(i, o, True)
+    
     for action, relpath, (info0, info1) in diff['assets']:
-        match action:
-            case x if x in ('append', 'update'):
-                # download from oss
-                path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
-                path_m = fs.normpath('{}/{}.{}'.format(
-                    # an intermediate file (zip)
-                    temp_dir, info1.uid,
-                    'zip' if info1.type == 'dir' else 'fzip'
-                ))
-                path_o = f'{root1}/{relpath}'  # a file or a directory
-                
-                print('oss download', '{} -> {}'.format(path_i, path_m))
-                oss.download(path_i, path_m)
-                ziptool.decompress_file(path_m, path_o, overwrite=True)
-            case 'delete':
-                pass
-            case 'ignore':
-                path0 = f'{root0}/{relpath}'
-                path1 = f'{root1}/{relpath}'
-                if info1.type == 'dir':
-                    fs.copy_tree(path0, path1, True)
-                else:
-                    fs.copy_file(path0, path1, True)
-                #   TODO: shall we use `fs.move` to make it faster?
+        if action == 'ignore':
+            path0 = f'{root0}/{relpath}'
+            path1 = f'{root1}/{relpath}'
+            if os.path.exists(path0):
+                copy_from_old(path0, path1, info1.type)
+                continue
+            else:
+                action = 'append'
+        
+        if action == 'append':
+            path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
+            path_m = fs.normpath('{}/{}.{}'.format(
+                # an intermediate file (zip)
+                temp_dir, info1.uid,
+                'zip' if info1.type == 'dir' else 'fzip'
+            ))
+            path_o = f'{root1}/{relpath}'  # a file or a directory
+            download_from_oss(path_i, path_m, path_o)
 
 
 def _install_custom_packages(
