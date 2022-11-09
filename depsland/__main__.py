@@ -114,11 +114,13 @@ def build(manifest='.', icon='', gen_exe=True) -> None:
 
 
 @cli.cmd()
-def upload(manifest='.') -> None:
+def publish(manifest='.') -> None:
     """
-    upload dist assets to oss.
+    publish dist assets to oss.
+    if you configured a local oss server, it will generate assets to -
+    `~/oss/apps/<appid>/<version>` directory.
     """
-    api.upload(_fix_manifest_param(manifest))
+    api.publish(_fix_manifest_param(manifest))
 
 
 @cli.cmd()

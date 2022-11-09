@@ -14,4 +14,4 @@ command list:
 """
 from .build import build
 from .init import init
-from .upload import main as upload
+from .publish import main as publish
