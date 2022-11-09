@@ -7,7 +7,7 @@ from ... import paths
 from ...manifest import T as T0
 from ...manifest import init_target_tree
 from ...manifest import load_manifest
-from ...oss import Oss
+from ...oss import T as T1
 from ...oss import get_oss_client
 from ...utils import compare_version
 from ...utils import make_temp_dir
@@ -15,7 +15,7 @@ from ...utils import make_temp_dir
 
 class T:
     Manifest = T0.Manifest
-    Oss = Oss
+    Oss = T1.Oss
     CheckUpdatesResult = t.Optional[t.Tuple[Manifest, Manifest]]
 
 

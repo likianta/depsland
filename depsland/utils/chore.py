@@ -1,6 +1,7 @@
 import atexit
 import hashlib
 import os
+import shutil
 from uuid import uuid1
 
 from .. import paths
@@ -61,9 +62,11 @@ class _TempDirs:
         return temp_dir
     
     def clean_up(self) -> None:
-        for d in self._dirs:
-            if os.path.exists(d):
-                os.rmdir(d)
+        if self._dirs:
+            print(':vs', 'clean up temp created dirs', len(self._dirs))
+            for d in self._dirs:
+                if os.path.exists(d):
+                    shutil.rmtree(d)
 
 
 _temp_dirs = _TempDirs()

@@ -17,7 +17,8 @@
 /python/*
 /temp/*/*
 /tests/
-/unittests/data/hello_world_demo_project/manifest*
+/unittests/demo_project/hello-world/dist/
+/unittests/demo_project/hello-world/manifest.pkl
 
 __pycache__/
 .DS_Store

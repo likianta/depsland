@@ -36,3 +36,5 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
         bat_2_exe(f'{dir_o}/launcher.bat',
                   f'{dir_o}/launcher.exe', icon)
         # os.remove(f'{dir_o}/launcher.bat')
+
+    print(':t', 'build done. see result in {}'.format(dir_o))

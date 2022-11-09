@@ -18,7 +18,7 @@
     py -m depsland build
     ```
     
-    it will generates:
+    it will generate:
     
     `unittests/demo_project/hello_world/dist/hello_world-<version>` (dir)
 
@@ -32,8 +32,7 @@
     py -m depsland publish
     ```
     
-    it will generates:
+    it will generate:
     
     `unittests/demo_project/hello_world/dist/hello_world-<version>/.oss` (dir)
-
 """

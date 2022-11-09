@@ -46,7 +46,7 @@ def main(manifest_file: str) -> None:
         print('pack oss assets to dist dir')
         dir_o = '{root}/dist/{name}-{ver}/.oss'.format(
             root=m['start_directory'],
-            name=m['name'],
+            name=m['appid'],
             ver=m['version'],
         )
         fs.make_dirs(dir_o)
@@ -54,6 +54,10 @@ def main(manifest_file: str) -> None:
     
     appinfo['history'].insert(0, appinfo['version'])
     dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
+    
+    print('publish done. see result at {}/dist/{}-{}'.format(
+        m['start_directory'], m['appid'], m['version']
+    ), ':t')
 
 
 def _upload(

@@ -44,5 +44,7 @@ class LocalOss(BaseOss):
 class LocalOssPath(BaseOssPath):
     def __init__(self, appid: str):
         super().__init__(appid)
-        self._root = f'{paths.oss.apps}/{appid}'
-        fs.make_dir(self._root)
+        self.root = f'{paths.oss.apps}/{appid}'
+        fs.make_dir(f'{self.root}')
+        fs.make_dir(f'{self.root}/assets')
+        fs.make_dir(f'{self.root}/pypi')

@@ -18,5 +18,7 @@ class FakeOssPath(LocalOssPath):
     # noinspection PyMissingConstructor
     def __init__(self, appid: str):
         self.appid = appid
-        self._root = f'{paths.oss.test}/{appid}'
-        fs.make_dir(self._root)
+        self.root = f'{paths.oss.test}/{appid}'
+        fs.make_dir(f'{self.root}')
+        fs.make_dir(f'{self.root}/assets')
+        fs.make_dir(f'{self.root}/pypi')

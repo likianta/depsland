@@ -1,0 +1,18 @@
+{
+    "appid": "hello_world",
+    "name": "Hello World",
+    "version": "0.1.4",
+    "assets": {
+        "src": "",
+        "readme.md": ""
+    },
+    "dependencies": {
+        "lk-logger": ""
+    },
+    "pypi": [],
+    "launcher": {
+        "command": "py src/hello_world.py",
+        "desktop": false,
+        "start_menu": false
+    }
+}

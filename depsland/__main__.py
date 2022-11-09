@@ -263,7 +263,7 @@ def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
         out = normpath(f'{manifest}/manifest.json', True)
     else:
         out = normpath(manifest, True)
-        assert exists(out)
+        assert exists(out), f'path not exists: {out}'
     # print(':v', out)
     return out
 

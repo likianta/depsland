@@ -10,7 +10,7 @@ from . import paths
 from . import utils
 from .api import init
 from .api import install
-from .api import upload
+from .api import publish
 from .pip import Pip
 from .pip import pip
 from .pypi import pypi

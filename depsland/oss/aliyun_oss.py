@@ -14,7 +14,7 @@ class AliyunOss(BaseOss):
     def __init__(self, appid: str,
                  access_key: str, access_secret: str,
                  endpoint: str, bucket_name: str, **_):
-        self.path = OssPath(appid)
+        self.path = AliyunOssPath(appid)
         self._auth = Auth(access_key, access_secret)
         self._bucket = Bucket(self._auth, endpoint, bucket_name)
     
@@ -52,7 +52,7 @@ class AliyunOss(BaseOss):
         print(':rpt', f'[dim]delete done [cyan]({name})[/][/]')
 
 
-class OssPath(BaseOssPath):
+class AliyunOssPath(BaseOssPath):
     def __init__(self, appid: str):
         super().__init__(appid)
-        self._root = f'apps/{appid}'
+        self.root = f'apps/{appid}'
