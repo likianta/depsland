@@ -186,8 +186,36 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
 
 
 def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
+    from typing import Optional
+    
+    def generate_hash() -> Optional[str]:
+        # nonlocal: abspath, ftype (file_type)
+        # generate: fhash (file_hash)
+        if ftype == 'file':
+            return get_file_hash(abspath)
+        return None
+    
+    def generate_utime() -> int:
+        # nonlocal: abspath, scheme
+        # generate: utime (updated_time)
+        if scheme in ('root', 'top', 'top_files', 'top_dirs'):
+            return get_updated_time(abspath, recursive=False)
+        else:
+            return get_updated_time(abspath, recursive=True)
+    
+    def generate_uid() -> str:
+        # nonlocal: fhash, ftype, utime, scheme
+        # generate: uid
+        if ftype == 'file':
+            return fhash
+        if scheme == 'root':
+            return 'root'
+        return str(utime)
+    
     out = {}
     for path, scheme in assets0.items():
+        if scheme == '':
+            scheme = 'all'
         if os.path.isabs(path):
             abspath = fs.normpath(path)
             relpath = fs.relpath(path, manifest_dir)
@@ -195,11 +223,11 @@ def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
             abspath = fs.normpath(f'{manifest_dir}/{path}')
             relpath = fs.normpath(path)
         out[relpath] = AssetInfo(
-            type=(t := 'file' if os.path.isfile(abspath) else 'dir'),
-            scheme=scheme or 'all',
-            utime=(u := get_updated_time(abspath)),
-            hash=(h := get_file_hash(abspath) if t == 'file' else None),
-            uid=h or str(u),
+            type=(ftype := 'file' if os.path.isfile(abspath) else 'dir'),
+            scheme=scheme,
+            utime=(utime := generate_utime()),
+            hash=(fhash := generate_hash()),
+            uid=generate_uid(),
         )
     return out  # noqa
 
@@ -278,6 +306,8 @@ def _compare_assets(
         new: T.Assets1, old: T.Assets1
 ) -> T.AssetsDiff:
     def is_same(new: T.AssetInfo, old: T.AssetInfo) -> bool:
+        if new.scheme == old.scheme == 'root':
+            return True
         if new.scheme != old.scheme:
             return False
         if new.type != old.type:

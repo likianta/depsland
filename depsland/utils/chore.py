@@ -6,9 +6,13 @@ from uuid import uuid1
 from .. import paths
 
 
+def get_content_hash(content: str) -> str:
+    return hashlib.md5(content[:8192].encode()).hexdigest()
+
+
 def get_file_hash(filepath: str) -> str:
     """
-    If file is too big, read the first 8192 bytes.
+    if file is too big, read the first 8192 bytes.
     https://blog.csdn.net/qq_26373925/article/details/115409308
     """
     file = open(filepath, 'rb')
@@ -21,7 +25,7 @@ def get_file_hash(filepath: str) -> str:
     return md5.hexdigest()
 
 
-def get_updated_time(path: str) -> int:
+def get_updated_time(path: str, recursive=False) -> int:
     if os.path.isfile(path):
         return int(os.path.getmtime(path))
     if os.path.islink(path):
@@ -29,7 +33,7 @@ def get_updated_time(path: str) -> int:
     assert os.path.isdir(path), path  # if assertion error, it may because this
     #   path not exists
     mtime = int(os.path.getmtime(path))
-    if not os.listdir(path):
+    if recursive is False or not os.listdir(path):
         return mtime
     else:
         # https://stackoverflow.com/questions/29685069/get-the-last-modified
