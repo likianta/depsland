@@ -12,13 +12,21 @@ class T:
     AppSettings = t.TypedDict('AppSettings', {
         'oss' : t.TypedDict('Oss', {
             'server': t.Literal['aliyun', 'local', 'fake'],
-            'config': t.Optional[t.TypedDict('AliyunOssConfig', {
-                'user_role'    : str,
-                'access_key'   : str,
-                'access_secret': str,
-                'endpoint'     : str,
-                'bucket_name'  : str,
-            })]  # other servers are None.
+            'config': t.Union[
+                t.TypedDict('AliyunOssConfig', {
+                    'user_role'    : str,
+                    'access_key'   : str,
+                    'access_secret': str,
+                    'endpoint'     : str,
+                    'bucket_name'  : str,
+                }),
+                t.TypedDict('LocalOssConfig', {
+                    'symlinks': bool,
+                }),
+                t.TypedDict('FakeOssConfig', {
+                    'symlinks': bool,
+                }),
+            ]
         }),
         'pip' : t.TypedDict('Pip', {
             'index_url': str,
