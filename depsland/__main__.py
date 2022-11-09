@@ -262,6 +262,7 @@ def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
     else:
         out = normpath(manifest, True)
         assert exists(out)
+    # print(':v', out)
     return out
 
 

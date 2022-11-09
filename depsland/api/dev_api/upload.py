@@ -25,36 +25,31 @@ class T:
 def main(manifest_file: str) -> None:
     appinfo = get_app_info(manifest_file)
     
-    if not appinfo['history']:
-        _upload(
-            new_src_dir=appinfo['src_dir'],
-            new_app_dir=appinfo['dst_dir'],
-            old_app_dir=''
-        )
-    else:
-        _upload(
-            new_src_dir=appinfo['src_dir'],
-            new_app_dir=appinfo['dst_dir'],
-            old_app_dir='{}/{}/{}'.format(
+    _upload(
+        manifest_new=load_manifest(manifest_file),
+        manifest_old=(
+            load_manifest('{}/{}/{}/manifest.pkl'.format(
                 paths.Project.apps,
                 appinfo['appid'],
                 appinfo['history'][0]
+            )) if appinfo['history'] else
+            init_manifest(
+                appinfo['appid'], appinfo['name']
             )
-        )
+        ),
+        dist_dir=appinfo['dst_dir']
+    )
     
     appinfo['history'].insert(0, appinfo['version'])
     dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
 
 
-def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
-    manifest_new: T.Manifest = (
-        load_manifest(f'{new_src_dir}/manifest.json')
-    )
-    manifest_old: T.Manifest = (
-        load_manifest(f'{old_app_dir}/manifest.pkl') if old_app_dir
-        else init_manifest(manifest_new['appid'], manifest_new['name'])
-    )
-    print(':l', manifest_new, manifest_old)
+def _upload(
+        manifest_new: T.Manifest,
+        manifest_old: T.Manifest,
+        dist_dir: str
+) -> None:
+    print(':lv', manifest_new, manifest_old)
     
     _check_manifest(manifest_new, manifest_old)
     print('updating manifest: [red]{}[/] -> [green]{}[/]'.format(
@@ -63,6 +58,8 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     
     # -------------------------------------------------------------------------
     
+    root_new = manifest_new['start_directory']
+    root_old = manifest_old['start_directory']  # noqa
     temp_dir = make_temp_dir()
     
     oss = get_oss_server(manifest_new['appid'])
@@ -84,7 +81,7 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
         )
         
         if info1 is not None:  # i.e. action != 'delete'
-            source_path = f'{new_src_dir}/{relpath}'
+            source_path = f'{root_new}/{relpath}'
             temp_path = _copy_assets(source_path, temp_dir, info1.scheme)
             zipped_file = _compress(temp_path, temp_path + (
                 '.zip' if info1.type == 'dir' else '.fzip'
@@ -120,7 +117,7 @@ def _upload(new_src_dir: str, new_app_dir: str, old_app_dir: str) -> None:
     print(':i0s')
     
     manifest_new['pypi'] = {k: None for k in manifest_new['pypi'].keys()}
-    dump_manifest(manifest_new, x := f'{new_app_dir}/manifest.pkl')
+    dump_manifest(manifest_new, x := f'{dist_dir}/manifest.pkl')
     oss.upload(x, oss.path.manifest)
     
     fs.remove_tree(temp_dir)
