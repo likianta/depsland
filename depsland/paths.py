@@ -8,6 +8,7 @@ from os.path import exists
 
 from lk_utils import dumps
 from lk_utils import fs
+from lk_utils import loads
 
 __all__ = [
     'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'system', 'temp',
@@ -81,7 +82,16 @@ class Conf:
     oss_client = f'{root}/oss_client.yaml'
     oss_server = f'{root}/oss_server.yaml'
     
-    # TODO: redirect feature
+    def __init__(self):
+        if exists(x := fs.xpath('../conf/.redirect')):
+            if new_root := loads(x).strip():  # either be emptry or a dirpath.
+                new_root = fs.normpath(new_root, force_abspath=True)
+                assert os.path.isdir(new_root)
+                print(':v', 'relocate config root: ' + new_root)
+                self.root = new_root
+                self.depsland = f'{new_root}/depsland.yaml'
+                self.oss_client = f'{new_root}/oss_client.yaml'
+                self.oss_server = f'{new_root}/oss_server.yaml'
 
 
 class Oss:  # note: this is a local dir that mimics OSS structure.

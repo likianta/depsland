@@ -8,6 +8,7 @@
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
 /chore/custom_packages/*
+/conf/.redirect
 /conf/oss_*
 /deleted/
 /dist/*
