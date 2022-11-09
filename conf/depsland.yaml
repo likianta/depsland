@@ -1,5 +1,9 @@
+oss:
+  # depsland.oss.get_oss
+  server: local
+  options: {}
 pip:
-  # see also `depsland.pip.CommandTemplate.__init__`
+  # see `depsland.pip.CommandTemplate.__init__`
   index_url: 'https://pypi.tuna.tsinghua.edu.cn/simple'
   local_first: false
   quiet: false

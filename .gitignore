@@ -11,6 +11,7 @@
 /conf/oss_*
 /deleted/
 /dist/*
+/oss/*/*
 /pypi/*/[^.]*
 /python/*
 /temp/*/*
@@ -24,6 +25,8 @@ __pycache__/
 !/apps/.gitkeep
 !/chore/custom_packages/.gitkeep
 !/dist/.gitkeep
+!/oss/apps/.gitkeep
+!/oss/test/.gitkeep
 !/python/README.md
 !/python/README.zh.md
 !/temp/.fake_oss_storage/.gitkeep

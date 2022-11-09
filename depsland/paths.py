@@ -3,10 +3,11 @@ ref: ~/docs/project-structure.md
 """
 import os
 from collections import defaultdict
-from lk_utils import dumps
-from lk_utils import fs
 from os.path import dirname
 from os.path import exists
+
+from lk_utils import dumps
+from lk_utils import fs
 
 __all__ = [
     'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'system', 'temp',
@@ -42,6 +43,7 @@ class Project:
     dist = f'{root}/dist'
     manifest_json = f'{root}/manifest.json'
     manifest_pkl = f'{root}/manifest.pkl'
+    oss = f'{root}/oss'
     project = f'{root}'
     pypi = f'{root}/pypi'
     python = f'{root}/python'
@@ -78,34 +80,14 @@ class Conf:
     depsland = f'{root}/depsland.yaml'
     oss_client = f'{root}/oss_client.yaml'
     oss_server = f'{root}/oss_server.yaml'
+    
+    # TODO: redirect feature
 
 
-class Oss:
-    # TODO or DELETE: this class has no usage. currently we are using
-    #   `./oss/get_oss.py > class OssPath`.
-    #   consider remove one of them, or merge them.
-    root = 'apps'
-    assets: str
-    manifest: str
-    _appid: str = ''
-    
-    def set_appid(self, appid: str) -> 'Oss':
-        self._appid = appid
-        return self
-    
-    def __str__(self):
-        assert self._appid
-        return f'<oss://depsland/apps/{self._appid}>'
-    
-    @property
-    def assets(self) -> str:
-        assert self._appid
-        return f'{self.root}/{self._appid}/assets'
-    
-    @property
-    def manifest(self) -> str:
-        assert self._appid
-        return f'{self.root}/{self._appid}/manifest.pkl'
+class Oss:  # note: this is a local dir that mimics OSS structure.
+    root = f'{_PROJ_DIR}/oss'
+    apps = f'{root}/apps'
+    test = f'{root}/test'
 
 
 class PyPI:
@@ -150,7 +132,6 @@ class Python:
 
 class Temp:
     root = f'{_PROJ_DIR}/temp'
-    fake_oss_storage = f'{root}/.fake_oss_storage'
     self_upgrade = f'{root}/.self_upgrade'
     unittests = f'{root}/.unittests'
 

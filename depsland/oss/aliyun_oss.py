@@ -4,32 +4,28 @@ from os.path import basename
 from oss2 import Auth
 from oss2 import Bucket
 
+from ._base import BaseOss
+from ._base import BaseOssPath
 
-class Oss:
+
+class AliyunOss(BaseOss):
     
     def __init__(self, appid: str,
                  access_key: str, access_secret: str,
                  endpoint: str, bucket_name: str, **_):
+        self.path = OssPath(appid)
         self._auth = Auth(access_key, access_secret)
         self._bucket = Bucket(self._auth, endpoint, bucket_name)
-        self._path = OssPath(appid)
     
     @property
     def bucket(self):
         return self._bucket
     
-    @property
-    def path(self) -> 'OssPath':
-        return self._path
-    
-    def make_link(self, key: str) -> str:
+    def make_link(self, key: str, expires=3600) -> str:
         """ make link for sharing. """
-        return self._bucket.sign_url('GET', key, 3600)
+        return self._bucket.sign_url('GET', key, expires)
     
     def upload(self, file: str, link: str) -> None:
-        """
-        warning: if target exists, will overwrite.
-        """
         name = basename(file)
         # noinspection PyUnusedLocal
         resp = self._bucket.put_object_from_file(
@@ -50,35 +46,12 @@ class Oss:
         print(':rpt', f'download done [cyan]({name})[/]')
     
     def delete(self, link: str) -> None:
+        name = basename(link)
         self._bucket.delete_object(link)
-    
-    @staticmethod
-    def _update_progress(
-            description: str,
-            bytes_consumed: int, total_bytes: int
-    ) -> None:
-        print('{}: {:.2%}'.format(
-            description,
-            bytes_consumed / total_bytes
-        ), end='\r')
+        print(':rpt', f'[dim]delete done [cyan]({name})[/][/]')
 
 
-class OssPath:
-    
+class OssPath(BaseOssPath):
     def __init__(self, appid: str):
-        self.appid = appid
-    
-    def __str__(self):
-        return f'<bucket:/depsland/apps/{self.appid}>'
-    
-    @property
-    def manifest(self) -> str:
-        return f'apps/{self.appid}/manifest.pkl'
-    
-    @property
-    def assets(self) -> str:
-        return f'apps/{self.appid}/assets'
-    
-    @property
-    def pypi(self) -> str:
-        return f'apps/{self.appid}/pypi'
+        super().__init__(appid)
+        self._root = f'apps/{appid}'
