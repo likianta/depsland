@@ -305,7 +305,6 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     )
     init_target_tree(manifest_new)
     fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
-    fs.remove_tree(temp_dir)
     
     if x := _get_dir_to_last_installed_version(appid):
         manifest_old = load_manifest(f'{x}/manifest.pkl')

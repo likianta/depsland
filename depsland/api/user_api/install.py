@@ -6,7 +6,6 @@ from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 
-from ... import config
 from ... import paths
 from ...manifest import T as T0
 from ...manifest import compare_manifests
@@ -100,8 +99,6 @@ def main(appid: str) -> t.Optional[T.Path]:
     _create_launcher(manifest_new)
     
     fs.move(f'{dir_m}/manifest.pkl', f'{dir_o}/manifest.pkl', True)
-    if not config.debug_mode:
-        fs.remove_tree(dir_m)
     return dir_o
 
 
@@ -118,8 +115,6 @@ def main2(manifest_new: T.Manifest, manifest_old: T.Manifest) -> None:
     _install_custom_packages(manifest_new, manifest_old, oss)
     _install_dependencies(manifest_new)
     _create_launcher(manifest_new)
-    
-    fs.remove_tree(dir_m)
 
 
 def _check_update(

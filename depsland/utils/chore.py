@@ -1,10 +1,9 @@
+import atexit
 import hashlib
 import os
 from uuid import uuid1
 
 from .. import paths
-
-_temp_dir = paths.project.temp
 
 
 def get_file_hash(filepath: str) -> str:
@@ -40,9 +39,28 @@ def get_updated_time(path: str) -> int:
         )))))
 
 
-def make_temp_dir(root=_temp_dir) -> str:
-    random_name = uuid1().hex
-    out = f'{root}/{random_name}'
-    os.mkdir(out)
-    print(':vp', 'a temp dir is created', f'<depsland>/temp/{random_name}')
-    return out
+class _TempDirs:
+    
+    def __init__(self):
+        self._root = paths.project.temp
+        self._dirs = set()
+        atexit.register(self.clean_up)
+    
+    def make_dir(self, root: str = None) -> str:
+        root = root or self._root
+        # assert os.path.exists(root)
+        random_name = uuid1().hex
+        temp_dir = f'{root}/{random_name}'
+        os.mkdir(temp_dir)
+        self._dirs.add(temp_dir)
+        print(':vp', 'a temp dir is created', random_name)
+        return temp_dir
+    
+    def clean_up(self) -> None:
+        for d in self._dirs:
+            if os.path.exists(d):
+                os.rmdir(d)
+
+
+_temp_dirs = _TempDirs()
+make_temp_dir = _temp_dirs.make_dir

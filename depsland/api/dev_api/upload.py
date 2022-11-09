@@ -120,8 +120,6 @@ def _upload(
     dump_manifest(manifest_new, x := f'{dist_dir}/manifest.pkl')
     oss.upload(x, oss.path.manifest)
     
-    fs.remove_tree(temp_dir)
-
 
 def _check_manifest(
         manifest_new: T.Manifest, manifest_old: T.Manifest,
