@@ -99,8 +99,10 @@ def sort_versions(versions: t.List[T.Version], reverse=True):
 
 
 def _minor_fix_version_form(raw_verspec: str) -> str:
-    patch = re.compile(r'(\d)([a-zA-Z])')
-    if patch.search(raw_verspec):
-        raw_verspec = patch.sub(lambda m: '-'.join(m.groups()), raw_verspec)
-        #   e.g. '0.1.0b3' -> '0.1.0-b3'
+    pattern = re.compile(r'(\d)([a-zA-Z]+)(\d+)')
+    if pattern.search(raw_verspec):
+        raw_verspec = pattern.sub(
+            lambda m: '{}-{}.{}'.format(*m.groups()), raw_verspec
+            #   e.g. '0.1.0b3' -> '0.1.0-b.3'
+        )
     return raw_verspec
