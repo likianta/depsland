@@ -200,12 +200,12 @@ def uninstall(appid: str, version: str = None) -> None:
     api.uninstall(appid, version)
 
 
-@cli.cmd()
-def self_upgrade() -> None:
-    """
-    upgrade depsland itself.
-    """
-    api.self_upgrade()
+# @cli.cmd()
+# def self_upgrade() -> None:
+#     """
+#     upgrade depsland itself.
+#     """
+#     api.self_upgrade()
 
 
 # -----------------------------------------------------------------------------
