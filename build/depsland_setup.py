@@ -155,11 +155,14 @@ def _incremental_setup(dir_i: str, dir_o: str,
 def _wind_up(dir_: str) -> None:
     print('create executables')
     
+    # to desktop
     file_i = f'{dir_}/build/exe/desktop.exe'
-    file_o = fs.normpath('{}/Desktop/Depsland.exe'
+    file_o = fs.normpath('{}/Desktop/Depsland'
                          .format(os.environ['USERPROFILE']))
+    #   trick: strip '.exe', to avoid the naming elipsis on medium icon view.
     fs.copy_file(file_i, file_o, True)
     
+    # to %DEPSLAND% root
     file_i = f'{dir_}/build/exe/depsland.exe'
     file_o = f'{dir_}/depsland.exe'
     fs.move(file_i, file_o, True)
