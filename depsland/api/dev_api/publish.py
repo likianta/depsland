@@ -10,6 +10,7 @@ from ...manifest import dump_manifest
 from ...manifest import get_app_info
 from ...manifest import init_manifest
 from ...manifest import load_manifest
+from ...oss import T as T1
 from ...oss import get_oss_server
 from ...utils import compare_version
 from ...utils import make_temp_dir
@@ -17,16 +18,17 @@ from ...utils import ziptool
 
 
 class T:
-    Path = str
     Manifest = T0.Manifest
+    Oss = T1.Oss
+    Path = str
     Scheme = T0.Scheme1
 
 
 def main(manifest_file: str) -> None:
     appinfo = get_app_info(manifest_file)
     
-    _upload(
-        manifest_new=load_manifest(manifest_file),
+    oss = _upload(
+        manifest_new=(m := load_manifest(manifest_file)),
         manifest_old=(
             load_manifest('{}/{}/{}/manifest.pkl'.format(
                 paths.Project.apps,
@@ -40,6 +42,16 @@ def main(manifest_file: str) -> None:
         dist_dir=appinfo['dst_dir']
     )
     
+    if oss.type_ in ('local', 'fake'):
+        print('pack oss assets to dist dir')
+        dir_o = '{root}/dist/{name}-{ver}/.oss'.format(
+            root=m['start_directory'],
+            name=m['name'],
+            ver=m['version'],
+        )
+        fs.make_dirs(dir_o)
+        fs.make_link(oss.path.root, dir_o, True)
+    
     appinfo['history'].insert(0, appinfo['version'])
     dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
 
@@ -48,7 +60,7 @@ def _upload(
         manifest_new: T.Manifest,
         manifest_old: T.Manifest,
         dist_dir: str
-) -> None:
+) -> T.Oss:
     print(':lv', manifest_new, manifest_old)
     
     _check_manifest(manifest_new, manifest_old)
@@ -120,6 +132,8 @@ def _upload(
     dump_manifest(manifest_new, x := f'{dist_dir}/manifest.pkl')
     oss.upload(x, oss.path.manifest)
     
+    return oss
+
 
 def _check_manifest(
         manifest_new: T.Manifest, manifest_old: T.Manifest,

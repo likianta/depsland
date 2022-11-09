@@ -22,7 +22,7 @@
         "argsense": ">=0.5.0a0",
         "gen-exe": "",
         "lk-logger": ">=5.4.6",
-        "lk-utils": ">=2.5.0b17",
+        "lk-utils": ">=2.5.0b18",
         "oss2": "",
         "pyyaml": "",
         "rich": "",
@@ -30,7 +30,7 @@
     },
     "pypi": [
         "chore/custom_packages/argsense-0.5.0a0-py3-none-any.whl",
-        "chore/custom_packages/lk_utils-2.5.0b17-py3-none-any.whl"
+        "chore/custom_packages/lk_utils-2.5.0b18-py3-none-any.whl"
     ],
     "launcher": {
         "command": "depsland",

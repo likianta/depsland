@@ -6,6 +6,8 @@ from .. import paths
 
 
 class FakeOss(LocalOss):
+    type_ = 'fake'
+    
     # noinspection PyMissingConstructor
     def __init__(self, appid: str, symlinks=False, **_):
         self.path = FakeOssPath(appid)

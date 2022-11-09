@@ -14,8 +14,8 @@ class T:
     Oss = t.Union[AliyunOss, LocalOss, FakeOss]
 
 
-def get_oss(appid: str) -> T.Oss:
-    match oss_config['server']:
+def get_oss(appid: str, server: str = oss_config['server']) -> T.Oss:
+    match server:
         case 'aliyun':
             config = oss_config['config']
             assert all(config.values()), (

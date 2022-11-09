@@ -8,9 +8,13 @@ from ...utils import bat_2_exe
 
 
 def build(manifest_file: str, icon='', gen_exe=True) -> None:
-    file_i = fs.normpath(manifest_file, True)
-    dir_i = fs.parent_path(file_i)
-    manifest = load_manifest(file_i)
+    manifest = load_manifest(manifest_file)
+    
+    dir_i = manifest['start_directory']
+    dir_o = '{}/dist/{}-{}'.format(
+        dir_i, manifest['appid'], manifest['version']
+    )
+    fs.make_dirs(dir_o)
 
     command = dedent('''
         @echo off
@@ -26,8 +30,9 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
         py=r'%DEPSLAND%\python\python.exe',
     )
     
-    dumps(command, f'{dir_i}/launcher.bat')
+    dumps(command, f'{dir_o}/launcher.bat')
     
-    if gen_exe:  # TEST: experimental
-        bat_2_exe(f'{dir_i}/launcher.bat',
-                  f'{dir_i}/launcher.exe', icon)
+    if gen_exe:
+        bat_2_exe(f'{dir_o}/launcher.bat',
+                  f'{dir_o}/launcher.exe', icon)
+        # os.remove(f'{dir_o}/launcher.bat')

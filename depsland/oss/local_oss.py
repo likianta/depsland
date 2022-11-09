@@ -8,6 +8,7 @@ from .. import paths
 
 
 class LocalOss(BaseOss):
+    type_ = 'local'
     
     def __init__(self, appid: str, symlinks=False, **_):
         self.path = LocalOssPath(appid)

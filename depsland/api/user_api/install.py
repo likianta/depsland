@@ -14,7 +14,7 @@ from ...manifest import init_target_tree
 from ...manifest import load_manifest
 from ...normalization import normalize_name
 from ...normalization import normalize_version_spec
-from ...oss import Oss
+from ...oss import T as T1
 from ...oss import get_oss_client
 from ...pypi import pypi
 from ...utils import bat_2_exe
@@ -27,7 +27,7 @@ class T:
     AssetInfo = T0.AssetInfo
     Manifest = T0.Manifest1
     ManifestPypi = t.Dict[str, None]
-    Oss = Oss
+    Oss = T1.Oss
     Path = str
 
 
@@ -105,10 +105,16 @@ def main(appid: str) -> t.Optional[T.Path]:
 def main2(manifest_new: T.Manifest, manifest_old: T.Manifest) -> None:
     """
     TODO: leave one of `main` and `main2`, remove another one.
+        currently `main` has no usage and is little behind of update schedule.
     """
     dir_m = make_temp_dir()
     
-    oss = get_oss_client(manifest_new['appid'])
+    if os.path.exists(d := manifest_new['start_directory'] + '/.oss'):
+        print('use local oss server', ':v2')
+        oss = get_oss_client(manifest_new['appid'], server='local')
+        oss.path.root = d
+    else:
+        oss = get_oss_client(manifest_new['appid'])
     print(oss.path)
     
     _install_files(manifest_new, manifest_old, oss, dir_m)

@@ -1,4 +1,5 @@
 class BaseOss:
+    type_ = 'base'
     path: 'BaseOssPath'
     
     def upload(self, file: str, link: str) -> None:
@@ -26,7 +27,7 @@ class BaseOss:
 
 class BaseOssPath:
     appid: str
-    _root: str
+    root: str
     
     def __init__(self, appid: str):
         self.appid = appid
@@ -37,12 +38,12 @@ class BaseOssPath:
     
     @property
     def manifest(self) -> str:
-        return f'{self._root}/manifest.pkl'
+        return f'{self.root}/manifest.pkl'
     
     @property
     def assets(self) -> str:
-        return f'{self._root}/assets'
+        return f'{self.root}/assets'
     
     @property
     def pypi(self) -> str:
-        return f'{self._root}/pypi'
+        return f'{self.root}/pypi'
