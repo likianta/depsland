@@ -1,11 +1,14 @@
 import os.path
 from pathlib import Path
+from typing import Optional
 
 from lk_utils import loads
 
 
-def bat_2_exe(file_i: str, file_o: str = '',
-              icon: str = '', show_console=True) -> str:
+def bat_2_exe(
+        file_i: str, file_o: str = '',
+        icon: str = '', show_console=True
+) -> Optional[str]:
     """
     args:
         file_i: a ".bat" file.
@@ -31,12 +34,17 @@ def bat_2_exe(file_i: str, file_o: str = '',
     if data_w.endswith('%*'): data_w = data_w[:-3]
     
     # pip install gen-exe  # this is only available for windows
-    from genexe.generate_exe import generate_exe  # noqa
-    generate_exe(
-        target=Path(file_o),
-        command=data_w,
-        icon_file=Path(icon) if icon else None,
-        show_console=show_console
-    )
-    
-    return file_o
+    try:
+        from genexe.generate_exe import generate_exe  # noqa
+    except ModuleNotFoundError:
+        print(':pv3r', '[i]gen-exe is not installed, if you are running on '
+                       'linux/macos, this warning can be ignored.[/]')
+        return
+    else:
+        generate_exe(
+            target=Path(file_o),
+            command=data_w,
+            icon_file=Path(icon) if icon else None,
+            show_console=show_console
+        )
+        return file_o
