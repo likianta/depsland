@@ -1,3 +1,10 @@
+"""
+dependencies:
+    - argsense
+    - lk-logger
+    - lk-utils
+    - pywin32
+"""
 import os
 import typing as t
 from os.path import exists
@@ -10,11 +17,17 @@ from lk_utils import run_cmd_args
 
 lk_logger.setup(quiet=True, show_source=False, show_funcname=False)
 
+if os.name != 'nt':
+    print('this script is only for Windows.')
+    input('press ENTER to exit... ')
+    exit(0)
+else:
+    import win32com.client
+    import winreg
+
 
 @cli.cmd()
 def main(do_replace_site_packages=True):
-    assert os.name == 'nt', 'this script is only for Windows'
-    
     dir_i = fs.xpath('..', True)
     dir_o = _choose_target_dir()
     
@@ -157,10 +170,9 @@ def _wind_up(dir_: str) -> None:
     
     # to desktop
     file_i = f'{dir_}/build/exe/desktop.exe'
-    file_o = fs.normpath('{}/Desktop/Depsland'
+    file_o = fs.normpath('{}/Desktop/Depsland.lnk'
                          .format(os.environ['USERPROFILE']))
-    #   trick: strip '.exe', to avoid the naming elipsis on medium icon view.
-    fs.copy_file(file_i, file_o, True)
+    _create_desktop_shortcut(file_i, file_o)
     
     # to %DEPSLAND% root
     file_i = f'{dir_}/build/exe/depsland.exe'
@@ -169,7 +181,6 @@ def _wind_up(dir_: str) -> None:
     
     # -------------------------------------------------------------------------
     # add `DEPSLAND` to environment variables
-    import winreg
     
     dir_ = dir_.replace('/', '\\')
     print(':v', dir_)
@@ -225,6 +236,20 @@ def _wind_up(dir_: str) -> None:
             ';'.join(filter(None, [dir_, dir_ + '\\apps_launcher'] + env_path))
         )
         winreg.CloseKey(key)
+
+
+def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
+    """
+    this function is copied from `depsland.api.user_api.install
+    ._create_desktop_shortcut`
+    """
+    # assert file_i.endswith('.exe') and file_o.endswith('.lnk')
+    shell = win32com.client.Dispatch("WScript.Shell")
+    shortcut = shell.CreateShortCut(file_o)
+    shortcut.Targetpath = file_i
+    shortcut.WorkingDirectory = os.path.dirname(file_i)
+    shortcut.IconLocation = file_i
+    shortcut.save()
 
 
 if __name__ == '__main__':

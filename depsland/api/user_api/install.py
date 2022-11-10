@@ -274,17 +274,12 @@ def _create_launcher(manifest: T.Manifest) -> None:
             paths.project.apps_launcher, appid,
         ))
     if manifest['launcher']['desktop']:
-        # https://www.blog.pythonlibrary.org/2010/01/23/using-python-to-create
-        # -shortcuts/
-        from win32com.client import Dispatch
-        shell = Dispatch('WScript.Shell')
-        shortcut = shell.CreateShortCut('{}/{}.lnk'.format(
-            paths.system.desktop, appname
-        ))
-        shortcut.Targetpath = exe_file
-        # shortcut.WorkingDirectory = paths.project.apps
-        shortcut.IconLocation = exe_file
-        shortcut.save()
+        _create_desktop_shortcut(
+            file_i=exe_file,
+            file_o='{}/{}.lnk'.format(
+                paths.system.desktop, appname
+            )
+        )
         # # fs.copy_file(exe_file, '{}/{}.exe'.format(
         # #     paths.system.desktop, appname
         # # ))
@@ -296,6 +291,21 @@ def _create_launcher(manifest: T.Manifest) -> None:
 
 
 # -----------------------------------------------------------------------------
+
+def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
+    """
+    https://www.blog.pythonlibrary.org/2010/01/23/using-python-to-create
+    -shortcuts/
+    """
+    import win32com.client
+    # assert file_i.endswith('.exe') and file_o.endswith('.lnk')
+    shell = win32com.client.Dispatch("WScript.Shell")
+    shortcut = shell.CreateShortCut(file_o)
+    shortcut.Targetpath = file_i
+    shortcut.WorkingDirectory = os.path.dirname(file_i)
+    shortcut.IconLocation = file_i
+    shortcut.save()
+
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[T.Path]:
     dir_ = '{}/{}'.format(paths.project.apps, appid)
