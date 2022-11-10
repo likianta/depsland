@@ -1,7 +1,8 @@
 import re
+import typing as t
 
 import semver  # https://github.com/python-semver/python-semver
-import typing as t
+
 from ..normalization import T
 from ..normalization import VersionSpec
 from ..normalization import normalize_name
@@ -51,9 +52,20 @@ def find_proper_version(
 
 
 def get_verspec_from_filename(filename: str) -> VersionSpec:
-    # e.g. 'PySide6-6.0.0-cp39-cp39-win_amd64.whl'
-    a, b, _ = filename.split('-', 2)
-    # -> ['PySide6', '6.0.0', 'cp39-cp39-win_amd64.whl']
+    def _extract_name_and_version_from_filename() -> t.Tuple[str, str]:
+        """
+        examples:
+            'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl' -> ('PyYAML', '6.0')
+            'lk-logger-4.0.7.tar.gz' -> ('lk-logger', '4.0.7')
+            'aliyun-python-sdk-2.2.0.zip' -> ('aliyun-python-sdk', '2.2.0')
+        """
+        if filename.endswith('.whl'):
+            a, b, _ = filename.split('-', 2)
+        else:
+            a, b = filename.rsplit('-', 1)
+        return a, b
+    
+    a, b = _extract_name_and_version_from_filename()
     name = normalize_name(a)
     # -> 'pyside6'
     verspec_ = tuple(normalize_version_spec(name, b))

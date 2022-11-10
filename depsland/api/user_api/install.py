@@ -248,7 +248,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
         app_dir=r'{}\{}\{}'.format(
             r'%DEPSLAND%\apps', appid, version
         ),
-        pkg_dir=r'{}\.venv\{}\packages'.format(
+        pkg_dir=r'{}\.venv\{}'.format(
             r'%DEPSLAND%\apps', appid
         ),
         cmd=command,
@@ -260,7 +260,10 @@ def _create_launcher(manifest: T.Manifest) -> None:
         appid
     ))
     # TODO: how to add icon, and control whether to show console?
-    exe_file = bat_2_exe(bat_file)
+    if not (exe_file := bat_2_exe(bat_file)):
+        # user may not have installed `gen-exe`.
+        # see detailed error prompt in `bat_2_exe`.
+        return
     fs.remove_file(bat_file)
     
     # shortcut to desktop and start menu

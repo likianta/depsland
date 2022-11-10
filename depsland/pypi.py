@@ -103,9 +103,9 @@ class LocalPyPI:
                     source_name, specs, include_dependencies
             ):
                 filename = fs.filename(filepath)
-                #   e.g. 'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl'
-                #        'lk-logger-4.0.7.tar.gz'
-                #        'aliyun-python-sdk-2.2.0.zip'
+                # extract name and version info from filename.
+                # ref: `depsland.utils.verspec.get_verspec_from_filename
+                #   ._extract_name_and_version_from_filename`
                 if filename.endswith('.whl'):
                     name, version, _ = filename.split('-', 2)
                 else:
