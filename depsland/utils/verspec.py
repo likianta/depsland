@@ -48,6 +48,7 @@ def find_proper_version(
         else:
             return None
     assert filtered_candidates
+    # print(':v', filtered_candidates)
     return filtered_candidates[0]
 
 
