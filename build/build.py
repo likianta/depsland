@@ -64,7 +64,7 @@ def full_build(add_python_path=True):
                  f'{root_o}/setup.exe')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
                  f'{root_o}/build/depsland_setup.py')
-    fs.copy_file(f'{root_i}/conf/depsland2.yaml',  # TEST
+    fs.copy_file(f'{root_i}/conf/depsland_for_build.yaml',  # TEST
                  f'{root_o}/conf/depsland.yaml')
     fs.copy_file(f'{root_i}/conf/oss_client.yaml',
                  f'{root_o}/conf/oss_client.yaml')

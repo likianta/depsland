@@ -9,6 +9,7 @@
 /build/manifest.pkl
 /chore/custom_packages/*
 /conf/.redirect
+/conf/depsland_for_build.yaml
 /conf/oss_*
 /deleted/
 /dist/*
