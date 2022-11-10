@@ -41,6 +41,9 @@ def full_build(add_python_path=True):
     # os.mkdir(f'{root_o}/depsland')
     os.mkdir(f'{root_o}/dist')
     os.mkdir(f'{root_o}/docs')
+    os.mkdir(f'{root_o}/oss')
+    os.mkdir(f'{root_o}/oss/apps')
+    os.mkdir(f'{root_o}/oss/test')
     os.mkdir(f'{root_o}/pypi')
     os.mkdir(f'{root_o}/pypi/cache')
     os.mkdir(f'{root_o}/pypi/downloads')
@@ -49,7 +52,6 @@ def full_build(add_python_path=True):
     # os.mkdir(f'{root_o}/python')
     # os.mkdir(f'{root_o}/sidework')
     os.mkdir(f'{root_o}/temp')
-    os.mkdir(f'{root_o}/temp/.fake_oss_storage')
     os.mkdir(f'{root_o}/temp/.self_upgrade')
     os.mkdir(f'{root_o}/temp/.unittests')
     
@@ -62,7 +64,7 @@ def full_build(add_python_path=True):
                  f'{root_o}/setup.exe')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
                  f'{root_o}/build/depsland_setup.py')
-    fs.copy_file(f'{root_i}/conf/depsland.yaml',
+    fs.copy_file(f'{root_i}/conf/depsland2.yaml',  # TEST
                  f'{root_o}/conf/depsland.yaml')
     fs.copy_file(f'{root_i}/conf/oss_client.yaml',
                  f'{root_o}/conf/oss_client.yaml')
@@ -82,7 +84,7 @@ def full_build(add_python_path=True):
     dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')
     dumps({}, f'{root_o}/pypi/index/updates.pkl')
     
-    print(':t', 'see result at' + fs.relpath(root_o))
+    print(':t', 'see result at ' + fs.relpath(root_o))
 
 
 @cli.cmd()

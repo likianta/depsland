@@ -1,7 +1,7 @@
 oss:
   # depsland.oss.get_oss
   server: local
-  options:
+  config:
     symlinks: false
 pip:
   # see `depsland.pip.CommandTemplate.__init__`
