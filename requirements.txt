@@ -1,4 +1,4 @@
-# run command: py build/install_requirements.py
+# run command: py build/install_requirements.py -h
 # note: the commmented lines are for special purpose (i.e. they are not meaningless).
 
 # pip
@@ -6,7 +6,6 @@
 wheel
 
 argsense >= 0.5.0a0
-# gen-exe  # windows only
 lk-logger >= 5.4.6
 lk-utils >= 2.5.0b18
 # neoprint >= 0.1.0b0
@@ -15,3 +14,6 @@ pyyaml
 rich
 semver >= 3.0.0dev3
 # textual
+
+# gen-exe  # windows only
+# pywin32  # windows only

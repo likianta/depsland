@@ -52,6 +52,7 @@ class T:
     
     Launcher0 = t.TypedDict('Launcher', {
         'command'   : str,
+        'cli_tool'  : bool,
         'desktop'   : bool,
         'start_menu': bool,
     })
@@ -145,6 +146,7 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
         'pypi'           : {},
         'launcher'       : {
             'command'   : f'depsland show {appid}',
+            'cli_tool'  : False,
             'desktop'   : False,
             'start_menu': False,
         },
@@ -249,7 +251,10 @@ def _update_pypi(pypi0: T.PyPI0, manifest_dir: str) -> T.PyPI1:
 
 
 def _update_launcher(launcher0: T.Launcher0) -> T.Launcher1:
-    out = {'command': '', 'desktop': False, 'start_menu': False}
+    out = {'command'   : '',
+           'cli_tool'  : False,
+           'desktop'   : False,
+           'start_menu': False}
     out.update(launcher0)  # noqa
     return out
 

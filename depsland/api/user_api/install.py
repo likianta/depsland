@@ -25,6 +25,7 @@ from ...utils import ziptool
 
 class T:
     AssetInfo = T0.AssetInfo
+    LauncherInfo = T0.Launcher1
     Manifest = T0.Manifest1
     ManifestPypi = t.Dict[str, None]
     Oss = T1.Oss
@@ -222,8 +223,10 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
 
 def _create_launcher(manifest: T.Manifest) -> None:
     appid = manifest['appid']
+    appname = manifest['name']
     version = manifest['version']
     command: str = manifest['launcher']['command']
+    
     if command:
         if command.startswith('py '):
             if not command.startswith('py -m '):
@@ -255,9 +258,8 @@ def _create_launcher(manifest: T.Manifest) -> None:
     )
     
     # bat to exe
-    dumps(command, bat_file := '{}/{}.bat'.format(
-        paths.project.apps_launcher,
-        appid
+    dumps(command, bat_file := '{apps}/{appid}/{version}/{name}.bat'.format(
+        apps=paths.project.apps, appid=appid, version=version, name=appname
     ))
     # TODO: how to add icon, and control whether to show console?
     if not (exe_file := bat_2_exe(bat_file)):
@@ -266,15 +268,30 @@ def _create_launcher(manifest: T.Manifest) -> None:
         return
     fs.remove_file(bat_file)
     
-    # shortcut to desktop and start menu
-    if manifest['launcher']['desktop']:
+    # create shortcuts
+    if manifest['launcher']['cli_tool']:
         fs.copy_file(exe_file, '{}/{}.exe'.format(
-            paths.system.desktop, manifest['name']
+            paths.project.apps_launcher, appid,
         ))
+    if manifest['launcher']['desktop']:
+        # https://www.blog.pythonlibrary.org/2010/01/23/using-python-to-create
+        # -shortcuts/
+        from win32com.client import Dispatch
+        shell = Dispatch('WScript.Shell')
+        shortcut = shell.CreateShortCut('{}/{}.lnk'.format(
+            paths.system.desktop, appname
+        ))
+        shortcut.Targetpath = exe_file
+        # shortcut.WorkingDirectory = paths.project.apps
+        shortcut.IconLocation = exe_file
+        shortcut.save()
+        # # fs.copy_file(exe_file, '{}/{}.exe'.format(
+        # #     paths.system.desktop, appname
+        # # ))
     if manifest['launcher']['start_menu']:
         # WARNING: not tested
         fs.copy_file(exe_file, '{}/{}.exe'.format(
-            paths.system.start_menu, manifest['name']
+            paths.system.start_menu, appname
         ))
 
 

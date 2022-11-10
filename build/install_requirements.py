@@ -18,12 +18,13 @@ pip_options = (
 
 
 @cli.cmd()
-def install_all() -> None:
+def install_all(extra=False) -> None:
     run_cmd_args(
         pip, 'install', '-r', 'requirements.txt',
         pip_options, verbose=True
     )
-    _install_platform_specific()
+    if extra:
+        _install_platform_specific()
 
 
 @cli.cmd()
@@ -39,6 +40,10 @@ def _install_platform_specific() -> None:
     if _IS_WINDOWS:
         run_cmd_args(
             pip, 'install', 'gen-exe',
+            pip_options, '--no-deps', verbose=True
+        )
+        run_cmd_args(
+            pip, 'install', 'pywin32',
             pip_options, '--no-deps', verbose=True
         )
 
