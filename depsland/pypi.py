@@ -104,7 +104,12 @@ class LocalPyPI:
             ):
                 filename = fs.filename(filepath)
                 #   e.g. 'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl'
-                name, version, _ = filename.split('-', 2)
+                #        'lk-logger-4.0.7.tar.gz'
+                #        'aliyun-python-sdk-2.2.0.zip'
+                if filename.endswith('.whl'):
+                    name, version, _ = filename.split('-', 2)
+                else:
+                    name, version = filename.rsplit('-', 1)
                 name = normalize_name(name)  # e.g. 'PyYAML' -> 'pyyaml'
                 name_id = f'{name}-{version}'
                 print(':v', 'downloaded package via pip', name_id)
