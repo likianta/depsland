@@ -261,11 +261,11 @@ def dump_manifest(manifest: T.Manifest1, file_o: T.ManifestFile) -> None:
     manifest_o: T.Manifest1 = manifest_i.copy()
     manifest_o['start_directory'] = fs.parent_path(file_o)
     if file_o.endswith('.json'):
-        manifest_o['assets'] = _simplify_assets(manifest_i['assets'])  # noqa
+        manifest_o['assets'] = _plainify_assets(manifest_i['assets'])  # noqa
     dumps(manifest_o, file_o)
 
 
-def _simplify_assets(assets1: T.Assets1) -> T.Assets0:
+def _plainify_assets(assets1: T.Assets1) -> T.Assets0:
     out = {}
     for path, info in assets1.items():
         out[path] = info.scheme

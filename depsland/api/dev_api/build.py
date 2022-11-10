@@ -3,6 +3,8 @@ from textwrap import dedent
 from lk_utils import dumps
 from lk_utils import fs
 
+from ...manifest import T
+from ...manifest import dump_manifest
 from ...manifest import load_manifest
 from ...utils import bat_2_exe
 
@@ -15,7 +17,20 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
         dir_i, manifest['appid'], manifest['version']
     )
     fs.make_dirs(dir_o)
+    
+    _create_bat(manifest, f'{dir_o}/launcher.bat')
+    
+    if gen_exe:
+        if bat_2_exe(f'{dir_o}/launcher.bat',
+                     f'{dir_o}/launcher.exe', icon):
+            fs.remove_file(f'{dir_o}/launcher.bat')
+    
+    dump_manifest(manifest, f'{dir_o}/manifest.pkl')
+    
+    print(':t', 'build done. see result in {}'.format(fs.relpath(dir_o)))
 
+
+def _create_bat(manifest: T.Manifest, file: str) -> None:
     command = dedent('''
         @echo off
         set PYTHONPATH={app_dir};{pkg_dir}
@@ -24,17 +39,9 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
         app_dir=r'{}\{}\{}'.format(
             r'%DEPSLAND%\apps', manifest['appid'], manifest['version']
         ),
-        pkg_dir=r'{}\.venv\{}\packages'.format(
+        pkg_dir=r'{}\.venv\{}'.format(
             r'%DEPSLAND%\apps', manifest['appid']
         ),
         py=r'%DEPSLAND%\python\python.exe',
     )
-    
-    dumps(command, f'{dir_o}/launcher.bat')
-    
-    if gen_exe:
-        bat_2_exe(f'{dir_o}/launcher.bat',
-                  f'{dir_o}/launcher.exe', icon)
-        # os.remove(f'{dir_o}/launcher.bat')
-
-    print(':t', 'build done. see result in {}'.format(dir_o))
+    dumps(command, file)

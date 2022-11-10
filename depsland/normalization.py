@@ -51,6 +51,7 @@ def normalize_version_spec(
 ) -> t.Iterator[T.VersionSpec]:
     """
     e.g.
+        '4.5.3'         ->  <spec of '==4.5.3'>
         '>=4.5.0'       ->  <spec of '>=4.5.0'>
         '>=4.5,<5.0'    ->  <spec of '>=4.5.0,<5.0.0'>
         '==4.*'         ->  <spec of '>=4.0,<5.0'>
