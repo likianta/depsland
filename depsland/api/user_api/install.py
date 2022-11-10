@@ -258,8 +258,8 @@ def _create_launcher(manifest: T.Manifest) -> None:
     )
     
     # bat to exe
-    dumps(command, bat_file := '{apps}/{appid}/{version}/{name}.bat'.format(
-        apps=paths.project.apps, appid=appid, version=version, name=appname
+    dumps(command, bat_file := '{apps}/{appid}/{version}/{appid}.bat'.format(
+        apps=paths.project.apps, appid=appid, version=version
     ))
     # TODO: how to add icon, and control whether to show console?
     if not (exe_file := bat_2_exe(bat_file)):

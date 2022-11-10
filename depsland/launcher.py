@@ -1,3 +1,8 @@
+"""
+TODO: rethink which situation to use this launcher, is it be used like as
+    pyportable-installer's pylauncher?
+    related: ./__main__.py > def run()
+"""
 import os
 import subprocess
 import sys

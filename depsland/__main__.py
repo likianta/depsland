@@ -19,7 +19,7 @@ def version() -> None:
     from lk_logger.control import _blend_text  # noqa
     from random import choice
     from . import __date__, __path__, __version__
-
+    
     color_pairs_group = (
         ('#0a87ee', '#9294f0'),  # calm blue -> light blue
         ('#2d34f1', '#9294f0'),  # ocean blue -> light blue
@@ -227,16 +227,18 @@ def show(appid: str, version: str = None) -> None:
 
 
 @cli.cmd()
-def run(appid: str, version: str, filename: str,
-        error_output='terminal') -> None:
+def run(appid: str) -> None:
     """
     a general launcher to start an installed app.
     """
-    from lk_utils import loads
-    from .launcher import run
-    from .paths import project
-    file = '{}/{}/{}/{}'.format(project.apps, appid, version, filename)
-    run(appid, version, loads(file), error_output)
+    import os
+    file = '{apps}/{appid}/{version}/{appid}.exe'.format(
+        apps=paths.project.apps,
+        appid=appid,
+        version=_get_last_installed_version(appid),
+    )
+    # run a .exe file
+    os.system(file)
 
 
 @cli.cmd()
