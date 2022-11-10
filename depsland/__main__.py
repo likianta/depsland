@@ -219,8 +219,8 @@ def show(appid: str, version: str = None) -> None:
     """
     from .manifest import load_manifest
     if version is None:
-        history = paths.apps.get_history_versions(appid)
-        version = history[0]
+        version = _get_last_installed_version(appid)
+    assert version is not None
     dir_ = '{}/{}/{}'.format(paths.project.apps, appid, version)
     manifest = load_manifest(f'{dir_}/manifest.pkl')
     print(manifest, ':l')
@@ -287,6 +287,7 @@ def _get_last_installed_version(appid: str) -> t.Optional[str]:
     if exists(history_file):
         last_ver = loads(history_file)[0]
         return last_ver
+    print('no version installed yet.')
     return None
 
 
