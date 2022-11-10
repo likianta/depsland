@@ -85,9 +85,11 @@ class Conf:
     def __init__(self):
         if exists(x := fs.xpath('../conf/.redirect')):
             if new_root := loads(x).strip():  # either be emptry or a dirpath.
-                new_root = fs.normpath(new_root, force_abspath=True)
-                assert os.path.isdir(new_root)
-                print(':v', 'relocate config root: ' + new_root)
+                if not os.path.isabs(new_root):
+                    # if new_root is relpath, it is relative to .redirect file.
+                    new_root = fs.normpath(f'{x}/../{new_root}', True)
+                assert os.path.isdir(new_root), ('invalid new_root', new_root)
+                print(':r', f'[yellow dim]relocate config root: {new_root}[/]')
                 self.root = new_root
                 self.depsland = f'{new_root}/depsland.yaml'
                 self.oss_client = f'{new_root}/oss_client.yaml'
