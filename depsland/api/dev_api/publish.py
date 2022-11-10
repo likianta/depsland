@@ -56,7 +56,7 @@ def main(manifest_file: str) -> None:
     dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
     
     print('publish done. see result at {}/dist/{}-{}'.format(
-        m['start_directory'], m['appid'], m['version']
+        fs.relpath(m['start_directory']), m['appid'], m['version']
     ), ':t')
 
 
