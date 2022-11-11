@@ -1,5 +1,6 @@
 import os
 import typing as t
+from collections import defaultdict
 from textwrap import dedent
 
 from lk_utils import dumps
@@ -20,6 +21,7 @@ from ...pypi import pypi
 from ...utils import bat_2_exe
 from ...utils import compare_version
 from ...utils import make_temp_dir
+from ...utils import verspec
 from ...utils import ziptool
 
 
@@ -219,8 +221,9 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
     print(':vl', packages)
     
     name_ids = set(pypi.install(packages, include_dependencies=True))
+    name_ids = _resolve_conflicting_name_ids(name_ids)
     pypi.save_index()
-    pypi.linking(name_ids, dst_dir)
+    pypi.linking(sorted(name_ids), dst_dir)
 
 
 def _create_launcher(manifest: T.Manifest) -> None:
@@ -328,3 +331,24 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[T.Path]:
         assert os.path.exists(out)
         return out
     return None
+
+
+def _resolve_conflicting_name_ids(name_ids: t.Set[str]) -> t.Set[str]:
+    """
+    if there are multiple versions for one name, for example 'lk_utils-2.4.1'
+    and 'lk_utils-2.5.0', remain the most latest version.
+    FIXME: this may not be a good idea, better to raise an error right now.
+    """
+    name_2_vers = defaultdict(list)
+    for n in name_ids:
+        a, b = n.split('-', 1)
+        name_2_vers[a].append(b)
+    if conflicts := {k: v for k, v in name_2_vers.items() if len(v) > 1}:
+        print(f'found {len(conflicts)} conflicting name ids',
+              tuple(conflicts.keys()), ':l')
+        for name, versions in conflicts.items():
+            versions.sort(key=lambda x: verspec.semver_parse(x))
+            for ver in versions[:-1]:
+                name_id = f'{name}-{ver}'
+                name_ids.remove(name_id)
+    return name_ids
