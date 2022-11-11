@@ -216,7 +216,7 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
         packages[name] = vspecs
     print(':vl', packages)
     
-    name_ids = tuple(pypi.install(packages, include_dependencies=True))
+    name_ids = set(pypi.install(packages, include_dependencies=True))
     pypi.save_index()
     pypi.linking(name_ids, dst_dir)
 
