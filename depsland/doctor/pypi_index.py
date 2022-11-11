@@ -1,7 +1,9 @@
 import os
 from collections import defaultdict
+
 from lk_utils import dumps
 from lk_utils import fs
+
 from .. import paths
 from ..pypi import T
 from ..utils import get_updated_time
@@ -50,7 +52,7 @@ def rebuild_index():
     
     # noinspection PyTypeChecker
     for v in name_2_versions.values():
-        v.sort(reverse=True)  # FIXME: use better sort method.
+        v.sort(key=lambda x: verspec.semver_parse(x.version), reverse=True)
         #   make version list sorted in descending order.
     
     dumps(name_2_versions, paths.pypi.name_2_versions)
