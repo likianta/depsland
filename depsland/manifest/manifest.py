@@ -284,11 +284,14 @@ def init_target_tree(manifest: T.Manifest1, root_dir: str = None) -> None:
     if not root_dir:
         root_dir = manifest['start_directory']
     print('init making tree', root_dir)
-    paths_to_be_created = sorted(set(
-        fs.normpath(f'{root_dir}/{k}')
-        for k, v in manifest['assets'].items()
-        if v.type == 'dir'
-    ))
+    paths_to_be_created = set()
+    for k, v in manifest['assets'].items():
+        abspath = fs.normpath(f'{root_dir}/{k}')
+        if v.type == 'dir':
+            paths_to_be_created.add(abspath)
+        else:
+            paths_to_be_created.add(fs.parent_path(abspath))
+    paths_to_be_created = sorted(paths_to_be_created)
     print(':l', paths_to_be_created)
     [os.makedirs(x, exist_ok=True) for x in paths_to_be_created]
 
