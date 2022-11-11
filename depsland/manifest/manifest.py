@@ -1,6 +1,7 @@
 import os
 import typing as t
 from collections import namedtuple
+from uuid import uuid1
 
 from lk_utils import dumps
 from lk_utils import fs
@@ -39,7 +40,7 @@ class T:
             ('type', t.Literal['file', 'dir']),
             ('scheme', Scheme1),
             ('utime', int),  # updated time
-            ('hash', t.Optional[str]),  # if type is dir, the hash is None
+            ('hash', str),  # if type is dir, the hash is empty
             ('uid', str),  # the uid will be used as key to filename in oss.
         ))
     ]
@@ -188,14 +189,12 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
 
 
 def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
-    from typing import Optional
-    
-    def generate_hash() -> Optional[str]:
+    def generate_hash() -> str:
         # nonlocal: abspath, ftype (file_type)
         # generate: fhash (file_hash)
         if ftype == 'file':
             return get_file_hash(abspath)
-        return None
+        return ''
     
     def generate_utime() -> int:
         # nonlocal: abspath, scheme
@@ -206,13 +205,8 @@ def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
             return get_updated_time(abspath, recursive=True)
     
     def generate_uid() -> str:
-        # nonlocal: fhash, ftype, utime, scheme
         # generate: uid
-        if ftype == 'file':
-            return fhash
-        if scheme == 'root':
-            return 'root'
-        return str(utime)
+        return uuid1().hex
     
     out = {}
     for path, scheme in assets0.items():
@@ -227,8 +221,8 @@ def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
         out[relpath] = AssetInfo(
             type=(ftype := 'file' if os.path.isfile(abspath) else 'dir'),
             scheme=scheme,
-            utime=(utime := generate_utime()),
-            hash=(fhash := generate_hash()),
+            utime=generate_utime(),
+            hash=generate_hash(),
             uid=generate_uid(),
         )
     return out  # noqa
@@ -314,15 +308,24 @@ def _compare_assets(
         new: T.Assets1, old: T.Assets1
 ) -> T.AssetsDiff:
     def is_same(new: T.AssetInfo, old: T.AssetInfo) -> bool:
+        """
+        comparing assets is considered based on a variety of factors:
+            - scheme
+            - type
+            - hash
+            - utime
+        """
         if new.scheme == old.scheme == 'root':
             return True
         if new.scheme != old.scheme:
             return False
         if new.type != old.type:
             return False
-        if new.uid != old.uid:
-            return False
-        return True
+        if new.hash == old.hash != '':
+            return True
+        if new.utime == old.utime:
+            return True
+        raise Exception('unhandled case')
     
     for key0, info0 in old.items():
         if key0 not in new:
