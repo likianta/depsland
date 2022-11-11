@@ -104,12 +104,8 @@ class LocalPyPI:
             ):
                 filename = fs.filename(filepath)
                 # extract name and version info from filename.
-                # ref: `depsland.utils.verspec.get_verspec_from_filename
-                #   ._extract_name_and_version_from_filename`
-                if filename.endswith('.whl'):
-                    name, version, _ = filename.split('-', 2)
-                else:
-                    name, version = filename.rsplit('-', 1)
+                name, version = \
+                    verspec.get_name_and_version_from_filename(filename)
                 name = normalize_name(name)  # e.g. 'PyYAML' -> 'pyyaml'
                 name_id = f'{name}-{version}'
                 print(':v', 'downloaded package via pip', name_id)
