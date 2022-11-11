@@ -122,6 +122,8 @@ def main2(manifest_new: T.Manifest, manifest_old: T.Manifest) -> None:
     _install_custom_packages(manifest_new, manifest_old, oss)
     _install_dependencies(manifest_new)
     _create_launcher(manifest_new)
+    
+    _save_history(manifest_new['appid'], manifest_new['version'])
 
 
 def _check_update(
@@ -290,6 +292,16 @@ def _create_launcher(manifest: T.Manifest) -> None:
         ))
 
 
+def _save_history(appid: str, version: str) -> None:
+    file = paths.apps.get_history_versions(appid)
+    if os.path.exists(file):
+        data: list = loads(file)
+    else:
+        data = []
+    data.insert(0, version)
+    dumps(data, file)
+
+
 # -----------------------------------------------------------------------------
 
 def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
@@ -297,7 +309,7 @@ def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
     https://www.blog.pythonlibrary.org/2010/01/23/using-python-to-create
     -shortcuts/
     """
-    import win32com.client
+    import win32com.client  # noqa
     # assert file_i.endswith('.exe') and file_o.endswith('.lnk')
     shell = win32com.client.Dispatch("WScript.Shell")
     shortcut = shell.CreateShortCut(file_o)
