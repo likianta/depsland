@@ -38,7 +38,7 @@ def find_proper_version(
     filtered_candidates = []
     for spec in verspecs:
         for candidate in candidates:
-            if compare_version(spec.version, spec.comparator, candidate):
+            if compare_version(candidate, spec.comparator, spec.version):
                 if len(verspecs) == 1:
                     return candidate
                 filtered_candidates.append(candidate)
