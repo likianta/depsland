@@ -34,9 +34,16 @@ def rebuild_index():
         installed_path = '{}/{}/{}'.format(
             paths.pypi.installed, ver.name, ver.version
         )
-        if not os.path.exists(installed_path):
-            installed_path = ''
-        name_id_2_paths[name_id] = (downloaded_path, installed_path)
+        if os.path.exists(installed_path):
+            name_id_2_paths[name_id] = (
+                fs.relpath(downloaded_path, paths.pypi.root),
+                fs.relpath(installed_path, paths.pypi.root),
+            )
+        else:
+            name_id_2_paths[name_id] = (
+                fs.relpath(downloaded_path, paths.pypi.root),
+                '',
+            )
     
     def update_updates():
         name = ver.name

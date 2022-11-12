@@ -25,7 +25,6 @@ class T:
     Version = T0.Version
     VersionSpecs = t.Iterable[VersionSpec]
     
-    Location = Path
     Packages = t.Dict[Name, VersionSpecs]
     
     # indexes
@@ -34,6 +33,10 @@ class T:
     #   t.List[...]: a sorted versions list, from new to old.
     NameId2Paths = t.Dict[Version, t.Tuple[Path, Path]]
     #   t.List[...]: tuple[downloaded_path, installed_path]
+    #       notice: the paths are relative to `paths.pypi.root`
+    #       why do we use relative paths?
+    #       based on the experience of debugging depsland (in project mode),
+    #       the abspath is not convenience for symbolic links.
     Updates = t.Dict[Name, int]
 
 
@@ -42,7 +45,6 @@ class LocalPyPI:
     
     name_2_versions: T.Name2Versions
     name_id_2_paths: T.NameId2Paths
-    # locations: T.LocationsIndex
     dependencies: T.Dependencies
     updates: T.Updates
     
@@ -57,7 +59,6 @@ class LocalPyPI:
     def _load_index(self):
         self.name_2_versions = loads(pypi_paths.name_2_versions)
         self.name_id_2_paths = loads(pypi_paths.name_id_2_paths)
-        # self.locations = loads(pypi_paths.locations)
         self.dependencies = loads(pypi_paths.dependencies)
         self.updates = loads(pypi_paths.updates)
     
@@ -74,6 +75,12 @@ class LocalPyPI:
             packages: T.Packages,
             include_dependencies=False,
     ) -> t.Iterator[t.Tuple[T.Name, T.Version, T.Path]]:
+        
+        def get_downloaded_path(name_id: str) -> T.Path:
+            return '{}/{}'.format(
+                pypi_paths.root, self.name_id_2_paths[name_id][0]
+            )
+        
         # noinspection PyTypeChecker
         for name, specs in packages.items():
             if name in self.name_2_versions:
@@ -82,14 +89,14 @@ class LocalPyPI:
                 )
                 if proper_existed_version:
                     name_id = f'{name}-{proper_existed_version}'
-                    filepath = self.name_id_2_paths[name_id][0]
+                    filepath = get_downloaded_path(name_id)
                     print(':v', 'found package from local', name_id)
                     yield name, proper_existed_version, filepath
                     
                     if include_dependencies:
                         for nid in self.dependencies[name_id]:
                             a, b = nid.split('-', 1)
-                            yield a, b, self.name_id_2_paths[nid][0]
+                            yield a, b, get_downloaded_path(nid)
                     continue
             
             # start downloading
@@ -111,7 +118,9 @@ class LocalPyPI:
                 
                 if is_new:
                     self.name_2_versions[name].insert(0, version)
-                    self.name_id_2_paths[name_id] = (filepath, '')
+                    self.name_id_2_paths[name_id] = (
+                        fs.relpath(filepath, pypi_paths.root), ''
+                    )
                     yield name, version, filepath
                 # else:
                 #     assert version in self.name_2_versions[name]
@@ -135,11 +144,17 @@ class LocalPyPI:
                 (ref: https://www.w3schools.com/python/python_howto_remove
                 _duplicates.asp)
         """
+        def get_installed_path(name_id: str) -> T.Path:
+            # note: the returned path may be empty.
+            return '{}/{}'.format(
+                pypi_paths.root, self.name_id_2_paths[name_id][1]
+            )
+        
         for name, version, downloaded_path in self.download(
                 packages, include_dependencies
         ):
             name_id = f'{name}-{version}'
-            installed_path = self.name_id_2_paths[name_id][1]
+            installed_path = get_installed_path(name_id)
             if installed_path:
                 yield name_id
                 continue
@@ -155,8 +170,10 @@ class LocalPyPI:
                     ('-t', installed_path),
                     ('--find-links', pypi_paths.downloads),
                 )
-                self.name_id_2_paths[name_id] = \
-                    (downloaded_path, installed_path)
+                self.name_id_2_paths[name_id] = (
+                    fs.relpath(downloaded_path, pypi_paths.root),
+                    fs.relpath(installed_path, pypi_paths.root),
+                )
                 yield name_id
     
     @staticmethod
