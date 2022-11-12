@@ -45,7 +45,6 @@ class Project:
                 print(':v2', 'first time run depsland, init a virtual '
                              'project root...')
                 self._init_project_root(self.root)
-                print(':t', f'init depsland project done ({self.root})')
 
         self.apps = f'{self.root}/apps'
         self.conf = f'{self.root}/conf'

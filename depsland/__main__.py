@@ -324,5 +324,10 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     return manifest_old, manifest_new
 
 
+def _run():
+    """ this function is for poetry to generate script entry point. """
+    cli.run()
+
+
 if __name__ == '__main__':
     cli.run()

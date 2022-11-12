@@ -1,9 +1,11 @@
 [tool.poetry]
 name = "depsland"
-version = "0.1.0a30"
+version = "0.3.0a5"
 description = ""
-authors = ["Likianta <likianta@foxmail.com>"]
 license = "MIT"
+authors = ["Likianta <likianta@foxmail.com>"]
+homepage = "https://github.com/likianta/depsland"
+include = ['depsland/chore/*.zip']
 
 [[tool.poetry.source]]
 name = "tsinghua"
@@ -12,16 +14,19 @@ default = true
 
 [tool.poetry.dependencies]
 python = "^3.10"
+wheel = "*"
 argsense = "^0.5.0a0"
 lk-logger = "^5.4.6"
-lk-utils = "~2.5.0b10"
+lk-utils = "~2.5.0b18"
 oss2 = "*"
 pyyaml = "*"
 rich = "*"
 semver = "3.0.0dev3"
-wheel = "*"
 
 [tool.poetry.extras]
+
+[tool.poetry.scripts]
+depsland = 'depsland.__main__:_run'
 
 [build-system]
 requires = ["poetry"]
