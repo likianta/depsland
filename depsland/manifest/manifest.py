@@ -151,7 +151,7 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
             'script'      : '',
             'icon'        : '',
             'cli_tool'    : False,
-            'desktop'     : False,
+            'desktop'     : True,
             'start_menu'  : False,
             'show_console': True,
         },
@@ -237,6 +237,10 @@ def _check_manifest(manifest: T.Manifest1) -> None:
                 f'{manifest["start_directory"]}/{launcher["icon"]}'
         # TODO: check icon size and give suggestions (the icon is suggested
         #  128x128 or above.)
+        
+    if launcher['start_menu']:
+        print(':v3', 'start_menu is not tested yet. this is an experimental '
+                     'feature.')
 
 
 def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
