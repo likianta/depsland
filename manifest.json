@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland",
-    "version": "0.2.0b25",
+    "version": "0.3.0",
     "assets": {
         "build": "all",
         "conf": "root",
@@ -19,22 +19,21 @@
     },
     "dependencies": {
         "wheel": "",
-        "argsense": ">=0.5.0a0",
+        "argsense": ">=0.4.3",
         "gen-exe": "",
         "lk-logger": ">=5.4.6",
-        "lk-utils": ">=2.5.0b18",
+        "lk-utils": ">=2.5.0",
         "oss2": "",
         "pyyaml": "",
         "rich": "",
         "semver": ">=3.0.0dev3"
     },
-    "pypi": [
-        "chore/custom_packages/argsense-0.5.0a0-py3-none-any.whl",
-        "chore/custom_packages/lk_utils-2.5.0b18-py3-none-any.whl"
-    ],
+    "pypi": [],
     "launcher": {
-        "command": "depsland",
-        "desktop": false,
+        "script": "depsland",
+        "icon": "build/exe/launcher.ico",
+        "cli_tool": true,
+        "desktop": true,
         "start_menu": false
     }
 }
