@@ -1,4 +1,5 @@
 import os
+from textwrap import dedent
 
 from lk_utils import dumps
 from lk_utils import fs
@@ -12,6 +13,7 @@ from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_server
+from ...utils import bat_2_exe
 from ...utils import compare_version
 from ...utils import make_temp_dir
 from ...utils import ziptool
@@ -31,7 +33,7 @@ def main(manifest_file: str) -> None:
         manifest_new=(m := load_manifest(manifest_file)),
         manifest_old=(
             load_manifest('{}/{}/{}/manifest.pkl'.format(
-                paths.Project.apps,
+                paths.project.apps,
                 appinfo['appid'],
                 appinfo['history'][0]
             )) if appinfo['history'] else
@@ -51,6 +53,19 @@ def main(manifest_file: str) -> None:
         )
         fs.make_dirs(dir_o)
         fs.make_link(oss.path.root, dir_o, True)
+        
+        print('generate setup script to dist dir')
+        bat_file = '{root}/dist/{name}-{ver}/setup.bat'.format(
+            root=m['start_directory'],
+            name=m['appid'],
+            ver=m['version'],
+        )
+        command = dedent(r'''
+            cd /d %~dp0
+            %DEPSLADN%\depsland.exe user-install manifest.pkl
+        ''').strip()
+        dumps(command, bat_file)
+        bat_2_exe(bat_file, icon=paths.build.launcher_ico, remove_bat=True)
     
     appinfo['history'].insert(0, appinfo['version'])
     dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
@@ -65,7 +80,7 @@ def _upload(
         manifest_old: T.Manifest,
         dist_dir: str
 ) -> T.Oss:
-    print(':lv', manifest_new, manifest_old)
+    # print(':lv', manifest_new, manifest_old)
     
     _check_manifest(manifest_new, manifest_old)
     print('updating manifest: [red]{}[/] -> [green]{}[/]'.format(

@@ -3,6 +3,7 @@ import typing as t
 from argsense import CommandLineInterface
 
 from . import api
+from . import config
 from . import paths
 from .manifest import T
 
@@ -82,7 +83,7 @@ def init(manifest='.', app_name='', overwrite=False,
         manifest (-m): if directory of manifest not exists, it will be created.
         appname (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
-        overwrite (-o):
+        overwrite (-w):
     """
     api.init(_fix_manifest_param(manifest), app_name, overwrite,
              auto_find_requirements)
@@ -123,7 +124,6 @@ def publish(manifest='.') -> None:
     api.publish(_fix_manifest_param(manifest))
 
 
-@cli.cmd()
 def install(appid: str, upgrade=True, reinstall=False) -> None:
     """
     install an app from oss by querying appid.
@@ -158,6 +158,38 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
                   'install -r {appid}` or `depsland reinstall {appid} to force '
                   'reinstall it.'.format(appid=appid))
             return
+
+
+def install_dist(manifest: str):
+    """
+    to install a distributed package.
+    this function is provided for user that clicks '<some_dist>/setup.exe' to -
+    get to work.
+    
+    TODO: is it better to rename this function to 'setup'?
+    """
+    from .manifest import init_manifest
+    from .manifest import load_manifest
+    m1 = load_manifest(_fix_manifest_param(manifest))
+    appid, name = m1['appid'], m1['name']
+    if x := _get_dir_to_last_installed_version(appid):
+        m0 = load_manifest(f'{x}/manifest.pkl')
+        if _check_version(m1, m0):
+            # install first, then uninstall old.
+            api.install(appid)
+            api.uninstall(appid, m0['version'])
+        else:
+            print('you already have the latest version installed: '
+                  + m0['version'])
+    else:
+        m0 = init_manifest(appid, name)
+        api.install2(m1, m0)
+
+
+if config.app_settings['oss']['server'] == 'local':
+    cli.add_cmd(install_dist, 'install')
+else:
+    cli.add_cmd(install, 'install')
 
 
 @cli.cmd()

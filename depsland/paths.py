@@ -10,7 +10,15 @@ from lk_utils import fs
 from lk_utils import loads
 
 __all__ = [
-    'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'system', 'temp',
+    'apps',
+    'build',
+    'conf',
+    'oss',
+    'project',
+    'pypi',
+    'python',
+    'system',
+    'temp',
 ]
 
 
@@ -45,8 +53,9 @@ class Project:
                 print(':v2', 'first time run depsland, init a virtual '
                              'project root...')
                 self._init_project_root(self.root)
-
+        
         self.apps = f'{self.root}/apps'
+        self.build = f'{self.root}/build'
         self.conf = f'{self.root}/conf'
         self.depsland = f'{self.root}/depsland'
         self.dist = f'{self.root}/dist'
@@ -123,6 +132,13 @@ class Apps:
         else:
             os.mkdir(packages)
         return packages
+
+
+class Build:
+    
+    def __init__(self):
+        self.root = f'{project.root}/build'
+        self.launcher_ico = f'{self.root}/exe/launcher.ico'
 
 
 class Conf:
@@ -202,6 +218,7 @@ system = System()
 project = Project()
 
 apps = Apps()
+build = Build()
 conf = Conf()
 oss = Oss()
 pypi = PyPI()

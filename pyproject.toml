@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.3.0a5"
+version = "0.3.0b12"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -15,9 +15,9 @@ default = true
 [tool.poetry.dependencies]
 python = "^3.10"
 wheel = "*"
-argsense = "^0.5.0a0"
+argsense = "^0.4.3"
 lk-logger = "^5.4.6"
-lk-utils = "~2.5.0b18"
+lk-utils = "~2.5.0"
 oss2 = "*"
 pyyaml = "*"
 rich = "*"
