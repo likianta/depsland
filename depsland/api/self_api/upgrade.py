@@ -45,7 +45,7 @@ def main() -> None:
     
     # overwrite files from dir1 to dir0
     for name in os.listdir(dir1):
-        if name in ('apps', 'apps_launcher', 'pypi', 'python', 'temp'):
+        if name in ('apps', 'pypi', 'python', 'temp'):
             continue
         print(':i', name)
         fs.move(f'{dir1}/{name}', f'{dir0}/{name}', overwrite=True)

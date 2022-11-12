@@ -15,9 +15,9 @@ def main(appid: str, version: str) -> None:
             fs.remove_tree(dir_)
     
     for file in (
-            '{}/{}.exe'.format(paths.project.apps_launcher, appid),
-            # '{}/{}.bat'.format(paths.project.apps_launcher, appid),
-            # '{}/{}'.format(paths.project.apps_launcher, appid),
+            '{}/{}.exe'.format(paths.apps.bin, appid),
+            # '{}/{}.bat'.format(paths.apps.bin, appid),
+            # '{}/{}'.format(paths.apps.bin, appid),
             # '{}/{}.exe'.format(paths.system.desktop, appid),
             # '{}/{}.exe'.format(paths.system.start_menu, appid),
     ):

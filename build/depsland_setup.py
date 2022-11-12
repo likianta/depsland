@@ -155,7 +155,7 @@ def _incremental_setup(dir_i: str, dir_o: str,
     
     # restore old assets
     print('restoring some old assets...')
-    for name in ('apps', 'apps_launcher', 'pypi'):
+    for name in ('apps', 'pypi'):
         print(':ir', f'[magenta]{name}[/]')
         fs.move(f'{dir_m}/{name}', f'{dir_o}/{name}', True)
     print(':i0s')
@@ -223,7 +223,10 @@ def _wind_up(dir_: str) -> None:
         # remove old version
         if env_depsland and env_depsland in env_path:
             env_path.remove(env_depsland)
-            env_path.remove(env_depsland + '\\apps_launcher')
+            try:
+                env_path.remove(env_depsland + r'\apps\.bin')
+            except ValueError:
+                pass
         
         print('add `DEPSLAND` to `PATH` (user variable)')
         # edit user environment variables through Windows registry
@@ -233,7 +236,7 @@ def _wind_up(dir_: str) -> None:
         )
         winreg.SetValueEx(
             key, 'PATH', 0, winreg.REG_EXPAND_SZ,
-            ';'.join(filter(None, [dir_, dir_ + '\\apps_launcher'] + env_path))
+            ';'.join(filter(None, [dir_, dir_ + r'\apps\.bin'] + env_path))
         )
         winreg.CloseKey(key)
 

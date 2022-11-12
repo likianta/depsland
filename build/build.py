@@ -33,8 +33,8 @@ def full_build(oss_scheme: str, add_python_path=True):
     
     # make empty dirs
     os.mkdir(f'{root_o}/apps')
+    os.mkdir(f'{root_o}/apps/.bin')
     os.mkdir(f'{root_o}/apps/.venv')
-    os.mkdir(f'{root_o}/apps_launcher')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/build/exe')
     os.mkdir(f'{root_o}/conf')
@@ -92,8 +92,7 @@ def full_build(oss_scheme: str, add_python_path=True):
 
 
 @cli.cmd()
-def min_build(add_python_packages=False):
-    # TODO: optimize merging wiht `full_build`.
+def min_build(add_python_packages=False):  # DELETE
     root_i = paths.project.root
     root_o = '{dist}/{version}'.format(
         dist=paths.project.dist,
@@ -104,7 +103,6 @@ def min_build(add_python_packages=False):
     
     # make empty dirs
     os.mkdir(f'{root_o}/apps')
-    os.mkdir(f'{root_o}/apps_launcher')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/build/exe')
     os.mkdir(f'{root_o}/conf')

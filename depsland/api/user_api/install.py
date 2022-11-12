@@ -282,7 +282,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
     # create shortcuts
     if manifest['launcher']['cli_tool']:
         fs.copy_file(exe_file, '{}/{}.exe'.format(
-            paths.project.apps_launcher, appid,
+            paths.apps.bin, appid,
         ))
     if manifest['launcher']['desktop']:
         _create_desktop_shortcut(

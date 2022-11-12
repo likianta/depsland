@@ -1,5 +1,5 @@
 /.idea/
-/apps/*
+/apps/[^.]*
 /build/fuzzy_workflow.py
 /build/setup_bundle/.assets
 /build/setup_bundle/setup_failed_help.base64.html
@@ -26,7 +26,6 @@
 __pycache__/
 .DS_Store
 
-!/apps/.venv/.gitkeep
 !/apps/.gitkeep
 !/chore/custom_packages/.gitkeep
 !/dist/.gitkeep
