@@ -127,6 +127,15 @@ class LocalPyPI:
     
     def install(self, packages: T.Packages, include_dependencies=False) \
             -> t.Iterator[T.NameId]:
+        """
+        yield note:
+            1. the yielded name_ids may duplicate.
+            2. the yielded sequence may be useful (for example to deal with the
+                conflict of dependencies). so don't use `set()` to remove
+                duplicates, use `list(dict.fromkeys())` instead.
+                (ref: https://www.w3schools.com/python/python_howto_remove
+                _duplicates.asp)
+        """
         for name, version, downloaded_path in self.download(
                 packages, include_dependencies
         ):

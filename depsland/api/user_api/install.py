@@ -21,7 +21,6 @@ from ...pypi import pypi
 from ...utils import bat_2_exe
 from ...utils import compare_version
 from ...utils import make_temp_dir
-from ...utils import verspec
 from ...utils import ziptool
 
 
@@ -220,7 +219,8 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
         packages[name] = vspecs
     print(':vl', packages)
     
-    name_ids = set(pypi.install(packages, include_dependencies=True))
+    name_ids = pypi.install(packages, include_dependencies=True)
+    name_ids = list(dict.fromkeys(name_ids))  # deduplicate but remain sequence
     name_ids = _resolve_conflicting_name_ids(name_ids)
     pypi.save_index()
     pypi.linking(sorted(name_ids), dst_dir)
@@ -333,22 +333,26 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[T.Path]:
     return None
 
 
-def _resolve_conflicting_name_ids(name_ids: t.Set[str]) -> t.Set[str]:
+def _resolve_conflicting_name_ids(name_ids: t.Iterable[str]) -> t.Iterable[str]:
     """
     if there are multiple versions for one name, for example 'lk_utils-2.4.1'
     and 'lk_utils-2.5.0', remain the most latest version.
-    FIXME: this may not be a good idea, better to raise an error right now.
+    FIXME: this may not be a good idea, better to raise an error right once.
     """
-    name_2_vers = defaultdict(list)
-    for n in name_ids:
-        a, b = n.split('-', 1)
-        name_2_vers[a].append(b)
-    if conflicts := {k: v for k, v in name_2_vers.items() if len(v) > 1}:
-        print(f'found {len(conflicts)} conflicting name ids',
-              tuple(conflicts.keys()), ':l')
-        for name, versions in conflicts.items():
-            versions.sort(key=lambda x: verspec.semver_parse(x))
-            for ver in versions[:-1]:
-                name_id = f'{name}-{ver}'
-                name_ids.remove(name_id)
-    return name_ids
+    temp_dict = {}
+    conflicts = defaultdict(list)
+    for nid in name_ids:
+        a, b = nid.split('-', 1)
+        if a in temp_dict:
+            conflicts[a].append(nid)
+            if compare_version(b, '>', temp_dict[a]):
+                temp_dict[a] = b
+        else:
+            temp_dict[a] = b
+    if conflicts:
+        [v.insert(0, temp_dict[k]) for k, v in conflicts.items()]
+        print('found {} conflicting name ids'.format(len(conflicts)),
+              conflicts, ':l')
+        return (f'{k}-{v}' for k, v in temp_dict.items())
+    else:
+        return name_ids
