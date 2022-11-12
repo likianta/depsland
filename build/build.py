@@ -22,7 +22,7 @@ print(':v2', f'depsland version: {__version__}')
 
 
 @cli.cmd()
-def full_build(add_python_path=True):
+def full_build(oss_scheme: str, add_python_path=True):
     root_i = paths.project.root
     root_o = '{dist}/{version}'.format(
         dist=paths.project.dist,
@@ -64,14 +64,18 @@ def full_build(add_python_path=True):
                  f'{root_o}/setup.exe')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
                  f'{root_o}/build/depsland_setup.py')
-    fs.copy_file(f'{root_i}/conf/depsland_for_build.yaml',  # TEST
-                 f'{root_o}/conf/depsland.yaml')
-    fs.copy_file(f'{root_i}/conf/oss_client.yaml',
-                 f'{root_o}/conf/oss_client.yaml')
     fs.copy_tree(f'{root_i}/depsland',
                  f'{root_o}/depsland')
     fs.copy_tree(f'{root_i}/sidework',
                  f'{root_o}/sidework')
+    fs.copy_file(f'{root_i}/.depsland_project',
+                 f'{root_o}/.depsland_project')
+    if oss_scheme == 'local':
+        fs.copy_file(f'{root_i}/conf/depsland.yaml',
+                     f'{root_o}/conf/depsland.yaml')
+    else:
+        fs.copy_file(f'{root_i}/conf/depsland_for_dev.yaml',
+                     f'{root_o}/conf/depsland.yaml')
     if add_python_path:
         fs.make_link(f'{root_i}/python',
                      f'{root_o}/python')
