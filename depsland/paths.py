@@ -3,7 +3,6 @@ ref: ~/docs/project-structure.md
 """
 import os
 from collections import defaultdict
-from os.path import dirname
 from os.path import exists
 
 from lk_utils import dumps
@@ -14,50 +13,98 @@ __all__ = [
     'apps', 'conf', 'oss', 'project', 'pypi', 'python', 'system', 'temp',
 ]
 
-_CURR_DIR = fs.normpath(dirname(__file__), force_abspath=True)
-_PROJ_DIR = fs.normpath(dirname(_CURR_DIR))
-_IS_WINDOWS = os.name == 'nt'
-
 
 class System:
-    if _IS_WINDOWS:
-        depsland = os.getenv('DEPSLAND')  # note it may be None
-        desktop = fs.normpath(os.environ['USERPROFILE'] + '/Desktop')
-        home = fs.normpath(os.environ['USERPROFILE'])
-        program_data = fs.normpath(os.environ['ProgramData'])
-        start_menu = fs.normpath(
-            os.environ['APPDATA']
-            + '/Microsoft/Windows/Start Menu/Programs'
-        )
-        temp = fs.normpath(os.environ['TEMP'])
-    else:
-        pass  # raise NotImplementedError
+    
+    def __init__(self):
+        self.is_windows = os.name == 'nt'
+        if self.is_windows:
+            self.depsland = os.getenv('DEPSLAND')  # note it may be None
+            self.desktop = fs.normpath(os.environ['USERPROFILE'] + '/Desktop')
+            self.home = fs.normpath(os.environ['USERPROFILE'])
+            self.program_data = fs.normpath(os.environ['ProgramData'])
+            self.start_menu = fs.normpath(
+                os.environ['APPDATA']
+                + '/Microsoft/Windows/Start Menu/Programs'
+            )
+            self.temp = fs.normpath(os.environ['TEMP'])
+        else:
+            pass  # TODO
 
 
 class Project:
-    root = f'{_PROJ_DIR}'
-    # below attrs follow alphabetical order
-    apps = f'{root}/apps'
-    apps_launcher = f'{root}/apps_launcher'
-    # cache = f'{root}/cache'
-    conf = f'{root}/conf'
-    dist = f'{root}/dist'
-    manifest_json = f'{root}/manifest.json'
-    manifest_pkl = f'{root}/manifest.pkl'
-    oss = f'{root}/oss'
-    project = f'{root}'
-    pypi = f'{root}/pypi'
-    python = f'{root}/python'
-    temp = f'{root}/temp'
+    
+    def __init__(self):
+        if exists(fs.xpath('../.depsland_project')):
+            self.root = fs.xpath('..', force_abspath=True)
+            self.is_project_mode = True
+        else:
+            self.root = fs.xpath('.project', True)
+            self.is_project_mode = False
+            if not exists(self.root):
+                print(':v2', 'first time run depsland, init a virtual '
+                             'project root...')
+                self._init_project_root(self.root)
+                print(':t', f'init depsland project done ({self.root})')
+
+        self.apps = f'{self.root}/apps'
+        self.conf = f'{self.root}/conf'
+        self.depsland = f'{self.root}/depsland'
+        self.dist = f'{self.root}/dist'
+        self.manifest_json = f'{self.root}/manifest.json'
+        self.manifest_pkl = f'{self.root}/manifest.pkl'
+        self.oss = f'{self.root}/oss'
+        self.project = f'{self.root}'
+        self.pypi = f'{self.root}/pypi'
+        self.python = f'{self.root}/python'
+        self.temp = f'{self.root}/temp'
+    
+    @staticmethod
+    def _init_project_root(root: str):
+        os.mkdir(f'{root}')
+        os.mkdir(f'{root}/apps')
+        os.mkdir(f'{root}/apps/.bin')
+        os.mkdir(f'{root}/apps/.venv')
+        # os.mkdir(f'{root}/build')  # later
+        # os.mkdir(f'{root}/conf')  # later
+        os.mkdir(f'{root}/dist')
+        os.mkdir(f'{root}/oss')
+        os.mkdir(f'{root}/oss/apps')
+        os.mkdir(f'{root}/oss/test')
+        os.mkdir(f'{root}/pypi')
+        os.mkdir(f'{root}/pypi/cache')
+        os.mkdir(f'{root}/pypi/downloads')
+        os.mkdir(f'{root}/pypi/index')
+        os.mkdir(f'{root}/pypi/installed')
+        # os.mkdir(f'{root}/sidework')  # later
+        os.mkdir(f'{root}/temp')
+        os.mkdir(f'{root}/temp/.self_upgrade')
+        os.mkdir(f'{root}/temp/.unittests')
+        os.mkdir(f'{root}/unittests')
+        
+        # unzip files
+        from .utils.ziptool import decompress_file
+        decompress_file(fs.xpath('chore/build.zip'), f'{root}/build')
+        decompress_file(fs.xpath('chore/conf.zip'), f'{root}/conf')
+        decompress_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
+        
+        # init files
+        dumps(defaultdict(list), f'{root}/pypi/index/dependencies.pkl')
+        dumps(defaultdict(list), f'{root}/pypi/index/name_2_versions.pkl')
+        dumps({}, f'{root}/pypi/index/name_id_2_paths.pkl')
+        dumps({}, f'{root}/pypi/index/updates.pkl')
 
 
 # -----------------------------------------------------------------------------
 
 class Apps:
-    root = f'{_PROJ_DIR}/apps'
-    venv = f'{root}/.venv'
-    _history_versions = f'{root}/{{appid}}/.history_versions.json'
-    _packages = f'{root}/.venv/{{appid}}'
+    
+    def __init__(self):
+        self.root = f'{project.root}/apps'
+        self.bin = f'{self.root}/.bin'
+        self.venv = f'{self.root}/.venv'
+        self._history_versions = f'{self.root}/{{appid}}/.history_versions.json'
+        self._packages = f'{self.root}/.venv/{{appid}}'
     
     def get_history_versions(self, appid: str) -> str:
         return self._history_versions.format(appid=appid)
@@ -77,19 +124,21 @@ class Apps:
 
 
 class Conf:
-    root = f'{_PROJ_DIR}/conf'
-    depsland = f'{root}/depsland.yaml'
-    oss_client = f'{root}/oss_client.yaml'
-    oss_server = f'{root}/oss_server.yaml'
     
     def __init__(self):
-        if exists(x := fs.xpath('../conf/.redirect')):
+        self.root = f'{project.root}/conf'
+        self.depsland = f'{self.root}/depsland.yaml'
+        self.oss_client = f'{self.root}/oss_client.yaml'
+        self.oss_server = f'{self.root}/oss_server.yaml'
+        
+        if exists(x := f'{project.conf}/.redirect'):
             if new_root := loads(x).strip():  # either be emptry or a dirpath.
                 if not os.path.isabs(new_root):
                     # if new_root is relpath, it is relative to .redirect file.
                     new_root = fs.normpath(f'{x}/../{new_root}', True)
                 assert os.path.isdir(new_root), ('invalid new_root', new_root)
                 print(':r', f'[yellow dim]relocate config root: {new_root}[/]')
+                
                 self.root = new_root
                 self.depsland = f'{new_root}/depsland.yaml'
                 self.oss_client = f'{new_root}/oss_client.yaml'
@@ -97,62 +146,62 @@ class Conf:
 
 
 class Oss:  # note: this is a local dir that mimics OSS structure.
-    root = f'{_PROJ_DIR}/oss'
-    apps = f'{root}/apps'
-    test = f'{root}/test'
+    
+    def __init__(self):
+        self.root = f'{project.root}/oss'
+        self.apps = f'{self.root}/apps'
+        self.test = f'{self.root}/test'
 
 
 class PyPI:
-    root = f'{_PROJ_DIR}/pypi'
-    
-    cache = f'{root}/cache'
-    downloads = f'{root}/downloads'
-    # extracted = f'{root}/extracted'
-    index = f'{root}/index'
-    installed = f'{root}/installed'
-    
-    dependencies = f'{root}/index/dependencies.pkl'
-    # locations = f'{root}/index/locations.pkl'
-    name_2_versions = f'{root}/index/name_2_versions.pkl'
-    name_id_2_paths = f'{root}/index/name_id_2_paths.pkl'
-    updates = f'{root}/index/updates.pkl'
     
     def __init__(self):
-        # TODO: move this to `depsland setup` stage.
-        if not exists(self.index):
-            os.mkdir(self.index)
-            dumps(defaultdict(list), self.dependencies)
-            dumps(defaultdict(list), self.name_2_versions)
-            # dumps(defaultdict(lambda : ('', '')), self.name_id_2_paths)
-            # dumps(defaultdict(lambda : 0), self.updates)
-            #   FIXME: local lambda cannot be pickled.
-            dumps({}, self.name_id_2_paths)
-            dumps({}, self.updates)
+        self.root = f'{project.root}/pypi'
+        
+        self.cache = f'{self.root}/cache'
+        self.downloads = f'{self.root}/downloads'
+        self.index = f'{self.root}/index'
+        self.installed = f'{self.root}/installed'
+        
+        self.dependencies = f'{self.root}/index/dependencies.pkl'
+        self.name_2_versions = f'{self.root}/index/name_2_versions.pkl'
+        self.name_id_2_paths = f'{self.root}/index/name_id_2_paths.pkl'
+        self.updates = f'{self.root}/index/updates.pkl'
+        
+        assert exists(self.dependencies)
+        assert exists(self.name_2_versions)
+        assert exists(self.name_id_2_paths)
+        assert exists(self.updates)
 
 
 class Python:
-    root = f'{_PROJ_DIR}/python'
-    if _IS_WINDOWS:
-        pip = f'{root}/Scripts/pip.exe'
-        python = f'{root}/python.exe'
-        site_packages = f'{root}/Lib/site-packages'
-    else:
-        pip = f'{root}/bin/pip'
-        python = f'{root}/bin/python3.10'
-        site_packages = f'{root}/lib/python3.10/site-packages'
+    
+    def __init__(self):
+        self.root = f'{project.root}/python'
+        if system.is_windows:
+            self.pip = f'{self.root}/Scripts/pip.exe'
+            self.python = f'{self.root}/python.exe'
+            self.site_packages = f'{self.root}/Lib/site-packages'
+        else:
+            self.pip = f'{self.root}/bin/pip'
+            self.python = f'{self.root}/bin/python3.10'
+            self.site_packages = f'{self.root}/lib/python3.10/site-packages'
 
 
 class Temp:
-    root = f'{_PROJ_DIR}/temp'
-    self_upgrade = f'{root}/.self_upgrade'
-    unittests = f'{root}/.unittests'
+    
+    def __init__(self):
+        self.root = f'{project.root}/temp'
+        self.self_upgrade = f'{self.root}/.self_upgrade'
+        self.unittests = f'{self.root}/.unittests'
 
+
+system = System()
+project = Project()
 
 apps = Apps()
 conf = Conf()
 oss = Oss()
-project = Project()
 pypi = PyPI()
 python = Python()
-system = System()
 temp = Temp()

@@ -1,0 +1,19 @@
+# Disclaim
+
+This file is used for depsland package to check itself whether in project mode
+or in python package mode.
+
+# How this file is used
+
+1. When you clone depsland project from Github repo, you will get this file in
+   the project root.
+2. The `depsland/paths.py : class Project : def __init__` will check if this
+   file exists.
+
+   - If true, depsland knows it is in project mode, all related folders are
+     already created.
+   - If not (for users who use `pip install depsland`), depsland will first
+     create a "virtual" project root.
+
+     See the details in `depsland/paths.py : class Project :
+     def _init_project_root`.
