@@ -52,7 +52,7 @@ class T:
     PyPI1 = t.Dict[str, str]  # dict[filename, abspath]
     
     Launcher0 = t.TypedDict('Launcher', {
-        'command'     : str,
+        'script'      : str,
         'icon'        : str,
         'cli_tool'    : bool,
         'desktop'     : bool,
@@ -148,7 +148,7 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
         'dependencies'   : {},
         'pypi'           : {},
         'launcher'       : {
-            'command'     : f'depsland show {appid}',
+            'script'      : '',
             'icon'        : '',
             'cli_tool'    : False,
             'desktop'     : False,
@@ -196,8 +196,38 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
 
 def _check_manifest(manifest: T.Manifest1) -> None:
     assert manifest['assets'], 'field `assets` cannot be empty!'
-    if manifest['launcher']['icon']:
-        assert manifest['launcher']['icon'].endswith('.ico'), (
+    assert all(not x.startswith('../') for x in manifest['assets']), (
+        'manifest should be put at the root of project, and there shall be no '
+        '"../" in your assets keys.'
+    )
+    
+    launcher: T.Launcher1 = manifest['launcher']
+    
+    # check script
+    script = launcher['script']
+    assert script, 'field `script` cannot be empty!'
+    assert not script.startswith('../'), (
+        'manifest should be put at the root of project, and there shall be no '
+        '"../" in your script path.', script
+    )
+    script_path = '{}/{}'.format(
+        manifest['start_directory'], script.split(' ', 1)[0]
+    )
+    assert os.path.exists(script_path), (
+        'the script is not found, you may check: 1. do not use abspath in '
+        'script; 2. the path should exist.'
+    )
+    assert script_path.endswith('.py') or (
+            os.path.isdir(script_path)
+            and os.path.exists(f'{script_path}/__init__.py')
+    ), (
+        'either the script should be a ".py" file, or be a directory that '
+        'includes "__init__.py" file.'
+    )
+    
+    # check icon
+    if launcher['icon']:
+        assert launcher['icon'].endswith('.ico'), (
             'make sure the icon file is ".ico" format. if you have another '
             'file type, please use a online converter to get it.'
         )
@@ -260,7 +290,7 @@ def _update_pypi(pypi0: T.PyPI0, manifest_dir: str) -> T.PyPI1:
 
 
 def _update_launcher(launcher0: T.Launcher0) -> T.Launcher1:
-    out = {'command'     : '',
+    out = {'script'      : '',
            'icon'        : '',
            'cli_tool'    : False,
            'desktop'     : False,

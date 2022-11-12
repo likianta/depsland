@@ -6,6 +6,8 @@
 
 ### 0.3.0 (2021-11-12)
 
+- 更新 manifest 的 launcher 信息
+- 增加 manifest 检查
 - 发布 whl 包到 pypi
 
 ### 0.2.1 (2021-11-12)

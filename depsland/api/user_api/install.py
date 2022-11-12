@@ -230,22 +230,24 @@ def _create_launcher(manifest: T.Manifest) -> None:
     appid = manifest['appid']
     appname = manifest['name']
     version = manifest['version']
-    command: str = manifest['launcher']['command']
     
-    if command:
-        if command.startswith('py '):
-            if not command.startswith('py -m '):
-                # fix script path to be abspath
-                # e.g. 'py src/main.py'
-                #   -> 'py %DEPSLAND%/apps/{appid}/.../src/main.py'
-                command = 'py {app_dir}/{script}'.format(
-                    app_dir=f'%DEPSLAND%/apps/{appid}/{version}',
-                    script=command[3:]
-                )
-            # replace 'py' with python interpreter path.
-            command = command.replace(
-                'py', r'%DEPSLAND%\python\python.exe', 1
-            )
+    script: str = manifest['launcher']['script']
+    a, b = (script + ' ').split(' ', 1)
+    if a.endswith('.py'):
+        script = '{py} {script} {args}'.format(
+            py=r'%DEPSLAND%\python\python.exe',
+            script=fs.normpath('{app_dir}/{relpath}'.format(
+                app_dir=f'%DEPSLAND%/apps/{appid}/{version}',
+                relpath=a
+            )),
+            args=b
+        ).strip()
+    else:
+        script = '{py} -m {module} {args}'.format(
+            py=r'%DEPSLAND%\python\python.exe',
+            module=a,
+            args=b
+        ).strip()
     
     # bat command
     command = dedent('''
@@ -259,7 +261,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
         pkg_dir=r'{}\.venv\{}'.format(
             r'%DEPSLAND%\apps', appid
         ),
-        cmd=command,
+        cmd=script,
     )
     
     # bat to exe
