@@ -8,7 +8,7 @@ from .. import paths
 
 
 def get_content_hash(content: str) -> str:
-    return hashlib.md5(content[:8192].encode()).hexdigest()
+    return hashlib.md5(content.encode()).hexdigest()
 
 
 def get_file_hash(filepath: str) -> str:

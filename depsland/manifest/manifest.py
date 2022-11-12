@@ -1,12 +1,12 @@
 import os
 import typing as t
 from collections import namedtuple
-from uuid import uuid1
 
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 
+from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
 
@@ -260,8 +260,9 @@ def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
             return get_updated_time(abspath, recursive=True)
     
     def generate_uid() -> str:
-        # generate: uid
-        return uuid1().hex
+        # nonlocal: ftype, relpath
+        # generate: uid (hash_of_relpath)
+        return get_content_hash(f'{ftype}:{relpath}')
     
     out = {}
     for path, scheme in assets0.items():
