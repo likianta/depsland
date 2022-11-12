@@ -28,9 +28,15 @@ class T:
 
 def main(manifest_file: str) -> None:
     appinfo = get_app_info(manifest_file)
+    manifest = load_manifest(manifest_file)
+    dist_dir = '{root}/dist/{name}-{ver}'.format(
+        root=manifest['start_directory'],
+        name=manifest['appid'],
+        ver=manifest['version'],
+    )
     
     oss = _upload(
-        manifest_new=(m := load_manifest(manifest_file)),
+        manifest_new=manifest,
         manifest_old=(
             load_manifest('{}/{}/{}/manifest.pkl'.format(
                 paths.project.apps,
@@ -46,23 +52,15 @@ def main(manifest_file: str) -> None:
     
     if oss.type_ in ('local', 'fake'):
         print('pack oss assets to dist dir')
-        dir_o = '{root}/dist/{name}-{ver}/.oss'.format(
-            root=m['start_directory'],
-            name=m['appid'],
-            ver=m['version'],
-        )
+        dir_o = f'{dist_dir}/.oss'
         fs.make_dirs(dir_o)
         fs.make_link(oss.path.root, dir_o, True)
         
         print('generate setup script to dist dir')
-        bat_file = '{root}/dist/{name}-{ver}/setup.bat'.format(
-            root=m['start_directory'],
-            name=m['appid'],
-            ver=m['version'],
-        )
+        bat_file = f'{dist_dir}/setup.bat'
         command = dedent(r'''
             cd /d %~dp0
-            %DEPSLADN%\depsland.exe user-install manifest.pkl
+            %DEPSLADN%\depsland.exe install-dist manifest.pkl
         ''').strip()
         dumps(command, bat_file)
         bat_2_exe(bat_file, icon=paths.build.launcher_ico, remove_bat=True)
@@ -70,8 +68,16 @@ def main(manifest_file: str) -> None:
     appinfo['history'].insert(0, appinfo['version'])
     dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
     
+    dump_manifest(manifest, f'{dist_dir}/manifest.pkl')
+    #   note: this is dumped to `dist_dir`, it is different from another usage
+    #   in `_upload : the bottom lines`. the latter is dumped to
+    #   `appinfo['dst_dir']`, which is pointed to `paths.apps/{appid}/{version}
+    #   /manifest.pkl`.
+    
     print('publish done. see result at {}/dist/{}-{}'.format(
-        fs.relpath(m['start_directory']), m['appid'], m['version']
+        fs.relpath(manifest['start_directory']),
+        manifest['appid'],
+        manifest['version']
     ), ':t')
 
 
