@@ -61,6 +61,9 @@ class Project:
     
     @staticmethod
     def _init_project_root(root: str):
+        """
+        related: build/backup_project_resources.py
+        """
         os.mkdir(f'{root}')
         os.mkdir(f'{root}/apps')
         os.mkdir(f'{root}/apps/.bin')

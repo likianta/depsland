@@ -9,6 +9,7 @@ dir_o = paths.project.depsland + '/chore'
 
 ziptool.compress_dir(f'{dir_i}/build', f'{dir_o}/build.zip')
 
+# TODO: make sure conf/depsland.yaml has configured local oss.
 dir_x = make_temp_dir()
 fs.copy_file(f'{dir_i}/conf/depsland.yaml', f'{dir_x}/depsland.yaml')
 ziptool.compress_dir(dir_x, f'{dir_o}/conf.zip')
