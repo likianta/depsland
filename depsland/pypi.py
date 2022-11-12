@@ -122,6 +122,7 @@ class LocalPyPI:
                     self.name_id_2_paths[name_id] = (
                         fs.relpath(filepath, pypi_paths.root), ''
                     )
+                    print(':v', 'make dir', f'{pypi_paths.installed}/{name}')
                     fs.make_dir(f'{pypi_paths.installed}/{name}')
                     yield name, version, filepath
                 # else:
@@ -149,9 +150,9 @@ class LocalPyPI:
         
         def get_installed_path(name_id: str) -> T.Path:
             # note: the returned path may be empty.
-            return '{}/{}'.format(
-                pypi_paths.root, self.name_id_2_paths[name_id][1]
-            )
+            if relpath := self.name_id_2_paths[name_id][1]:
+                return '{}/{}'.format(pypi_paths.root, relpath)
+            return ''
         
         for name, version, downloaded_path in self.download(
                 packages, include_dependencies
@@ -167,6 +168,7 @@ class LocalPyPI:
                     name,
                     version
                 )
+                print(':v', 'make dir', installed_path)
                 fs.make_dir(installed_path)
                 self.pip.run(
                     'install', downloaded_path,
