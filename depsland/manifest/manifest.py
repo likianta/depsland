@@ -52,10 +52,12 @@ class T:
     PyPI1 = t.Dict[str, str]  # dict[filename, abspath]
     
     Launcher0 = t.TypedDict('Launcher', {
-        'command'   : str,
-        'cli_tool'  : bool,
-        'desktop'   : bool,
-        'start_menu': bool,
+        'command'     : str,
+        'icon'        : str,
+        'cli_tool'    : bool,
+        'desktop'     : bool,
+        'start_menu'  : bool,
+        'show_console': bool,
     })
     Launcher1 = Launcher0
     
@@ -146,10 +148,12 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
         'dependencies'   : {},
         'pypi'           : {},
         'launcher'       : {
-            'command'   : f'depsland show {appid}',
-            'cli_tool'  : False,
-            'desktop'   : False,
-            'start_menu': False,
+            'command'     : f'depsland show {appid}',
+            'icon'        : '',
+            'cli_tool'    : False,
+            'desktop'     : False,
+            'start_menu'  : False,
+            'show_console': True,
         },
     }
 
@@ -245,11 +249,18 @@ def _update_pypi(pypi0: T.PyPI0, manifest_dir: str) -> T.PyPI1:
 
 
 def _update_launcher(launcher0: T.Launcher0) -> T.Launcher1:
-    out = {'command'   : '',
-           'cli_tool'  : False,
-           'desktop'   : False,
-           'start_menu': False}
+    out = {'command'     : '',
+           'icon'        : '',
+           'cli_tool'    : False,
+           'desktop'     : False,
+           'start_menu'  : False,
+           'show_console': True, }
     out.update(launcher0)  # noqa
+    if out['icon']:
+        assert out['icon'].endswith('.ico'), (
+            'make sure the icon file is ".ico" format. if you have another '
+            'file type, please use a online converter to get it.'
+        )
     return out
 
 

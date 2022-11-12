@@ -266,8 +266,11 @@ def _create_launcher(manifest: T.Manifest) -> None:
     dumps(command, bat_file := '{apps}/{appid}/{version}/{appid}.bat'.format(
         apps=paths.project.apps, appid=appid, version=version
     ))
-    # TODO: how to add icon, and control whether to show console?
-    if not (exe_file := bat_2_exe(bat_file)):
+    if not (exe_file := bat_2_exe(
+            bat_file,
+            icon=manifest['launcher']['icon'],
+            show_console=manifest['launcher']['show_console'],
+    )):
         # user may not have installed `gen-exe`.
         # see detailed error prompt in `bat_2_exe`.
         return
