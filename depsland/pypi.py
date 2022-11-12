@@ -1,12 +1,10 @@
 import re
 import typing as t
-from os.path import exists
 
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 
-from . import utils
 from .normalization import T as T0
 from .normalization import VersionSpec
 from .normalization import normalize_name
@@ -14,6 +12,7 @@ from .paths import pypi as pypi_paths
 from .pip import Pip
 from .pip import pip as _default_pip
 from .utils import verspec
+from .venv_maker import link_venv
 
 __all__ = ['T', 'pypi']
 
@@ -160,17 +159,11 @@ class LocalPyPI:
                     (downloaded_path, installed_path)
                 yield name_id
     
-    def linking(self, name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
+    @staticmethod
+    def linking(name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
         print(':d', f'linking environment packages to {dst_dir}')
         print(':l', name_ids)
-        
-        for nid in name_ids:
-            installed_path = self.name_id_2_paths[nid][1]
-            assert exists(installed_path)
-            try:
-                utils.mklinks(installed_path, dst_dir, force=False)
-            except FileExistsError:
-                utils.mergelinks(installed_path, dst_dir, overwrite=None)
+        link_venv(name_ids, dst_dir)
     
     # -------------------------------------------------------------------------
     
