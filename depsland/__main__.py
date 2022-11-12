@@ -114,13 +114,18 @@ def build(manifest='.', gen_exe=True) -> None:
 
 
 @cli.cmd()
-def publish(manifest='.') -> None:
+def publish(manifest='.', full_upload=False) -> None:
     """
     publish dist assets to oss.
     if you configured a local oss server, it will generate assets to -
     `~/oss/apps/<appid>/<version>` directory.
+    
+    kwargs:
+        full_upload (-f): if true, will upload all assets, ignore the files -
+            which may already exist in oss (they all will be overwritten).
+            this option is useful if you found the oss server not work properly.
     """
-    api.publish(_fix_manifest_param(manifest))
+    api.publish(_fix_manifest_param(manifest), full_upload)
 
 
 @cli.cmd()

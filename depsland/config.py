@@ -4,7 +4,7 @@ from lk_utils import loads
 
 from . import paths
 
-__all__ = ['app_settings', 'debug_mode']
+__all__ = ['app_settings', 'controls']
 
 
 class T:
@@ -38,5 +38,10 @@ class T:
     })
 
 
-debug_mode: bool = False
+class GlobalControls:  # TODO: no usage yet.
+    debug_mode = False
+    ignore_old_manifest = False
+
+
 app_settings: T.AppSettings = loads(paths.conf.depsland)
+controls = GlobalControls()

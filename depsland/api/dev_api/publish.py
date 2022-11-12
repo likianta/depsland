@@ -26,7 +26,7 @@ class T:
     Scheme = T0.Scheme1
 
 
-def main(manifest_file: str) -> None:
+def main(manifest_file: str, full_upload=False) -> None:
     appinfo = get_app_info(manifest_file)
     manifest = load_manifest(manifest_file)
     dist_dir = '{root}/dist/{name}-{ver}'.format(
@@ -42,7 +42,7 @@ def main(manifest_file: str) -> None:
                 paths.project.apps,
                 appinfo['appid'],
                 appinfo['history'][0]
-            )) if appinfo['history'] else
+            )) if not full_upload and appinfo['history'] else
             init_manifest(
                 appinfo['appid'], appinfo['name']
             )
