@@ -229,8 +229,14 @@ def _check_manifest(manifest: T.Manifest1) -> None:
     if launcher['icon']:
         assert launcher['icon'].endswith('.ico'), (
             'make sure the icon file is ".ico" format. if you have another '
-            'file type, please use a online converter to get it.'
+            'file type, please use a online converter (for example '
+            'https://findicons.com/convert) to get one.'
         )
+        if not os.path.isabs(launcher['icon']):
+            launcher['icon'] = \
+                f'{manifest["start_directory"]}/{launcher["icon"]}'
+        # TODO: check icon size and give suggestions (the icon is suggested
+        #  128x128 or above.)
 
 
 def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
@@ -295,7 +301,7 @@ def _update_launcher(launcher0: T.Launcher0) -> T.Launcher1:
            'cli_tool'    : False,
            'desktop'     : False,
            'start_menu'  : False,
-           'show_console': True, }
+           'show_console': True}
     out.update(launcher0)  # noqa
     return out
 

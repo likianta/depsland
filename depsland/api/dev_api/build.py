@@ -4,12 +4,17 @@ from lk_utils import dumps
 from lk_utils import fs
 
 from ...manifest import T
-from ...manifest import dump_manifest
 from ...manifest import load_manifest
 from ...utils import bat_2_exe
 
 
-def build(manifest_file: str, icon='', gen_exe=True) -> None:
+def build(manifest_file: str, gen_exe=True) -> None:
+    """
+    what does this function do:
+        - create a dist folder
+        - create a launcher (exe or bat)
+    TODO: is this too simple?
+    """
     manifest = load_manifest(manifest_file)
     
     dir_i = manifest['start_directory']
@@ -24,10 +29,9 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
         bat_2_exe(
             f'{dir_o}/launcher.bat',
             f'{dir_o}/launcher.exe',
-            icon=icon, remove_bat=True
+            icon=manifest['launcher']['icon'],
+            remove_bat=True
         )
-    
-    dump_manifest(manifest, f'{dir_o}/manifest.pkl')
     
     print(':t', 'build done. see result in {}'.format(fs.relpath(dir_o)))
 
