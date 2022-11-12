@@ -13,6 +13,7 @@
 /conf/depsland_for_build.yaml
 /conf/oss_*
 /deleted/
+/depsland/chore/
 /dist/*
 /oss/*/*
 /pypi/*/[^.]*
