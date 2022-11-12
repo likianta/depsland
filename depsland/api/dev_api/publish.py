@@ -60,7 +60,8 @@ def main(manifest_file: str, full_upload=False) -> None:
         bat_file = f'{dist_dir}/setup.bat'
         command = dedent(r'''
             cd /d %~dp0
-            %DEPSLADN%\depsland.exe install-dist manifest.pkl
+            %DEPSLAND%\depsland.exe install-dist manifest.pkl
+            pause
         ''').strip()
         dumps(command, bat_file)
         bat_2_exe(bat_file, icon=paths.build.launcher_ico, remove_bat=True)
