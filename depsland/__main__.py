@@ -176,6 +176,7 @@ def install_dist(manifest: str):
     """
     from os.path import exists
     from .manifest import init_manifest
+    from .manifest import init_target_tree
     from .manifest import load_manifest
     
     m1 = load_manifest(_fix_manifest_param(manifest))
@@ -184,9 +185,11 @@ def install_dist(manifest: str):
         custom_oss_root = d
     else:
         custom_oss_root = None
-    m1['start_directory'] = paths.project.apps + '/{}/{}'.format(
-        m1['appid'], m1['version']
-    )
+    
+    init_target_tree(m1, d := '{}/{}/{}'.format(
+        paths.project.apps, m1['appid'], m1['version']
+    ))
+    m1['start_directory'] = d
     
     appid, name = m1['appid'], m1['name']
     if x := _get_dir_to_last_installed_version(appid):
