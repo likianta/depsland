@@ -41,9 +41,8 @@ def init(
                 return
     
     manifest: T.Manifest = init_manifest(appid, appname)
-    manifest.update({
-        'version': '0.1.0',
-    })
+    manifest.pop('start_directory')  # noqa
+    manifest.update({'version': '0.1.0'})
     
     if auto_find_requirements:
         if exists(x := f'{dirpath}/requirements.txt'):
