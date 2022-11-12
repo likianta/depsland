@@ -189,7 +189,18 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
         'pypi'           : _update_pypi(data_i.get('pypi', []), manifest_dir),
         'launcher'       : _update_launcher(data_i.get('launcher', {})),
     })
+    
+    _check_manifest(data_o)
     return data_o
+
+
+def _check_manifest(manifest: T.Manifest1) -> None:
+    assert manifest['assets'], 'field `assets` cannot be empty!'
+    if manifest['launcher']['icon']:
+        assert manifest['launcher']['icon'].endswith('.ico'), (
+            'make sure the icon file is ".ico" format. if you have another '
+            'file type, please use a online converter to get it.'
+        )
 
 
 def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
@@ -256,11 +267,6 @@ def _update_launcher(launcher0: T.Launcher0) -> T.Launcher1:
            'start_menu'  : False,
            'show_console': True, }
     out.update(launcher0)  # noqa
-    if out['icon']:
-        assert out['icon'].endswith('.ico'), (
-            'make sure the icon file is ".ico" format. if you have another '
-            'file type, please use a online converter to get it.'
-        )
     return out
 
 

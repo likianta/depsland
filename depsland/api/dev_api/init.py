@@ -7,22 +7,23 @@ from lk_utils import fs
 from lk_utils import loads
 
 from ...manifest import T
+from ...manifest import init_manifest
 
 
 def init(
-        manifest: str = './manifest.json',
+        manifest_file: str = './manifest.json',
         appname='',
         overwrite=False,
         auto_find_requirements=False
 ):
     # init/update parameters
-    filepath = fs.normpath(manifest, True)
+    filepath = fs.normpath(manifest_file, True)
     dirpath = fs.parent_path(filepath)
     dirname = fs.dirname(dirpath)
     if appname == '':
         appname = dirname.replace('-', ' ').replace('_', ' ').title()
     appid = appname.replace(' ', '_').replace('-', '_').lower()
-    print(':v2', appname, appid)
+    print(':v2f2', appname, appid)
     
     # check path exists
     if not exists(dirpath):
@@ -39,19 +40,10 @@ def init(
                 print('[dim]no file creates[/]', ':r')
                 return
     
-    manifest: T.Manifest = {
-        'appid'       : appid,
-        'name'        : appname,
-        'version'     : '0.1.0',
-        'assets'      : {},
-        'dependencies': {},
-        'pypi'        : [],
-        'launcher'    : {
-            'command'   : f'depsland show {appid} 0.1.0',
-            'desktop'   : False,
-            'start_menu': False,
-        }
-    }
+    manifest: T.Manifest = init_manifest(appid, appname)
+    manifest.update({
+        'version': '0.1.0',
+    })
     
     if auto_find_requirements:
         if exists(x := f'{dirpath}/requirements.txt'):
