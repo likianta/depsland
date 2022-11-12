@@ -59,7 +59,6 @@ def get_name_and_version_from_filename(filename: str) -> t.Tuple[str, str]:
         'lk-logger-4.0.7.tar.gz' -> ('lk-logger', '4.0.7')
         'aliyun-python-sdk-2.2.0.zip' -> ('aliyun-python-sdk', '2.2.0')
     """
-    ext = ''
     for ext in ('.whl', '.tar.gz', '.zip'):
         if filename.endswith(ext):
             filename = filename.removesuffix(ext)
@@ -122,10 +121,23 @@ def sort_versions(versions: t.List[T.Version], reverse=True):
 
 
 def _minor_fix_version_form(raw_verspec: str) -> str:
-    pattern = re.compile(r'(\d)([a-zA-Z]+)(\d+)')
+    """
+    examples:
+        335             335.0.0
+        1.7             1.7.0
+        1.0.0b3         1.0.0-b.3
+        0.12.0.post2    0.12.0-post.2
+        6.4.0.1         6.4.0-1
+    see unittest in `unittests/raw_version_to_semver.py`
+    """
+    if raw_verspec.isdigit():
+        return f'{raw_verspec}.0.0'
+    elif raw_verspec.replace('.', '', 1).isdigit():
+        return f'{raw_verspec}.0'
+    pattern = re.compile(r'^(\d+\.\d+\.\d+)\.?((?:[a-zA-Z]+)?)(\d+)')
+    #                       ^~~~~~~~~~~~~~1   ^~~~~~~~~~~~~~~2^~~~3
     if pattern.search(raw_verspec):
         raw_verspec = pattern.sub(
             lambda m: '{}-{}.{}'.format(*m.groups()), raw_verspec
-            #   e.g. '0.1.0b3' -> '0.1.0-b.3'
-        )
+        ).replace('-.', '-')
     return raw_verspec
