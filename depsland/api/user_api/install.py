@@ -104,17 +104,18 @@ def main(appid: str) -> t.Optional[T.Path]:
     return dir_o
 
 
-def main2(manifest_new: T.Manifest, manifest_old: T.Manifest) -> None:
+def main2(manifest_new: T.Manifest, manifest_old: T.Manifest,
+          custom_oss_root: T.Path = None) -> None:
     """
     TODO: leave one of `main` and `main2`, remove another one.
         currently `main` has no usage and is little behind of update schedule.
     """
     dir_m = make_temp_dir()
     
-    if os.path.exists(d := manifest_new['start_directory'] + '/.oss'):
+    if custom_oss_root:
         print('use local oss server', ':v2')
         oss = get_oss_client(manifest_new['appid'], server='local')
-        oss.path.root = d
+        oss.path.root = custom_oss_root
     else:
         oss = get_oss_client(manifest_new['appid'])
     print(oss.path)
@@ -220,7 +221,7 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
     print(':vl', packages)
     
     name_ids = pypi.install(packages, include_dependencies=True)
-    name_ids = list(dict.fromkeys(name_ids))  # deduplicate but remain sequence
+    name_ids = list(dict.fromkeys(name_ids))  # deduplicate and remain sequence
     name_ids = _resolve_conflicting_name_ids(name_ids)
     pypi.save_index()
     pypi.linking(sorted(name_ids), dst_dir)

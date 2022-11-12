@@ -174,9 +174,20 @@ def install_dist(manifest: str):
     
     TODO: is it better to rename this function to 'setup'?
     """
+    from os.path import exists
     from .manifest import init_manifest
     from .manifest import load_manifest
+    
     m1 = load_manifest(_fix_manifest_param(manifest))
+    
+    if exists(d := '{}/.oss'.format(m1['start_directory'])):
+        custom_oss_root = d
+    else:
+        custom_oss_root = None
+    m1['start_directory'] = paths.project.apps + '/{}/{}'.format(
+        m1['appid'], m1['version']
+    )
+    
     appid, name = m1['appid'], m1['name']
     if x := _get_dir_to_last_installed_version(appid):
         m0 = load_manifest(f'{x}/manifest.pkl')
@@ -189,7 +200,7 @@ def install_dist(manifest: str):
                   + m0['version'])
     else:
         m0 = init_manifest(appid, name)
-        api.install2(m1, m0)
+        api.install2(m1, m0, custom_oss_root=custom_oss_root)
 
 
 @cli.cmd()
