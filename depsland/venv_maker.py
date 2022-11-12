@@ -20,6 +20,8 @@ def link_venv(name_ids: T.NameIds, venv_dir: T.AbsPath) -> None:
     for nid in name_ids:
         dir_ = _name_id_2_path(nid)
         for dname in os.listdir(dir_):
+            if dname == '__pycache__':
+                continue
             dirname_2_name_ids[dname].append(nid)
     
     ownership: T.Ownership = {}
@@ -33,7 +35,7 @@ def link_venv(name_ids: T.NameIds, venv_dir: T.AbsPath) -> None:
     for relpath, name_id in sorted(
             ownership.items(), key=lambda x: x[1]
     ):
-        print(name_id, relpath)
+        print(name_id, relpath, ':vs')
         fs.make_link(
             '{}/{}'.format(_name_id_2_path(name_id), relpath),
             '{}/{}'.format(venv_dir, relpath)
@@ -53,18 +55,22 @@ def _check_ownership(
     for nid in candidates:
         dir_ = '{}/{}'.format(_name_id_2_path(nid), relpath)
         for asset in fs.find_dirs(dir_):
+            if asset.name == '__pycache__':
+                continue
             dir_asset_2_name_ids[asset.name].append(nid)
         for asset in fs.find_files(dir_):
             file_asset_2_name_ids[asset.name].append(nid)
     
     for name, name_ids in file_asset_2_name_ids.items():
         if len(name_ids) > 1:
-            print(':v3', 'multiple owners for this file (will choose the '
-                         'first one)', name, name_ids)
+            print('multiple owners for a file (will choose the first one)',
+                  name, name_ids, ':v3')
         relpath_2_name_id[f'{relpath}/{name}'] = name_ids[0]
     
     for name, name_ids in dir_asset_2_name_ids.items():
         if len(name_ids) > 1:
+            print('[yellow dim]multiple owners for a dir (will merge them)[/]',
+                  name, name_ids, ':rv')
             relpath_2_name_id.update(
                 _check_ownership(f'{relpath}/{name}', name_ids)
             )
