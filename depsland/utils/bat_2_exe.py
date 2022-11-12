@@ -1,4 +1,4 @@
-import os.path
+import os
 from pathlib import Path
 from typing import Optional
 
@@ -7,7 +7,8 @@ from lk_utils import loads
 
 def bat_2_exe(
         file_i: str, file_o: str = '',
-        icon: str = '', show_console=True
+        icon: str = '', show_console=True,
+        remove_bat=False,
 ) -> Optional[str]:
     """
     args:
@@ -16,6 +17,7 @@ def bat_2_exe(
     kwargs:
         file_o: a ".exe" file.
         icon: a ".ico" file. ([red dim]it must be .ico[/])
+        remove_bat: remove bat file if conversion succeed.
     """
     assert file_i.endswith('.bat')
     if file_o:
@@ -47,4 +49,6 @@ def bat_2_exe(
             icon_file=Path(icon) if icon else None,
             show_console=show_console
         )
+        if remove_bat:
+            os.remove(file_i)
         return file_o

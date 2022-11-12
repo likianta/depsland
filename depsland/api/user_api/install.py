@@ -272,11 +272,11 @@ def _create_launcher(manifest: T.Manifest) -> None:
             bat_file,
             icon=manifest['launcher']['icon'],
             show_console=manifest['launcher']['show_console'],
+            remove_bat=True
     )):
         # user may not have installed `gen-exe`.
         # see detailed error prompt in `bat_2_exe`.
         return
-    fs.remove_file(bat_file)
     
     # create shortcuts
     if manifest['launcher']['cli_tool']:

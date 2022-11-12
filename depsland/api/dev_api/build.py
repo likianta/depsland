@@ -21,9 +21,11 @@ def build(manifest_file: str, icon='', gen_exe=True) -> None:
     _create_bat(manifest, f'{dir_o}/launcher.bat')
     
     if gen_exe:
-        if bat_2_exe(f'{dir_o}/launcher.bat',
-                     f'{dir_o}/launcher.exe', icon):
-            fs.remove_file(f'{dir_o}/launcher.bat')
+        bat_2_exe(
+            f'{dir_o}/launcher.bat',
+            f'{dir_o}/launcher.exe',
+            icon=icon, remove_bat=True
+        )
     
     dump_manifest(manifest, f'{dir_o}/manifest.pkl')
     
