@@ -118,9 +118,11 @@ class LocalPyPI:
                 
                 if is_new:
                     self.name_2_versions[name].insert(0, version)
+                    #   FIXME: insert to a proper position.
                     self.name_id_2_paths[name_id] = (
                         fs.relpath(filepath, pypi_paths.root), ''
                     )
+                    fs.make_dir(f'{pypi_paths.installed}/{name}')
                     yield name, version, filepath
                 # else:
                 #     assert version in self.name_2_versions[name]
@@ -144,6 +146,7 @@ class LocalPyPI:
                 (ref: https://www.w3schools.com/python/python_howto_remove
                 _duplicates.asp)
         """
+        
         def get_installed_path(name_id: str) -> T.Path:
             # note: the returned path may be empty.
             return '{}/{}'.format(
@@ -164,6 +167,7 @@ class LocalPyPI:
                     name,
                     version
                 )
+                fs.make_dir(installed_path)
                 self.pip.run(
                     'install', downloaded_path,
                     '--no-deps', '--no-index',
