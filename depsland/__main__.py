@@ -3,7 +3,6 @@ import typing as t
 from argsense import CommandLineInterface
 
 from . import api
-from . import config
 from . import paths
 from .manifest import T
 
@@ -90,7 +89,7 @@ def init(manifest='.', app_name='', overwrite=False,
 
 
 @cli.cmd()
-def build(manifest='.', icon='', gen_exe=True) -> None:
+def build(manifest='.', gen_exe=True) -> None:
     """
     build your python application based on manifest file.
     the build result is stored in "dist" directory.
@@ -111,7 +110,7 @@ def build(manifest='.', icon='', gen_exe=True) -> None:
             if you don't have '.ico' format, please use a convert tool (for -
             example [u i]https://findicons.com/convert[/]) to get it.
     """
-    api.build(_fix_manifest_param(manifest), icon, gen_exe)
+    api.build(_fix_manifest_param(manifest), gen_exe)
 
 
 @cli.cmd()
@@ -124,6 +123,7 @@ def publish(manifest='.') -> None:
     api.publish(_fix_manifest_param(manifest))
 
 
+@cli.cmd()
 def install(appid: str, upgrade=True, reinstall=False) -> None:
     """
     install an app from oss by querying appid.
@@ -160,6 +160,7 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
             return
 
 
+@cli.cmd()
 def install_dist(manifest: str):
     """
     to install a distributed package.
@@ -184,12 +185,6 @@ def install_dist(manifest: str):
     else:
         m0 = init_manifest(appid, name)
         api.install2(m1, m0)
-
-
-if config.app_settings['oss']['server'] == 'local':
-    cli.add_cmd(install_dist, 'install')
-else:
-    cli.add_cmd(install, 'install')
 
 
 @cli.cmd()
@@ -255,6 +250,13 @@ def show(appid: str, version: str = None) -> None:
     assert version is not None
     dir_ = '{}/{}/{}'.format(paths.project.apps, appid, version)
     manifest = load_manifest(f'{dir_}/manifest.pkl')
+    print(manifest, ':l')
+
+
+@cli.cmd()
+def view_manifest(manifest: str = '.') -> None:
+    from .manifest import load_manifest
+    manifest = load_manifest(_fix_manifest_param(manifest))
     print(manifest, ':l')
 
 
