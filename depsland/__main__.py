@@ -4,9 +4,14 @@ from argsense import CommandLineInterface
 
 from . import api
 from . import paths
+from . import __path__
+from . import __version__
 from .manifest import T
 
 cli = CommandLineInterface('depsland')
+print('depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
+    __version__, __path__[0]
+), ':r')
 
 
 @cli.cmd()
@@ -166,7 +171,7 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
 
 
 @cli.cmd()
-def install_dist(manifest: str):
+def install_dist(manifest: str) -> None:
     """
     to install a distributed package.
     this function is provided for user that clicks '<some_dist>/setup.exe' to -
@@ -196,14 +201,17 @@ def install_dist(manifest: str):
         m0 = load_manifest(f'{x}/manifest.pkl')
         if _check_version(m1, m0):
             # install first, then uninstall old.
-            api.install(appid)
-            api.uninstall(appid, m0['version'])
+            api.install2(m1, m0, custom_oss_root)
+            api.uninstall(appid, m0['version'],
+                          remove_venv=False, remove_bin=False)
         else:
             print('you already have the latest version installed: '
                   + m0['version'])
     else:
         m0 = init_manifest(appid, name)
-        api.install2(m1, m0, custom_oss_root=custom_oss_root)
+        api.install2(m1, m0, custom_oss_root)
+        
+    print(':rt', '[green]installation done.[/]')
 
 
 @cli.cmd()
@@ -219,7 +227,8 @@ def upgrade(appid: str) -> None:
     elif _check_version(m1, m0):
         # install first, then uninstall old.
         api.install(appid)
-        api.uninstall(appid, m0['version'])
+        api.uninstall(appid, m0['version'],
+                      remove_venv=False, remove_bin=False)
     else:
         print('[green dim]no update available[/]', ':r')
 

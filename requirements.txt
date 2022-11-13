@@ -5,9 +5,9 @@
 # setuptools
 wheel
 
-argsense >= 0.5.0a0
+argsense >= 0.4.3
 lk-logger >= 5.4.6
-lk-utils >= 2.5.0b18
+lk-utils >= 2.5.0
 # neoprint >= 0.1.0b0
 oss2
 pyyaml

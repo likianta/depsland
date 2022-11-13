@@ -1,26 +1,19 @@
-from os.path import exists
-
 from lk_utils import fs
 
 from ... import paths
 
 
-def main(appid: str, version: str) -> None:
-    for dir_ in (
-            '{}/{}/{}'.format(paths.apps.root, appid, version),
-            '{}/{}'.format(paths.apps.venv, appid),
-    ):
-        if exists(dir_):
-            print('remove', dir_, ':i')
-            fs.remove_tree(dir_)
+def main(appid: str, version: str, **kwargs) -> None:
+    fs.remove_tree('{}/{}/{}'.format(
+        paths.apps.root, appid, version
+    ))
     
-    for file in (
-            '{}/{}.exe'.format(paths.apps.bin, appid),
-            # '{}/{}.bat'.format(paths.apps.bin, appid),
-            # '{}/{}'.format(paths.apps.bin, appid),
-            # '{}/{}.exe'.format(paths.system.desktop, appid),
-            # '{}/{}.exe'.format(paths.system.start_menu, appid),
-    ):
-        if exists(file):
-            print('remove', file, ':i')
-            fs.remove_file(file)
+    if kwargs.get('remove_venv', True):
+        fs.remove_tree('{}/{}'.format(
+            paths.apps.venv, appid
+        ))
+    
+    if kwargs.get('remove_bin', True):
+        fs.remove_file('{}/{}.exe'.format(
+            paths.apps.bin, appid
+        ))
