@@ -10,6 +10,7 @@ from lk_utils import loads
 from ... import paths
 from ...manifest import T as T0
 from ...manifest import compare_manifests
+from ...manifest import dump_manifest
 from ...manifest import init_manifest
 from ...manifest import init_target_tree
 from ...manifest import load_manifest
@@ -126,6 +127,7 @@ def main2(manifest_new: T.Manifest, manifest_old: T.Manifest,
     _create_launcher(manifest_new)
     
     _save_history(manifest_new['appid'], manifest_new['version'])
+    _save_manifest(manifest_new)
 
 
 def _check_update(
@@ -309,6 +311,13 @@ def _save_history(appid: str, version: str) -> None:
         data = []
     data.insert(0, version)
     dumps(data, file)
+
+
+def _save_manifest(manifest: T.Manifest) -> None:
+    file_o = '{}/{}/{}/manifest.pkl'.format(
+        paths.project.apps, manifest['appid'], manifest['version']
+    )
+    dump_manifest(manifest, file_o)
 
 
 # -----------------------------------------------------------------------------
