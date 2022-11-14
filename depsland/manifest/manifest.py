@@ -436,7 +436,7 @@ def _compare_assets(
             return True
         if new.utime == old.utime:
             return True
-        raise Exception('unhandled case')
+        return False
     
     for key0, info0 in old.items():
         if key0 not in new:
