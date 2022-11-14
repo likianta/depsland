@@ -7,12 +7,13 @@ from lk_utils import fs
 from rich.table import Table
 
 from .. import paths
+from ..pip import pip
 from ..pypi import T
 from ..utils import get_updated_time
 from ..utils import verspec
 
 
-def rebuild_index():
+def rebuild_index(perform_pip_install: bool = False):
     # dependencies: T.Dependencies = defaultdict(list)
     name_2_versions: T.Name2Versions = defaultdict(list)
     name_id_2_paths: T.NameId2Paths = {}
@@ -34,15 +35,17 @@ def rebuild_index():
         installed_path = '{}/{}/{}'.format(
             paths.pypi.installed, ver.name, ver.version
         )
-        if os.path.exists(installed_path):
-            name_id_2_paths[name_id] = (
-                fs.relpath(downloaded_path, paths.pypi.root),
-                fs.relpath(installed_path, paths.pypi.root),
-            )
-        else:
-            name_id_2_paths[name_id] = (
-                fs.relpath(downloaded_path, paths.pypi.root),
-                '',
+        name_id_2_paths[name_id] = (
+            fs.relpath(downloaded_path, paths.pypi.root),
+            fs.relpath(installed_path, paths.pypi.root),
+        )
+        if not os.path.exists(installed_path) and perform_pip_install:
+            fs.make_dir(installed_path)
+            pip.run(
+                'install', downloaded_path,
+                '--no-deps', '--no-index',
+                ('-t', installed_path),
+                ('--find-links', paths.pypi.downloads),
             )
     
     def update_updates():

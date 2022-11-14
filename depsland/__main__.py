@@ -305,13 +305,17 @@ def run(appid: str) -> None:
 
 
 @cli.cmd()
-def rebuild_pypi_index() -> None:
+def rebuild_pypi_index(full: bool = False) -> None:
     """
     rebuild local pypi index. this may resolve some historical problems caused -
     by pip network issues.
+    
+    kwargs:
+        full (-f): if a package is downloaded but not installed, will perform -
+            a `pip install` action.
     """
     from .doctor import rebuild_pypi_index
-    rebuild_pypi_index()
+    rebuild_pypi_index(perform_pip_install=full)
 
 
 # -----------------------------------------------------------------------------
