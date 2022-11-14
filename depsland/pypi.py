@@ -118,8 +118,13 @@ class LocalPyPI:
                 print(':v', 'downloaded package via pip', name_id)
                 
                 if is_new:
+                    # FIXME: insert to a proper position.
                     self.name_2_versions[name].insert(0, version)
-                    #   FIXME: insert to a proper position.
+                if name_id not in self.name_id_2_paths:
+                    # if is_new: the name_id definitely not in ...;
+                    # if not is_new: it is sometimes possible that not in
+                    #   self.name_id_2_paths. e.g. when external caller has
+                    #   downloaded some packages via custom pypi site.
                     self.name_id_2_paths[name_id] = (
                         fs.relpath(filepath, pypi_paths.root),
                         fs.relpath('{}/{}/{}'.format(
@@ -128,7 +133,7 @@ class LocalPyPI:
                     )
                     print(':v', 'make dir', f'{pypi_paths.installed}/{name}')
                     fs.make_dir(f'{pypi_paths.installed}/{name}')
-                    yield name, version, filepath
+                yield name, version, filepath
                 # else:
                 #     assert version in self.name_2_versions[name]
                 #     assert name_id in self.version_2_path

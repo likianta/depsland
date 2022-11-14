@@ -90,34 +90,15 @@ def semver_parse(ver: str) -> semver.Version:
     return semver.Version.parse(ver)
 
 
-# TODO (refactor) or DELETE
-def sort_versions(versions: t.List[T.Version], reverse=True):
-    """
-    References:
-        Sort versions in Python:
-            https://stackoverflow.com/questions/12255554/sort-versions-in-python
-            /12255578
-        The LooseVersion and StrictVersion difference:
-            https://www.python.org/dev/peps/pep-0386/
-    """
-    
-    def _normalize_version(v: t.Union[str, T.Version]):
-        # TODO: the incoming `param:v` type must be TVersion; TNameId should be
-        #   removed.
-        if '-' in v:
-            v = v.split('-', 1)[-1]
-        if v in ('', '*', 'latest'):
-            return '999999.999.999'
-        else:
-            return v
-    
+# DELETE: seldomly used.
+def sort_versions(
+        versions: t.List[str],
+        reverse: bool,
+) -> None:
     versions.sort(
-        key=lambda v: semver_parse(_normalize_version(v)),
-        # `x` type is Union[TNameId, TVersion], for TNameId we
-        # need to split out the name part.
+        key=lambda x: semver_parse(x),
         reverse=reverse
     )
-    return versions
 
 
 def _minor_fix_version_form(raw_verspec: str) -> str:

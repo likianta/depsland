@@ -24,6 +24,7 @@ from ...utils import bat_2_exe
 from ...utils import compare_version
 from ...utils import make_temp_dir
 from ...utils import ziptool
+from ...utils.verspec import semver_parse
 
 
 class T:
@@ -224,7 +225,7 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
     print(':vl', packages)
     
     name_ids = pypi.install(packages, include_dependencies=True)
-    name_ids = list(dict.fromkeys(name_ids))  # deduplicate and remain sequence
+    name_ids = tuple(dict.fromkeys(name_ids))  # deduplicate and remain sequence
     name_ids = _resolve_conflicting_name_ids(name_ids)
     pypi.save_index()
     pypi.linking(sorted(name_ids), dst_dir)
@@ -355,20 +356,15 @@ def _resolve_conflicting_name_ids(name_ids: t.Iterable[str]) -> t.Iterable[str]:
     and 'lk_utils-2.5.0', remain the most latest version.
     FIXME: this may not be a good idea, better to raise an error right once.
     """
-    temp_dict = {}
-    conflicts = defaultdict(list)
+    name_2_versions = defaultdict(list)
     for nid in name_ids:
         a, b = nid.split('-', 1)
-        if a in temp_dict:
-            conflicts[a].append(nid)
-            if compare_version(b, '>', temp_dict[a]):
-                temp_dict[a] = b
-        else:
-            temp_dict[a] = b
-    if conflicts:
-        [v.insert(0, temp_dict[k]) for k, v in conflicts.items()]
+        name_2_versions[a].append(b)
+    if conflicts := {k: v for k, v in name_2_versions.items() if len(v) > 1}:
         print('found {} conflicting name ids'.format(len(conflicts)),
-              conflicts, ':l')
-        return (f'{k}-{v}' for k, v in temp_dict.items())
+              conflicts, ':lv3')
+        for v in conflicts.values():
+            v.sort(key=lambda x: semver_parse(x), reverse=True)
+        return (f'{k}-{v[0]}' for k, v in name_2_versions.items())
     else:
         return name_ids
