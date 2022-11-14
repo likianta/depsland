@@ -1,3 +1,4 @@
+import os
 import re
 import typing as t
 
@@ -120,7 +121,10 @@ class LocalPyPI:
                     self.name_2_versions[name].insert(0, version)
                     #   FIXME: insert to a proper position.
                     self.name_id_2_paths[name_id] = (
-                        fs.relpath(filepath, pypi_paths.root), ''
+                        fs.relpath(filepath, pypi_paths.root),
+                        fs.relpath('{}/{}/{}'.format(
+                            pypi_paths.installed, name, version
+                        ), pypi_paths.root)
                     )
                     print(':v', 'make dir', f'{pypi_paths.installed}/{name}')
                     fs.make_dir(f'{pypi_paths.installed}/{name}')
@@ -148,26 +152,18 @@ class LocalPyPI:
                 _duplicates.asp)
         """
         
-        def get_installed_path(name_id: str) -> T.Path:
-            # note: the returned path may be empty.
-            if relpath := self.name_id_2_paths[name_id][1]:
-                return '{}/{}'.format(pypi_paths.root, relpath)
-            return ''
+        def get_installed_path(name_id: str) -> t.Tuple[T.Path, bool]:
+            path = '{}/{}'.format(
+                pypi_paths.root, self.name_id_2_paths[name_id][1]
+            )
+            return path, os.path.exists(path)
         
         for name, version, downloaded_path in self.download(
                 packages, include_dependencies
         ):
             name_id = f'{name}-{version}'
-            installed_path = get_installed_path(name_id)
-            if installed_path:
-                yield name_id
-                continue
-            else:
-                installed_path = '{}/{}/{}'.format(
-                    pypi_paths.installed,
-                    name,
-                    version
-                )
+            installed_path, exist = get_installed_path(name_id)
+            if not exist:
                 print(':v', 'make dir', installed_path)
                 fs.make_dir(installed_path)
                 self.pip.run(
@@ -176,11 +172,7 @@ class LocalPyPI:
                     ('-t', installed_path),
                     ('--find-links', pypi_paths.downloads),
                 )
-                self.name_id_2_paths[name_id] = (
-                    fs.relpath(downloaded_path, pypi_paths.root),
-                    fs.relpath(installed_path, pypi_paths.root),
-                )
-                yield name_id
+            yield name_id
     
     @staticmethod
     def linking(name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
