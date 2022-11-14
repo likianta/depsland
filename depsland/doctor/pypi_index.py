@@ -148,8 +148,8 @@ def _rebuild_dependencies(recursive=True) -> T.Dependencies:
                 indirects = dependencies[nid2]
                 for nid3 in indirects:
                     if (
-                            (n1 := nid3 == nid1) or  # noqa
-                            (n0 := nid3 == nid0)
+                            (n0 := nid3 == nid0) or
+                            (n1 := nid3 == nid1)  # noqa
                     ):
                         raise Exception(
                             'circular dependency: '
