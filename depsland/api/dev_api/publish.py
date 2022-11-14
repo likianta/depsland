@@ -75,10 +75,8 @@ def main(manifest_file: str, full_upload=False) -> None:
     #   `appinfo['dst_dir']`, which is pointed to `paths.apps/{appid}/{version}
     #   /manifest.pkl`.
     
-    print('publish done. see result at {}/dist/{}-{}'.format(
-        fs.relpath(manifest['start_directory']),
-        manifest['appid'],
-        manifest['version']
+    print('publish done. see result at "dist/{}-{}"'.format(
+        manifest['appid'], manifest['version']
     ), ':t')
 
 

@@ -33,7 +33,9 @@ def build(manifest_file: str, gen_exe=True) -> None:
             remove_bat=True
         )
     
-    print(':t', 'build done. see result in {}'.format(fs.relpath(dir_o)))
+    print(':t', 'build done. see result in "dist/{}-{}"'.format(
+        manifest['appid'], manifest['version']
+    ))
 
 
 def _create_bat(manifest: T.Manifest, file: str) -> None:
