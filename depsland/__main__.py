@@ -151,8 +151,9 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
     elif _check_version(m1, m0):
         if upgrade:
             # install first, then uninstall old.
-            api.install(appid)
-            api.uninstall(appid, m0['version'])
+            api.install2(m1, m0)
+            api.uninstall(appid, m0['version'],
+                          remove_venv=False, remove_bin=False)
         else:
             print('new version available but not installed. you can use '
                   '`depsland install -u {appid}` or `depsland upgrade {appid}` '
