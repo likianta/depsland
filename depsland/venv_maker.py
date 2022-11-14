@@ -29,20 +29,20 @@ def link_venv(name_ids: T.NameIds, venv_dir: T.AbsPath) -> None:
         if len(name_ids) == 1:
             ownership[dname] = name_ids[0]
         else:
-            ownership.update(_check_ownership(dname, name_ids))
+            ownership.update(_distribute_ownerships(dname, name_ids))
     
     _init_dirs(venv_dir, ownership.keys())
     for relpath, name_id in sorted(
-            ownership.items(), key=lambda x: x[1]
+            ownership.items(), key=lambda x: x[1]  # sort by name_id.
     ):
-        # print(name_id, relpath, ':vs')
+        print(name_id, relpath, ':vs')
         fs.make_link(
             '{}/{}'.format(_name_id_2_path(name_id), relpath),
             '{}/{}'.format(venv_dir, relpath)
         )
 
 
-def _check_ownership(
+def _distribute_ownerships(
         relpath: T.RelPath, candidates: T.NameIds
 ) -> T.Ownership:
     """
@@ -72,7 +72,7 @@ def _check_ownership(
             print('[yellow dim]multiple owners for a dir (will merge them)[/]',
                   name, name_ids, ':rv')
             relpath_2_name_id.update(
-                _check_ownership(f'{relpath}/{name}', name_ids)
+                _distribute_ownerships(f'{relpath}/{name}', name_ids)
             )
         else:
             relpath_2_name_id[f'{relpath}/{name}'] = name_ids[0]
