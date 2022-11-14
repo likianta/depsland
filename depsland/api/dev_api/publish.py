@@ -34,6 +34,7 @@ def main(manifest_file: str, full_upload=False) -> None:
         name=manifest['appid'],
         ver=manifest['version'],
     )
+    fs.make_dirs(dist_dir)
     
     oss = _upload(
         manifest_new=manifest,
