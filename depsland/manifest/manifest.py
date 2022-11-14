@@ -12,6 +12,7 @@ from ..utils import get_updated_time
 
 __all__ = [
     'T',
+    'change_start_directory',
     'compare_manifests',
     'dump_manifest',
     'init_manifest',
@@ -51,9 +52,12 @@ class T:
     PyPI0 = t.List[_AnyPath]  # list[anypath_to_python_wheel]
     PyPI1 = t.Dict[str, str]  # dict[filename, abspath]
     
-    Launcher0 = t.TypedDict('Launcher', {
+    Launcher0 = t.TypedDict('Launcher0', {
         'script'      : str,
         'icon'        : str,
+        #   the origin icon could be: empty, a relpath, or an abspath.
+        #   when it is loaded to program, it converts to an abspath.
+        #   when it is dumped to a file, it converts to a relpath.
         'cli_tool'    : bool,
         'desktop'     : bool,
         'start_menu'  : bool,
@@ -168,6 +172,11 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
     if manifest_file.endswith('.pkl'):
         data_o = data_i  # noqa
         data_o['start_directory'] = manifest_dir
+        if data_o['launcher']['icon']:
+            # fix icon path (from relpath to abspath)
+            data_o['launcher']['icon'] = fs.normpath(
+                '{}/{}'.format(manifest_dir, data_o['launcher']['icon'])
+            )
         return data_o
     
     # -------------------------------------------------------------------------
@@ -184,14 +193,34 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
         'name'           : data_i['name'],
         'version'        : data_i['version'],
         'start_directory': manifest_dir,
-        'assets'         : _update_assets(data_i['assets'], manifest_dir),
-        'dependencies'   : _update_dependencies(data_i.get('dependencies', {})),
-        'pypi'           : _update_pypi(data_i.get('pypi', []), manifest_dir),
-        'launcher'       : _update_launcher(data_i.get('launcher', {})),
+        'assets'         : _update_assets(
+            data_i.get('assets'), manifest_dir),
+        'dependencies'   : _update_dependencies(
+            data_i.get('dependencies', {})),
+        'pypi'           : _update_pypi(
+            data_i.get('pypi', []), manifest_dir),
+        'launcher'       : _update_launcher(
+            data_i.get('launcher', {}), manifest_dir),
     })
     
     _check_manifest(data_o)
     return data_o
+
+
+def change_start_directory(manifest: T.Manifest1, new_dir: str) -> None:
+    r"""
+    if you want to change manifest['start_directory'], you should use this
+    function instead of changing it directly.
+    
+    tip: for IDE refactoring, you can search
+    `manifest\w*\['start_directory'\] = ` to find all misused occurrences.
+    """
+    old_dir = manifest['start_directory']
+    manifest['start_directory'] = new_dir
+    if manifest['launcher']['icon']:
+        manifest['launcher']['icon'] = '{}/{}'.format(
+            new_dir, fs.relpath(manifest['launcher']['icon'], old_dir)
+        )
 
 
 def _check_manifest(manifest: T.Manifest1) -> None:
@@ -226,18 +255,24 @@ def _check_manifest(manifest: T.Manifest1) -> None:
     )
     
     # check icon
-    if launcher['icon']:
-        assert launcher['icon'].endswith('.ico'), (
+    icon = launcher['icon']
+    if icon:
+        assert os.path.isabs(icon)
+        
+        assert icon.endswith('.ico'), (
             'make sure the icon file is ".ico" format. if you have another '
             'file type, please use a online converter (for example '
             'https://findicons.com/convert) to get one.'
         )
-        if not os.path.isabs(launcher['icon']):
-            launcher['icon'] = \
-                f'{manifest["start_directory"]}/{launcher["icon"]}'
+        
+        icon_relpath = fs.relpath(icon, manifest['start_directory'])
+        assert icon_relpath.startswith(
+            tuple(manifest['assets'].keys())
+        ), 'the launcher icon should be existed in your assets.'
+        
         # TODO: check icon size and give suggestions (the icon is suggested
         #  128x128 or above.)
-        
+    
     if launcher['start_menu']:
         print(':v3', 'start_menu is not tested yet. this is an experimental '
                      'feature.')
@@ -300,14 +335,24 @@ def _update_pypi(pypi0: T.PyPI0, manifest_dir: str) -> T.PyPI1:
     return out
 
 
-def _update_launcher(launcher0: T.Launcher0) -> T.Launcher1:
-    out = {'script'      : '',
-           'icon'        : '',
-           'cli_tool'    : False,
-           'desktop'     : False,
-           'start_menu'  : False,
-           'show_console': True}
+def _update_launcher(
+        launcher0: T.Launcher0,
+        start_directory: str
+) -> T.Launcher1:
+    out = {
+        'script'      : '',
+        'icon'        : '',
+        'cli_tool'    : False,
+        'desktop'     : False,
+        'start_menu'  : False,
+        'show_console': True,
+    }
     out.update(launcher0)  # noqa
+    if out['icon']:
+        if os.path.isabs(out['icon']):
+            out['icon'] = fs.normpath(out['icon'])
+        else:
+            out['icon'] = fs.normpath(f'{start_directory}/{out["icon"]}')
     return out
 
 
@@ -316,9 +361,17 @@ def _update_launcher(launcher0: T.Launcher0) -> T.Launcher1:
 def dump_manifest(manifest: T.Manifest1, file_o: T.ManifestFile) -> None:
     manifest_i = manifest
     manifest_o: T.Manifest1 = manifest_i.copy()
-    manifest_o['start_directory'] = fs.parent_path(file_o)
+    
+    if manifest_i['launcher']['icon']:
+        manifest_o['launcher'] = manifest_i['launcher'].copy()
+        manifest_o['launcher']['icon'] = fs.relpath(
+            manifest_o['launcher']['icon'],
+            manifest_o['start_directory']
+        )
     if file_o.endswith('.json'):
         manifest_o['assets'] = _plainify_assets(manifest_i['assets'])  # noqa
+    
+    manifest_o['start_directory'] = fs.parent_path(file_o)
     dumps(manifest_o, file_o)
 
 

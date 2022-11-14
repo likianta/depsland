@@ -356,6 +356,7 @@ def _get_last_installed_version(appid: str) -> t.Optional[str]:
 
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     from lk_utils import fs
+    from .manifest import change_start_directory
     from .manifest import init_target_tree
     from .manifest import load_manifest
     from .oss import get_oss_client
@@ -366,11 +367,11 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     oss = get_oss_client(appid)
     oss.download(oss.path.manifest, x := f'{temp_dir}/manifest.pkl')
     manifest_new = load_manifest(x)
-    manifest_new['start_directory'] = '{}/{}/{}'.format(
+    change_start_directory(manifest_new, '{}/{}/{}'.format(
         paths.project.apps,
         manifest_new['appid'],
         manifest_new['version']
-    )
+    ))
     init_target_tree(manifest_new)
     fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
     

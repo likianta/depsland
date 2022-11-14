@@ -9,6 +9,7 @@ from lk_utils import loads
 
 from ... import paths
 from ...manifest import T as T0
+from ...manifest import change_start_directory
 from ...manifest import compare_manifests
 from ...manifest import dump_manifest
 from ...manifest import init_manifest
@@ -88,7 +89,7 @@ def main(appid: str) -> t.Optional[T.Path]:
             # FIXME: ask user turn to upgrade or reinstall command.
             raise FileExistsError(dir_o)
         
-        manifest_new['start_directory'] = dir_o
+        change_start_directory(manifest_new, dir_o)
         init_target_tree(manifest_new, dir_o)
         return dir_o
     
