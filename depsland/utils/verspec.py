@@ -128,16 +128,23 @@ def _minor_fix_version_form(raw_verspec: str) -> str:
         1.0.0b3         1.0.0-b.3
         0.12.0.post2    0.12.0-post.2
         6.4.0.1         6.4.0-1
+        21.7b0          21.7.0-b.0
     see unittest in `unittests/raw_version_to_semver.py`
     """
-    if raw_verspec.isdigit():
-        return f'{raw_verspec}.0.0'
-    elif raw_verspec.replace('.', '', 1).isdigit():
-        return f'{raw_verspec}.0'
-    pattern = re.compile(r'^(\d+\.\d+\.\d+)\.?((?:[a-zA-Z]+)?)(\d+)')
-    #                       ^~~~~~~~~~~~~~1   ^~~~~~~~~~~~~~~2^~~~3
-    if pattern.search(raw_verspec):
-        raw_verspec = pattern.sub(
-            lambda m: '{}-{}.{}'.format(*m.groups()), raw_verspec
-        ).replace('-.', '-')
-    return raw_verspec
+    pattern1 = re.compile(r'^(\d+(?:\.\d+)?(?:\.\d+)?)(.*)')
+    main, sub = pattern1.search(raw_verspec).groups()
+    
+    if main.isdigit():
+        main = f'{main}.0.0'
+    elif main.replace('.', '', 1).isdigit():
+        main = f'{main}.0'
+    
+    if sub:
+        if sub.startswith('.'):
+            sub = sub.lstrip('.')
+        pattern2 = re.compile(r'([a-zA-Z]+)(\d+)')
+        if pattern2.search(sub):
+            sub = pattern2.sub(lambda x: '.'.join(x.groups()), sub)
+        sub = f'-{sub}'
+    
+    return main + sub
