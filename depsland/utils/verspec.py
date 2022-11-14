@@ -32,14 +32,15 @@ def find_proper_version(
     assert len(verspecs)
     if not candidates:
         return None
-    if len(verspecs) == 1 and verspecs[0].version == '':
-        return candidates[0]
+    
+    is_only_one_spec = len(verspecs) == 1
     
     filtered_candidates = []
     for spec in verspecs:
         for candidate in candidates:
-            if compare_version(candidate, spec.comparator, spec.version):
-                if len(verspecs) == 1:
+            if spec.version == '' or compare_version(
+                    candidate, spec.comparator, spec.version):
+                if is_only_one_spec:
                     return candidate
                 filtered_candidates.append(candidate)
         if filtered_candidates:
@@ -47,9 +48,8 @@ def find_proper_version(
             filtered_candidates = []
         else:
             return None
-    assert filtered_candidates
-    # print(':v', filtered_candidates)
-    return filtered_candidates[0]
+    # assert filtered_candidates == [] and candidates == [...]
+    return candidates[0]
 
 
 def get_name_and_version_from_filename(filename: str) -> t.Tuple[str, str]:
