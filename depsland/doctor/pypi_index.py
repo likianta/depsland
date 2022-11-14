@@ -19,17 +19,12 @@ def rebuild_index(perform_pip_install: bool = False):
     name_id_2_paths: T.NameId2Paths = {}
     updates: T.Updates = {}
     
-    table = Table()
-    table_index = 0
-    table.add_column('index')
-    table.add_column('filename')
-    table.add_column('name', style='green')
-    table.add_column('version', style='cyan')
+    table = MyTable()
     
-    def update_name_2_versions():
+    def update_name_2_versions() -> None:
         name_2_versions[ver.name].append(ver.version)
     
-    def update_name_id_2_paths():
+    def update_name_id_2_paths() -> None:
         name_id = f'{ver.name}-{ver.version}'
         downloaded_path = f.path
         installed_path = '{}/{}/{}'.format(
@@ -48,7 +43,7 @@ def rebuild_index(perform_pip_install: bool = False):
                 ('--find-links', paths.pypi.downloads),
             )
     
-    def update_updates():
+    def update_updates() -> None:
         name = ver.name
         utime = get_updated_time(f.path)
         if name not in updates:
@@ -56,10 +51,8 @@ def rebuild_index(perform_pip_install: bool = False):
         elif utime > updates[name]:
             updates[name] = utime
     
-    def update_table():
-        nonlocal table_index
-        table_index += 1
-        table.add_row(str(table_index), f.name, ver.name, ver.version)
+    def update_table() -> None:
+        table.update(f.name, ver.name, ver.version)
     
     # -------------------------------------------------------------------------
     
@@ -83,6 +76,28 @@ def rebuild_index(perform_pip_install: bool = False):
     dumps(name_id_2_paths, paths.pypi.name_id_2_paths)
     dumps(updates, paths.pypi.updates)
     
-    print(':f2')
-    con_print(table)
+    table.render()
     print(':t')
+
+
+def rebuild_dependencies():
+    pass
+
+
+class MyTable:
+    
+    def __init__(self):
+        self.table = Table()
+        self.table.add_column('index')
+        self.table.add_column('filename')
+        self.table.add_column('name', style='green')
+        self.table.add_column('version', style='cyan')
+        self._table_index = 0
+    
+    def update(self, filename: str, pakgname: str, version: str) -> None:
+        self._table_index += 1
+        self.table.add_row(str(self._table_index), filename, pakgname, version)
+    
+    def render(self) -> None:
+        print(':f2')
+        con_print(self.table)
