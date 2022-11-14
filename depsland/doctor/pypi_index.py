@@ -40,7 +40,7 @@ def rebuild_index(perform_pip_install: bool = False):
             fs.relpath(installed_path, paths.pypi.root),
         )
         if not os.path.exists(installed_path) and perform_pip_install:
-            fs.make_dir(installed_path)
+            fs.make_dirs(installed_path)
             pip.run(
                 'install', downloaded_path,
                 '--no-deps', '--no-index',
