@@ -171,8 +171,8 @@ def _install_files(
     
     for action, relpath, (info0, info1) in diff['assets']:
         if action == 'ignore':
-            path0 = f'{root0}/{relpath}'
-            path1 = f'{root1}/{relpath}'
+            path0 = fs.normpath(f'{root0}/{relpath}')
+            path1 = fs.normpath(f'{root1}/{relpath}')
             if os.path.exists(path0):
                 copy_from_old(path0, path1, info1.type)
                 continue
@@ -187,7 +187,7 @@ def _install_files(
                 temp_dir, info1.uid,
                 'zip' if info1.type == 'dir' else 'fzip'
             ))
-            path_o = f'{root1}/{relpath}'  # a file or a directory
+            path_o = fs.normpath(f'{root1}/{relpath}')  # a file or a directory
             download_from_oss(path_i, path_m, path_o)
 
 

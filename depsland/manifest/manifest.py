@@ -265,10 +265,10 @@ def _check_manifest(manifest: T.Manifest1) -> None:
             'https://findicons.com/convert) to get one.'
         )
         
-        icon_relpath = fs.relpath(icon, manifest['start_directory'])
-        assert icon_relpath.startswith(
-            tuple(manifest['assets'].keys())
-        ), 'the launcher icon should be existed in your assets.'
+        # icon_relpath = fs.relpath(icon, manifest['start_directory'])
+        # assert icon_relpath.startswith(
+        #     tuple(manifest['assets'].keys())
+        # ), 'the launcher icon should be existed in your assets.'
         
         # TODO: check icon size and give suggestions (the icon is suggested
         #  128x128 or above.)

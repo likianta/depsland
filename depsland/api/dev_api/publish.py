@@ -118,7 +118,7 @@ def _upload(
         )
         
         if info1 is not None:  # i.e. action != 'delete'
-            source_path = f'{root_new}/{relpath}'
+            source_path = fs.normpath(f'{root_new}/{relpath}')
             temp_path = _copy_assets(source_path, temp_dir, info1.scheme)
             zipped_file = _compress(temp_path, temp_path + (
                 '.zip' if info1.type == 'dir' else '.fzip'
