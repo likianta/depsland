@@ -2,11 +2,12 @@ import typing as t
 
 from argsense import CommandLineInterface
 
-from . import api
-from . import paths
 from . import __path__
 from . import __version__
+from . import api
+from . import paths
 from .manifest import T
+from .manifest import get_last_installed_version
 
 cli = CommandLineInterface('depsland')
 print('depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
@@ -142,10 +143,11 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
         upgrade (-u):
         reinstall (-r):
     """
+    from .manifest import init_manifest
+    
     m0, m1 = _get_manifests(appid)
     
     if m0 is None:
-        from .manifest import init_manifest
         m0 = init_manifest(m1['appid'], m1['name'])
         api.install2(m1, m0)
     elif _check_version(m1, m0):
@@ -163,7 +165,8 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
         if reinstall:
             # assert m0['version'] == m1['version']
             api.uninstall(appid, m0['version'])
-            api.install(appid)
+            m0 = init_manifest(m1['appid'], m1['name'])
+            api.install2(m1, m0)
         else:
             print('current version is up to date. you can use `depsland '
                   'install -r {appid}` or `depsland reinstall {appid} to force '
@@ -181,6 +184,7 @@ def install_dist(manifest: str) -> None:
     TODO: is it better to rename this function to 'setup'?
     """
     from os.path import exists
+    from .manifest import change_start_directory
     from .manifest import init_manifest
     from .manifest import init_target_tree
     from .manifest import load_manifest
@@ -195,7 +199,7 @@ def install_dist(manifest: str) -> None:
     init_target_tree(m1, d := '{}/{}/{}'.format(
         paths.project.apps, m1['appid'], m1['version']
     ))
-    m1['start_directory'] = d
+    change_start_directory(m1, d)
     
     appid, name = m1['appid'], m1['name']
     if x := _get_dir_to_last_installed_version(appid):
@@ -211,7 +215,7 @@ def install_dist(manifest: str) -> None:
     else:
         m0 = init_manifest(appid, name)
         api.install2(m1, m0, custom_oss_root)
-        
+    
     print(':rt', '[green]installation done.[/]')
 
 
@@ -251,7 +255,7 @@ def uninstall(appid: str, version: str = None) -> None:
     uninstall an application.
     """
     if version is None:
-        version = _get_last_installed_version(appid)
+        version = get_last_installed_version(appid)
     if version is None:
         print(f'{appid} is already uninstalled.')
         return
@@ -275,7 +279,7 @@ def show(appid: str, version: str = None) -> None:
     """
     from .manifest import load_manifest
     if version is None:
-        version = _get_last_installed_version(appid)
+        version = get_last_installed_version(appid)
     assert version is not None
     dir_ = '{}/{}/{}'.format(paths.project.apps, appid, version)
     manifest = load_manifest(f'{dir_}/manifest.pkl')
@@ -298,7 +302,7 @@ def run(appid: str) -> None:
     file = '{apps}/{appid}/{version}/{appid}.exe'.format(
         apps=paths.project.apps,
         appid=appid,
-        version=_get_last_installed_version(appid),
+        version=get_last_installed_version(appid),
     )
     # run a .exe file
     os.system(file)
@@ -339,22 +343,10 @@ def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     from os.path import exists
-    last_ver = _get_last_installed_version(appid)
-    if last_ver:
+    if last_ver := get_last_installed_version(appid):
         dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
-        assert exists(dir_)
+        assert exists(dir_), dir_
         return dir_
-    return None
-
-
-def _get_last_installed_version(appid: str) -> t.Optional[str]:
-    from lk_utils import loads
-    from os.path import exists
-    history_file = paths.apps.get_history_versions(appid)
-    if exists(history_file):
-        last_ver = loads(history_file)[0]
-        return last_ver
-    print('no version installed yet.')
     return None
 
 

@@ -115,14 +115,26 @@ class Apps:
         self.root = f'{project.root}/apps'
         self.bin = f'{self.root}/.bin'
         self.venv = f'{self.root}/.venv'
-        self._history_versions = f'{self.root}/{{appid}}/.history_versions.json'
+        self._installed_history = f'{self.root}/{{appid}}/.installed_history'
         self._packages = f'{self.root}/.venv/{{appid}}'
+        self._released_history = f'{self.root}/{{appid}}/.released_history'
+        ''' the difference between `installed_history` and `released_history`:
+            when developer build or publish a new version of an app, the
+            released_history will be updated, the installed_history won't.
+            when user install a new version of an app, the vice versa.
+            this avoids that if a developer as also an user, published and
+            installed the same app on the same machine, the incremental-update
+            scheme reported "target version exists" error.
+        '''
     
-    def get_history_versions(self, appid: str) -> str:
-        return self._history_versions.format(appid=appid)
+    def get_installed_history(self, appid: str) -> str:
+        return self._installed_history.format(appid=appid)
     
     def get_packages(self, appid: str) -> str:
         return self._packages.format(appid=appid)
+    
+    def get_released_history(self, appid: str) -> str:
+        return self._released_history.format(appid=appid)
     
     def make_packages(self, appid: str, clear_exists=False) -> str:
         packages = self._packages.format(appid=appid)

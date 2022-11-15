@@ -12,6 +12,7 @@ from ...manifest import T as T0
 from ...manifest import change_start_directory
 from ...manifest import compare_manifests
 from ...manifest import dump_manifest
+from ...manifest import get_last_installed_version
 from ...manifest import init_manifest
 from ...manifest import init_target_tree
 from ...manifest import load_manifest
@@ -306,9 +307,9 @@ def _create_launcher(manifest: T.Manifest) -> None:
 
 
 def _save_history(appid: str, version: str) -> None:
-    file = paths.apps.get_history_versions(appid)
+    file = paths.apps.get_installed_history(appid)
     if os.path.exists(file):
-        data: list = loads(file)
+        data: list = loads(file).splitlines()
     else:
         data = []
     data.insert(0, version)
@@ -340,10 +341,8 @@ def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
 
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[T.Path]:
-    dir_ = '{}/{}'.format(paths.project.apps, appid)
-    history_file = paths.apps.get_history_versions(appid)
-    if os.path.exists(history_file):
-        last_ver = loads(history_file)[0]
+    if last_ver := get_last_installed_version(appid):
+        dir_ = '{}/{}'.format(paths.project.apps, appid)
         out = f'{dir_}/{last_ver}'
         assert os.path.exists(out)
         return out

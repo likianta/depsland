@@ -2,7 +2,6 @@ import os
 import typing as t
 from os.path import exists
 
-from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 
@@ -43,12 +42,30 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
     dump_manifest(data_i, f'{d}/manifest.json')
     
     # update history
-    history_file = paths.apps.get_history_versions(data_o['appid'])
+    history_file = paths.apps.get_released_history(data_o['appid'])
     if exists(history_file):
-        data_o['history'] = loads(history_file)
+        data_o['history'] = loads(history_file, ftype='plain').splitlines()
     else:
         print('no history found, it would be the first release',
               data_o['name'], data_o['version'], ':v2')
-        dumps([], history_file)
+        # dumps('', history_file, ftype='plain')
     
     return data_o
+
+
+def get_last_installed_version(appid: str) -> t.Optional[str]:
+    file = paths.apps.get_installed_history(appid)
+    if not exists(file): return None
+    return _quick_read_line(file)
+
+
+def get_last_released_version(appid: str) -> t.Optional[str]:
+    file = paths.apps.get_released_history(appid)
+    if not exists(file): return None
+    return _quick_read_line(file)
+
+
+def _quick_read_line(text_file: str) -> str:
+    with open(text_file) as f:
+        for line in f:  # just read the first line
+            return line.strip()

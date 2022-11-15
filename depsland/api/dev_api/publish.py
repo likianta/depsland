@@ -68,7 +68,9 @@ def main(manifest_file: str, full_upload=False) -> None:
         bat_2_exe(bat_file, icon=paths.build.launcher_ico, remove_bat=True)
     
     appinfo['history'].insert(0, appinfo['version'])
-    dumps(appinfo['history'], paths.apps.get_history_versions(appinfo['appid']))
+    dumps(appinfo['history'],
+          paths.apps.get_released_history(appinfo['appid']),
+          ftype='plain')
     
     dump_manifest(manifest, f'{dist_dir}/manifest.pkl')
     #   note: this is dumped to `dist_dir`, it is different from another usage
