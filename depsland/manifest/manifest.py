@@ -1,6 +1,8 @@
 import os
 import typing as t
 from collections import namedtuple
+from textwrap import dedent
+from time import sleep
 
 from lk_utils import dumps
 from lk_utils import fs
@@ -265,10 +267,23 @@ def _check_manifest(manifest: T.Manifest1) -> None:
             'https://findicons.com/convert) to get one.'
         )
         
-        # icon_relpath = fs.relpath(icon, manifest['start_directory'])
-        # assert icon_relpath.startswith(
-        #     tuple(manifest['assets'].keys())
-        # ), 'the launcher icon should be existed in your assets.'
+        icon_relpath = fs.relpath(icon, manifest['start_directory'])
+        try:
+            assert icon_relpath.startswith(
+                tuple(manifest['assets'].keys())
+            )
+        except AssertionError:
+            if '' in manifest['assets']:
+                pass
+            else:
+                print(dedent('''
+                    the launcher icon is not added to your assets list.
+                    you may stop current progress right now, and re-check your
+                    manifest file.
+                    (if you confirm that the icon is added, it may be a bug
+                    from depsland.)
+                '''), ':v3')
+                sleep(1)
         
         # TODO: check icon size and give suggestions (the icon is suggested
         #  128x128 or above.)
@@ -309,6 +324,10 @@ def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
         else:
             abspath = fs.normpath(f'{manifest_dir}/{path}')
             relpath = fs.normpath(path)
+        # minor fix relpath
+        if relpath == '.':
+            # `fs.relpath` may return '.', we need to convert it to ''.
+            relpath = ''
         out[relpath] = AssetInfo(
             type=(ftype := 'file' if os.path.isfile(abspath) else 'dir'),
             scheme=scheme,

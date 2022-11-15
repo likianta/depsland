@@ -10,8 +10,8 @@ def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> str:
     if os.path.exists(file_o):
         _overwrite(file_o, overwrite)
     
-    if dir_i.endswith('/.'):
-        dir_i = dir_i[:-2]
+    # if dir_i.endswith('/.'):
+    #     dir_i = dir_i[:-2]
     dir_i_parent = os.path.dirname(dir_i)
     with ZipFile(file_o, 'w') as z:
         z.write(dir_i, arcname=os.path.basename(dir_i))
@@ -48,8 +48,8 @@ def decompress_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
         return file_o
     else:
         dir_o = path_o
-        if dir_o.endswith('/.'):
-            dir_o = dir_o[:-2]
+        # if dir_o.endswith('/.'):
+        #     dir_o = dir_o[:-2]
     
     dirname_o = os.path.basename(os.path.abspath(dir_o))
     with ZipFile(file_i, 'r') as z:
