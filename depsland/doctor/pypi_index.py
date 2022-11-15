@@ -179,6 +179,8 @@ def _analyse_metadata_1(
             flag = 0
             head = 'Requires-Dist: '
             for line in f:
+                if not line:
+                    break
                 if flag == 0:
                     if line.startswith(head):
                         flag = 1
