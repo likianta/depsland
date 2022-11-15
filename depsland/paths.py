@@ -2,6 +2,7 @@
 ref: ~/docs/project-structure.md
 """
 import os
+import sys
 from collections import defaultdict
 from os.path import exists
 
@@ -195,7 +196,10 @@ class PyPI:
 class Python:
     
     def __init__(self):
-        self.root = f'{project.root}/python'
+        if project.is_project_mode:
+            self.root = f'{project.root}/python'
+        else:
+            self.root = sys.base_exec_prefix
         if system.is_windows:
             self.pip = f'{self.root}/Scripts/pip.exe'
             self.python = f'{self.root}/python.exe'
