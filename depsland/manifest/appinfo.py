@@ -42,7 +42,7 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
     dump_manifest(data_i, f'{d}/manifest.json')
     
     # update history
-    history_file = paths.apps.get_released_history(data_o['appid'])
+    history_file = paths.apps.get_distribution_history(data_o['appid'])
     if exists(history_file):
         data_o['history'] = loads(history_file, ftype='plain').splitlines()
     else:
@@ -54,13 +54,13 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
 
 
 def get_last_installed_version(appid: str) -> t.Optional[str]:
-    file = paths.apps.get_installed_history(appid)
+    file = paths.apps.get_installation_history(appid)
     if not exists(file): return None
     return _quick_read_line(file)
 
 
 def get_last_released_version(appid: str) -> t.Optional[str]:
-    file = paths.apps.get_released_history(appid)
+    file = paths.apps.get_distribution_history(appid)
     if not exists(file): return None
     return _quick_read_line(file)
 

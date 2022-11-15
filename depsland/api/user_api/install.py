@@ -307,7 +307,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
 
 
 def _save_history(appid: str, version: str) -> None:
-    file = paths.apps.get_installed_history(appid)
+    file = paths.apps.get_installation_history(appid)
     if os.path.exists(file):
         data: list = loads(file).splitlines()
     else:

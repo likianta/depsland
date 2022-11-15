@@ -69,7 +69,7 @@ def main(manifest_file: str, full_upload=False) -> None:
     
     appinfo['history'].insert(0, appinfo['version'])
     dumps(appinfo['history'],
-          paths.apps.get_released_history(appinfo['appid']),
+          paths.apps.get_distribution_history(appinfo['appid']),
           ftype='plain')
     
     dump_manifest(manifest, f'{dist_dir}/manifest.pkl')

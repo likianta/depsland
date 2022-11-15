@@ -115,26 +115,27 @@ class Apps:
         self.root = f'{project.root}/apps'
         self.bin = f'{self.root}/.bin'
         self.venv = f'{self.root}/.venv'
-        self._installed_history = f'{self.root}/{{appid}}/.installed_history'
+        self._distribution_history = f'{self.root}/{{appid}}/.dist_history'
+        self._installation_history = f'{self.root}/{{appid}}/.inst_history'
         self._packages = f'{self.root}/.venv/{{appid}}'
-        self._released_history = f'{self.root}/{{appid}}/.released_history'
-        ''' the difference between `installed_history` and `released_history`:
-            when developer build or publish a new version of an app, the
-            released_history will be updated, the installed_history won't.
-            when user install a new version of an app, the vice versa.
+        ''' the difference between `_distribution_history` and
+            `_installation_history`:
+            when developer builds or publishes a new version of an app, the
+            dist history will be updated, the inst won't.
+            when user installs a new version of an app, the vice versa.
             this avoids that if a developer as also an user, published and
             installed the same app on the same machine, the incremental-update
             scheme reported "target version exists" error.
         '''
     
-    def get_installed_history(self, appid: str) -> str:
-        return self._installed_history.format(appid=appid)
+    def get_distribution_history(self, appid: str) -> str:
+        return self._distribution_history.format(appid=appid)
+    
+    def get_installation_history(self, appid: str) -> str:
+        return self._installation_history.format(appid=appid)
     
     def get_packages(self, appid: str) -> str:
         return self._packages.format(appid=appid)
-    
-    def get_released_history(self, appid: str) -> str:
-        return self._released_history.format(appid=appid)
     
     def make_packages(self, appid: str, clear_exists=False) -> str:
         packages = self._packages.format(appid=appid)
