@@ -237,37 +237,15 @@ def _create_launcher(manifest: T.Manifest) -> None:
     appname = manifest['name']
     version = manifest['version']
     
-    script: str = manifest['launcher']['script']
-    a, b = (script + ' ').split(' ', 1)
-    if a.endswith('.py'):
-        script = '{py} {script} {args}'.format(
-            py=r'%DEPSLAND%\python\python.exe',
-            script=fs.normpath('{app_dir}/{relpath}'.format(
-                app_dir=f'%DEPSLAND%/apps/{appid}/{version}',
-                relpath=a
-            )),
-            args=b
-        ).strip()
-    else:
-        script = '{py} -m {module} {args}'.format(
-            py=r'%DEPSLAND%\python\python.exe',
-            module=a,
-            args=b
-        ).strip()
-    
     # bat command
-    command = dedent('''
+    command = dedent(r'''
         @echo off
-        set PYTHONPATH={app_dir};{pkg_dir}
-        {cmd} %*
+        set PYTHONPATH=%DEPSLAND%
+        {py} -m depsland run {appid} {version}
     ''').strip().format(
-        app_dir=r'{}\{}\{}'.format(
-            r'%DEPSLAND%\apps', appid, version
-        ),
-        pkg_dir=r'{}\.venv\{}'.format(
-            r'%DEPSLAND%\apps', appid
-        ),
-        cmd=script,
+        py=r'%DEPSLAND%\python\python.exe',
+        appid=appid,
+        version=version,
     )
     
     # bat to exe

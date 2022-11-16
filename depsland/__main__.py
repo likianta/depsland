@@ -294,11 +294,13 @@ def view_manifest(manifest: str = '.') -> None:
 
 
 @cli.cmd()
-def run(appid: str) -> None:
+def run(appid: str, version: str = None) -> None:
     """
     a general launcher to start an installed app.
     """
-    if not (ver := get_last_installed_version(appid)):
+    if not version:
+        version = get_last_installed_version(appid)
+    if not version:
         print(':v4', f'cannot find installed version of {appid}')
         return
     
@@ -309,9 +311,9 @@ def run(appid: str) -> None:
     from .manifest import parse_script_info
     
     manifest = load_manifest('{}/{}/{}/manifest.pkl'.format(
-        paths.project.apps, appid, ver
+        paths.project.apps, appid, version
     ))
-    assert manifest['version'] == ver
+    assert manifest['version'] == version
     command = parse_script_info(manifest)
     os.environ['DEPSLAND'] = paths.project.root
     os.environ['PYTHONPATH'] = '.;{app_dir};{pkg_dir}'.format(
