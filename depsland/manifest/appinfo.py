@@ -77,20 +77,18 @@ def parse_script_info(manifest: T.Manifest) -> t.Tuple[str, ...]:
     script, args = (script + ' ').split(' ', 1)
     # normalize `script`
     if script.endswith('.py'):
-        script = fs.normpath('{app_dir}/{relpath}'.format(
+        script = (fs.normpath('{app_dir}/{relpath}'.format(
             app_dir=f'{paths.project.apps}/{appid}/{version}',
             relpath=script
-        ))
+        )),)
     else:
-        script = '-m {module}'.format(
-            module=script
-        )
+        script = ('-m', script)
     # normalize `args`
     args = shlex.split(args)
     #   https://stackoverflow.com/questions/197233/how-to-parse-a-command-line
     #   -with-regular-expressions
     
-    return py, script, *args
+    return py, *script, *args
 
 
 def _quick_read_line(text_file: str) -> str:
