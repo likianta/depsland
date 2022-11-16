@@ -88,11 +88,15 @@ class Project:
         os.mkdir(f'{root}/pypi/downloads')
         os.mkdir(f'{root}/pypi/index')
         os.mkdir(f'{root}/pypi/installed')
+        # os.mkdir(f'{root}/python')  # later
         # os.mkdir(f'{root}/sidework')  # later
         os.mkdir(f'{root}/temp')
         os.mkdir(f'{root}/temp/.self_upgrade')
         os.mkdir(f'{root}/temp/.unittests')
         os.mkdir(f'{root}/unittests')
+        
+        # make link
+        fs.make_link(sys.base_exec_prefix, f'{root}/python')
         
         # unzip files
         from .utils.ziptool import decompress_file
