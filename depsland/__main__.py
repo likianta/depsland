@@ -298,14 +298,34 @@ def run(appid: str) -> None:
     """
     a general launcher to start an installed app.
     """
+    if not (ver := get_last_installed_version(appid)):
+        print(':v4', f'cannot find installed version of {appid}')
+        return
+    
+    import lk_logger
     import os
-    file = '{apps}/{appid}/{version}/{appid}.exe'.format(
-        apps=paths.project.apps,
-        appid=appid,
-        version=get_last_installed_version(appid),
+    from lk_utils import run_cmd_args
+    from .manifest import load_manifest
+    from .manifest import parse_script_info
+    
+    manifest = load_manifest('{}/{}/{}/manifest.pkl'.format(
+        paths.project.apps, appid, ver
+    ))
+    assert manifest['version'] == ver
+    command = parse_script_info(manifest)
+    os.environ['DEPSLAND'] = paths.project.root
+    os.environ['PYTHONPATH'] = '.;{app_dir};{pkg_dir}'.format(
+        app_dir=manifest['start_directory'],
+        pkg_dir=paths.apps.get_packages(appid)
     )
-    # run a .exe file
-    os.system(file)
+    lk_logger.setup(quiet=True,
+                    show_source=False,
+                    show_funcname=False,
+                    show_varnames=False)
+    run_cmd_args(*command, verbose=True)
+    #   FIXME: `lk_utils.run_cmd_args` will continuously store output messages
+    #       in its internal variants `out` & `err`. this may cause bad memory
+    #       pressure in long-running process.
 
 
 @cli.cmd()

@@ -1,4 +1,5 @@
 import os
+import shlex  # a built-in library that splits command line args
 import typing as t
 from os.path import exists
 
@@ -63,6 +64,33 @@ def get_last_released_version(appid: str) -> t.Optional[str]:
     file = paths.apps.get_distribution_history(appid)
     if not exists(file): return None
     return _quick_read_line(file)
+
+
+def parse_script_info(manifest: T.Manifest) -> t.Tuple[str, ...]:
+    appid = manifest['appid']
+    version = manifest['version']
+    script = manifest['launcher']['script']
+    #   either script is a '.py' file, or a (relpath) directory containing
+    #   '__main__.py'.
+    
+    py = paths.python.python  # interpreter path
+    script, args = (script + ' ').split(' ', 1)
+    # normalize `script`
+    if script.endswith('.py'):
+        script = fs.normpath('{app_dir}/{relpath}'.format(
+            app_dir=f'{paths.project.apps}/{appid}/{version}',
+            relpath=script
+        ))
+    else:
+        script = '-m {module}'.format(
+            module=script
+        )
+    # normalize `args`
+    args = shlex.split(args)
+    #   https://stackoverflow.com/questions/197233/how-to-parse-a-command-line
+    #   -with-regular-expressions
+    
+    return py, script, *args
 
 
 def _quick_read_line(text_file: str) -> str:
