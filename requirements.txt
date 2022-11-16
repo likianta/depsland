@@ -1,5 +1,4 @@
 # run command: py build/install_requirements.py -h
-# note: the commmented lines are for special purpose (i.e. they are not meaningless).
 
 # pip
 # setuptools

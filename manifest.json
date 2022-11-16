@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland",
-    "version": "0.3.0",
+    "version": "0.3.3",
     "assets": {
         "build": "all",
         "conf": "root",

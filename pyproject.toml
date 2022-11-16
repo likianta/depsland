@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.3.3"
+version = "0.3.4a0"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -22,6 +22,9 @@ oss2 = "*"
 pyyaml = "*"
 rich = "*"
 semver = "3.0.0dev3"
+
+gen-exe = { version = "*", markers = "platform_system == 'Windows'" }
+pywin32 = { version = "*", markers = "platform_system == 'Windows'" }
 
 [tool.poetry.extras]
 
