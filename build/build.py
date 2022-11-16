@@ -1,3 +1,7 @@
+"""
+py build/build.py full-build aliyun
+py build/build.py full-build local
+"""
 if 1:
     import sys
     from lk_utils import xpath
@@ -60,6 +64,8 @@ def full_build(oss_scheme: str, add_python_path=True):
                  f'{root_o}/build/exe/depsland.exe')
     fs.copy_file(f'{root_i}/build/exe/desktop.exe',
                  f'{root_o}/build/exe/desktop.exe')
+    fs.copy_file(f'{root_i}/build/exe/launcher.ico',
+                 f'{root_o}/build/exe/launcher.ico')
     fs.copy_file(f'{root_i}/build/exe/setup.exe',
                  f'{root_o}/setup.exe')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
