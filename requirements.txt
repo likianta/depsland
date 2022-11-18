@@ -14,5 +14,4 @@ rich
 semver >= 3.0.0dev3
 # textual
 
-# gen-exe  # windows only
 # pywin32  # windows only

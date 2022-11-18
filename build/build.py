@@ -170,7 +170,7 @@ def bat_2_exe(file_i: str):
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
     """
-    _b2e(file_i, icon=xpath('exe/launcher.ico'))
+    _b2e(file_i, icon=xpath('exe/launcher.ico'), uac_admin=True)
 
 
 @cli.cmd()
