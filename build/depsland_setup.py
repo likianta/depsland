@@ -167,17 +167,17 @@ def _incremental_setup(dir_i: str, dir_o: str,
 
 def _wind_up(dir_: str) -> None:
     print('create executables')
-    
-    # to desktop
-    file_i = f'{dir_}/build/exe/desktop.exe'
-    file_o = fs.normpath('{}/Desktop/Depsland.lnk'
-                         .format(os.environ['USERPROFILE']))
-    _create_desktop_shortcut(file_i, file_o)
-    
+
     # to %DEPSLAND% root
     file_i = f'{dir_}/build/exe/depsland.exe'
     file_o = f'{dir_}/depsland.exe'
     fs.move(file_i, file_o, True)
+
+    # to desktop
+    file_i = f'{dir_}/desktop.exe'
+    file_o = fs.normpath('{}/Desktop/Depsland.lnk'
+                         .format(os.environ['USERPROFILE']))
+    _create_desktop_shortcut(file_i, file_o)
     
     # -------------------------------------------------------------------------
     # add `DEPSLAND` to environment variables
