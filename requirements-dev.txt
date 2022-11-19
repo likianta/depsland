@@ -1,7 +1,0 @@
-faker
-flet
-# lk-qtquick-scaffold
-pip-autoremove
-pyportable-installer >= 4.4.3
-pyside6
-qtpy

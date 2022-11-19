@@ -23,6 +23,7 @@ from ...oss import get_oss_client
 from ...pypi import pypi
 from ...utils import bat_2_exe
 from ...utils import compare_version
+from ...utils import create_shortcut
 from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...utils.verspec import semver_parse
@@ -265,15 +266,12 @@ def _create_launcher(manifest: T.Manifest) -> None:
             paths.apps.bin, appid,
         ))
     if manifest['launcher']['desktop']:
-        _create_desktop_shortcut(
+        create_shortcut(
             file_i=exe_file,
             file_o='{}/{}.lnk'.format(
                 paths.system.desktop, appname
             )
         )
-        # # fs.copy_file(exe_file, '{}/{}.exe'.format(
-        # #     paths.system.desktop, appname
-        # # ))
     if manifest['launcher']['start_menu']:
         # WARNING: not tested
         fs.copy_file(exe_file, '{}/{}.exe'.format(
@@ -299,21 +297,6 @@ def _save_manifest(manifest: T.Manifest) -> None:
 
 
 # -----------------------------------------------------------------------------
-
-def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
-    """
-    https://www.blog.pythonlibrary.org/2010/01/23/using-python-to-create
-    -shortcuts/
-    """
-    import win32com.client  # noqa
-    # assert file_i.endswith('.exe') and file_o.endswith('.lnk')
-    shell = win32com.client.Dispatch("WScript.Shell")
-    shortcut = shell.CreateShortCut(file_o)
-    shortcut.Targetpath = file_i
-    shortcut.WorkingDirectory = os.path.dirname(file_i)
-    shortcut.IconLocation = file_i
-    shortcut.save()
-
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[T.Path]:
     if last_ver := get_last_installed_version(appid):

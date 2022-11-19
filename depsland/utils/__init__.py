@@ -2,6 +2,7 @@ from . import gen_exe
 from . import verspec
 from . import ziptool
 from .gen_exe import bat_2_exe
+from .gen_exe import create_shortcut
 from .chore import make_temp_dir
 from .chore import get_content_hash
 from .chore import get_file_hash

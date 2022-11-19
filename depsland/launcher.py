@@ -57,14 +57,12 @@ def _show_error(
             root.withdraw()
             messagebox.showerror(title=title, message=msg)
         else:
-            if sys.platform == 'win32':
+            if os.name == 'nt':
                 subprocess.call(['msg', '*', title + ': ' + msg])
-            elif sys.platform == 'darwin':
+            else:
                 subprocess.call([
                     'osascript',
                     '-e',
                     'Tell application "System Events" to display dialog "{{}}" '
                     'with title "{{}}"'.format(msg, title)
                 ])
-            else:
-                raise NotImplementedError

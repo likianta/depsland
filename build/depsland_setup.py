@@ -3,15 +3,16 @@ dependencies:
     - argsense
     - lk-logger
     - lk-utils
-    - pywin32
 """
 import os
 import typing as t
 from os.path import exists
+from textwrap import dedent
 
 import lk_logger
 from argsense import cli
 from lk_logger.console import console
+from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
@@ -22,7 +23,6 @@ if os.name != 'nt':
     input('press ENTER to exit... ')
     exit(0)
 else:
-    import win32com.client
     import winreg
 
 
@@ -167,12 +167,12 @@ def _incremental_setup(dir_i: str, dir_o: str,
 
 def _wind_up(dir_: str) -> None:
     print('create executables')
-
+    
     # to %DEPSLAND% root
     file_i = f'{dir_}/build/exe/depsland.exe'
     file_o = f'{dir_}/depsland.exe'
     fs.move(file_i, file_o, True)
-
+    
     # to desktop
     file_i = f'{dir_}/desktop.exe'
     file_o = fs.normpath('{}/Desktop/Depsland.lnk'
@@ -243,16 +243,22 @@ def _wind_up(dir_: str) -> None:
 
 def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
     """
-    this function is copied from `depsland.api.user_api.install
-    ._create_desktop_shortcut`
+    this function was copied from `depsland.utils.gen_exe.main.create_shortcut`.
     """
-    # assert file_i.endswith('.exe') and file_o.endswith('.lnk')
-    shell = win32com.client.Dispatch("WScript.Shell")
-    shortcut = shell.CreateShortCut(file_o)
-    shortcut.Targetpath = file_i
-    shortcut.WorkingDirectory = os.path.dirname(file_i)
-    shortcut.IconLocation = file_i
-    shortcut.save()
+    vbs = fs.xpath('shortcut_gen.vbs')
+    command = dedent('''
+            Set objWS = WScript.CreateObject("WScript.Shell")
+            lnkFile = "{file_o}"
+            Set objLink = objWS.CreateShortcut(lnkFile)
+            objLink.TargetPath = "{file_i}"
+            objLink.Save
+        ''').format(
+        file_i=file_i.replace('/', '\\'),
+        file_o=file_o.replace('/', '\\'),
+    )
+    dumps(command, vbs, ftype='plain')
+    run_cmd_args('cscript', '/nologo', vbs)
+    fs.remove_file(vbs)
 
 
 if __name__ == '__main__':

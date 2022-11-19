@@ -13,5 +13,3 @@ pyyaml
 rich
 semver >= 3.0.0dev3
 # textual
-
-# pywin32  # windows only

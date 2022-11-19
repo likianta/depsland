@@ -23,9 +23,6 @@ pyyaml = "*"
 rich = "*"
 semver = "3.0.0dev3"
 
-gen-exe = { version = "*", markers = "platform_system == 'Windows'" }
-pywin32 = { version = "*", markers = "platform_system == 'Windows'" }
-
 [tool.poetry.extras]
 
 [tool.poetry.scripts]
