@@ -244,7 +244,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
         set PYTHONPATH=%DEPSLAND%
         {py} -m depsland run {appid} {version}
     ''').strip().format(
-        py=r'%DEPSLAND%\python\python.exe',
+        py=r'"%DEPSLAND%\python\python.exe"',
         appid=appid,
         version=version,
     )

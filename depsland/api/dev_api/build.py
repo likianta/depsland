@@ -50,6 +50,6 @@ def _create_bat(manifest: T.Manifest, file: str) -> None:
         pkg_dir=r'{}\.venv\{}'.format(
             r'%DEPSLAND%\apps', manifest['appid']
         ),
-        py=r'%DEPSLAND%\python\python.exe',
+        py=r'"%DEPSLAND%\python\python.exe"',
     )
     dumps(command, file)
