@@ -294,7 +294,7 @@ def view_manifest(manifest: str = '.') -> None:
 
 
 @cli.cmd()
-def run(appid: str, version: str = None) -> None:
+def run(appid: str, version: str = None, *args, **kwargs) -> None:
     """
     a general launcher to start an installed app.
     """
@@ -307,6 +307,7 @@ def run(appid: str, version: str = None) -> None:
     import lk_logger
     import os
     import subprocess
+    from argsense import args_2_cargs
     from .manifest import load_manifest
     from .manifest import parse_script_info
     
@@ -320,8 +321,13 @@ def run(appid: str, version: str = None) -> None:
         app_dir=manifest['start_directory'],
         pkg_dir=paths.apps.get_packages(appid)
     )
+    
+    print(':v', args, kwargs)
     lk_logger.unload()
-    subprocess.run(command, cwd=manifest['start_directory'])
+    subprocess.run(
+        (*command, *args_2_cargs(*args, **kwargs)),
+        cwd=manifest['start_directory']
+    )
 
 
 @cli.cmd()
@@ -400,7 +406,7 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     return manifest_old, manifest_new
 
 
-def _run():
+def _run_cli():
     """ this function is for poetry to generate script entry point. """
     cli.run()
 
