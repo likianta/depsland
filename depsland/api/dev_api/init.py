@@ -42,7 +42,8 @@ def init(
     
     manifest: T.Manifest = init_manifest(appid, appname)
     manifest.pop('start_directory')  # noqa
-    manifest.update({'version': '0.1.0'})
+    manifest['version'] = '0.1.0'
+    manifest['pypi'] = []
     
     if auto_find_requirements:
         if exists(x := f'{dirpath}/requirements.txt'):
