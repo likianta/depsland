@@ -165,12 +165,12 @@ def min_build(add_python_packages=False):  # DELETE
 # -----------------------------------------------------------------------------
 
 @cli.cmd()
-def bat_2_exe(file_i: str):
+def bat_2_exe(file_i: str, uac_admin=True):
     """
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
     """
-    _b2e(file_i, icon=xpath('exe/launcher.ico'), uac_admin=True)
+    _b2e(file_i, icon=xpath('exe/launcher.ico'), uac_admin=uac_admin)
 
 
 @cli.cmd()

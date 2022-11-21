@@ -298,6 +298,9 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     """
     a general launcher to start an installed app.
     """
+    import sys
+    print(sys.argv, ':lv')
+    
     version = _version or get_last_installed_version(appid)
     if not version:
         print(':v4', f'cannot find installed version of {appid}')
