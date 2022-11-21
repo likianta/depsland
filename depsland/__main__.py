@@ -294,12 +294,11 @@ def view_manifest(manifest: str = '.') -> None:
 
 
 @cli.cmd(transport_help=True)
-def run(appid: str, version: str = None, *args, **kwargs) -> None:
+def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     """
     a general launcher to start an installed app.
     """
-    if not version:
-        version = get_last_installed_version(appid)
+    version = _version or get_last_installed_version(appid)
     if not version:
         print(':v4', f'cannot find installed version of {appid}')
         return
