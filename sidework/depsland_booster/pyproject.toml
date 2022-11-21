@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "depsland-booster"
+version = "0.1.0b0"
+description = ""
+license = "MIT"
+authors = ["Likianta <likianta@foxmail.com>"]
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
+default = true
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.extras]
+
+[tool.poetry.scripts]
+depsland-booster = 'depsland_booster:boost'
+
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
