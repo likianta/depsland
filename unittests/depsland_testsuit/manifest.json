@@ -1,0 +1,22 @@
+{
+    "appid": "depsland_testsuit",
+    "name": "Depsland Testsuit",
+    "version": "0.1.0",
+    "assets": {
+        "main.py": ""
+    },
+    "dependencies": {
+        "argsense": ">=0.5.2b2"
+    },
+    "pypi": [
+        "../../tests/argsense-0.5.2b2-py3-none-any.whl"
+    ],
+    "launcher": {
+        "script": "main.py",
+        "icon": "",
+        "cli_tool": true,
+        "desktop": false,
+        "start_menu": false,
+        "show_console": true
+    }
+}

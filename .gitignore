@@ -26,6 +26,7 @@
 /unittests/depsland_run_test/dist/
 
 __pycache__/
+dist/
 .DS_Store
 
 !/apps/*/.gitkeep

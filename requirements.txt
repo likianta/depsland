@@ -4,7 +4,7 @@
 # setuptools
 # wheel
 
-argsense >= 0.5.2b2
+argsense >= 0.5.2
 lk-logger >= 5.4.6
 lk-utils >= 2.5.0
 # neoprint >= 0.1.0b0
