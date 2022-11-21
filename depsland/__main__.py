@@ -293,7 +293,7 @@ def view_manifest(manifest: str = '.') -> None:
     print(manifest, ':l')
 
 
-@cli.cmd()
+@cli.cmd(transport_help=True)
 def run(appid: str, version: str = None, *args, **kwargs) -> None:
     """
     a general launcher to start an installed app.
