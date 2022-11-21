@@ -165,7 +165,7 @@ def min_build(add_python_packages=False):  # DELETE
 # -----------------------------------------------------------------------------
 
 @cli.cmd()
-def bat_2_exe(file_i: str, uac_admin=True):
+def bat_2_exe(file_i: str, uac_admin=False):
     """
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.

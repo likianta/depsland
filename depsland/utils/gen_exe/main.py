@@ -1,6 +1,7 @@
 import os
 from textwrap import dedent
 
+import depsland_booster
 from lk_utils import dumps
 from lk_utils import loads
 from lk_utils import run_cmd_args
@@ -31,7 +32,7 @@ def bat_2_exe(
         assert icon.endswith('.ico')
         assert os.path.exists(icon)
     
-    _bat_2_exe(file_i, file_o, show_console)
+    _bat_2_exe_2(file_i, file_o, show_console)
     if remove_bat:
         os.remove(file_i)
     
@@ -57,6 +58,7 @@ def elevate_privilege(file_exe: str) -> None:
                  'requireAdministrator')
 
 
+# DELETE: see reason in `sidework/depsland_booster/readme.md`.
 def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     """
     https://github.com/silvandeleemput/gen-exe
@@ -73,6 +75,18 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     output = template.replace(b'X' * 259 + b'1', encoded_command)
     print('add command to exe', command)
     dumps(output, file_exe, ftype='binary')
+
+
+def _bat_2_exe_2(
+        file_bat: str,
+        file_exe: str,
+        show_console: bool = True
+) -> None:
+    file_exe_o, file_bat_o = depsland_booster.distribute(file_bat, file_exe)
+    if not show_console:
+        data_r: str = loads(file_bat_o)
+        data_w: str = data_r.replace('python.exe', 'pythonw.exe')
+        dumps(data_w, file_bat_o)
 
 
 # -----------------------------------------------------------------------------

@@ -14,8 +14,8 @@ default = true
 
 [tool.poetry.dependencies]
 python = "^3.10"
-# wheel = "*"
 argsense = "^0.5.2"
+# depsland-booster = "*"
 lk-logger = "^5.4.6"
 lk-utils = "~2.5.0"
 oss2 = "*"
