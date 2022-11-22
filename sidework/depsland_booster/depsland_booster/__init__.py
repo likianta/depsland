@@ -1,6 +1,6 @@
-if True:
-    import os
-    assert os.name == 'nt', 'currently only support windows'
+# if True:
+#     import os
+#     assert os.name == 'nt', 'currently only support windows'
 
 from .booster import boost
 from .gen_exe import distribute

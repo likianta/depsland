@@ -32,7 +32,7 @@ def bat_2_exe(
         assert icon.endswith('.ico')
         assert os.path.exists(icon)
     
-    _bat_2_exe_2(file_i, file_o, show_console)
+    _bat_2_exe(file_i, file_o, show_console)
     if remove_bat:
         os.remove(file_i)
     
