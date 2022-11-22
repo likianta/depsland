@@ -1,19 +1,54 @@
+from os.path import exists
+
 from lk_utils import fs
 from lk_utils import loads
 
 from depsland import paths
 from depsland.utils import make_temp_dir
-from depsland.utils import ziptool
+from depsland.utils.ziptool import compress_dir
 
 dir_i = paths.project.root
+dir_m = make_temp_dir()
 dir_o = paths.project.depsland + '/chore'
+assert exists(dir_o), f'if {dir_o} not exists, you may manually create it ' \
+                      f'(an empty folder)'
 
-ziptool.compress_dir(f'{dir_i}/build', f'{dir_o}/build.zip')
 
-# make sure conf/depsland.yaml has configured local oss.
-assert loads(f'{dir_i}/conf/depsland.yaml')['oss']['server'] == 'local'
-dir_x = make_temp_dir()
-fs.copy_file(f'{dir_i}/conf/depsland.yaml', f'{dir_x}/depsland.yaml')
-ziptool.compress_dir(f'{dir_x}/depsland.yaml', f'{dir_o}/conf.zip')
+def copy_build_dir() -> None:
+    fs.make_dir(f'{dir_m}/exe')
+    fs.copy_tree(f'{dir_i}/build/exe',
+                 f'{dir_m}/build/exe')
+    fs.copy_tree(f'{dir_i}/build/.assets',
+                 f'{dir_m}/build/.assets')
+    fs.copy_file(f'{dir_i}/build/backup_project_resources.py',
+                 f'{dir_m}/build/backup_project_resources.py')
+    fs.copy_file(f'{dir_i}/build/build.py',
+                 f'{dir_m}/build/build.py')
+    fs.copy_file(f'{dir_i}/build/depsland_setup.py',
+                 f'{dir_m}/build/depsland_setup.py')
+    fs.copy_file(f'{dir_i}/build/install_requirements.py',
+                 f'{dir_m}/build/install_requirements.py')
+    fs.copy_file(f'{dir_i}/build/readme.zh.md',
+                 f'{dir_m}/build/readme.zh.md')
+    compress_dir(f'{dir_m}/build', f'{dir_o}/build.zip', True)
 
-ziptool.compress_dir(f'{dir_i}/sidework', f'{dir_o}/sidework.zip')
+
+def copy_conf_dir():
+    # make sure conf/depsland.yaml has configured local oss.
+    assert loads(f'{dir_i}/conf/depsland.yaml')['oss']['server'] == 'local'
+    fs.copy_file(f'{dir_i}/conf/depsland.yaml', f'{dir_m}/depsland.yaml')
+    compress_dir(f'{dir_m}/depsland.yaml', f'{dir_o}/conf.zip', True)
+
+
+def copy_sidework_dir():
+    fs.make_dir(f'{dir_m}/sidework')
+    for f in fs.find_files(f'{dir_i}/sidework'):
+        i = f.path
+        o = f'{dir_m}/sidework/{f.name}'
+        fs.copy_file(i, o)
+    compress_dir(f'{dir_m}/sidework', f'{dir_o}/sidework.zip', True)
+
+
+copy_build_dir()
+copy_conf_dir()
+copy_sidework_dir()
