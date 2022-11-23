@@ -31,7 +31,7 @@ class System:
             self.depsland = os.getenv('DEPSLAND')  # note it may be None
             self.desktop = fs.normpath(os.environ['USERPROFILE'] + '/Desktop')
             self.home = fs.normpath(os.environ['USERPROFILE'])
-            self.program_data = fs.normpath(os.environ['ProgramData'])
+            self.local_app_data = fs.normpath(os.environ['LOCALAPPDATA'])
             self.start_menu = fs.normpath(
                 os.environ['APPDATA']
                 + '/Microsoft/Windows/Start Menu/Programs'

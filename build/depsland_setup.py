@@ -47,7 +47,11 @@ def _choose_target_dir() -> str:
     
     default = (
             find_if_last_version_exists()
-            or fs.normpath(os.environ['ProgramData'] + '/Depsland')
+            or fs.normpath(os.environ['LocalAppData'] + '/Depsland')
+        #   why LocalAppData?
+        #   - https://www.zhihu.com/question/546008367
+        #   - https://stackoverflow.com/questions/22107812/privileges-owner-
+        #     issue-when-writing-in-c-programdata
     )
     
     cmd = console.input(
