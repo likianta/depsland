@@ -174,6 +174,13 @@ def bat_2_exe(file_i: str, uac_admin=False):
 
 
 @cli.cmd()
+def build_all_launchers():
+    for f in fs.find_files(xpath('exe'), '.bat'):
+        print(':i', f.name)
+        _b2e(f.path, icon=xpath('exe/launcher.ico'))
+
+
+@cli.cmd()
 def compress_to_zip():
     dir_i = '{}/{}'.format(paths.project.dist, f'depsland-{__version__}')
     file_o = '{}/{}'.format(paths.project.dist, f'depsland-{__version__}.zip')

@@ -1,7 +1,6 @@
 import os
 from textwrap import dedent
 
-import depsland_booster
 from lk_utils import dumps
 from lk_utils import loads
 from lk_utils import run_cmd_args
@@ -10,10 +9,11 @@ from lk_utils import xpath
 from ..chore import make_temp_dir
 
 _is_windows = os.name == 'nt'
-_template_file = xpath('template')
+_template_exe = xpath('template_static.exe')
 _rcedit_exe = xpath('rcedit.exe')
 
 
+# noinspection PyUnusedLocal
 def bat_2_exe(
         file_i: str,
         file_o: str = '',
@@ -37,6 +37,8 @@ def bat_2_exe(
         os.remove(file_i)
     
     if _is_windows:
+        # adding icon and elevating privilege requires `rcedit.exe`, which is
+        # only available on windows.
         if icon:
             add_icon_to_exe(file_o, icon)
         if uac_admin:
@@ -58,7 +60,6 @@ def elevate_privilege(file_exe: str) -> None:
                  'requireAdministrator')
 
 
-# DELETE: see reason in `sidework/depsland_booster/readme.md`.
 def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     """
     https://github.com/silvandeleemput/gen-exe
@@ -71,22 +72,50 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     command += '\0' * (259 - len(command)) + ('1' if show_console else '0')
     encoded_command = command.encode('ascii')
     
-    template: bytes = loads(xpath('template'), ftype='binary')
+    template: bytes = loads(_template_exe, ftype='binary')
     output = template.replace(b'X' * 259 + b'1', encoded_command)
     print('add command to exe', command)
     dumps(output, file_exe, ftype='binary')
 
 
-def _bat_2_exe_2(
-        file_bat: str,
-        file_exe: str,
-        show_console: bool = True
-) -> None:
-    file_exe_o, file_bat_o = depsland_booster.distribute(file_bat, file_exe)
-    if not show_console:
-        data_r: str = loads(file_bat_o)
-        data_w: str = data_r.replace('python.exe', 'pythonw.exe')
-        dumps(data_w, file_bat_o)
+# DELETE: not use this anymore: it will crash if we add icon to exe.
+# def _bat_2_exe_2(
+#         file_bat: str,
+#         file_exe: str,
+#         show_console: bool = True
+# ) -> None:
+#     file_exe_o, file_bat_o = depsland_booster.distribute(file_bat, file_exe)
+#     if not show_console:
+#         data_r: str = loads(file_bat_o)
+#         data_w: str = data_r.replace('python.exe', 'pythonw.exe')
+#         dumps(data_w, file_bat_o)
+#
+#
+# def _bat_2_exe_3(
+#         file_bat: str,
+#         file_exe: str,
+#         file_ico: str = '',
+#         show_console: bool = True
+# ) -> None:
+#     """
+#     https://github.com/tokyoneon/B2E
+#     """
+#     b2e = xpath('bat_to_exe_converter.exe')
+#
+#     @new_thread(daemon=False)
+#     def convert():
+#         """
+#         this function works a little slow, so we put it in another thread.
+#         """
+#         run_cmd_args(*compose_cmd(
+#             b2e, '/bat', file_bat, '/exe', file_exe,
+#             ('/icon', file_ico),
+#             ('/invisible' if not show_console else ''),
+#             '/overwrite'
+#         ))
+#
+#     th = convert()
+#     atexit.register(th.join)
 
 
 # -----------------------------------------------------------------------------

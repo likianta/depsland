@@ -19,6 +19,7 @@
 /oss/*/*
 /pypi/*/[^.]*
 /python/*
+/sidework/bat_2_exe_template_gen/*.exe
 /temp/*/*
 /tests/
 /unittests/demo_project/hello-world/dist/
