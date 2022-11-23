@@ -35,7 +35,7 @@ def link_venv(name_ids: T.NameIds, venv_dir: T.AbsPath) -> None:
     for relpath, name_id in sorted(
             ownership.items(), key=lambda x: x[1]  # sort by name_id.
     ):
-        print(name_id, relpath, ':vs')
+        # print(name_id, relpath, ':vs')
         fs.make_link(
             '{}/{}'.format(_name_id_2_path(name_id), relpath),
             '{}/{}'.format(venv_dir, relpath)
