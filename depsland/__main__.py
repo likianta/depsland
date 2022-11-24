@@ -341,6 +341,8 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     )
 
 
+# -----------------------------------------------------------------------------
+
 @cli.cmd()
 def rebuild_pypi_index(full: bool = False) -> None:
     """
@@ -353,6 +355,20 @@ def rebuild_pypi_index(full: bool = False) -> None:
     """
     from .doctor import rebuild_pypi_index
     rebuild_pypi_index(perform_pip_install=full)
+
+
+@cli.cmd()
+def get_package_size(
+        name: str,
+        version: str = None,
+        include_dependencies: bool = False
+) -> None:
+    """
+    kwargs:
+        include_dependencies (-d):
+    """
+    from .pypi import insight
+    insight.measure_package_size(name, version, include_dependencies)
 
 
 # -----------------------------------------------------------------------------
