@@ -1,11 +1,10 @@
 [tool.poetry]
 name = "depsland"
-version = "0.3.6a0"
+version = "0.3.6"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
 homepage = "https://github.com/likianta/depsland"
-include = ['depsland/chore/*.zip']
 
 [[tool.poetry.source]]
 name = "tsinghua"

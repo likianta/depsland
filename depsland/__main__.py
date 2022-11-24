@@ -324,7 +324,7 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         pkg_dir=paths.apps.get_packages(appid)
     )
     
-    print(':v', args, kwargs)
+    # print(':v', args, kwargs)
     lk_logger.unload()
     subprocess.run(
         (*command, *args_2_cargs(*args, **kwargs)),
