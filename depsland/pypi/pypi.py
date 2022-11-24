@@ -12,7 +12,7 @@ from ..paths import pypi as pypi_paths
 from ..pip import Pip
 from ..pip import pip as _default_pip
 from ..utils import verspec
-from ..venv_maker import link_venv
+from ..venv import link_venv
 
 __all__ = ['T', 'pypi']
 

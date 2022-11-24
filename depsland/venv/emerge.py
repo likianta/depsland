@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from lk_utils import fs
 
-from . import paths
+from .. import paths
 
 
 class T:
