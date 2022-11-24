@@ -14,17 +14,17 @@
 
 2. 传参时, 某个路径参数包含了空格.
 
-    例如 `depsland run reqs_deps_maps "C:\demo\8-6 LV4-xxx", 程序会误认为 `C:\demo\8-6` 和 `LV4-xxx` 一共是两个参数.
+    例如 `depsland run reqs_deps_maps "C:\demo\8-6 LV4-xxx"`, 程序会误认为 `C:\demo\8-6` 和 `LV4-xxx` 一共是两个参数.
 
 关于第一个问题, 我们在代码中发现这是一个比较低级的错误, 原因是启动时的命令中, 忘记给启动路径加上双引号了. 于是我们很快地做了以下修复:
 
-before (~/depsland.exe)
+before:
 
 ```sh
 %DEPSLAND%\python\python.exe -m depsland ...
 ```
 
-after (~/depsland.exe)
+after:
 
 ```sh
 "%DEPSLAND%\python\python.exe" -m depsland ...
@@ -40,7 +40,7 @@ depsland run testsuit check-args aaa bbb "ccc ddd"
 #   实际结果: ['aaa', 'bbb', 'ccc', 'ddd']
 ```
 
-初步猜想是 [silvandeleemput (gen-exe 这个库的作者)](https://github.com/silvandeleemput/gen-exe) 的库存在这样的 bug.
+初步猜想是 [silvandeleemput](https://github.com/silvandeleemput/gen-exe) (gen-exe 这个库的作者) 的库存在这样的 bug.
 
 我们尝试了几种解决方案:
 
@@ -68,9 +68,9 @@ depsland run testsuit check-args aaa bbb "ccc ddd"
 
 gen-exe 的作者的 github 仓库里同时存放了他生成 exe 模板所用到的 cpp 代码. 虽然本人没有 cpp 的基础, 但是通过一些简单的推测找到了代码的关键部分. 接下来我尝试写了一个简单的 demo 来测试 cpp -> exe 以及传参问题是否被解决. 答案是令人高兴的.
 
-这些工作被放在了 `sidework/bat_2_exe_tempate_gen` 目录下. 在经过短暂的 g++ 编译后, 我们终于得到了一个可以正常工作的 exe.
+这些工作被放在了 `sidework/bat_2_exe_template_gen` 目录下. 在经过短暂的 g++ 编译后, 我们终于得到了一个可以正常工作的 exe.
 
-这个工作跨度两三天的时间, 这也是为什么此次发布比预计的要晚的原因 (从我们的 commit 历史可以看出围绕它做了很多工作).
+这个工作跨度了两三天的时间, 这也是为什么此次发布比预计的要晚的原因 (从我们的 commit 历史可以看出围绕它做了很多工作).
 
 ## 管理员权限
 

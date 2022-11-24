@@ -15,6 +15,7 @@
 /conf/oss_*
 /deleted/
 /dist/*
+/docs/*/*.html
 /oss/*/*
 /pypi/*/[^.]*
 /python/*
