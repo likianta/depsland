@@ -9,6 +9,7 @@ lk-logger >= 5.4.6
 lk-utils >= 2.5.0
 # neoprint >= 0.1.0b0
 oss2
+pysimplegui
 pyyaml
 rich
 semver >= 3.0.0dev3

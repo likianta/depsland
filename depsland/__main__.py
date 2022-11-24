@@ -75,6 +75,15 @@ def welcome(confirm_close=False) -> None:
         input('press enter to close window...')
 
 
+@cli.cmd()
+def launch_gui() -> None:
+    """
+    launch depsland gui. [red](warning: experimental feature)[/]
+    """
+    from .gui import launch_gui
+    launch_gui()
+
+
 # -----------------------------------------------------------------------------
 # ordered by lifecycle
 
