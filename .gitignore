@@ -14,7 +14,6 @@
 /conf/depsland_for_dev.yaml
 /conf/oss_*
 /deleted/
-/depsland/chore/*.zip
 /dist/*
 /oss/*/*
 /pypi/*/[^.]*
