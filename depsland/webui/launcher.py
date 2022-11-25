@@ -27,12 +27,12 @@ def _get_ip_address() -> str:
     return ip
 
 
-def _get_free_port(start_at=8501) -> int:
+def _get_free_port(start=8501, end=65535) -> int:
     """
     https://stackoverflow.com/questions/1365265
     """
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
-        for i in range(start_at, 65535):
+        for i in range(start, end):
             try:
                 s.bind(('', i))
             except OSError:
