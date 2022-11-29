@@ -14,12 +14,15 @@
 /conf/depsland_for_dev.yaml
 /conf/oss_*
 /deleted/
+/depsland/webui/assets/
+/depsland/webui/static/
 /dist/*
 /docs/*/*.html
 /oss/*/*
 /pypi/*/[^.]*
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
+/sidework/ui_prototype/
 /temp/*/*
 /tests/
 /unittests/demo_project/hello-world/dist/
