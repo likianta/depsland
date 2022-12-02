@@ -106,6 +106,9 @@ LKWindow {
                         borderColorActive: pycolor.input_border
                         cursorColor: pycolor.input_cursor
                         textColor: pycolor.text_main
+                        Component.onCompleted: {
+                            this.text = py.setup_wizard.get_install_path()
+                        }
                     }
 
                     LKButton {
