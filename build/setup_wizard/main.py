@@ -12,7 +12,7 @@ from lk_utils import fs
 from build.setup_wizard.page1 import Page1
 from build.setup_wizard.page2 import Page2
 from build.setup_wizard.page3 import Page3
-from build.setup_wizard.wizard import SetupWizard
+from build.setup_wizard.wizard import wizard
 from depsland import __version__ as depsland_version
 from qmlease import app
 from qmlease import pystyle
@@ -29,10 +29,9 @@ def main(test_path=True, debug_mode=True):
         dir_i = fs.xpath('../..', True)
     dir_o = ''
     
-    wizard = SetupWizard()
-    page1 = Page1(wizard)
-    page2 = Page2(wizard, page1, dir_i, dir_o)
-    page3 = Page3(wizard)
+    page1 = Page1()
+    page2 = Page2(page1, dir_i, dir_o)
+    page3 = Page3()
     
     app.register(wizard, 'setup_wizard')
     app.register(page1, 'page1')

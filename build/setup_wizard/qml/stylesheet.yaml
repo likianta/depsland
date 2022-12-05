@@ -12,6 +12,7 @@ green7: '#0ACC6B'  # malachite
 light1: '#5B5B61'  # scarpa flow
 light5: '#ADADCA'  # logan
 light7: '#FEFEFE'  # white
+red7: '#F23F5D'  # carnation
 yellow3: '#705E3A'  # yellow metal
 
 # -----------------------------------------------------------------------------
@@ -44,10 +45,12 @@ progress_fg_dimmed: '$green3'
 progress_indicator_bg: '$blue7'
 
 text_accent: '$text_title'
+text_danger: '$red7'
 text_dimmed: '$light1'
 text_disabled: '#79799A'
 text_main: '$light5'
 text_subtitle: '$text_main'
+text_success: '$green7'
 text_title: '$light7'
 text_hint: '$text_dimmed'
 

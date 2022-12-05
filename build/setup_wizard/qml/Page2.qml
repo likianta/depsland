@@ -10,11 +10,11 @@ LKItem {
         anchors.fill: parent
         anchors.margins: 24
 
-        LKText {
-            Layout.fillWidth: true
-            Layout.preferredHeight: childrenRect.height
-            text: 'In Progress'
-        }
+//        LKText {
+//            Layout.fillWidth: true
+//            Layout.preferredHeight: childrenRect.height
+//            text: 'In Progress'
+//        }
 
         LKListView {
             id: listview

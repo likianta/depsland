@@ -59,10 +59,18 @@ Item {
                 text: 'Browse'
                 textColor: pycolor.text_main
             }
+        }
 
-            Component.onCompleted: {
-                py.page1.init_view(_browse_btn, _input_bar)
-            }
+        LKText {
+            id: _prompt
+            Layout.fillWidth: true
+            Layout.preferredHeight: childrenRect.height
+            Layout.topMargin: 4
+            font.pixelSize: 12
+        }
+
+        Component.onCompleted: {
+            py.page1.init_view(_browse_btn, _input_bar, _prompt)
         }
     }
 }
