@@ -33,15 +33,13 @@ class Page3(QObject):
         return dedent('''
             # Congratulations!
             
-            You have successfully installed depsland {version}.
+            You have successfully installed depsland v{version}.
             
             To get started, you can double-click the "Depsland" launcher on
             your desktop.
             
-            Get touch with me on [GitHub][1] or start an instant chat with me
-            in QQ/TIM (scanning QR code below).
-            
-            [1]: https://github.com/likianta/depsland
+            Get touch with me on GitHub (https://github.com/likianta) or start
+            an instant chat with me in QQ/TIM (scanning QR code beside).
         ''').format(
             version=depsland_version,
         )
