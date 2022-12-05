@@ -1,10 +1,12 @@
 import os
 from time import sleep
 
+from lambda_ex import grafting
 from lk_utils import fs
 from lk_utils import new_thread
 
 from build.setup_wizard.page1 import Page1
+from build.setup_wizard.wizard import SetupWizard
 from qmlease import Model
 from qmlease import QObject
 from qmlease import signal
@@ -13,8 +15,11 @@ from qmlease import slot
 
 class Page2(QObject):  # InProgress
     index_changed = signal(int)
+    inprogressing = signal(bool)  # True: start; False: done
     
-    def __init__(self, page1: Page1, dir_i: str, dir_o: str):
+    def __init__(self,
+                 wizard: SetupWizard, page1: Page1,
+                 dir_i: str, dir_o: str):
         super().__init__()
         
         self._dir_i = dir_i
@@ -26,10 +31,17 @@ class Page2(QObject):  # InProgress
             for x in os.listdir(dir_i) if x != 'setup.exe'
         ])
         
-        page1.install_path_determined.connect(self.confirm_dir_o)
+        page1.path_determined.connect(self._confirm_dir_o)
+        
+        @grafting(self.inprogressing.connect)
+        def _(running: bool) -> None:
+            page1_status = not running
+            wizard.nav.next_btn['enabled'] = page1_status
+            page1.browse_button['enabled'] = page1_status
+            page1.input_bar['enabled'] = page1_status
     
     @slot(str)
-    def confirm_dir_o(self, dir_o: str) -> None:
+    def _confirm_dir_o(self, dir_o: str) -> None:
         print(':v2', 'target path is determined', dir_o)
         self._dir_o = dir_o
         self.run()
@@ -41,7 +53,9 @@ class Page2(QObject):  # InProgress
     # noinspection PyNoneFunctionAssignment
     @new_thread(singleton=True)
     def run(self) -> None:
+        self.inprogressing.emit(True)
         sleep(0.3)  # wait for the UI to be ready.
+        print(':i0s', 'start progressing')
         
         is_done = False
         subthread = None
@@ -97,3 +111,4 @@ class Page2(QObject):  # InProgress
             #   see also `qml/Page2.qml : LKCircleProgress :
             #   animateValueDuration`.
         print(':ti0', 'all done')
+        self.inprogressing.emit(False)

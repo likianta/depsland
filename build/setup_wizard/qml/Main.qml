@@ -80,7 +80,7 @@ LKWindow {
                 Page3 {}
 
                 Component.onCompleted: {
-                    py.setup_wizard.page_changed.connect((page, _) => {
+                    py.setup_wizard.page_changed.connect((page) => {
                         this.currentIndex = page
                     })
                 }

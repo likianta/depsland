@@ -31,7 +31,7 @@ def main(test_path=True, debug_mode=True):
     
     wizard = SetupWizard()
     page1 = Page1(wizard)
-    page2 = Page2(page1, dir_i, dir_o)
+    page2 = Page2(wizard, page1, dir_i, dir_o)
     page3 = Page3(wizard)
     
     app.register(wizard, 'setup_wizard')

@@ -9,10 +9,16 @@ from qmlease import slot
 class SetupWizard(QObject):
     nav: 'Navigation'
     navigation_ready = signal()
+    page_changed = signal(int)
     
     @slot(object, object)
     def init_navigation(self, prev: QObject, next_: QObject) -> None:
         self.nav = Navigation(prev, next_)
+        
+        @grafting(self.nav.page_changed.connect)
+        def _(page: int, _: bool) -> None:
+            self.page_changed.emit(page)
+        
         self.navigation_ready.emit()
 
 
@@ -20,7 +26,7 @@ class Navigation(QObject):
     FIRST_PAGE = 0
     LAST_PAGE = 2
     # current_page = AutoProp(0, int)
-    current_page = int
+    current_page = 0
     page_changed = signal(int, bool)
     #   bool: True means forward, False means backward.
     prev_btn: QObject
