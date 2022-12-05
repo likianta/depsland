@@ -6,6 +6,7 @@ from collections import defaultdict
 from lk_logger.console import con_print
 from lk_utils import dumps
 from lk_utils import fs
+from lk_utils.read_and_write import ropen
 from rich.table import Table
 
 from .. import normalization as norm
@@ -175,7 +176,7 @@ def _analyse_metadata_1(
     #       -> ('argsense', '>=0.4.2,<0.5.0')
     
     def walk() -> t.Iterator[str]:
-        with open(file) as f:
+        with ropen(file) as f:
             flag = 0
             head = 'Requires-Dist: '
             for line in f:

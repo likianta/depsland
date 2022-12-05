@@ -5,6 +5,7 @@ from os.path import exists
 
 from lk_utils import fs
 from lk_utils import loads
+from lk_utils.read_and_write import ropen
 
 from .manifest import T as T0
 from .manifest import dump_manifest
@@ -92,6 +93,6 @@ def parse_script_info(manifest: T.Manifest) -> t.Tuple[str, ...]:
 
 
 def _quick_read_line(text_file: str) -> str:
-    with open(text_file) as f:
+    with ropen(text_file) as f:
         for line in f:  # just read the first line
             return line.strip()
