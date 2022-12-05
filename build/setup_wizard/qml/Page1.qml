@@ -39,7 +39,7 @@ Item {
             Layout.topMargin: 8
 
             LKInput {
-                id: install_path
+                id: _install_path
                 Layout.fillWidth: true
                 bgColor: pycolor.input_bg
                 bgColorActive: pycolor.input_bg_active
@@ -54,7 +54,7 @@ Item {
             }
 
             LKButton {
-                id: browse_btn
+                id: _browse_btn
                 Layout.preferredWidth: 100
                 bgColor: pycolor.button_bg
                 bgColorHovered: pycolor.button_bg_hovered
@@ -62,13 +62,27 @@ Item {
                 border.color: pycolor.button_border
                 text: 'Browse'
                 textColor: pycolor.text_main
+
+                property bool _firstTimeOpen: true
+
                 onClicked: {
-                    const path = lkutil.file_dialog(
-                        'open', 'folder'
-                    )
-                    if (path) {
-                        console.log('path: ' + path)
-                        install_path.text = path
+                    if (this._firstTimeOpen) {
+                        const path = lkutil.file_dialog(
+                            'open', 'folder', _install_path.text
+                        )
+                        if (path) {
+                            this._firstTimeOpen = false
+                            console.log('path: ' + path)
+                            _install_path.text = path
+                        }
+                    } else {
+                        const path = lkutil.file_dialog(
+                            'open', 'folder',
+                        )
+                        if (path) {
+                            console.log('path: ' + path)
+                            _install_path.text = path
+                        }
                     }
                 }
             }
