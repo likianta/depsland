@@ -80,8 +80,7 @@ LKWindow {
                 Page3 {}
 
                 Component.onCompleted: {
-                    console.log(py.setup_wizard.current_page_changed)
-                    py.setup_wizard.current_page_changed.connect((page) => {
+                    py.setup_wizard.page_changed.connect((page, _) => {
                         this.currentIndex = page
                     })
                 }
@@ -126,7 +125,7 @@ LKWindow {
                 }
 
                 Component.onCompleted: {
-                    py.setup_wizard.init_nav_buttons(prev_btn, next_btn)
+                    py.setup_wizard.init_navigation(prev_btn, next_btn)
                 }
             }
         }

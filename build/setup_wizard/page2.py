@@ -1,10 +1,10 @@
 import os
 from time import sleep
 
-from lambda_ex import grafting
 from lk_utils import fs
 from lk_utils import new_thread
 
+from build.setup_wizard.page1 import Page1
 from qmlease import Model
 from qmlease import QObject
 from qmlease import signal
@@ -14,7 +14,7 @@ from qmlease import slot
 class Page2(QObject):  # InProgress
     index_changed = signal(int)
     
-    def __init__(self, wizard: QObject, dir_i: str, dir_o: str):
+    def __init__(self, page1: Page1, dir_i: str, dir_o: str):
         super().__init__()
         
         self._dir_i = dir_i
@@ -26,17 +26,13 @@ class Page2(QObject):  # InProgress
             for x in os.listdir(dir_i) if x != 'setup.exe'
         ])
         
-        wizard.install_path_determined.connect(self.confirm_dir_o)
-        
-        @grafting(wizard.current_page_changed.connect)
-        def _(page: int) -> None:
-            if page == 1:
-                self.run()
+        page1.install_path_determined.connect(self.confirm_dir_o)
     
     @slot(str)
     def confirm_dir_o(self, dir_o: str) -> None:
         print(':v2', 'target path is determined', dir_o)
         self._dir_o = dir_o
+        self.run()
     
     @slot(result=object)
     def get_model(self) -> Model:

@@ -2,6 +2,7 @@ from textwrap import dedent
 
 from lambda_ex import grafting
 
+from build.setup_wizard.wizard import SetupWizard
 from depsland import __version__ as depsland_version
 from qmlease import QObject
 from qmlease import slot
@@ -11,7 +12,7 @@ class Page3(QObject):
     _congrats_anim: QObject
     _has_played = False
     
-    def __init__(self, main_page: QObject):
+    def __init__(self, parent: SetupWizard):
         super().__init__()
         
         # @grafting(main_page.current_page_changed.connect)

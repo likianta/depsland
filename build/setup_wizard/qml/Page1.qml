@@ -48,8 +48,8 @@ Item {
                 textColor: pycolor.text_main
                 inputItem.selectionColor: pycolor.input_selection
                 Component.onCompleted: {
-                    py.setup_wizard.init_input_bar(this)
-                    this.text = py.setup_wizard.get_install_path()
+                    py.page1.init_input_bar(this)
+                    this.text = py.page1.get_install_path()
                 }
             }
 
