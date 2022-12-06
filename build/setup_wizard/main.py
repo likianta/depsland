@@ -45,7 +45,7 @@ def main(test_path=True, debug_mode=True):
     app.register(page2, 'page2')
     app.register(page3, 'page3')
     
-    pystyle.color.update_from_file(xpath('qml/stylesheet.yaml'))
+    pystyle.color.update_from_file(xpath('stylesheet.yaml'))
     
     app.run(xpath('qml/Main.qml'), debug=debug_mode)
 
