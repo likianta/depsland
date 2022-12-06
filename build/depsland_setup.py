@@ -169,6 +169,8 @@ def _incremental_setup(dir_i: str, dir_o: str,
     fs.remove_tree(dir_m)
 
 
+# -----------------------------------------------------------------------------
+
 def _wind_up(dir_: str) -> None:
     print('create executables')
     
@@ -183,66 +185,13 @@ def _wind_up(dir_: str) -> None:
                          .format(os.environ['USERPROFILE']))
     _create_desktop_shortcut(file_i, file_o)
     
-    # -------------------------------------------------------------------------
     # add `DEPSLAND` to environment variables
-    
-    dir_ = dir_.replace('/', '\\')
-    print(':v', dir_)
-    
-    def get_environment_variables() -> t.Tuple[str, str]:
-        """
-        get environment variables from Windows registry.
-        
-        q: why not use `os.environ`?
-        a: `os.environ` may not update immediately if we are using a third
-            party file explorer, like total commander, xyplorer, etc.
-            ps: another way to resolve this is to restart the explorer.
-        """
-        key = winreg.OpenKey(
-            winreg.HKEY_CURRENT_USER, 'Environment', 0,
-            winreg.KEY_ALL_ACCESS
-        )
-        
-        try:
-            value, _ = winreg.QueryValueEx(key, 'DEPSLAND')
-        except FileNotFoundError:
-            value = ''
-        env_depsland = value
-        
-        value, _ = winreg.QueryValueEx(key, 'PATH')
-        env_path = value
-        
-        return env_depsland, env_path
-    
-    env_depsland, env_path = get_environment_variables()
-    print(':v', env_depsland, env_path[:80] + '...')
-    
-    if env_depsland != dir_:
-        print('add `DEPSLAND` to environment variables')
-        run_cmd_args('setx', 'DEPSLAND', dir_)
-    
-    if dir_ not in env_path:
-        env_path = env_path.split(';')
-        
-        # remove old version
-        if env_depsland and env_depsland in env_path:
-            env_path.remove(env_depsland)
-            try:
-                env_path.remove(env_depsland + r'\apps\.bin')
-            except ValueError:
-                pass
-        
-        print('add `DEPSLAND` to `PATH` (user variable)')
-        # edit user environment variables through Windows registry
-        key = winreg.OpenKey(
-            winreg.HKEY_CURRENT_USER, 'Environment', 0,
-            winreg.KEY_ALL_ACCESS
-        )
-        winreg.SetValueEx(
-            key, 'PATH', 0, winreg.REG_EXPAND_SZ,
-            ';'.join(filter(None, [dir_, dir_ + r'\apps\.bin'] + env_path))
-        )
-        winreg.CloseKey(key)
+    # FIXME: i've found a failed case if user launches terminal as admin by
+    #   default -- the error shows `depsland command not found`, though it is
+    #   acctually existed in user's PATH variables.
+    #   to fix it, i have to change group level from 'user' to 'system'. (is
+    #   this a good resolution?)
+    _set_environment_variables(dir_, level='system')
 
 
 def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
@@ -263,6 +212,95 @@ def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
     dumps(command, vbs, ftype='plain')
     run_cmd_args('cscript', '/nologo', vbs)
     fs.remove_file(vbs)
+
+
+def _set_environment_variables(dir_: str, level='user') -> None:
+    new_depsland_env = dir_.replace('/', '\\')
+    print(':v', new_depsland_env)
+    
+    class EnvironmentVariablesAccess:
+        
+        def __init__(self, level: str):
+            self.level = level
+            self.key = self.get_resgistry_key(level)
+        
+        @staticmethod
+        def get_resgistry_key(level: str) -> winreg.HKEYType:
+            """
+            ref: https://stackoverflow.com/questions/573817
+            """
+            if level == 'user':
+                return winreg.OpenKey(
+                    winreg.HKEY_CURRENT_USER,
+                    'Environment',
+                    0, winreg.KEY_ALL_ACCESS
+                )
+            else:  # 'system'
+                return winreg.OpenKey(
+                    winreg.HKEY_LOCAL_MACHINE,
+                    r'SYSTEM\CurrentControlSet\Control\Session Manager'
+                    r'\Environment',
+                    0, winreg.KEY_ALL_ACCESS
+                )
+        
+        def get_depsland_variable(self) -> str:
+            try:
+                value, _ = winreg.QueryValueEx(self.key, 'DEPSLAND')
+            except ValueError:
+                value = ''
+            return value
+        
+        def get_path_variable(self) -> str:
+            value, _ = winreg.QueryValueEx(self.key, 'Path')
+            return value
+        
+        def remove_depsland_variable(self, old: str) -> None:
+            pass  # do nothing. see also `set_depsland_variable`.
+        
+        @staticmethod
+        def remove_depsland_from_path_variable(
+                paths: t.List[str], old: str
+        ) -> None:
+            paths.remove(old)
+            if (x := old + r'\apps\.bin') in paths:
+                paths.remove(x)
+        
+        def set_depsland_variable(self, new: str) -> None:
+            if self.level == 'user':
+                run_cmd_args('setx', 'DEPSLAND', new)
+            else:
+                run_cmd_args('setx', 'DEPSLAND', new, '/m')
+        
+        def set_depsland_to_path_variable(
+                self, paths: t.List[str], new: str
+        ) -> None:
+            paths.append(new)
+            paths.append(new + r'\apps\.bin')
+            winreg.SetValueEx(
+                self.key, 'PATH', 0, winreg.REG_EXPAND_SZ,
+                ';'.join(filter(None, paths))
+            )
+        
+        def close(self):
+            winreg.CloseKey(self.key)
+    
+    env_access = EnvironmentVariablesAccess(level)
+    old_depsland_env = env_access.get_depsland_variable()
+    old_path_env = env_access.get_path_variable()
+    print(':v', old_depsland_env, old_path_env[:80] + '...')
+    
+    if old_depsland_env != dir_:
+        env_access.remove_depsland_variable(old_depsland_env)
+        env_access.set_depsland_variable(new_depsland_env)
+    
+    if new_depsland_env not in old_path_env:
+        old_paths = old_path_env.split(';')
+        env_access.remove_depsland_from_path_variable(
+            old_paths, old_depsland_env)
+        env_access.set_depsland_to_path_variable(
+            old_paths, new_depsland_env)
+    
+    env_access.close()
 
 
 if __name__ == '__main__':
