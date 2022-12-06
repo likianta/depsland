@@ -1,4 +1,7 @@
 """
+DELETE: this file is about to be deprecated since depsland v0.4.0. please turn
+    to `build/setup_wizard`.
+
 dependencies:
     - argsense
     - lk-logger

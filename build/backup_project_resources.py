@@ -11,15 +11,19 @@ dir_i = paths.project.root
 dir_m = make_temp_dir()
 dir_o = paths.project.depsland + '/chore'
 assert exists(dir_o), f'if {dir_o} not exists, you may manually create it ' \
-                      f'(an empty folder)'
+                      f'(as an empty folder)'
 
 
 def copy_build_dir() -> None:
-    fs.make_dir(f'{dir_m}/exe')
-    fs.copy_tree(f'{dir_i}/build/exe',
-                 f'{dir_m}/build/exe')
+    fs.make_dir(f'{dir_m}/build')
+    
     fs.copy_tree(f'{dir_i}/build/.assets',
                  f'{dir_m}/build/.assets')
+    fs.copy_tree(f'{dir_i}/build/exe',
+                 f'{dir_m}/build/exe')
+    fs.copy_tree(f'{dir_i}/build/setup_wizard',
+                 f'{dir_m}/build/setup_wizard')
+    
     fs.copy_file(f'{dir_i}/build/backup_project_resources.py',
                  f'{dir_m}/build/backup_project_resources.py')
     fs.copy_file(f'{dir_i}/build/build.py',
