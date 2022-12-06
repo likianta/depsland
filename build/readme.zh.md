@@ -1,3 +1,4 @@
+# 构建说明
 
 ## 准备文件
 
@@ -5,8 +6,7 @@
 
     如果本目录下缺少以下文件:
 
-    - depsland_setup.exe
-    - depsland_desktop.exe
+    - exe/\*.exe
 
     则需要通过同名的 bat 文件来生成:
 
@@ -14,10 +14,10 @@
     2. 终端命令:
 
         ```sh
-        py build/bat_2_exe.py build/depsland_setup.bat
-        #   生成 depsland_setup.exe
-        py build/bat_2_exe.py build/depsland_desktop.bat
-        #   生成 depsland_desktop.exe
+        py build/build.py bat-2-exe build/exe/depsland.bat
+        py build/build.py bat-2-exe build/exe/desktop.bat
+        py build/build.py bat-2-exe build/exe/setup.bat
+        py build/build.py bat-2-exe build/exe/setup_patch.bat
         ```
 
 ## 生成 depsland 安装包
@@ -32,7 +32,7 @@
 
     ```sh
     # 整个过程很快, 在 1s 左右完成.
-    py build/build.py build
+    py build/build.py full-build aliyun
     ```
 
 3. 生成结果: `dist/depsland-<version>` (文件夹)
@@ -52,15 +52,13 @@
 
     截图:
 
-    ![image-20221031233240689](.assets/readme.zh/image-20221031233240689.png "初次安装")
+    ![](.assets/readme.zh/image-20221031233240689.png "初次安装")
     
-    ![image-20221101003716782](.assets/readme.zh/image-20221101003716782.png "升级")
+    ![](.assets/readme.zh/image-20221101003716782.png "升级")
 
-4.   测试是否安装成功:
+4. 测试是否安装成功:
 
-     1.   确认桌面上出现了 "Depsland.exe" 的启动器
+     1. 确认桌面上出现了 "Depsland.exe" 的启动器
+     2. 双击该启动器, 看是否会出现欢迎界面
 
-     2.   双击该启动器, 看是否会出现欢迎界面
-
-          ![image-20221101004226012](.assets/readme.zh/image-20221101004226012.png)
-
+         ![](.assets/readme.zh/image-20221101004226012.png)
