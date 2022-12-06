@@ -1,10 +1,17 @@
 if True:
-    import PySide6  # noqa
     import os
     import sys
     from lk_utils import xpath
-    assert os.path.exists(xpath('../../lib/qmlease'))
-    sys.path.insert(0, xpath('../../lib'))
+    
+    proj_dir = xpath('../../')
+    assert os.path.exists(f'{proj_dir}/lib/qmlease')
+    assert os.path.exists(f'{proj_dir}/lib/pyside_package_tailor/dist/PySide6')
+    
+    sys.path.insert(0, f'{proj_dir}/lib')
+    sys.path.insert(0, f'{proj_dir}/lib/pyside_package_tailor/dist')
+    
+    import PySide6
+    print(PySide6.__path__)
 
 from argsense import cli
 from lk_utils import fs
