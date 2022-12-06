@@ -75,13 +75,13 @@ def welcome(confirm_close=False) -> None:
         input('press enter to close window...')
 
 
-@cli.cmd()
-def launch_gui() -> None:
-    """
-    launch depsland gui. [red](warning: experimental feature)[/]
-    """
-    from .gui import launch_gui
-    launch_gui()
+# @cli.cmd()
+# def launch_gui() -> None:
+#     """
+#     launch depsland gui. [red](warning: experimental feature)[/]
+#     """
+#     from .gui import launch_gui
+#     launch_gui()
 
 
 # -----------------------------------------------------------------------------
@@ -163,8 +163,10 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
         if upgrade:
             # install first, then uninstall old.
             api.install2(m1, m0)
-            api.uninstall(appid, m0['version'],
-                          remove_venv=False, remove_bin=False)
+            # TODO: for safety consideration, below is temporarily disabled,
+            #   wait for a future version that supports complete auto-upgrade.
+            # api.uninstall(appid, m0['version'],
+            #               remove_venv=False, remove_bin=False)
         else:
             print('new version available but not installed. you can use '
                   '`depsland install -u {appid}` or `depsland upgrade {appid}` '
