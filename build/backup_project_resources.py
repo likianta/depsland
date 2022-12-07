@@ -1,3 +1,6 @@
+"""
+py build/backup_project_resources.py
+"""
 from os.path import exists
 
 from lk_utils import fs
