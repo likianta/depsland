@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland",
-    "version": "0.3.6",
+    "version": "0.4.0",
     "assets": {
         "build": "all",
         "conf": "root",
@@ -17,9 +17,9 @@
         "requirements.txt": "all"
     },
     "dependencies": {
-        "argsense": ">=0.5.0",
-        "lk-logger": ">=5.4.6",
-        "lk-utils": ">=2.5.0",
+        "argsense": ">=0.5.2",
+        "lk-logger": ">=5.4.7",
+        "lk-utils": ">=2.5.2",
         "oss2": "",
         "pyyaml": "",
         "rich": "",
