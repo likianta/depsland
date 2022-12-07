@@ -20,7 +20,7 @@ def test_unzip_and_move_up():
     ziptool.compress_dir(b, d, overwrite=True)
     
     os.mkdir(e)
-    ziptool.decompress_file(d, f, overwrite=True)
+    ziptool.extract_file(d, f, overwrite=True)
     
     print(f'check {f}, see if it empty')
     print(os.listdir(f))
@@ -31,11 +31,11 @@ def test_unzip_and_move_up():
 def test_unzip_and_move_up_2(root: str):
     file_i = f'{root}/batchreg.zip'
     dire_o = f'{root}/batchreg'
-    ziptool.decompress_file(file_i, dire_o, overwrite=True)
+    ziptool.extract_file(file_i, dire_o, overwrite=True)
     
     file_i = f'{root}/lib.zip'
     dire_o = f'{root}/lib'
-    ziptool.decompress_file(file_i, dire_o, overwrite=True)
+    ziptool.extract_file(file_i, dire_o, overwrite=True)
 
 
 if __name__ == '__main__':

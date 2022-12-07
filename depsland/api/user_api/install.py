@@ -159,7 +159,7 @@ def _install_files(
     def download_from_oss(i: str, m: str, o: str) -> None:
         print(fs.relpath(o, root1))
         oss.download(i, m)
-        ziptool.decompress_file(m, o, overwrite=True)
+        ziptool.extract_file(m, o, overwrite=True)
     
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.

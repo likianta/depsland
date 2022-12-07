@@ -38,7 +38,7 @@ def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
     return file_o
 
 
-def decompress_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
+def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
     if os.path.exists(path_o):
         _overwrite(path_o, overwrite)
         

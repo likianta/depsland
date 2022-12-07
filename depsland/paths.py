@@ -99,10 +99,10 @@ class Project:
         fs.make_link(sys.base_exec_prefix, f'{root}/python')
         
         # unzip files
-        from .utils.ziptool import decompress_file
-        decompress_file(fs.xpath('chore/build.zip'), f'{root}/build')
-        decompress_file(fs.xpath('chore/conf.zip'), f'{root}/conf')
-        decompress_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
+        from .utils.ziptool import extract_file
+        extract_file(fs.xpath('chore/build.zip'), f'{root}/build')
+        extract_file(fs.xpath('chore/conf.zip'), f'{root}/conf')
+        extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
         
         # init files
         dumps(defaultdict(list), f'{root}/pypi/index/dependencies.pkl')
