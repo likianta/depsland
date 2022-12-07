@@ -4,13 +4,14 @@ from time import sleep
 from lambda_ex import grafting
 from lk_utils import fs
 from lk_utils import new_thread
-
-from build.setup_wizard.page1 import Page1
-from build.setup_wizard.wizard import wizard
+from lk_utils import run_new_thread
 from qmlease import Model
 from qmlease import QObject
 from qmlease import signal
 from qmlease import slot
+
+from build.setup_wizard.page1 import Page1
+from build.setup_wizard.wizard import wizard
 
 
 class Page2(QObject):  # InProgress
@@ -115,6 +116,7 @@ class Page2(QObject):  # InProgress
         print(':ti0', 'all done')
         self.inprogressing.emit(False)
         wizard.all_finished = True
+        run_new_thread(wizard.wind_up, args=(self._dir_o,), daemon=False)
     
     @staticmethod
     def _estimate_copying_time(path: str) -> float:
