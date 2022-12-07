@@ -45,6 +45,8 @@ def full_build(oss_scheme: str, add_python_path=True):
     # os.mkdir(f'{root_o}/depsland')
     os.mkdir(f'{root_o}/dist')
     os.mkdir(f'{root_o}/docs')
+    os.mkdir(f'{root_o}/lib')
+    # os.mkdir(f'{root_o}/lib/pyside6_lite')
     os.mkdir(f'{root_o}/oss')
     os.mkdir(f'{root_o}/oss/apps')
     os.mkdir(f'{root_o}/oss/test')
@@ -68,10 +70,14 @@ def full_build(oss_scheme: str, add_python_path=True):
                  f'{root_o}/build/exe/launcher.ico')
     fs.copy_file(f'{root_i}/build/exe/setup.exe',
                  f'{root_o}/setup.exe')
+    fs.copy_tree(f'{root_i}/build/setup_wizard',
+                 f'{root_o}/build/setup_wizard')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
                  f'{root_o}/build/depsland_setup.py')
     fs.copy_tree(f'{root_i}/depsland',
                  f'{root_o}/depsland')
+    fs.make_link(f'{root_i}/lib/pyside6_lite',
+                 f'{root_o}/lib/pyside6_lite')
     fs.copy_tree(f'{root_i}/sidework',
                  f'{root_o}/sidework')
     fs.copy_file(f'{root_i}/.depsland_project',
@@ -165,12 +171,21 @@ def min_build(add_python_packages=False):  # DELETE
 # -----------------------------------------------------------------------------
 
 @cli.cmd()
-def bat_2_exe(file_i: str, uac_admin=False):
+def bat_2_exe(file_i: str, show_console=True, uac_admin=False):
     """
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
+        
+    kwargs:
+        show_console (-c):
+        uac_admin (-u):
     """
-    _b2e(file_i, icon=xpath('exe/launcher.ico'), uac_admin=uac_admin)
+    _b2e(
+        file_i,
+        icon=xpath('exe/launcher.ico'),
+        show_console=show_console,
+        uac_admin=uac_admin
+    )
 
 
 @cli.cmd()
