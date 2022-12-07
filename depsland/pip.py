@@ -146,7 +146,7 @@ class CommandTemplate:
             cache_dir: str = paths.pypi.cache,
             *,
             index_url: str = 'https://pypi.python.org/simple/',
-            local_first: bool = False,
+            local_first: bool = False,  # TODO
             offline: bool = False,
             quiet: bool = False,
             **_,
@@ -196,7 +196,7 @@ class CommandTemplate:
             self, name: str, version='', dest='', no_deps=False
     ) -> T.PopenArgs:
         return compose_cmd(
-            *self._pip, 'download', f'{name}{version}'.replace(' ', ''),
+            *self._pip, 'download', f'{name}{version.replace(" ", "")}',
             ('-d', dest), ('--no-deps' if no_deps else ''),
             *self._pip_options, *self._pip_download_options
         )
@@ -211,7 +211,7 @@ class CommandTemplate:
             self, name: str, version='', dest='', no_deps=False
     ) -> T.PopenArgs:
         return compose_cmd(
-            *self._pip, 'install', f'{name}{version}'.replace(' ', ''),
+            *self._pip, 'install', f'{name}{version.replace(" ", "")}',
             ('-t', dest), ('--no-deps' if no_deps else ''),
             *self._pip_options, *self._pip_install_options
         )

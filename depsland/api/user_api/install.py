@@ -208,9 +208,10 @@ def _install_custom_packages(
                 print('download package (whl) from oss', name)
                 oss.download(
                     f'{oss.path.pypi}/{name}',
-                    f'{downloads_dir}/{name}',
+                    dl := f'{downloads_dir}/{name}',
                 )
-
+                pypi.add_to_index(dl)
+    
 
 def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
     if dst_dir is None:

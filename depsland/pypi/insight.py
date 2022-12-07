@@ -184,11 +184,12 @@ def _analyse_metadata_1(
             *verspecs,
             candidates=name_2_versions[name]
         )
-        if not proper_version:
-            print(':v4l', file, name, raw_verspec, name_2_versions.get(name))
-            raise Exception()
-        name_id = f'{name}-{proper_version}'
-        yield name_id
+        if proper_version:
+            yield f'{name}-{proper_version}'
+        else:
+            print('cannot find a proper version from local index. you may '
+                  'download it manually later', file, name, raw_verspec, ':v3')
+            yield f'{name}-0.0.0'
 
 
 # noinspection PyUnusedLocal

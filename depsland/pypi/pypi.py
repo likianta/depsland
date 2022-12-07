@@ -6,11 +6,11 @@ from lk_utils import fs
 
 from .index import Index
 from .index import T as T0
-from ..normalization import VersionSpec
-from ..normalization import normalize_name
+from .. import normalization as norm
 from ..paths import pypi as pypi_paths
 from ..pip import Pip
 from ..pip import pip as _default_pip
+from ..utils import get_updated_time
 from ..utils import verspec
 from ..venv import link_venv
 
@@ -19,7 +19,7 @@ __all__ = ['T', 'pypi']
 
 class T(T0):
     Pip = Pip
-    VersionSpecs = t.Iterable[VersionSpec]
+    VersionSpecs = t.Iterable[norm.VersionSpec]
     Packages = t.Dict[T0.Name, VersionSpecs]
 
 
@@ -70,9 +70,7 @@ class LocalPyPI(Index):
             ):
                 filename = fs.filename(filepath)
                 # extract name and version info from filename.
-                name, version = \
-                    verspec.get_name_and_version_from_filename(filename)
-                name = normalize_name(name)  # e.g. 'PyYAML' -> 'pyyaml'
+                name, version = norm.filename_2_name_version(filename)
                 name_id = f'{name}-{version}'
                 print(':v', 'downloaded package via pip', name_id)
                 
@@ -143,6 +141,56 @@ class LocalPyPI(Index):
         print(':d', f'linking environment packages to {dst_dir}')
         print(':l', name_ids)
         link_venv(name_ids, dst_dir)
+    
+    # -------------------------------------------------------------------------
+    
+    def add_to_index(
+            self,
+            downloaded_package_file: str,
+            # download_dependencies=False
+    ) -> None:
+        filename = fs.filename(downloaded_package_file)
+        name, version = norm.filename_2_name_version(filename)
+        name_id = f'{name}-{version}'
+        if name_id in self.name_id_2_paths:
+            return
+        
+        path0 = fs.normpath(downloaded_package_file, True)
+        path1 = '{}/{}'.format(pypi_paths.downloads, filename)
+        path2 = '{}/{}/{}'.format(pypi_paths.installed, name, version)
+        
+        if path0 != path1:
+            fs.copy_file(path0, path1)
+        
+        if not os.path.exists(path2):
+            fs.make_dirs(path2)
+            self.pip.run(
+                'install', path1, ('-t', path2),
+                '--no-deps', '--no-index',
+            )
+        
+        self.name_2_versions[name].insert(0, version)
+        self.name_id_2_paths[name_id] = (
+            fs.relpath(path1, pypi_paths.root),
+            fs.relpath(path2, pypi_paths.root),
+        )
+        self.dependencies[name_id] = list(self._find_dependencies(name_id))
+        if name not in self.updates:
+            self.updates[name] = get_updated_time(path0)
+        elif (x := get_updated_time(path0)) > self.updates[name]:
+            self.updates[name] = x
+    
+    def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
+        from .insight import _analyse_metadata_1
+        dir0 = self.name_id_2_paths[name_id][1]
+        for name in os.listdir(dir0):
+            if name.endswith('.dist-info'):
+                dir1 = f'{dir0}/{name}'
+                if os.path.exists(x := f'{dir1}/METADATA'):
+                    yield from _analyse_metadata_1(x, self.name_2_versions)
+                break
+        else:
+            raise Exception(f'cannot find dist-info for {name_id}')
     
     # -------------------------------------------------------------------------
     

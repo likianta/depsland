@@ -39,7 +39,7 @@ class Index:
         self._load_index()
         # atexit.register(self.save_index)
     
-    def _load_index(self):
+    def _load_index(self) -> None:
         self.name_2_versions = loads(pypi_paths.name_2_versions)
         self.name_id_2_paths = loads(pypi_paths.name_id_2_paths)
         self.dependencies = loads(pypi_paths.dependencies)
