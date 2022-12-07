@@ -45,10 +45,17 @@ class Page1(QObject):
         
         @grafting(self.browse_button.clicked.connect)
         def _():
+            if self.selected_path:
+                try:
+                    parent_path = fs.parent_path(self.selected_path)
+                except:
+                    parent_path = ''
+            else:
+                parent_path = ''
             path = util.file_dialog(
                 action='open',
                 type_='folder',
-                start_dir=self.selected_path
+                start_dir=parent_path
             )
             if path:
                 self.input_bar['text'] = path
