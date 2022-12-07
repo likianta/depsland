@@ -84,20 +84,21 @@ class Page2(QObject):  # InProgress
             self.index_changed.emit(index)
             name = item['name']
             print(':ir', f'[green]{name}[/]')
+            
             if name == 'python':
-                if os.path.islink(f'{self._dir_i}/{name}'):  # dev mode
-                    subthread = updating(index, 100E-3)
+                if os.path.islink(f'{self._dir_i}/{name}'):
+                    pass  # dev mode
                 else:
                     self._model.update(index, {
                         'processing': f'Extracting {name}. '
                                       f'This may take a while, please wait...'
                     })
-                    subthread = updating(index, 10)
             else:
                 self._model.update(index, {'processing': f'Extracting {name}'})
-                subthread = updating(index, 1)
             
             i, o = f'{self._dir_i}/{name}', f'{self._dir_o}/{name}'
+            subthread = updating(index, self._estimate_copying_time(i))
+            
             if os.path.islink(i):
                 fs.make_link(i, o)
             elif os.path.isfile(i):
@@ -114,3 +115,24 @@ class Page2(QObject):  # InProgress
         print(':ti0', 'all done')
         self.inprogressing.emit(False)
         wizard.all_finished = True
+    
+    @staticmethod
+    def _estimate_copying_time(path: str) -> float:
+        """
+        returns time in second.
+        note: this is a very rough calculation. mostly based on experience.
+        """
+        if os.path.islink(path):
+            return 200E-3
+        elif os.path.isfile(path):
+            return 1
+        else:
+            medium_dirs = ('lib',)
+            large_dirs = ('python',)
+            dirname = fs.basename(path)
+            if dirname in medium_dirs:
+                return 10
+            elif dirname in large_dirs:
+                return 30
+            else:
+                return 1
