@@ -5,7 +5,7 @@ import semver  # https://github.com/python-semver/python-semver
 
 from ..normalization import T
 from ..normalization import VersionSpec
-from ..normalization import normalize_name
+from ..normalization import filename_2_name_version
 from ..normalization import normalize_version_spec
 
 
@@ -52,33 +52,9 @@ def find_proper_version(
     return candidates[0]
 
 
-def get_name_and_version_from_filename(filename: str) -> t.Tuple[str, str]:
-    """
-    examples:
-        'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl' -> ('PyYAML', '6.0')
-        'lk-logger-4.0.7.tar.gz' -> ('lk-logger', '4.0.7')
-        'aliyun-python-sdk-2.2.0.zip' -> ('aliyun-python-sdk', '2.2.0')
-    """
-    for ext in ('.whl', '.tar.gz', '.zip'):
-        if filename.endswith(ext):
-            filename = filename.removesuffix(ext)
-            break
-    else:
-        raise ValueError(filename)
-    
-    # assert ext
-    if ext == '.whl':
-        a, b, _ = filename.split('-', 2)
-    else:
-        a, b = filename.rsplit('-', 1)
-    return a, b
-
-
 def get_verspec_from_filename(filename: str) -> VersionSpec:
-    a, b = get_name_and_version_from_filename(filename)
-    name = normalize_name(a)
-    # -> 'pyside6'
-    verspec_ = tuple(normalize_version_spec(name, b))
+    name, ver = filename_2_name_version(filename)
+    verspec_ = tuple(normalize_version_spec(name, ver))
     assert len(verspec_) == 1
     verspec = verspec_[0]
     # -> VersionSpec<'pyside6==6.0.0'>

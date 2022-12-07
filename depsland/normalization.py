@@ -31,11 +31,26 @@ class VersionSpec:
         return f'{self.name}{self.comparator}{self.version}'
 
 
-def split_name_and_verspec(text: str) -> t.Tuple[T.RawName, T.RawVersionSpec]:
-    text = text.replace(' ', '')
-    pattern = re.compile(r'([-\w]+)(.*)')
-    raw_name, verspec = pattern.match(text).groups()
-    return raw_name, verspec
+def filename_2_name_version(filename: str) -> t.Tuple[T.Name, T.Version]:
+    """
+    examples:
+        'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl' -> ('pyyaml', '6.0')
+        'lk-logger-4.0.7.tar.gz' -> ('lk_logger', '4.0.7')
+        'aliyun-python-sdk-2.2.0.zip' -> ('aliyun_python_sdk', '2.2.0')
+    """
+    for ext in ('.whl', '.tar.gz', '.zip'):
+        if filename.endswith(ext):
+            filename = filename.removesuffix(ext)
+            break
+    else:
+        raise ValueError(filename)
+    # assert ext
+    if ext == '.whl':
+        a, b, _ = filename.split('-', 2)
+    else:
+        a, b = filename.rsplit('-', 1)
+    a = normalize_name(a)
+    return a, b
 
 
 def normalize_name(raw_name: T.RawName) -> T.Name:
@@ -106,3 +121,11 @@ def normalize_version_spec(
                 version=str(bumped_ver),
                 comparator='<'
             )
+
+
+# DELETE: no usage
+def split_name_and_verspec(text: str) -> t.Tuple[T.RawName, T.RawVersionSpec]:
+    text = text.replace(' ', '')
+    pattern = re.compile(r'([-\w]+)(.*)')
+    raw_name, verspec = pattern.match(text).groups()
+    return raw_name, verspec
