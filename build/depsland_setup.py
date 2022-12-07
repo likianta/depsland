@@ -189,12 +189,14 @@ def _wind_up(dir_: str) -> None:
     _create_desktop_shortcut(file_i, file_o)
     
     # add `DEPSLAND` to environment variables
-    # FIXME: i've found a failed case if user launches terminal as admin by
-    #   default -- the error shows `depsland command not found`, though it is
-    #   acctually existed in user's PATH variables.
-    #   to fix it, i have to change group level from 'user' to 'system'. (is
-    #   this a good resolution?)
-    _set_environment_variables(dir_, level='system')
+    _set_environment_variables(dir_, level='user')
+    #   do not use `level='system'` here, it is not worked.
+    #   FIXME: we've found a failed case if user launches terminal as admin by
+    #       default -- the error shows `depsland command not found`, though it
+    #       is acctually existed in user's PATH variables.
+    #       depsland setup program cannot handle it, setting `level='system'`
+    #       may cause a fatal error. so i remained `level='user'` and maybe we
+    #       need to prompt user to handle it by him/herself.
 
 
 def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
@@ -277,8 +279,8 @@ def _set_environment_variables(dir_: str, level='user') -> None:
         def set_depsland_to_path_variable(
                 self, paths: t.List[str], new: str
         ) -> None:
-            paths.append(new)
-            paths.append(new + r'\apps\.bin')
+            paths.insert(0, new)
+            paths.insert(1, new + r'\apps\.bin')
             winreg.SetValueEx(
                 self.key, 'PATH', 0, winreg.REG_EXPAND_SZ,
                 ';'.join(filter(None, paths))
