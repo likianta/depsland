@@ -1,9 +1,9 @@
-# Disclaim
+# What's this
 
 This file is used for depsland package to check itself whether in project mode
 or in python package mode.
 
-# How this file is used
+# How is this file used
 
 1. When you clone depsland project from Github repo, you will get this file in
    the project root.

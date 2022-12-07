@@ -35,6 +35,7 @@ dist/
 !/apps/*/.gitkeep
 !/chore/custom_packages/.gitkeep
 !/dist/.gitkeep
+!/lib/readme.md
 !/oss/apps/.gitkeep
 !/oss/test/.gitkeep
 !/python/README.md

@@ -7,7 +7,7 @@
 argsense >= 0.5.2
 lambda-ex
 lk-logger >= 5.4.7
-lk-utils >= 2.5.2b0
+lk-utils >= 2.5.2b1
 # neoprint >= 0.1.0b0
 oss2
 # pyside6-essentials
