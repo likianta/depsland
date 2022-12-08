@@ -74,13 +74,14 @@ class T:
     #   `def dump_manifest` function (when caller passes a '.json' file param
     #   to it).
     Manifest0 = t.TypedDict('Manifest0', {
-        'appid'       : str,
-        'name'        : str,
-        'version'     : str,
-        'assets'      : Assets0,
-        'dependencies': Dependencies0,
-        'pypi'        : PyPI0,
-        'launcher'    : Launcher0,
+        'appid'           : str,
+        'name'            : str,
+        'version'         : str,
+        'assets'          : Assets0,
+        'dependencies'    : Dependencies0,
+        'pypi'            : PyPI0,
+        'launcher'        : Launcher0,
+        'depsland_version': str,
     }, total=False)
     
     # Manifest1
@@ -91,14 +92,15 @@ class T:
     #       2. ~1 has an extra key 'start_directory'.
     #       3. ~1's assets values are `namedtuple: AssetInfo`.
     Manifest1 = t.TypedDict('Manifest1', {
-        'appid'          : str,
-        'name'           : str,
-        'version'        : str,
-        'start_directory': _AbsPath,
-        'assets'         : Assets1,
-        'dependencies'   : Dependencies1,
-        'pypi'           : PyPI1,
-        'launcher'       : Launcher1,
+        'appid'           : str,
+        'name'            : str,
+        'version'         : str,
+        'start_directory' : _AbsPath,
+        'assets'          : Assets1,
+        'dependencies'    : Dependencies1,
+        'pypi'            : PyPI1,
+        'launcher'        : Launcher1,
+        'depsland_version': str,
     })
     
     ManifestFile = str  # a '.json' or '.pkl' file
@@ -145,15 +147,16 @@ AssetInfo = namedtuple('AssetInfo', (
 # -----------------------------------------------------------------------------
 
 def init_manifest(appid: str, appname: str) -> T.Manifest1:
+    from .. import __version__
     return {
-        'appid'          : appid,
-        'name'           : appname,
-        'version'        : '0.0.0',
-        'start_directory': '',
-        'assets'         : {},
-        'dependencies'   : {},
-        'pypi'           : {},
-        'launcher'       : {
+        'appid'           : appid,
+        'name'            : appname,
+        'version'         : '0.0.0',
+        'start_directory' : '',
+        'assets'          : {},
+        'dependencies'    : {},
+        'pypi'            : {},
+        'launcher'        : {
             'script'      : '',
             'icon'        : '',
             'cli_tool'    : False,
@@ -161,10 +164,13 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
             'start_menu'  : False,
             'show_console': True,
         },
+        'depsland_version': __version__,
     }
 
 
 def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
+    from .. import __version__
+    
     manifest_file = fs.normpath(manifest_file, force_abspath=True)
     manifest_dir = fs.parent_path(manifest_file)
     
@@ -191,18 +197,19 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
     )
     
     data_o.update({
-        'appid'          : data_i['appid'],
-        'name'           : data_i['name'],
-        'version'        : data_i['version'],
-        'start_directory': manifest_dir,
-        'assets'         : _update_assets(
+        'appid'           : data_i['appid'],
+        'name'            : data_i['name'],
+        'version'         : data_i['version'],
+        'start_directory' : manifest_dir,
+        'assets'          : _update_assets(
             data_i.get('assets'), manifest_dir),
-        'dependencies'   : _update_dependencies(
+        'dependencies'    : _update_dependencies(
             data_i.get('dependencies', {})),
-        'pypi'           : _update_pypi(
+        'pypi'            : _update_pypi(
             data_i.get('pypi', []), manifest_dir),
-        'launcher'       : _update_launcher(
+        'launcher'        : _update_launcher(
             data_i.get('launcher', {}), manifest_dir),
+        'depsland_version': data_i.get('depsland_version', __version__),
     })
     
     _check_manifest(data_o)
