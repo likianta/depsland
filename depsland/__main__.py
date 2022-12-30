@@ -75,13 +75,17 @@ def welcome(confirm_close=False) -> None:
         input('press enter to close window...')
 
 
-# @cli.cmd()
-# def launch_gui() -> None:
-#     """
-#     launch depsland gui. [red](warning: experimental feature)[/]
-#     """
-#     from .gui import launch_gui
-#     launch_gui()
+@cli.cmd()
+def launch_gui() -> None:
+    """
+    launch depsland gui. [red](warning: experimental feature)[/]
+    """
+    import sys
+    from lk_utils import xpath
+    sys.path.insert(0, xpath('../lib'))  # TEST
+    
+    from .ui import launch_app
+    launch_app()
 
 
 # -----------------------------------------------------------------------------
