@@ -5,14 +5,12 @@
 # wheel
 
 argsense >= 0.5.2
-lambda-ex
 lk-logger >= 5.4.7
 lk-utils >= 2.5.2
 # neoprint >= 0.1.0b0
 oss2
 # pyside6-essentials
 pyyaml
-# qmlease
+# qmlease >= 3.1.0a4
 rich
 semver >= 3.0.0dev3
-# textual

@@ -146,6 +146,6 @@ class Page2(QObject):  # InProgress
             if dirname in medium_dirs:
                 return 10
             elif dirname in large_dirs:
-                return 30
+                return 60
             else:
                 return 1
