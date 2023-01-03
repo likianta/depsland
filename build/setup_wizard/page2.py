@@ -1,22 +1,25 @@
 import os
 from time import sleep
+from typing import cast
 
 from lambda_ex import grafting
 from lk_utils import fs
 from lk_utils import new_thread
 from lk_utils import run_new_thread
+
+from build.setup_wizard.page1 import Page1
+from build.setup_wizard.wizard import wizard
+from qmlease import AutoProp
 from qmlease import Model
 from qmlease import QObject
 from qmlease import signal
 from qmlease import slot
 
-from build.setup_wizard.page1 import Page1
-from build.setup_wizard.wizard import wizard
-
 
 class Page2(QObject):  # InProgress
     index_changed = signal(int)
-    inprogressing = signal(bool)  # True: start; False: done
+    # inprogressing = signal(bool)  # True: start; False: done
+    inprogressing = cast(bool, AutoProp(False))
     
     def __init__(self, page1: Page1, dir_i: str, dir_o: str):
         super().__init__()
@@ -32,12 +35,19 @@ class Page2(QObject):  # InProgress
         
         page1.path_determined.connect(self._confirm_target)
         
-        @grafting(self.inprogressing.connect)
+        @grafting(self.inprogressing_changed.connect)
         def _(running: bool) -> None:
             page1_status = not running
             wizard.nav.next_btn['enabled'] = page1_status
             page1.browse_button['enabled'] = page1_status
             page1.input_bar['enabled'] = page1_status
+        
+        @grafting(wizard.page_changed.connect)
+        def _(page: int) -> None:
+            if page == 0:
+                wizard.nav.next_btn['enabled'] = True
+            elif page == 1:
+                wizard.nav.next_btn['enabled'] = not self.inprogressing
     
     @slot(str)
     def _confirm_target(self, dir_o: str) -> None:
@@ -54,7 +64,7 @@ class Page2(QObject):  # InProgress
     # noinspection PyNoneFunctionAssignment
     @new_thread(singleton=True)
     def run(self) -> None:
-        self.inprogressing.emit(True)
+        self.inprogressing = True
         sleep(0.3)  # wait for the UI to be ready.
         print(':i0s', 'start progressing')
         
@@ -114,7 +124,7 @@ class Page2(QObject):  # InProgress
             #   animateValueDuration`.
         
         print(':ti0', 'all done')
-        self.inprogressing.emit(False)
+        self.inprogressing = False
         wizard.all_finished = True
         run_new_thread(wizard.wind_up, args=(self._dir_o,), daemon=False)
     
