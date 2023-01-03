@@ -126,6 +126,7 @@ class Page2(QObject):  # InProgress
         print(':ti0', 'all done')
         self.inprogressing = False
         wizard.all_finished = True
+        wizard.active_stage += 1
         run_new_thread(wizard.wind_up, args=(self._dir_o,), daemon=False)
     
     @staticmethod

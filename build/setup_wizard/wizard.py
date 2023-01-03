@@ -15,6 +15,7 @@ from qmlease import slot
 
 
 class SetupWizard(QObject):
+    active_stage = 0
     all_finished = AutoProp(False, bool)
     nav: 'Navigation'
     navigation_ready = signal()
@@ -23,6 +24,11 @@ class SetupWizard(QObject):
     # def __init__(self):
     #     super().__init__()
     #     self.all_finished_changed.connect(lambda _: self._wind_up)
+    
+    # def init_pages(self, page1, page2, page3):
+    #     @bind_signal(self.nav.page_changed)
+    #     def _(page: int, forward: bool) -> None:
+    #         pass
     
     @slot(object, object)
     def init_navigation(self, prev: QObject, next_: QObject) -> None:
@@ -194,6 +200,9 @@ class Navigation(QObject):
         the step checker is only triggered when user clicks 'Next' button.
         """
         self._steps_checker[step] = checker
+        
+    def remove_step_checker(self, step: int) -> None:
+        self._steps_checker[step] = None
     
     def _init_bindings(self):
         

@@ -28,8 +28,11 @@ class Page1(QObject):
             
             @bind_signal(wizard.nav.page_changed)
             def _(page: int, forward: bool) -> None:
-                if forward and page == 1:
-                    self.path_determined.emit(self.selected_path)
+                if wizard.active_stage == 0:
+                    if forward and page == 1:
+                        self.path_determined.emit(self.selected_path)
+                        wizard.active_stage += 1
+                        wizard.nav.remove_step_checker(0)
     
     @property
     def selected_path(self) -> str:
