@@ -2,7 +2,6 @@ import os
 from time import sleep
 from typing import cast
 
-from lambda_ex import grafting
 from lk_utils import fs
 from lk_utils import new_thread
 from lk_utils import run_new_thread
@@ -12,6 +11,7 @@ from build.setup_wizard.wizard import wizard
 from qmlease import AutoProp
 from qmlease import Model
 from qmlease import QObject
+from qmlease import bind_signal
 from qmlease import signal
 from qmlease import slot
 
@@ -35,14 +35,14 @@ class Page2(QObject):  # InProgress
         
         page1.path_determined.connect(self._confirm_target)
         
-        @grafting(self.inprogressing_changed.connect)
+        @bind_signal(self.inprogressing_changed)
         def _(running: bool) -> None:
             page1_status = not running
             wizard.nav.next_btn['enabled'] = page1_status
             page1.browse_button['enabled'] = page1_status
             page1.input_bar['enabled'] = page1_status
         
-        @grafting(wizard.page_changed.connect)
+        @bind_signal(wizard.page_changed)
         def _(page: int) -> None:
             if page == 0:
                 wizard.nav.next_btn['enabled'] = True

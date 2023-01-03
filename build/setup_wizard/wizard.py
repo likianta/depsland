@@ -3,13 +3,13 @@ import typing as t
 import winreg
 from textwrap import dedent
 
-from lambda_ex import grafting
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import run_cmd_args
 from qmlease import AutoProp
 from qmlease import QObject
 from qmlease import app
+from qmlease import bind_signal
 from qmlease import signal
 from qmlease import slot
 
@@ -28,7 +28,7 @@ class SetupWizard(QObject):
     def init_navigation(self, prev: QObject, next_: QObject) -> None:
         self.nav = Navigation(prev, next_)
         
-        @grafting(self.nav.page_changed.connect)
+        @bind_signal(self.nav.page_changed)
         def _(page: int, _: bool) -> None:
             self.page_changed.emit(page)
         
@@ -197,7 +197,7 @@ class Navigation(QObject):
     
     def _init_bindings(self):
         
-        @grafting(self.prev_btn.clicked.connect)
+        @bind_signal(self.prev_btn.clicked)
         def _() -> None:
             if self.current_page == self.FIRST_PAGE:
                 # this case should not happen, did we forget to disable the
@@ -206,7 +206,7 @@ class Navigation(QObject):
             self.current_page -= 1
             self.page_changed.emit(self.current_page, False)
         
-        @grafting(self.next_btn.clicked.connect)
+        @bind_signal(self.next_btn.clicked)
         def _() -> None:
             if checker := self._steps_checker[self.current_page]:
                 if not checker():
@@ -218,7 +218,7 @@ class Navigation(QObject):
                 self.current_page += 1
                 self.page_changed.emit(self.current_page, True)
         
-        @grafting(self.page_changed.connect)
+        @bind_signal(self.page_changed)
         def _(page: int, _) -> None:
             print(f'page changed to {page}')
             if page == self.FIRST_PAGE:
