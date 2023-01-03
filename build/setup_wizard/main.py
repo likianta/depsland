@@ -64,6 +64,7 @@ def main(test_path: bool, hot_reload: bool):
     
     pystyle.color.update_from_file(xpath('stylesheet.yaml'))
     
+    app.set_app_icon(xpath('launcher.ico'))
     app.run(xpath('qml/Main.qml'), debug=hot_reload)
 
 
