@@ -46,9 +46,9 @@ def main(test_path: bool, hot_reload: bool):
     from qmlease import pystyle
     
     if test_path:
-        dir_i = xpath(f'../../dist/depsland-{depsland_version}', True)
-        assert exists(dir_i)
-        print(f'you are running test mode, the path is "{dir_i}"')
+        dir_i = xpath(f'../../dist/depsland-setup-{depsland_version}', True)
+        assert exists(dir_i), dir_i
+        print(f'you are running in test mode, the path is "{dir_i}"')
     else:
         dir_i = xpath('../..', True)
     dir_o = ''
@@ -64,6 +64,7 @@ def main(test_path: bool, hot_reload: bool):
     
     pystyle.color.update_from_file(xpath('stylesheet.yaml'))
     
+    app.set_app_icon(xpath('launcher.ico'))
     app.run(xpath('qml/Main.qml'), debug=hot_reload)
 
 

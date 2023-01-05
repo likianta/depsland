@@ -1,12 +1,12 @@
 import os
 
-from lambda_ex import grafting
 from lk_utils import fs
 
 from build.setup_wizard.wizard import wizard
 from depsland import paths
 from qmlease import QObject
 from qmlease import pystyle
+from qmlease import bind_signal
 from qmlease import signal
 from qmlease import slot
 from qmlease import util
@@ -22,14 +22,17 @@ class Page1(QObject):
     def __init__(self):
         super().__init__()
         
-        @grafting(wizard.navigation_ready.connect)
+        @bind_signal(wizard.navigation_ready)
         def _():
             wizard.nav.add_step_checker(0, self.validate_path)
             
-            @grafting(wizard.nav.page_changed.connect)
+            @bind_signal(wizard.nav.page_changed)
             def _(page: int, forward: bool) -> None:
-                if forward and page == 1:
-                    self.path_determined.emit(self.selected_path)
+                if wizard.active_stage == 0:
+                    if forward and page == 1:
+                        self.path_determined.emit(self.selected_path)
+                        wizard.active_stage += 1
+                        wizard.nav.remove_step_checker(0)
     
     @property
     def selected_path(self) -> str:
@@ -43,7 +46,7 @@ class Page1(QObject):
         
         self.input_bar['text'] = self._get_default_installation_path()
         
-        @grafting(self.browse_button.clicked.connect)
+        @bind_signal(self.browse_button.clicked)
         def _():
             if self.selected_path:
                 try:
@@ -60,11 +63,11 @@ class Page1(QObject):
             if path:
                 self.input_bar['text'] = path
         
-        @grafting(self.input_bar.textChanged.connect)
+        @bind_signal(self.input_bar.textChanged)
         def _() -> None:
             self.prompt['text'] = ''
         
-        @grafting(wizard.all_finished_changed.connect)
+        @bind_signal(wizard.all_finished_changed)
         def _(is_done: bool) -> None:
             # assert is_done
             print(is_done, ':v')

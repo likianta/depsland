@@ -1,8 +1,5 @@
 from textwrap import dedent
 
-from lambda_ex import grafting
-
-from build.setup_wizard.wizard import wizard
 from depsland import __version__ as depsland_version
 from qmlease import QObject
 from qmlease import slot

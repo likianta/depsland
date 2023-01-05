@@ -27,6 +27,13 @@ print(':v2', f'depsland version: {__version__}')
 
 @cli.cmd()
 def full_build(oss_scheme: str, add_python_path=True):
+    """
+    args:
+        oss_scheme: 'aliyun' or 'local'
+            aliyun: you need to prepare a file named -
+            'conf/depsland_for_dev.yaml', which contains aliyun oss access -
+            & secret keys.
+    """
     root_i = paths.project.root
     root_o = '{dist}/depsland-setup-{version}'.format(
         dist=paths.project.dist,
