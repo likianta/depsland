@@ -1,16 +1,11 @@
 # run command: py build/install_requirements.py -h
 
-# pip
-# setuptools
-# wheel
-
-argsense >= 0.5.2
-lk-logger >= 5.4.7
-lk-utils >= 2.5.2
-# neoprint >= 0.1.0b0
+argsense
+lk-logger
+lk-utils
 oss2
-# pyside6-essentials
+pyside6-essentials
 pyyaml
-# qmlease >= 3.1.0a4
+qmlease
 rich
 semver >= 3.0.0dev3
