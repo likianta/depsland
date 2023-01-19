@@ -52,7 +52,7 @@ class Home(QObject):
             time_sec += 1
             self._msg_item['text'] = \
                 f'Installing {appid}... (time elapsed: {time_sec}s)'
-            if self._installing.
+            pass
     
     def _stop_timer(self) -> None:
         self.running = False
