@@ -10,5 +10,6 @@ semver >= 3.0.0dev3
 
 # === gui ===
 # flet
+# pyside6-lite  # from proj:/qmlease/sidework/pyside6_tailored_package
 pyside6-essentials
 qmlease

@@ -10,31 +10,8 @@ commands:
 from argsense import cli
 
 
-def _init_sys_paths() -> None:
-    import sys
-    from lk_utils import xpath
-    from os.path import exists
-    
-    proj_dir = xpath('../../')
-    assert exists(f'{proj_dir}/lib')
-    # assert exists(f'{proj_dir}/lib/qmlease')
-    assert exists(f'{proj_dir}/lib/pyside6_lite')
-    
-    sys.path.insert(0, f'{proj_dir}/lib')
-    sys.path.insert(0, f'{proj_dir}/lib/pyside6_lite')
-    #   imports
-    #       qmlease
-    #       PySide6 (a tailored version)
-    #       shiboken6
-    
-    import PySide6
-    print(PySide6.__path__)
-
-
 @cli.cmd()
 def main(test_path: bool, hot_reload: bool):
-    _init_sys_paths()
-    
     from build.setup_wizard.page1 import Page1
     from build.setup_wizard.page2 import Page2
     from build.setup_wizard.page3 import Page3
@@ -50,7 +27,7 @@ def main(test_path: bool, hot_reload: bool):
         assert exists(dir_i), dir_i
         print(f'you are running in test mode, the path is "{dir_i}"')
     else:
-        dir_i = xpath('../..', True)
+        dir_i = xpath('../../', True)
     dir_o = ''
     
     page1 = Page1()
