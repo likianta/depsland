@@ -80,10 +80,8 @@ def launch_gui() -> None:
     """
     launch depsland gui. [red](warning: experimental feature)[/]
     """
-    import sys
-    from lk_utils import xpath
-    sys.path.insert(0, xpath('../lib'))  # TEST
-    
+    import os
+    os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
     launch_app()
 
