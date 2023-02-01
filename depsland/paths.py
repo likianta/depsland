@@ -121,15 +121,15 @@ class Apps:
         self.venv = f'{self.root}/.venv'
         self._distribution_history = f'{self.root}/{{appid}}/.dist_history'
         self._installation_history = f'{self.root}/{{appid}}/.inst_history'
-        self._packages = f'{self.root}/.venv/{{appid}}'
+        self._venv_packages = f'{self.root}/.venv/{{appid}}/{{version}}'
         ''' the difference between `_distribution_history` and
             `_installation_history`:
             when developer builds or publishes a new version of an app, the
-            dist history will be updated, the inst won't.
+            dist history will be updated, the inst doesn't.
             when user installs a new version of an app, the vice versa.
-            this avoids that if a developer as also an user, published and
-            installed the same app on the same machine, the incremental-update
-            scheme reported "target version exists" error.
+            this avoids that if a developer plays himself as role of an user,
+            published and installed the same app on the same machine, the
+            incremental-update scheme reported "target version exists" error.
         '''
     
     def get_distribution_history(self, appid: str) -> str:
@@ -138,16 +138,24 @@ class Apps:
     def get_installation_history(self, appid: str) -> str:
         return self._installation_history.format(appid=appid)
     
-    def get_packages(self, appid: str) -> str:
-        return self._packages.format(appid=appid)
+    def get_packages(self, appid: str, version: str) -> str:
+        return self._venv_packages.format(appid=appid, version=version)
     
-    def make_packages(self, appid: str, clear_exists=False) -> str:
-        packages = self._packages.format(appid=appid)
-        if exists(packages):
-            if clear_exists:
-                fs.remove_tree(packages)
+    def make_packages(self, appid: str, version: str,
+                      clear_exists=False) -> str:
+        """
+        create or clear a folder for venv packages.
+        """
+        packages = self._venv_packages.format(appid=appid, version=version)
+        if exists(d := fs.dirpath(packages)):
+            if exists(packages):
+                if clear_exists:
+                    fs.remove_tree(packages)
+                    os.mkdir(packages)
+            else:
                 os.mkdir(packages)
         else:
+            os.mkdir(d)
             os.mkdir(packages)
         return packages
 

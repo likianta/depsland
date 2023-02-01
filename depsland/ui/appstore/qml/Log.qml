@@ -1,6 +1,6 @@
 import QtQuick
 import LKWidgets
-import LKWidgets.Functional
+import LKWidgets.Integrated
 
 LKLogPanel {
     id: _log

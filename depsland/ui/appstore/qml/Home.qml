@@ -1,7 +1,7 @@
 import QtQml
 import QtQuick
 import LKWidgets
-import LKWidgets.Functional
+import LKWidgets.Integrated
 
 LKWindow {
     title: 'Depsland Appstore'

@@ -4,8 +4,11 @@ argsense
 lk-logger
 lk-utils
 oss2
-pyside6-essentials
 pyyaml
-qmlease
 rich
 semver >= 3.0.0dev3
+
+# === gui ===
+# flet
+pyside6-essentials
+qmlease

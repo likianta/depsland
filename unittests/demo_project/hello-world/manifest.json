@@ -1,7 +1,7 @@
 {
     "appid": "hello_world",
     "name": "Hello World",
-    "version": "0.1.9",
+    "version": "0.2.1",
     "assets": {
         "src": "",
         "readme.md": ""
@@ -11,8 +11,11 @@
     },
     "pypi": [],
     "launcher": {
-        "command": "py src/hello_world.py",
+        "script": "src/hello_world.py",
+        "icon": "",
+        "cli_tool": false,
         "desktop": false,
-        "start_menu": false
+        "start_menu": false,
+        "show_console": true
     }
 }

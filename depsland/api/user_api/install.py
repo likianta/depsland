@@ -216,7 +216,7 @@ def _install_custom_packages(
 def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
     if dst_dir is None:
         dst_dir = paths.apps.make_packages(
-            manifest['appid'], clear_exists=True
+            manifest['appid'], manifest['version'], clear_exists=True
         )
     # note: make sure `dst_dir` does exist.
     
