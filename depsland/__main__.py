@@ -80,8 +80,8 @@ def launch_gui() -> None:
     """
     launch depsland gui. [red](warning: experimental feature)[/]
     """
-    import os
-    os.environ['QT_API'] = 'pyside6_lite'
+    # import os
+    # os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
     launch_app()
 

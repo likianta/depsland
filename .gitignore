@@ -16,6 +16,7 @@
 /depsland/webui/static/
 /dist/*
 /docs/*/*.html
+/lib/
 /oss/*/*
 /pypi/*/[^.]*
 /python/*
