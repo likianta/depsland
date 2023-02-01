@@ -24,7 +24,7 @@
 
 1. 检查 `depslan/__init__.py` 的版本号 (`__version__`) 是否需要更新
 
-    请注意, 该版本号必须不存在于 dist 目录下 (例如, 如果当前是 0.1.0 版本, 在 dist 目录下不可以有 "depsland-0.1.0" 目录).
+    请注意, 该版本号必须不存在于 dist 目录下 (例如, 如果当前是 0.1.0 版本, 在 dist 目录下不可以有 "depsland-setup-0.1.0" 目录).
 
     如果有的话, 要么手动删除该目录, 要么更新一下版本号.
 
@@ -35,7 +35,7 @@
     py build/build.py full-build aliyun
     ```
 
-3. 生成结果: `dist/depsland-<version>` (文件夹)
+3. 生成结果: `dist/depsland-setup-<version>` (文件夹)
 
     该文件夹的体积在 140mb 左右 (压缩后约 55mb). 各部分占比如下:
 
