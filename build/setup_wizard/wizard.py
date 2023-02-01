@@ -122,7 +122,7 @@ class SetupWizard(QObject):
             def get_depsland_variable(self) -> str:
                 try:
                     value, _ = winreg.QueryValueEx(self.key, 'DEPSLAND')
-                except ValueError:
+                except Exception:  # ValueError or FileNotFoundError
                     value = ''
                 return value
             
