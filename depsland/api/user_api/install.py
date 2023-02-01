@@ -225,6 +225,7 @@ def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
         name = normalize_name(name)
         vspecs = tuple(normalize_version_spec(name, vspec))
         packages[name] = vspecs
+    if not packages: return
     print(':vl', packages)
     
     name_ids = pypi.install(packages, include_dependencies=True)
