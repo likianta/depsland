@@ -39,7 +39,6 @@ LKWindow {
                     bottom: parent.bottom
                 }
                 width: 0
-                clip: true  // FIXME: patch. wait for qmlease 3.1.0a12+ to fix.
                 text: 'Stop'
 
                 Behavior on width {

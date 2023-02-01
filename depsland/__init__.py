@@ -16,5 +16,5 @@ from .pip import pip
 from .pypi import pypi
 from .utils import bat_2_exe
 
-__version__ = '0.5.0'
+__version__ = '0.5.0b0'
 __date__ = '2023-02-01'
