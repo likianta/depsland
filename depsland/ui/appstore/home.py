@@ -31,6 +31,11 @@ class Home(QObject):
     _installation_done = signal(bool)
     _installing_thread: t.Optional[ThreadWorker] = None
     
+    @slot(result=str)
+    def get_app_version(self) -> str:
+        from ... import __version__
+        return f'v{__version__}'
+    
     @slot(object, object, object, object)
     def init_view(
             self,

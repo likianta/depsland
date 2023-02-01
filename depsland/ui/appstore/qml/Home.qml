@@ -4,7 +4,7 @@ import LKWidgets
 
 LKWindow {
     id: root
-    title: 'Depsland Appstore'
+    title: 'Depsland Appstore ' + py.home.get_app_version()
     width: 400
     height: 24 + _main_column.height + 24
 //    height: childrenRect.height
