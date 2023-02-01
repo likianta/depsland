@@ -49,10 +49,12 @@ class SetupWizard(QObject):
         fs.move(file_i, file_o, True)
         
         # to desktop
-        file_i = f'{dir_o}/desktop.exe'
+        file_i = f'{dir_o}/build/exe/desktop.exe'
+        file_m = f'{dir_o}/depsland-gui.exe'
         file_o = fs.normpath('{}/Desktop/Depsland.lnk'
                              .format(os.environ['USERPROFILE']))
-        self._create_desktop_shortcut(file_i, file_o)
+        fs.move(file_i, file_m)
+        self._create_desktop_shortcut(file_m, file_o)
         
         # add `DEPSLAND` to environment variables
         self._set_environment_variables(dir_o, level='user')
@@ -74,12 +76,12 @@ class SetupWizard(QObject):
         """
         vbs = fs.xpath('shortcut_gen.vbs')
         command = dedent('''
-                Set objWS = WScript.CreateObject("WScript.Shell")
-                lnkFile = "{file_o}"
-                Set objLink = objWS.CreateShortcut(lnkFile)
-                objLink.TargetPath = "{file_i}"
-                objLink.Save
-            ''').format(
+            Set objWS = WScript.CreateObject("WScript.Shell")
+            lnkFile = "{file_o}"
+            Set objLink = objWS.CreateShortcut(lnkFile)
+            objLink.TargetPath = "{file_i}"
+            objLink.Save
+        ''').format(
             file_i=file_i.replace('/', '\\'),
             file_o=file_o.replace('/', '\\'),
         )
@@ -200,7 +202,7 @@ class Navigation(QObject):
         the step checker is only triggered when user clicks 'Next' button.
         """
         self._steps_checker[step] = checker
-        
+    
     def remove_step_checker(self, step: int) -> None:
         self._steps_checker[step] = None
     
