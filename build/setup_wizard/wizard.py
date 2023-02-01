@@ -1,6 +1,5 @@
 import os
 import typing as t
-import winreg
 from textwrap import dedent
 
 from lk_utils import dumps
@@ -91,6 +90,7 @@ class SetupWizard(QObject):
     
     @staticmethod
     def _set_environment_variables(dir_: str, level='user') -> None:
+        import winreg
         new_depsland_env = dir_.replace('/', '\\')
         print(':v', new_depsland_env)
         
