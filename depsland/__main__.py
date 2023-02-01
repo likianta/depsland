@@ -336,7 +336,7 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     os.environ['DEPSLAND'] = paths.project.root
     os.environ['PYTHONPATH'] = '.;{app_dir};{pkg_dir}'.format(
         app_dir=manifest['start_directory'],
-        pkg_dir=paths.apps.get_packages(appid)
+        pkg_dir=paths.apps.get_packages(appid, version)
     )
     
     # print(':v', args, kwargs)
