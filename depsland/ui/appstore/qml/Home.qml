@@ -1,21 +1,13 @@
 import QtQml
 import QtQuick
 import LKWidgets
-import LKWidgets.Integrated
 
 LKWindow {
+    id: root
     title: 'Depsland Appstore'
     width: 400
     height: 24 + _main_column.height + 24
 //    height: childrenRect.height
-
-    Behavior on height {
-        id: _root_height_anim
-        enabled: false
-        NumberAnimation {
-            duration: 400
-        }
-    }
 
     LKColumn {
         id: _main_column
@@ -35,61 +27,84 @@ LKWindow {
             showClearButton: true
         }
 
-        LKButton {
-            id: _btn
+        Item {
+            id: _buttons
             height: 24
-            text: 'Install'
 
-            LKIcon {
-                id: _refresh_icon
+            LKButton {
+                id: _stop_btn
                 anchors {
-                    left: parent.left
-                    verticalCenter: parent.verticalCenter
-                    leftMargin: 12
+                    right: parent.right
+                    top: parent.top
+                    bottom: parent.bottom
                 }
-                opacity: _refresh_anim.running ? 1 : 0
-                size: 14
-                source: pyassets.src('refresh-line.svg')
-//                color: pycolor.text_hint
+                width: 0
+                clip: true  // FIXME: patch. wait for qmlease 3.1.0a12+ to fix.
+                text: 'Stop'
 
-                Behavior on opacity {
+                Behavior on width {
                     NumberAnimation {
-                        duration: 500
+                        duration: 100
                     }
                 }
+            }
 
-                RotationAnimator on rotation {
-                    id: _refresh_anim
-                    alwaysRunToEnd: true
-                    from: 0
-                    to: 360
-                    duration: 1000
-                    loops: Animation.Infinite
-                    running: false
+            LKButton {
+                id: _install_btn
+                anchors {
+                    left: parent.left
+                    right: _stop_btn.left
+                    top: parent.top
+                    bottom: parent.bottom
+                    rightMargin: _stop_btn.width > 0 ? 8 : 0
                 }
+                text: 'Install'
 
-                Component.onCompleted: {
-                    // test
-                    _btn.clicked.connect(() => {
-                        _refresh_anim.running = !_refresh_anim.running
-                    })
+                LKIcon {
+                    id: _refresh_icon
+                    anchors {
+                        left: parent.left
+                        verticalCenter: parent.verticalCenter
+                        leftMargin: 12
+                    }
+                    opacity: _refresh_anim.running ? 1 : 0
+                    size: 14
+                    source: pyassets.src('refresh-line.svg')
+    //                color: pycolor.text_hint
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 500
+                        }
+                    }
+
+                    RotationAnimator on rotation {
+                        id: _refresh_anim
+                        alwaysRunToEnd: true
+                        from: 0
+                        to: 360
+                        duration: 1000
+                        loops: Animation.Infinite
+                        running: _install_btn.text == 'Installing...'
+                    }
+
+//                    Component.onCompleted: {
+//                        _install_btn.clicked.connect(() => {
+//                            _refresh_anim.running = !_refresh_anim.running
+//                        })
+//                    }
                 }
             }
         }
 
         LKText {
-            id: _msg
-            height: text ? 20 : 0
-        }
-
-        Component.onCompleted: {
-            // when main column is ready (size is known), we can enable root
-            // height animation.
-            _root_height_anim.enabled = true
+            id: _info
+            leftPadding: 4
+            color: pycolor.text_secondary
         }
     }
 
     Component.onCompleted: {
-        py.home.init_view(_input, _btn, _msg)
+        py.home.init_view(_input, _install_btn, _stop_btn, _info)
     }
 }
