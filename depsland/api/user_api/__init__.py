@@ -1,3 +1,3 @@
-from .install import main as install
-from .install import main2 as install2
+from .install import install
+from .install import install_by_appid
 from .uninstall import main as uninstall

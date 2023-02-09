@@ -154,37 +154,7 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
         upgrade (-u):
         reinstall (-r):
     """
-    from .manifest import init_manifest
-    
-    m0, m1 = _get_manifests(appid)
-    
-    if m0 is None:
-        m0 = init_manifest(m1['appid'], m1['name'])
-        api.install2(m1, m0)
-    elif _check_version(m1, m0):
-        if upgrade:
-            # install first, then uninstall old.
-            api.install2(m1, m0)
-            # TODO: for safety consideration, below is temporarily disabled,
-            #   wait for a future version that supports complete auto-upgrade.
-            # api.uninstall(appid, m0['version'],
-            #               remove_venv=False, remove_bin=False)
-        else:
-            print('new version available but not installed. you can use '
-                  '`depsland install -u {appid}` or `depsland upgrade {appid}` '
-                  'to get it.'.format(appid=appid))
-            return
-    else:
-        if reinstall:
-            # assert m0['version'] == m1['version']
-            api.uninstall(appid, m0['version'])
-            m0 = init_manifest(m1['appid'], m1['name'])
-            api.install2(m1, m0)
-        else:
-            print('current version is up to date. you can use `depsland '
-                  'install -r {appid}` or `depsland reinstall {appid} to force '
-                  'reinstall it.'.format(appid=appid))
-            return
+    api.install_by_appid(appid, upgrade, reinstall)
 
 
 @cli.cmd()
@@ -219,7 +189,7 @@ def install_dist(manifest: str) -> None:
         m0 = load_manifest(f'{x}/manifest.pkl')
         if _check_version(m1, m0):
             # install first, then uninstall old.
-            api.install2(m1, m0, custom_oss_root)
+            api.install(m1, m0, custom_oss_root)
             api.uninstall(appid, m0['version'],
                           remove_venv=False, remove_bin=False)
         else:
@@ -227,7 +197,7 @@ def install_dist(manifest: str) -> None:
                   + m0['version'])
     else:
         m0 = init_manifest(appid, name)
-        api.install2(m1, m0, custom_oss_root)
+        api.install(m1, m0, custom_oss_root)
     
     print(':rt', '[green]installation done.[/]')
 
@@ -237,18 +207,7 @@ def upgrade(appid: str) -> None:
     """
     upgrade an app from oss by querying appid.
     """
-    m0, m1 = _get_manifests(appid)
-    if m0 is None:
-        from .manifest import init_manifest
-        m0 = init_manifest(m1['appid'], m1['name'])
-        api.install2(m1, m0)
-    elif _check_version(m1, m0):
-        # install first, then uninstall old.
-        api.install(appid)
-        api.uninstall(appid, m0['version'],
-                      remove_venv=False, remove_bin=False)
-    else:
-        print('[green dim]no update available[/]', ':r')
+    api.install_by_appid(appid, upgrade=True, reinstall=False)
 
 
 # @cli.cmd()

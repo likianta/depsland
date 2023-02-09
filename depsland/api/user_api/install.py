@@ -1,6 +1,7 @@
 import os
 import typing as t
 from collections import defaultdict
+from os.path import exists
 from textwrap import dedent
 
 from lk_utils import dumps
@@ -38,83 +39,43 @@ class T:
     Path = str
 
 
-def main(appid: str) -> t.Optional[T.Path]:
-    """
-    depsland install <url>
-    """
-    dir_i: T.Path  # the dir to last installed version (if exists)
-    dir_m: T.Path = make_temp_dir()  # a temp dir to store downloaded assets
-    dir_o: T.Path  # the dir to the new version
-    
-    oss = get_oss_client(appid)
-    print(oss.path)
-    
-    # -------------------------------------------------------------------------
-    
-    def get_manifest_new() -> T.Manifest:
-        nonlocal dir_m, oss
-        file_i = oss.path.manifest
-        file_o = f'{dir_m}/manifest.pkl'
-        oss.download(file_i, file_o)
-        return load_manifest(file_o)
-    
-    def get_manifest_old() -> T.Manifest:
-        nonlocal dir_i, manifest_new
-        dir_i = _get_dir_to_last_installed_version(appid)
-        if dir_i:
-            return load_manifest(f'{dir_i}/manifest.pkl')
+# -----------------------------------------------------------------------------
+
+def install_by_appid(
+        appid: str,
+        upgrade: bool = True,
+        reinstall: bool = False,
+) -> None:
+    m1, m0 = _get_manifests(appid)
+    if m0 is None:
+        m0 = init_manifest(m1['appid'], m1['name'])
+        install(m1, m0)
+    elif _check_version(m1, m0):
+        if upgrade:
+            # install first, then uninstall old.
+            install(m1, m0)
+            # TODO: for safety consideration, below is temporarily disabled,
+            #   wait for a future version that supports complete auto-upgrade.
+            # _uninstall(appid, m0['version'],
+            #               remove_venv=False, remove_bin=False)
         else:
-            print('no previous version found, it may be your first time to '
-                  f'install {appid}')
-            print('[dim]be noted the first-time installation may consume a '
-                  'long time. depsland will try to reduce the consumption in '
-                  'the succeeding upgrades/installations.[/]', ':r')
-            return init_manifest(manifest_new['appid'], manifest_new['name'])
-    
-    manifest_new = get_manifest_new()
-    manifest_old = get_manifest_old()
-    print(':l', manifest_new)
-    if _check_update(manifest_new, manifest_old) is False:
-        print('no update available', ':v4s')
-        return None
-    
-    # -------------------------------------------------------------------------
-    
-    def init_dir_o() -> T.Path:
-        nonlocal manifest_new
-        
-        dir_o = '{}/{}/{}'.format(
-            paths.project.apps,
-            manifest_new['appid'],
-            manifest_new['version']
-        )
-        if os.path.exists(dir_o):
-            # FIXME: ask user turn to upgrade or reinstall command.
-            raise FileExistsError(dir_o)
-        
-        change_start_directory(manifest_new, dir_o)
-        init_target_tree(manifest_new, dir_o)
-        return dir_o
-    
-    dir_o = init_dir_o()
-    
-    # -------------------------------------------------------------------------
-    
-    _install_files(manifest_new, manifest_old, oss, dir_m)
-    _install_custom_packages(manifest_new, manifest_old, oss)
-    _install_dependencies(manifest_new)
-    _create_launcher(manifest_new)
-    
-    fs.move(f'{dir_m}/manifest.pkl', f'{dir_o}/manifest.pkl', True)
-    return dir_o
+            print('new version available but not installed. you can use '
+                  '`depsland install -u {appid}` or `depsland upgrade {appid}` '
+                  'to get it.'.format(appid=appid))
+    else:  # TODO
+        if reinstall:
+            from .uninstall import main as _uninstall
+            # assert m0['version'] == m1['version']
+            _uninstall(appid, m0['version'])
+            install_by_appid(appid, upgrade=False, reinstall=False)
+        else:
+            print('current version is up to date. you can use `depsland '
+                  'install -r {appid}` or `depsland reinstall {appid} to force '
+                  'reinstall it.'.format(appid=appid))
 
 
-def main2(manifest_new: T.Manifest, manifest_old: T.Manifest,
-          custom_oss_root: T.Path = None) -> None:
-    """
-    TODO: leave one of `main` and `main2`, remove another one.
-        currently `main` has no usage and is little behind of update schedule.
-    """
+def install(manifest_new: T.Manifest, manifest_old: T.Manifest,
+            custom_oss_root: T.Path = None) -> None:
     dir_m = make_temp_dir()
     
     if custom_oss_root:
@@ -134,6 +95,9 @@ def main2(manifest_new: T.Manifest, manifest_old: T.Manifest,
     _save_manifest(manifest_new)
 
 
+# -----------------------------------------------------------------------------
+# callees for `install_by_appid`
+
 def _check_update(
         manifest_new: T.Manifest,
         manifest_old: T.Manifest,
@@ -143,7 +107,50 @@ def _check_update(
     )
 
 
+def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
+    return compare_version(new['version'], '>', old['version'])
+
+
+def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
+    if last_ver := get_last_installed_version(appid):
+        dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
+        assert exists(dir_), dir_
+        return dir_
+    return None
+
+
+def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
+    def download_new() -> T.Manifest:
+        tmp_dir = make_temp_dir()
+        oss = get_oss_client(appid)
+        oss.download(oss.path.manifest, x := f'{tmp_dir}/manifest.pkl')
+        manifest_new = load_manifest(x)
+        change_start_directory(manifest_new, '{}/{}/{}'.format(
+            paths.project.apps,
+            manifest_new['appid'],
+            manifest_new['version']
+        ))
+        init_target_tree(manifest_new)
+        fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
+        return manifest_new
+    
+    def find_old() -> t.Optional[T.Manifest]:
+        if x := _get_dir_to_last_installed_version(appid):
+            return load_manifest(f'{x}/manifest.pkl')
+        else:
+            print(f'no previous version found, it may be your first time to '
+                  f'install {appid}')
+            print('[dim]be noted the first-time installation may consume a '
+                  'long time. depsland will try to reduce the consumption in '
+                  'the succeeding upgrades/installations.[/]', ':r')
+            return None
+    
+    new, old = download_new(), find_old()
+    return new, old
+
+
 # -----------------------------------------------------------------------------
+# callees for main process.
 
 def _install_files(
         manifest_new: T.Manifest,
@@ -210,8 +217,8 @@ def _install_custom_packages(
                     f'{oss.path.pypi}/{name}',
                     dl := f'{downloads_dir}/{name}',
                 )
-                pypi.add_to_index(dl)
-    
+                pypi.add_to_index(dl, download_dependencies=True)
+
 
 def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
     if dst_dir is None:
@@ -299,15 +306,6 @@ def _save_manifest(manifest: T.Manifest) -> None:
 
 
 # -----------------------------------------------------------------------------
-
-def _get_dir_to_last_installed_version(appid: str) -> t.Optional[T.Path]:
-    if last_ver := get_last_installed_version(appid):
-        dir_ = '{}/{}'.format(paths.project.apps, appid)
-        out = f'{dir_}/{last_ver}'
-        assert os.path.exists(out)
-        return out
-    return None
-
 
 def _resolve_conflicting_name_ids(name_ids: t.Iterable[str]) -> t.Iterable[str]:
     """
