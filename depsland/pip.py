@@ -14,22 +14,22 @@ from .config import app_settings
 
 
 class T:
-    PipCommand = t.Tuple[str, ...]  # e.g. ('python3', '-m', 'pip')
+    PipExecute = t.Tuple[str, ...]  # e.g. ('python3', '-m', 'pip')
     PopenArgs = t.Iterable[str]
 
 
 class Pip:
-    _pip_exec: T.PipCommand
+    _pip_exec: T.PipExecute
     _template: 'CommandTemplate'
     
     def __init__(
             self,
-            pip_cmd: T.PipCommand,
+            pip_exec: T.PipExecute,
             pip_conf=app_settings['pip'],
             local=paths.pypi.downloads,
     ):
-        self._pip_exec = pip_cmd
-        self._template = CommandTemplate(pip_cmd, local, **pip_conf)
+        self._pip_exec = pip_exec
+        self._template = CommandTemplate(pip_exec, local, **pip_conf)
     
     def update_pip_options(self, **options):
         # noinspection PyArgumentList
@@ -141,7 +141,7 @@ class CommandTemplate:
     
     def __init__(
             self,
-            pip_cmd: T.PipCommand,
+            pip_cmd: T.PipExecute,
             local_dir: str = paths.pypi.downloads,
             cache_dir: str = paths.pypi.cache,
             *,
@@ -236,6 +236,6 @@ class CommandTemplate:
 
 
 pip = Pip(
-    pip_cmd=(paths.python.python, '-m', 'pip'),
+    pip_exec=(paths.python.python, '-m', 'pip'),
     local=paths.pypi.downloads,
 )
