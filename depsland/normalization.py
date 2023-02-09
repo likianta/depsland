@@ -8,7 +8,10 @@ class T:
     RawVersionSpec = str  # e.g. '>=5.4.6a0'
     
     Name = str  # e.g. 'lk_logger', 'pyside6', etc.
-    Version = str  # a semantic version
+    Version = str  # a semantic version.
+    #   it could be empty, means 'any version'.
+    #   there is no such thing like: '0.0.0', 'latest', 'any', '*', because
+    #   they are not semantic versions.
     VersionSpec = t.ForwardRef('VersionSpec')
 
 
@@ -18,6 +21,18 @@ class VersionSpec:
     name: T.Name  # e.g. 'lk_logger'
     version: T.Version
     comparator: str  # '>=', '>', '==', '<', '<=', '!=', '~=', ''
+    
+    # def __init__(self, name: T.Name, version: T.Version, comparator: str):
+    #     if version == '0.0.0':
+    #         assert comparator in ('>=', '==', '')
+    #         version = ''
+    #         comparator = ''
+    #     self.name = name
+    #     self.version = version
+    #     self.comparator = comparator
+    
+    def __str__(self):
+        return self.full_spec
     
     def __repr__(self):
         return f'VersionSpec[{self.full_spec}]'

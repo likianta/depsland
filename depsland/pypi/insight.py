@@ -99,14 +99,19 @@ def _rebuild_dependencies(
         for d1 in fs.find_dirs(d0.path):
             version = d1.name
             name_id = f'{name}-{version}'
-            dependencies[name_id] = []
+            node = dependencies[name_id] = {'resolved': [], 'unresolved': {}}
             
             for d2 in fs.find_dirs(d1.path):
                 if d2.name.endswith('.dist-info'):
                     if os.path.exists(x := f'{d2.path}/METADATA'):
-                        for required_name_id in _analyse_metadata_1(
+                        for (a, b), is_name_id in _analyse_metadata_1(
                                 x, name_2_versions):
-                            dependencies[name_id].append(required_name_id)
+                            if is_name_id:
+                                node['resolved'].append(f'{a}-{b}')
+                            else:
+                                node['unresolved'][a] = tuple(
+                                    norm.normalize_version_spec(a, b)
+                                )
                     else:
                         raise FileNotFoundError(d2.path)  # TODO: for debug
     
@@ -143,8 +148,14 @@ def _rebuild_dependencies(
 def _analyse_metadata_1(
         file: T.Path,
         name_2_versions: T.Name2Versions
-) -> t.Iterator[T.NameId]:
-    """ analyse 'METADATA' file. """
+) -> t.Iterator[t.Tuple[t.Tuple[str, str], bool]]:
+    """
+    analyse 'METADATA' file.
+    yields: iter[tuple[result, is_resolved]]
+        result: tuple[str, str]
+            if `is_resolved` is True, result is a `tuple[name, version]`.
+            if `is_resolved` is False, result is a `tuple[name, raw_verspec]`.
+    """
     pattern = re.compile(r'([-\w]+)(?: \(([^)]+)\))?')
     
     #                      ^~~~~~~1      ^~~~~~2
@@ -175,21 +186,20 @@ def _analyse_metadata_1(
         try:
             raw_name, raw_verspec = pattern.match(line).groups()
         except AttributeError as e:
-            print(':v4', file, line)
+            print(':lv4', file, line, e)
             raise e
         name = norm.normalize_name(raw_name)
-        verspecs = norm.normalize_version_spec(
-            name, raw_verspec or '')
+        verspecs = norm.normalize_version_spec(name, raw_verspec or '')
         proper_version = verspec.find_proper_version(
             *verspecs,
             candidates=name_2_versions[name]
         )
         if proper_version:
-            yield f'{name}-{proper_version}'
+            yield (name, proper_version), True
         else:
             print('cannot find a proper version from local index. you may '
                   'download it manually later', file, name, raw_verspec, ':v3')
-            yield f'{name}-0.0.0'
+            yield (name, raw_verspec), False
 
 
 # noinspection PyUnusedLocal

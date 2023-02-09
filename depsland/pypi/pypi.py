@@ -30,10 +30,14 @@ class LocalPyPI(Index):
         super().__init__()
         self.pip = pip
     
+    # -------------------------------------------------------------------------
+    # main methods
+    
     def download(
             self,
             packages: T.Packages,
             include_dependencies=False,
+            _check_local_existed_versions=True,
     ) -> t.Iterator[t.Tuple[T.Name, T.Version, T.Path]]:
         
         def get_downloaded_path(name_id: str) -> T.Path:
@@ -41,30 +45,31 @@ class LocalPyPI(Index):
                 pypi_paths.root, self.name_id_2_paths[name_id][0]
             )
         
-        # noinspection PyTypeChecker
         for name, specs in packages.items():
-            if name in self.name_2_versions:
-                proper_existed_version = verspec.find_proper_version(
-                    *specs, candidates=self.name_2_versions[name]
-                )
-                if proper_existed_version:
-                    name_id = f'{name}-{proper_existed_version}'
-                    filepath = get_downloaded_path(name_id)
-                    print(':v', 'found package from local', name_id)
-                    yield name, proper_existed_version, filepath
-                    
-                    if include_dependencies:
-                        for nid in self.dependencies[name_id]:
-                            a, b = nid.split('-', 1)
-                            yield a, b, get_downloaded_path(nid)
-                    continue
+            if _check_local_existed_versions:
+                if name in self.name_2_versions:
+                    proper_existed_version = verspec.find_proper_version(
+                        *specs, candidates=self.name_2_versions[name]
+                    )
+                    if proper_existed_version:
+                        name_id = f'{name}-{proper_existed_version}'
+                        filepath = get_downloaded_path(name_id)
+                        print(':v', 'found package from local', name_id)
+                        yield name, proper_existed_version, filepath
+                        
+                        if include_dependencies:
+                            for nid in self.dependencies[name_id]['resolved']:
+                                a, b = nid.split('-', 1)
+                                yield a, b, get_downloaded_path(nid)
+                            yield from self._download_unresolved_part(name_id)
+                        continue
             
             # start downloading
             print('download package via pip', name)
-            dependencies: t.List[T.NameId] = []
+            dependencies: t.List[T.NameId] = []  # the resolved part
             source_name = name
             source_name_id = ''
-            # del name  # variable `name` is released
+            # del name  # variable `name` is not used below.
             for filepath, is_new in self._download(
                     source_name, specs, include_dependencies
             ):
@@ -100,7 +105,7 @@ class LocalPyPI(Index):
                 else:
                     dependencies.append(name_id)
             assert source_name_id
-            self.dependencies[source_name_id] = dependencies
+            self.dependencies[source_name_id]['resolved'].extend(dependencies)
     
     def install(self, packages: T.Packages, include_dependencies=False) \
             -> t.Iterator[T.NameId]:
@@ -143,6 +148,7 @@ class LocalPyPI(Index):
         link_venv(name_ids, dst_dir)
     
     # -------------------------------------------------------------------------
+    # side methods
     
     def add_to_index(
             self,
@@ -175,9 +181,13 @@ class LocalPyPI(Index):
                 fs.relpath(path2, pypi_paths.root),
             )
             
-            self.dependencies[name_id] = list(
-                self._find_dependencies(name_id)
-            )
+            for (a, b), is_name_id in self._find_dependencies(name_id):
+                if is_name_id:
+                    self.dependencies[name_id]['resolved'].append(f'{a}-{b}')
+                else:
+                    self.dependencies[name_id]['unresolved'][a] = tuple(
+                        norm.normalize_version_spec(a, b)
+                    )
             
             if name not in self.updates:
                 self.updates[name] = get_updated_time(path0)
@@ -189,27 +199,24 @@ class LocalPyPI(Index):
             add_to_indexes()
         # else: assert name_id in all indexes...
         
-        if download_dependencies:
-            deps: t.List[T.NameId] = self.dependencies[name_id]
-            name_ids = tuple(x for x in deps if x not in self.name_id_2_paths)
-            if name_ids:
-                print(f'predownload dependencies for {name_id}')
-                packages = dict(x.split('-', 1) for x in name_ids)  # noqa
-                self.download(packages, True)
-    
-    def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
-        from .insight import _analyse_metadata_1
-        dir0 = self.name_id_2_paths[name_id][1]
-        for name in os.listdir(dir0):
-            if name.endswith('.dist-info'):
-                dir1 = f'{dir0}/{name}'
-                if os.path.exists(x := f'{dir1}/METADATA'):
-                    yield from _analyse_metadata_1(x, self.name_2_versions)
-                break
-        else:
-            raise Exception(f'cannot find dist-info for {name_id}')
+        if download_dependencies and self.dependencies[name_id]['unresolved']:
+            print(f'predownload dependencies for {name_id}')
+            tuple(self._download_unresolved_part(name_id))
     
     # -------------------------------------------------------------------------
+    # general
+    
+    def exists(self, name_or_id: t.Union[T.Name, T.NameId]) -> bool:
+        if '-' not in name_or_id or name_or_id.endswith('-'):
+            name = name_or_id.rstrip('-')
+            return name in self.name_2_versions
+        else:
+            name_id = name_or_id
+            return name_id in self.name_id_2_paths
+    
+    @staticmethod
+    def split(name_id: T.NameId) -> t.Tuple[T.Name, T.Version]:
+        return name_id.split('-', 1)  # noqa
     
     def _download(
             self, name: T.Name, specs: T.VersionSpecs,
@@ -240,8 +247,28 @@ class LocalPyPI(Index):
         for m in pattern2.finditer(response):
             yield m.group(), True
     
-    def _extract_dependencies(self, whl_or_tar_file: T.Path) -> T.VersionSpecs:
-        pass
+    def _download_unresolved_part(
+            self, name_id: T.NameId
+    ) -> t.Iterator[t.Tuple[T.Name, T.Version, T.Path]]:
+        if x := self.dependencies[name_id]['unresolved']:
+            yield from self.download(
+                x,
+                include_dependencies=True,
+                _check_local_existed_versions=False,
+            )
+            x.clear()
+    
+    def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
+        from .insight import _analyse_metadata_1
+        dir0 = self.name_id_2_paths[name_id][1]
+        for name in os.listdir(dir0):
+            if name.endswith('.dist-info'):
+                dir1 = f'{dir0}/{name}'
+                if os.path.exists(x := f'{dir1}/METADATA'):
+                    yield from _analyse_metadata_1(x, self.name_2_versions)
+                break
+        else:
+            raise Exception(f'cannot find dist-info for {name_id}')
 
 
 pypi = LocalPyPI()

@@ -14,7 +14,11 @@ class T:
     Version = T0.Version
     
     # indexes
-    Dependencies = t.Dict[NameId, t.List[NameId]]
+    Dependencies = t.Dict[NameId, t.TypedDict('Dependencies', {
+        'resolved'  : t.List[NameId],
+        'unresolved': t.Dict[Name, t.Tuple[T0.VersionSpec, ...]],
+        #   see also `./insight.py : def _analyse_metadata_1()`
+    })]
     Name2Versions = t.Dict[Name, t.List[Version]]
     #   t.List[...]: a sorted versions list, from new to old.
     NameId2Paths = t.Dict[Version, t.Tuple[Path, Path]]
