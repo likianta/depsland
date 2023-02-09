@@ -62,7 +62,7 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
     # -------------------------------------------------------------------------
     
     for f in fs.find_files(pypi_paths.downloads):
-        if f.name == '.gitkeep':
+        if f.name.startswith('.'):  # '.gitkeep', '.DS_Store', etc.
             continue
         
         ver = verspec.get_verspec_from_filename(f.name)
@@ -121,17 +121,23 @@ def _rebuild_dependencies(
                 collected: t.Set[T.NameId],
                 indent=0,
         ) -> t.Set[T.NameId]:
-            for nid in dependencies[name_id]:
+            for nid in dependencies[name_id]['resolved']:
                 if nid not in collected:
                     print('{}{}'.format(' ' * indent, nid), ':vs')
                     collected.add(nid)
                     recursively_find_dependencies_2(nid, collected, indent + 2)
+            for name, specs in dependencies[name_id]['unresolved'].items():
+                print('{}{} ({})'.format(
+                    ' ' * indent,
+                    name,
+                    ', '.join(map(str, specs))
+                ), ':vs')
             return collected
         
-        old_dependencies = dependencies
-        new_dependencies = {}
+        old_dependencies: T.Dependencies = dependencies
+        new_dependencies: T.Dependencies = {}
         for name_id in old_dependencies:
-            new_dependencies[name_id] = \
+            new_dependencies[name_id]['resolved'] = \
                 recursively_find_dependencies_2(name_id, set())
         print(
             'recursively find dependencies',

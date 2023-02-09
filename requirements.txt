@@ -1,15 +1,15 @@
 # run command: py build/install_requirements.py -h
 
 argsense
-lk-logger
+lk-logger >= 5.4.8
 lk-utils
 oss2
 pyyaml
 rich
-semver >= 3.0.0dev3
+semver >= 3.0.0dev4
 
 # === gui ===
 # flet
 # pyside6-lite  # from proj:/qmlease/sidework/pyside6_tailored_package
 pyside6-essentials
-qmlease >= 3.1.0a13
+qmlease >= 3.1.0a15

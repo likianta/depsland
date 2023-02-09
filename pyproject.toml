@@ -14,14 +14,14 @@ default = true
 [tool.poetry.dependencies]
 python = "^3.10"
 argsense = "^0.5.2"
-lk-logger = "^5.4.7"
+lk-logger = "^5.4.8"
 lk-utils = ">=2.5.2,<2.6.0"
 oss2 = "*"
 pyside6-essentials = "*"
 pyyaml = "*"
 qmlease = "*"
 rich = "*"
-semver = "3.0.0dev3"
+semver = "3.0.0dev4"
 
 [tool.poetry.extras]
 
