@@ -147,38 +147,55 @@ class LocalPyPI(Index):
     def add_to_index(
             self,
             downloaded_package_file: str,
-            # download_dependencies=False
+            download_dependencies=False
     ) -> None:
         filename = fs.filename(downloaded_package_file)
         name, version = norm.filename_2_name_version(filename)
         name_id = f'{name}-{version}'
-        if name_id in self.name_id_2_paths:
-            return
         
         path0 = fs.normpath(downloaded_package_file, True)
         path1 = '{}/{}'.format(pypi_paths.downloads, filename)
         path2 = '{}/{}/{}'.format(pypi_paths.installed, name, version)
         
-        if path0 != path1:
-            fs.copy_file(path0, path1)
+        def fill_local_dirs() -> None:
+            if path0 != path1:
+                fs.copy_file(path0, path1)
+            if not os.path.exists(path2):
+                fs.make_dirs(path2)
+                self.pip.run(
+                    'install', path1, ('-t', path2),
+                    '--no-deps', '--no-index',
+                )
         
-        if not os.path.exists(path2):
-            fs.make_dirs(path2)
-            self.pip.run(
-                'install', path1, ('-t', path2),
-                '--no-deps', '--no-index',
+        def add_to_indexes() -> None:
+            self.name_2_versions[name].insert(0, version)
+            
+            self.name_id_2_paths[name_id] = (
+                fs.relpath(path1, pypi_paths.root),
+                fs.relpath(path2, pypi_paths.root),
             )
+            
+            self.dependencies[name_id] = list(
+                self._find_dependencies(name_id)
+            )
+            
+            if name not in self.updates:
+                self.updates[name] = get_updated_time(path0)
+            elif (x := get_updated_time(path0)) > self.updates[name]:
+                self.updates[name] = x
         
-        self.name_2_versions[name].insert(0, version)
-        self.name_id_2_paths[name_id] = (
-            fs.relpath(path1, pypi_paths.root),
-            fs.relpath(path2, pypi_paths.root),
-        )
-        self.dependencies[name_id] = list(self._find_dependencies(name_id))
-        if name not in self.updates:
-            self.updates[name] = get_updated_time(path0)
-        elif (x := get_updated_time(path0)) > self.updates[name]:
-            self.updates[name] = x
+        if name_id not in self.name_id_2_paths:
+            fill_local_dirs()
+            add_to_indexes()
+        # else: assert name_id in all indexes...
+        
+        if download_dependencies:
+            deps: t.List[T.NameId] = self.dependencies[name_id]
+            name_ids = tuple(x for x in deps if x not in self.name_id_2_paths)
+            if name_ids:
+                print(f'predownload dependencies for {name_id}')
+                packages = dict(x.split('-', 1) for x in name_ids)  # noqa
+                self.download(packages, True)
     
     def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
         from .insight import _analyse_metadata_1
