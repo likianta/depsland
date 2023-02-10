@@ -1,0 +1,22 @@
+{
+    "appid": "hello_world_gui",
+    "name": "Hello World Gui",
+    "version": "0.1.2",
+    "assets": {
+        "src": ""
+    },
+    "dependencies": {
+        "pyside6": "",
+        "qmlease": ""
+    },
+    "pypi": [],
+    "launcher": {
+        "script": "src/main.py",
+        "icon": "",
+        "cli_tool": false,
+        "desktop": true,
+        "start_menu": false,
+        "show_console": false
+    },
+    "depsland_version": "0.5.0"
+}
