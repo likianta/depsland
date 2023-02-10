@@ -5,6 +5,7 @@ requirements:
     - lk-utils
 """
 from collections import defaultdict
+from os.path import exists
 from sys import executable
 
 from argsense import cli
@@ -23,7 +24,9 @@ except AssertionError:
 
 
 @cli.cmd('init')
-def init_pypi_index(dir_o: str = xpath('../pypi/index')) -> None:
+def init_pypi_index(root_o: str = xpath('../pypi')) -> None:
+    dir_o = f'{root_o}/index'
+    assert exists(dir_o)
     dumps(defaultdict(list), f'{dir_o}/dependencies.pkl')
     dumps(defaultdict(list), f'{dir_o}/name_2_versions.pkl')
     dumps({}, f'{dir_o}/name_id_2_paths.pkl')
@@ -41,6 +44,7 @@ def build_depsland_dependencies(
     kwargs:
         skip_download (-sd):
         skip_install (-si):
+        target_root (-t):
     """
     run_cmd_args(executable, '-V')
     run_cmd_args(executable, '-m', 'pip', '-V')
