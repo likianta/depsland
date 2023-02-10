@@ -26,7 +26,7 @@ print(':v2', f'depsland version: {__version__}')
 
 
 @cli.cmd()
-def full_build(oss_scheme: str, add_python_path=True):
+def full_build(oss_scheme: str, add_python_path=True, clean_pypi=False):
     """
     generate `dist/depsland-setup-<version>` folder.
     
@@ -57,11 +57,7 @@ def full_build(oss_scheme: str, add_python_path=True):
     os.mkdir(f'{root_o}/oss')
     os.mkdir(f'{root_o}/oss/apps')
     os.mkdir(f'{root_o}/oss/test')
-    os.mkdir(f'{root_o}/pypi')
-    os.mkdir(f'{root_o}/pypi/cache')
-    os.mkdir(f'{root_o}/pypi/downloads')
-    os.mkdir(f'{root_o}/pypi/index')
-    os.mkdir(f'{root_o}/pypi/installed')
+    # os.mkdir(f'{root_o}/pypi')
     # os.mkdir(f'{root_o}/python')
     # os.mkdir(f'{root_o}/sidework')
     os.mkdir(f'{root_o}/temp')
@@ -96,6 +92,12 @@ def full_build(oss_scheme: str, add_python_path=True):
     if add_python_path:
         fs.make_link(f'{root_i}/python',
                      f'{root_o}/python')
+    if clean_pypi:
+        fs.copy_tree(f'{root_i}/pypi',
+                     f'{root_o}/pypi')
+    else:
+        fs.make_link(f'{root_i}/pypi_self',
+                     f'{root_o}/pypi')
     
     # init files
     dump_manifest(load_manifest(f'{root_i}/manifest.json'),

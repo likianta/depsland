@@ -18,5 +18,5 @@ from .pypi import pypi
 from .pypi import rebuild_index as rebuild_pypi_index
 from .utils import bat_2_exe
 
-__version__ = '0.5.0b2'
+__version__ = '0.5.0b5'
 __date__ = '2023-02-10'
