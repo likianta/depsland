@@ -106,20 +106,26 @@ def soft_link_to_site_packages(
     kwargs:
         target_dir (-t):
     """
-    print(pypi.name_2_versions, ':lv')
+    # print(pypi.name_2_versions, ':lv')
+    
+    origin_name_ids = []
     names = ('argsense', 'lk_logger', 'lk_utils', 'oss2', 'pyyaml', 'semver',
              'pyside6_essentials', 'qmlease')
-    name_ids = []
     for n in names:
         # print(n)
         v = pypi.name_2_versions[n][0]
         nid = f'{n}-{v}'
-        name_ids.append(nid)
-    print(':l', name_ids)
-    link_venv(
-        name_ids,
-        venv_dir=target_dir
-    )
+        origin_name_ids.append(nid)
+    print(':l', origin_name_ids, len(origin_name_ids))
+    
+    all_name_ids = set()
+    for nid in origin_name_ids:
+        all_name_ids.add(nid)
+        all_name_ids.update(pypi.dependencies[nid]['resolved'])
+    all_name_ids = list(all_name_ids)
+    print(':l', all_name_ids, len(all_name_ids))
+    
+    link_venv(all_name_ids, venv_dir=target_dir)
 
 
 if __name__ == '__main__':
