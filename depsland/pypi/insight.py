@@ -75,6 +75,7 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
     for v in name_2_versions.values():
         v.sort(key=lambda x: verspec.semver_parse(x), reverse=True)
         #   make version list sorted in descending order.
+    # print(':l', name_2_versions)
     
     # rebuild `dependencies`. this should be called after complete updating
     # `name_id_2_paths`.
@@ -115,35 +116,58 @@ def _rebuild_dependencies(
                     else:
                         raise FileNotFoundError(d2.path)  # TODO: for debug
     
+    print(':l', 'origin dependency tree', dependencies)
+    
     if recursive:
-        def recursively_find_dependencies_2(
+        def flatten_resolved_dependencies(
                 name_id: T.NameId,
-                collected: t.Set[T.NameId],
+                collect: t.Set[T.NameId],
                 indent=0,
         ) -> t.Set[T.NameId]:
+            print('{}{}'.format(' ' * indent, name_id), ':vs')
             for nid in dependencies[name_id]['resolved']:
-                if nid not in collected:
-                    print('{}{}'.format(' ' * indent, nid), ':vs')
-                    collected.add(nid)
-                    recursively_find_dependencies_2(nid, collected, indent + 2)
+                if nid not in collect:
+                    collect.add(nid)
+                    flatten_resolved_dependencies(nid, collect, indent + 2)
+                else:
+                    print('{}{}...'.format(' ' * (indent + 2), nid), ':vs')
+            return collect
+        
+        def flatten_unresolved_dependencies(
+                name_id: T.NameId,
+                collect: t.Dict[T.Name, t.Dict[str, norm.VersionSpec]],
+                indent=0,
+        ) -> t.Dict[T.Name, T.VersionSpecs]:
             for name, specs in dependencies[name_id]['unresolved'].items():
-                print('{}{} ({})'.format(
-                    ' ' * indent,
-                    name,
-                    ', '.join(map(str, specs))
-                ), ':vs')
-            return collected
+                if name not in collect:
+                    print('{}<{}>'.format(' ' * indent, name), ':vs')
+                    collect[name] = {str(x): x for x in specs}
+                else:  # merge `specs` into `collect[name]`.
+                    for s in specs:
+                        if str(s) not in collect[name]:
+                            collect[name][str(s)] = s
+            for nid in dependencies[name_id]['resolved']:
+                flatten_unresolved_dependencies(nid, collect, indent + 2)
+            return {k: tuple(v.values()) for k, v in collect.items()}
         
         old_dependencies: T.Dependencies = dependencies
         new_dependencies: T.Dependencies = {}
         for name_id in old_dependencies:
-            new_dependencies[name_id]['resolved'] = \
-                recursively_find_dependencies_2(name_id, set())
+            new_dependencies[name_id] = {
+                'resolved': flatten_resolved_dependencies(name_id, set()),
+                'unresolved': flatten_unresolved_dependencies(name_id, {}),
+            }
         print(
             'recursively find dependencies',
             'the flatten dependencies have inflated from {} to {}'.format(
-                sum(map(len, old_dependencies.values())),
-                sum(map(len, new_dependencies.values())),
+                sum(
+                    len(x['resolved']) + len(x['unresolved'])
+                    for x in old_dependencies.values()
+                ),
+                sum(
+                    len(x['resolved']) + len(x['unresolved'])
+                    for x in new_dependencies.values()
+                ),
             ), ':v2'
         )
         dependencies = new_dependencies
