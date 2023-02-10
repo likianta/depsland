@@ -200,7 +200,10 @@ class Oss:  # note: this is a local dir that mimics OSS structure.
 class PyPI:
     
     def __init__(self):
-        self.root = f'{project.root}/pypi'
+        if x := os.getenv('DEPSLAND_PYPI'):
+            self.root = x
+        else:
+            self.root = f'{project.root}/pypi'
         
         self.cache = f'{self.root}/cache'
         self.downloads = f'{self.root}/downloads'
