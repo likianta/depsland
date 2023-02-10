@@ -13,5 +13,6 @@ command list:
     depsland show <package>
 """
 from .build import build
+from .index import view_index
 from .init import init
 from .publish import main as publish

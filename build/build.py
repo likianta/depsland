@@ -93,8 +93,16 @@ def full_build(oss_scheme: str, add_python_path=True, clean_pypi=False):
         fs.make_link(f'{root_i}/python',
                      f'{root_o}/python')
     if clean_pypi:
-        fs.copy_tree(f'{root_i}/pypi',
-                     f'{root_o}/pypi')
+        os.mkdir(f'{root_o}/pypi')
+        os.mkdir(f'{root_o}/pypi/cache')
+        os.mkdir(f'{root_o}/pypi/index')
+        os.mkdir(f'{root_o}/pypi/downloads')
+        os.mkdir(f'{root_o}/pypi/installed')
+        # below is a copy of `./self_build.py : def init_pypi_index()`.
+        dumps({}, f'{root_o}/pypi/index/dependencies.pkl')
+        dumps(defaultdict(list), f'{root_o}/pypi/index/name_2_versions.pkl')
+        dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')
+        dumps({}, f'{root_o}/pypi/index/updates.pkl')
     else:
         fs.make_link(f'{root_i}/pypi_self',
                      f'{root_o}/pypi')
@@ -102,10 +110,6 @@ def full_build(oss_scheme: str, add_python_path=True, clean_pypi=False):
     # init files
     dump_manifest(load_manifest(f'{root_i}/manifest.json'),
                   f'{root_o}/manifest.pkl')
-    dumps(defaultdict(list), f'{root_o}/pypi/index/dependencies.pkl')
-    dumps(defaultdict(list), f'{root_o}/pypi/index/name_2_versions.pkl')
-    dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')
-    dumps({}, f'{root_o}/pypi/index/updates.pkl')
     
     print(':t', 'see result at ' + fs.relpath(root_o))
 

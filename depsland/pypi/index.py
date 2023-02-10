@@ -1,4 +1,5 @@
 import typing as t
+from collections import defaultdict
 
 from lk_utils import dumps
 from lk_utils import loads
@@ -35,7 +36,6 @@ class Index:
     name_id_2_paths: T.NameId2Paths
     dependencies: T.Dependencies
     updates: T.Updates
-    
     # # update_freq = 60 * 60 * 24 * 7  # one week
     update_freq = -1
     
@@ -46,8 +46,14 @@ class Index:
     def _load_index(self) -> None:
         self.name_2_versions = loads(pypi_paths.name_2_versions)
         self.name_id_2_paths = loads(pypi_paths.name_id_2_paths)
-        self.dependencies = loads(pypi_paths.dependencies)
+        self.dependencies = defaultdict(self._dependency_item_gen)
+        #   note: do not use lambda here, because it will be pickled.
+        self.dependencies.update(loads(pypi_paths.dependencies))
         self.updates = loads(pypi_paths.updates)
+    
+    @staticmethod
+    def _dependency_item_gen() -> dict:
+        return {'resolved': [], 'unresolved': {}}
     
     def save_index(self) -> None:
         dumps(self.name_2_versions, pypi_paths.name_2_versions)

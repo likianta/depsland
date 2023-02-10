@@ -34,7 +34,10 @@ except AssertionError:
 def init_pypi_index(root=xpath('../pypi_self')) -> None:
     dir_o = f'{root}/index'
     assert exists(dir_o)
-    dumps(defaultdict(list), f'{dir_o}/dependencies.pkl')
+    # dumps(defaultdict(lambda : {
+    #     'resolved': [], 'unresolved': {}
+    # }), f'{dir_o}/dependencies.pkl')
+    dumps({}, f'{dir_o}/dependencies.pkl')
     dumps(defaultdict(list), f'{dir_o}/name_2_versions.pkl')
     dumps({}, f'{dir_o}/name_id_2_paths.pkl')
     dumps({}, f'{dir_o}/updates.pkl')

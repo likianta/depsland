@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from lk_utils import dumps
 from lk_utils import fs
+from lk_utils import loads
 from lk_utils.read_and_write import ropen
 
 from .pypi import T as T0
@@ -21,6 +22,19 @@ class T(T0):
         ('downloaded', t.Dict[str, int]),
         ('installed', t.Dict[str, int]),
     ))
+
+
+def overview(dir_i: str = None) -> None:
+    if dir_i:
+        print(loads(f'{dir_i}/name_2_versions.pkl'), ':ls')
+        print(loads(f'{dir_i}/name_id_2_paths.pkl'), ':ls')
+        print(loads(f'{dir_i}/dependencies.pkl'), ':ls')
+        print(loads(f'{dir_i}/updates.pkl'), ':ls')
+    else:
+        print(pypi.name_2_versions, ':l')
+        print(pypi.name_id_2_paths, ':l')
+        print(pypi.dependencies, ':l')
+        print(pypi.updates, ':l')
 
 
 def rebuild_index(perform_pip_install: bool = False) -> None:
@@ -157,7 +171,7 @@ def _rebuild_dependencies(
         new_dependencies: T.Dependencies = {}
         for name_id in old_dependencies:
             new_dependencies[name_id] = {
-                'resolved': flatten_resolved_dependencies(name_id, set()),
+                'resolved'  : flatten_resolved_dependencies(name_id, set()),
                 'unresolved': flatten_unresolved_dependencies(name_id, {}),
             }
         print(
