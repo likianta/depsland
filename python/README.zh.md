@@ -12,6 +12,8 @@
 
     示例: "cpython-3.10.7+20221002-x86_64-pc-windows-msvc-shared-install_only.tar.gz"
 
+    注意: 选择带有 "shared" 的文件, 不要 "static" 的. 因为后者无法安装 requests, numpy 等依赖了 dll 文件的第三方库.
+
 # 安装 python
 
 > 以下示例基于 macos.
