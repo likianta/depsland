@@ -130,7 +130,10 @@ def _rebuild_dependencies(
                     collect.add(nid)
                     flatten_resolved_dependencies(nid, collect, indent + 2)
                 else:
-                    print('{}{}...'.format(' ' * (indent + 2), nid), ':vs')
+                    print('{}{}'.format(' ' * (indent + 2), nid), ':vs')
+                    if dependencies[nid]['resolved'] \
+                            or dependencies[nid]['unresolved']:
+                        print('{}...'.format(' ' * (indent + 4)), ':vs')
             return collect
         
         def flatten_unresolved_dependencies(
