@@ -4,7 +4,6 @@ requirements:
     - argsense
     - lk-utils
 """
-import os
 from collections import defaultdict
 from sys import executable
 
@@ -24,17 +23,12 @@ except AssertionError:
 
 
 @cli.cmd('init')
-def init_pypi_index() -> None:
-    root_dir = xpath('../pypi/index')
-    if not os.path.exists(root_dir):
-        os.mkdir(root_dir)
-    
-    dumps(defaultdict(list), f'{root_dir}/dependencies.pkl')
-    dumps(defaultdict(list), f'{root_dir}/name_2_versions.pkl')
-    dumps({}, f'{root_dir}/name_id_2_paths.pkl')
-    dumps({}, f'{root_dir}/updates.pkl')
-    
-    print(f'index initialized. see {root_dir}')
+def init_pypi_index(dir_o: str = xpath('../pypi/index')) -> None:
+    dumps(defaultdict(list), f'{dir_o}/dependencies.pkl')
+    dumps(defaultdict(list), f'{dir_o}/name_2_versions.pkl')
+    dumps({}, f'{dir_o}/name_id_2_paths.pkl')
+    dumps({}, f'{dir_o}/updates.pkl')
+    print('index initialized.', ':t')
 
 
 @cli.cmd('build')
