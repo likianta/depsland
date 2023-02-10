@@ -4,20 +4,41 @@ requirements:
     - argsense
     - lk-utils
 """
+import os
+from collections import defaultdict
 from sys import executable
 
 from argsense import cli
+from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import xpath
 from lk_utils.subproc import compose_cmd
 from lk_utils.subproc import run_cmd_args
 
-from depsland import normalization as norm
-from depsland import rebuild_pypi_index
+try:
+    from depsland import normalization as norm
+    from depsland import rebuild_pypi_index
+except AssertionError:
+    print(':v3', '`~/pypi/index/*` is not ready. you may run '
+                 '`py build/self_build.py init` first!')
 
 
-@cli.cmd()
-def main(
+@cli.cmd('init')
+def init_pypi_index() -> None:
+    root_dir = xpath('../pypi/index')
+    if not os.path.exists(root_dir):
+        os.mkdir(root_dir)
+    
+    dumps(defaultdict(list), f'{root_dir}/dependencies.pkl')
+    dumps(defaultdict(list), f'{root_dir}/name_2_versions.pkl')
+    dumps({}, f'{root_dir}/name_id_2_paths.pkl')
+    dumps({}, f'{root_dir}/updates.pkl')
+    
+    print(f'index initialized. see {root_dir}')
+
+
+@cli.cmd('build')
+def build_depsland_dependencies(
         skip_download=False,
         skip_install=False,
         target_root=xpath('../pypi')
@@ -75,4 +96,4 @@ def _install(dir_i: str, dir_o: str) -> None:
 
 
 if __name__ == '__main__':
-    cli.run(main)
+    cli.run()
