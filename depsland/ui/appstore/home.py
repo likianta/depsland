@@ -45,9 +45,9 @@ class Home(QObject):
             info: QObject
     ) -> None:
         self._info_item = info
-        self._info_item['text'] = (
-            '<font color="gray">Input an appid to install. '
-            'For example: "hello_world".</font>'
+        self._info_item['text'] = _gray(
+            'Input an appid to install. '
+            'For example: "hello_world".'
         )
         
         @bind_signal(self._info_updated)
@@ -84,6 +84,10 @@ class Home(QObject):
                 self._transient_info(
                     _red('Installation failed. '
                          'See console output for details.'),
+                    _gray(
+                        'Input an appid to install. '
+                        'For example: "hello_world".'
+                    ),
                     duration=5
                 )
         
@@ -142,6 +146,10 @@ class Home(QObject):
         self._info_updated.emit(text)
         sleep(duration)
         self._info_updated.emit(restore)
+
+
+def _gray(text: str) -> str:
+    return f'<font color="gray">{text}</font>'
 
 
 def _red(text: str) -> str:
