@@ -45,7 +45,7 @@ class Home(QObject):
             info: QObject
     ) -> None:
         self._info_item = info
-        self._info_item['text'] = _gray(
+        self._info_item['text'] = _default_text = _gray(
             'Input an appid to install. '
             'For example: "hello_world".'
         )
@@ -68,7 +68,10 @@ class Home(QObject):
             appid = input_bar['text']
             # check appid
             if not appid:
-                self._transient_info(_red('Appid cannot be empty!'))
+                self._transient_info(
+                    _red('Appid cannot be empty!'),
+                    _default_text
+                )
                 return
             
             self._start_timer(appid)
@@ -79,15 +82,15 @@ class Home(QObject):
             # self._installing_thread.join()
             self._stop_timer()
             if success:
-                self._transient_info(_green('Installation done.'))
+                self._transient_info(
+                    _green('Installation done.'),
+                    _default_text
+                )
             else:
                 self._transient_info(
                     _red('Installation failed. '
                          'See console output for details.'),
-                    _gray(
-                        'Input an appid to install. '
-                        'For example: "hello_world".'
-                    ),
+                    _default_text,
                     duration=5
                 )
         
@@ -95,7 +98,10 @@ class Home(QObject):
         def _() -> None:
             if self._installing_thread.kill():
                 self._stop_timer()
-                self._transient_info(_red('User force stopped.'))
+                self._transient_info(
+                    _red('User force stopped.'),
+                    _default_text
+                )
             else:
                 self._transient_info(
                     _red('Failed to stop the task! If you want to manually '
