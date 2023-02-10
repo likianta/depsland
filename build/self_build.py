@@ -83,6 +83,7 @@ def _install(dir_i: str, dir_o: str) -> None:
         if f.name.startswith('.'): continue
         name, ver = norm.filename_2_name_version(f.name)
         d = f'{dir_o}/{name}/{ver}'
+        if exists(d): continue
         fs.make_dirs(d)
         run_cmd_args(
             *compose_cmd(
@@ -109,8 +110,8 @@ def soft_link_to_site_packages(
     # print(pypi.name_2_versions, ':lv')
     
     origin_name_ids = []
-    names = ('argsense', 'lk_logger', 'lk_utils', 'oss2', 'pyyaml', 'semver',
-             'pyside6_essentials', 'qmlease')
+    names = ('argsense', 'lk_logger', 'lk_utils', 'oss2', 'pyside6', 'pyyaml',
+             'qmlease', 'semver')
     for n in names:
         # print(n)
         v = pypi.name_2_versions[n][0]
