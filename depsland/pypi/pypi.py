@@ -63,6 +63,9 @@ class LocalPyPI(Index):
                                 yield a, b, get_downloaded_path(nid)
                             yield from self._download_unresolved_part(name_id)
                         continue
+                    else:
+                        print('cannot find proper version in local index, '
+                              'will fallback to default pip download', name)
             
             # start downloading
             print('download package via pip', name)

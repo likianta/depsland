@@ -97,7 +97,9 @@ class Page1(QObject):
     @staticmethod
     def _get_default_installation_path() -> str:
         # if old version detected, return the old path.
-        if x := os.getenv('DEPSLAND', None): return x
+        if x := os.getenv('DEPSLAND', None):
+            print(':v', 'old version detected', x)
+            return x
         if os.name == 'nt':
             # else use appdata/local as default.
             return fs.normpath(paths.system.local_app_data + '/Depsland')
