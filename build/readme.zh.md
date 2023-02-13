@@ -62,3 +62,28 @@
      2. 双击该启动器, 看是否会出现欢迎界面
 
          ![](.assets/readme.zh/image-20221101004226012.png)
+
+## 常用命令备忘
+
+```sh
+py build/build.py -h
+py build/build.py full-build -h
+
+py build/build.py full-build aliyun
+py build/build.py full-build aliyun -p full
+py build/build.py full-build aliyun -p least
+
+py build/build.py bat-2-exe build/exe/depsland.bat
+py build/build.py bat-2-exe build/exe/desktop.bat
+```
+
+```sh
+py build/self_build.py -h
+
+py build/self_build.py init pypi
+py build/self_build.py init pypi_self
+
+py build/self_build.py build
+
+py build/self_build.py link
+```
