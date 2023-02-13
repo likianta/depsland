@@ -1,23 +1,19 @@
 """
-this module uses only standard libraries.
+note:
+
+1. this module uses only standard libraries.
+2. this module runs fast (estimated under 2 seconds)
 """
 import os
 import sys
 import typing as t
-from collections import defaultdict
 from subprocess import call as subcall
 
 
 class T:
-    AbsPath = str
     Name = str
-    NameId = str
     RawName = str
-    RelPath = str
     Version = str
-    
-    NameIds = t.Sequence[NameId]
-    Ownership = t.Dict[RelPath, NameId]
 
 
 class Paths:
@@ -32,24 +28,19 @@ paths = Paths()
 
 
 def main() -> None:
-    if _is_already_extracted():
+    if _check_prerequisites():
         print('bootloader already done. launch gui now.')
         _launch_gui()
         return
     
     print(f'located project root: {paths.root}')
-    _check_permission()
-    _pip_install(paths.downloads, paths.installed)
-    _make_soft_links(paths.site_packages)
+    # _pip_install(paths.downloads, paths.installed)
+    _make_soft_links(paths.installed, paths.site_packages)
     _rebuild_pypi_index()
     _launch_gui()
 
 
-def _is_already_extracted() -> bool:
-    return len(os.listdir(paths.installed)) > 0
-
-
-def _check_permission() -> None:
+def _check_prerequisites() -> bool:
     # check windows symlink permission.
     try:
         os.symlink(__file__, f'{paths.root}/test')
@@ -58,7 +49,15 @@ def _check_permission() -> None:
               '(press enter to exit)')
         sys.exit(1)
     else:
-        os.remove(f'{paths.root}/test')
+        os.unlink(f'{paths.root}/test')
+    
+    # is site-packages ready
+    try:
+        import argsense
+    except (ImportError, ModuleNotFoundError):
+        return False
+    else:
+        return True
 
 
 def _pip_install(dir_i: str, dir_o: str) -> None:
@@ -78,33 +77,24 @@ def _pip_install(dir_i: str, dir_o: str) -> None:
         ])
 
 
-def _make_soft_links(dir_o: str) -> None:
-    dirname_2_name_ids = defaultdict(list)
-    name_ids = _collect_name_ids()
-    for nid in name_ids:
-        dir_ = _name_id_2_path(nid)
-        for dname in os.listdir(dir_):
-            if dname == '__pycache__':
-                continue
-            dirname_2_name_ids[dname].append(nid)
-    
-    ownership: T.Ownership = {}
-    for dname, name_ids in dirname_2_name_ids.items():
-        if len(name_ids) == 1:
-            ownership[dname] = name_ids[0]
-        else:
-            ownership.update(_distribute_ownerships(dname, name_ids))
-    
-    _init_dirs(dir_o, ownership.keys())
-    for relpath, name_id in sorted(
-            ownership.items(), key=lambda x: x[1]  # sort by name_id.
-    ):
-        # print(name_id, relpath, ':vs')
-        os.symlink(
-            src := '{}/{}'.format(_name_id_2_path(name_id), relpath),
-            '{}/{}'.format(dir_o, relpath),
-            target_is_directory=os.path.isdir(src)
-        )
+def _make_soft_links(root_i: str, root_o: str) -> None:
+    for name in os.listdir(root_i):
+        if name.startswith(('.', '__')):
+            continue
+        for version in os.listdir(f'{root_i}/{name}'):
+            assert not version.startswith(('.', '__'))
+            for dname in os.listdir(f'{root_i}/{name}/{version}'):
+                if dname.startswith(('.', '__')) or dname == 'bin':
+                    continue
+                path_i = f'{root_i}/{name}/{version}/{dname}'
+                path_o = f'{root_o}/{dname}'
+                os.symlink(
+                    path_i,
+                    path_o,
+                    target_is_directory=os.path.isdir(path_i)
+                )
+            # there is only one version, we can break right now
+            break
 
 
 def _rebuild_pypi_index() -> None:
@@ -118,55 +108,6 @@ def _launch_gui() -> None:
 
 
 # -----------------------------------------------------------------------------
-
-def _collect_name_ids() -> t.Iterator[T.NameId]:
-    for dn0 in os.listdir(paths.installed):
-        if dn0.startswith('.'):
-            continue
-        for dn1 in os.listdir(f'{paths.installed}/{dn0}'):
-            if dn1.startswith('.'):
-                continue
-            yield f'{dn0}-{dn1}'
-
-
-def _distribute_ownerships(
-        relpath: T.RelPath, candidates: T.NameIds
-) -> T.Ownership:
-    """
-    docs: docs/dev-notes/merge-links-algorithm.md
-    """
-    file_asset_2_name_ids = defaultdict(list)
-    dir_asset_2_name_ids = defaultdict(list)
-    relpath_2_name_id = {}
-    
-    for nid in candidates:
-        dir_ = '{}/{}'.format(_name_id_2_path(nid), relpath)
-        for asset in os.listdir(dir_):
-            if asset == '__pycache__':
-                continue
-            if os.path.isdir(f'{dir_}/{asset}'):
-                dir_asset_2_name_ids[asset].append(nid)
-            else:
-                file_asset_2_name_ids[asset].append(nid)
-    
-    for name, name_ids in file_asset_2_name_ids.items():
-        if len(name_ids) > 1:
-            print('multiple owners for a file (will choose the first one)',
-                  name, name_ids, ':v3')
-        relpath_2_name_id[f'{relpath}/{name}'] = name_ids[0]
-    
-    for name, name_ids in dir_asset_2_name_ids.items():
-        if len(name_ids) > 1:
-            print('[yellow dim]multiple owners for a dir (will merge them)[/]',
-                  name, name_ids, ':rv')
-            relpath_2_name_id.update(
-                _distribute_ownerships(f'{relpath}/{name}', name_ids)
-            )
-        else:
-            relpath_2_name_id[f'{relpath}/{name}'] = name_ids[0]
-    
-    return relpath_2_name_id
-
 
 def _filename_2_name_version(filename: str) -> t.Tuple[T.Name, T.Version]:
     """
@@ -190,22 +131,13 @@ def _filename_2_name_version(filename: str) -> t.Tuple[T.Name, T.Version]:
     return a, b
 
 
-def _init_dirs(root_dir: T.AbsPath, paths: t.Iterable[T.RelPath]) -> None:
-    dirs_to_be_created = set(os.path.dirname(x) for x in paths)
-    dirs_to_be_created.remove('.')
-    for relpath in sorted(dirs_to_be_created):
-        abspath = f'{root_dir}/{relpath}'
-        os.makedirs(abspath)
-
-
-def _name_id_2_path(name_id: T.NameId) -> T.AbsPath:
-    name, ver = name_id.split('-', 1)
-    return '{}/{}/{}'.format(paths.installed, name, ver)
-
-
 def _normalize_name(raw_name: T.RawName) -> T.Name:
     """
     e.g. 'lk-logger' -> 'lk_logger'
          'PySide6' -> 'pyside6'
     """
     return raw_name.strip().lower().replace('-', '_')
+
+
+if __name__ == '__main__':
+    main()
