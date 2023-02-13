@@ -91,8 +91,8 @@ py build/build.py full-build aliyun -p full
 py build/build.py full-build aliyun -p least
 
 py build/build.py bat-2-exe build/exe/depsland.bat
-py build/build.py bat-2-exe build/exe/desktop.bat
-py build/build.py bat-2-exe build/exe/setup.bat -C
+py build/build.py bat-2-exe build/exe/desktop.bat -u
+py build/build.py bat-2-exe build/exe/setup.bat -C -u
 ```
 
 unittests
