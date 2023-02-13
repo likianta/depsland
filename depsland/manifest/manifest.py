@@ -1,6 +1,7 @@
 import os
 import typing as t
 from collections import namedtuple
+from os.path import exists
 from textwrap import dedent
 from time import sleep
 
@@ -28,11 +29,15 @@ class T:
     _AbsPath = _RelPath = _AnyPath = str
     #   the _RelPath is relative to manifest file's location.
     
-    Scheme0 = t.Literal['root', 'all', 'all_dirs',
-                        'top', 'top_files', 'top_dirs', '']
+    Scheme0 = t.Literal[
+        'root', 'all', 'all_dirs',
+        'top', 'top_files', 'top_dirs', ''
+    ]
     #   empty str means 'all'
-    Scheme1 = t.Literal['root', 'all', 'all_dirs',
-                        'top', 'top_files', 'top_dirs']
+    Scheme1 = t.Literal[
+        'root', 'all', 'all_dirs',
+        'top', 'top_files', 'top_dirs'
+    ]
     
     Assets0 = t.Dict[_AnyPath, Scheme0]
     #   anypath: abspath or relpath, '/' or '\\' both allowed.
@@ -251,13 +256,13 @@ def _check_manifest(manifest: T.Manifest1) -> None:
     script_path = '{}/{}'.format(
         manifest['start_directory'], script.split(' ', 1)[0]
     )
-    assert os.path.exists(script_path), (
+    assert exists(script_path), (
         'the script is not found, you may check: 1. do not use abspath in '
         'script; 2. the path should exist.'
     )
     assert script_path.endswith('.py') or (
             os.path.isdir(script_path)
-            and os.path.exists(f'{script_path}/__init__.py')
+            and exists(f'{script_path}/__init__.py')
     ), (
         'either the script should be a ".py" file, or be a directory that '
         'includes "__init__.py" file.'
@@ -325,6 +330,8 @@ def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
     for path, scheme in assets0.items():
         if scheme == '':
             scheme = 'all'
+        if not exists(path):
+            raise FileNotFoundError(path)
         if os.path.isabs(path):
             abspath = fs.normpath(path)
             relpath = fs.relpath(path, manifest_dir)
