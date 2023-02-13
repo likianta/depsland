@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.5.0a1"
+version = "0.5.0b14"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -17,11 +17,11 @@ argsense = "^0.5.2"
 lk-logger = "^5.4.8"
 lk-utils = ">=2.5.2,<2.6.0"
 oss2 = "*"
-pyside6 = "*"
+# pyside6 = "*"
 pyyaml = "*"
 qmlease = "*"
 rich = "*"
-semver = "3.0.0dev4"
+semver = "^3.0.0dev4"
 
 [tool.poetry.extras]
 

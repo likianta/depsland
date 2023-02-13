@@ -1,12 +1,11 @@
 {
     "appid": "hello_world_gui",
-    "name": "Hello World Gui",
-    "version": "0.1.3",
+    "name": "Hello World",
+    "version": "0.1.5",
     "assets": {
         "src": ""
     },
     "dependencies": {
-        "pyside6": "",
         "qmlease": ""
     },
     "pypi": [],
