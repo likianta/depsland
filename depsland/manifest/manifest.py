@@ -330,14 +330,14 @@ def _update_assets(assets0: T.Assets0, manifest_dir: str) -> T.Assets1:
     for path, scheme in assets0.items():
         if scheme == '':
             scheme = 'all'
-        if not exists(path):
-            raise FileNotFoundError(path)
         if os.path.isabs(path):
             abspath = fs.normpath(path)
             relpath = fs.relpath(path, manifest_dir)
         else:
             abspath = fs.normpath(f'{manifest_dir}/{path}')
             relpath = fs.normpath(path)
+        if not exists(abspath):
+            raise FileNotFoundError(path)
         # minor fix relpath
         if relpath == '.':
             # `fs.relpath` may return '.', we need to convert it to ''.
