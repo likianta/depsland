@@ -32,10 +32,21 @@ paths = Paths()
 
 
 def main() -> None:
+    if _is_already_extracted():
+        print('bootloader already done. launch gui now.')
+        _launch_gui()
+        return
+    
     print(f'located project root: {paths.root}')
     _check_permission()
     _pip_install(paths.downloads, paths.installed)
     _make_soft_links(paths.site_packages)
+    _rebuild_pypi_index()
+    _launch_gui()
+
+
+def _is_already_extracted() -> bool:
+    return len(os.listdir(paths.installed)) > 0
 
 
 def _check_permission() -> None:
@@ -94,6 +105,11 @@ def _make_soft_links(dir_o: str) -> None:
             '{}/{}'.format(dir_o, relpath),
             target_is_directory=os.path.isdir(src)
         )
+
+
+def _rebuild_pypi_index() -> None:
+    from depsland import rebuild_pypi_index
+    rebuild_pypi_index()
 
 
 def _launch_gui() -> None:
