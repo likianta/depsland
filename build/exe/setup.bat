@@ -1,4 +1,4 @@
 @echo off
 cd /d %~dp0
 set PYTHONPATH=.
-.\python\python.exe -B build/setup_wizard/main.py :false :false
+.\python\python.exe -B build/setup_wizard/run.py

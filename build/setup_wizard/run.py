@@ -11,7 +11,7 @@ from argsense import cli
 
 
 @cli.cmd()
-def main(test_path: bool, hot_reload: bool):
+def main(test_path: bool = False, hot_reload: bool = False):
     from build.setup_wizard.page1 import Page1
     from build.setup_wizard.page2 import Page2
     from build.setup_wizard.page3 import Page3
