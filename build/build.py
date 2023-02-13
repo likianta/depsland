@@ -8,11 +8,9 @@ if 1:
     sys.path.insert(0, xpath('..', True))
 
 import os
-from collections import defaultdict
 from os.path import exists
 
 from argsense import cli
-from lk_utils import dumps
 from lk_utils import fs
 
 from depsland import __version__
@@ -97,28 +95,30 @@ def full_build(oss_scheme: str, pypi_scheme='full',
         fs.copy_file(f'{root_i}/conf/depsland_for_dev.yaml',
                      f'{root_o}/conf/depsland.yaml')
     if add_python_path:
-        fs.make_link(f'{root_i}/python',
-                     f'{root_o}/python')
+        if pypi_scheme == 'full':
+            fs.make_link(f'{root_i}/python',
+                         f'{root_o}/python')
+        else:
+            assert exists(f'{root_i}/tests/pure_python_standalone')
+            fs.make_link(f'{root_i}/tests/pure_python_standalone',
+                         f'{root_o}/python')
     if pypi_scheme == 'full':
         fs.make_link(f'{root_i}/pypi_self',
                      f'{root_o}/pypi')
+    elif pypi_scheme == 'least':
+        assert exists(f'{root_i}/tests/pure_pypi_index')
+        fs.copy_tree(f'{root_i}/tests/pure_pypi_index',
+                     f'{root_o}/pypi')
+        fs.remove_tree(f'{root_o}/pypi/downloads')
+        fs.make_link(f'{root_i}/pypi_self/downloads',
+                     f'{root_o}/pypi/downloads')
+        fs.remove_tree(f'{root_o}/pypi/installed')
+        fs.make_link(f'{root_i}/pypi_self/installed',
+                     f'{root_o}/pypi/installed')
     else:
-        os.mkdir(f'{root_o}/pypi')
-        os.mkdir(f'{root_o}/pypi/cache')
-        os.mkdir(f'{root_o}/pypi/index')
-        if pypi_scheme == 'least':
-            fs.make_link(f'{root_i}/pypi_self/downloads',
-                         f'{root_o}/pypi/downloads')
-        else:
-            os.mkdir(f'{root_o}/pypi/downloads')
-        os.mkdir(f'{root_o}/pypi/installed')
-        
-        # init index files
-        # below is a copy of `./self_build.py : def init_pypi_index()`.
-        dumps({}, f'{root_o}/pypi/index/dependencies.pkl')
-        dumps(defaultdict(list), f'{root_o}/pypi/index/name_2_versions.pkl')
-        dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')
-        dumps({}, f'{root_o}/pypi/index/updates.pkl')
+        assert exists(f'{root_i}/tests/pure_pypi_index')
+        fs.copy_tree(f'{root_i}/tests/pure_pypi_index',
+                     f'{root_o}/pypi')
     
     # dump manifest
     dump_manifest(load_manifest(f'{root_i}/manifest.json'),
@@ -126,8 +126,9 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     
     # post check
     if pypi_scheme == 'least':
+        print('overwrite setup.exe')
         fs.copy_file(f'{root_i}/build/exe/setup2.exe',
-                     f'{root_o}/setup.exe')
+                     f'{root_o}/setup.exe', overwrite=True)
     if pypi_scheme in ('least', 'none'):
         print('note: you need to manually remove `python/lib/site-packages/'
               '<symlinked_names>` before publishing this dist', ':v3')

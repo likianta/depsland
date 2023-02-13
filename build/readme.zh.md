@@ -65,6 +65,23 @@
 
 ## 常用命令备忘
 
+self_build.py
+
+```sh
+py build/self_build.py -h
+
+py build/self_build.py init pypi
+py build/self_build.py init pypi_self
+
+py build/self_build.py build
+py build/self_build.py build -sd
+py build/self_build.py build -sd -si
+
+py build/self_build.py link
+```
+
+build.py
+
 ```sh
 py build/build.py -h
 py build/build.py full-build -h
@@ -75,15 +92,12 @@ py build/build.py full-build aliyun -p least
 
 py build/build.py bat-2-exe build/exe/depsland.bat
 py build/build.py bat-2-exe build/exe/desktop.bat
+py build/build.py bat-2-exe build/exe/setup.bat -C
 ```
 
+unittests
+
 ```sh
-py build/self_build.py -h
-
-py build/self_build.py init pypi
-py build/self_build.py init pypi_self
-
-py build/self_build.py build
-
-py build/self_build.py link
+py -m depsland publish unittests/demo_apps/hello-world/manifest.json
+py -m depsland publish unittests/demo_apps/hello-world-gui/manifest.json
 ```
