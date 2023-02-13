@@ -26,7 +26,8 @@ print(':v2', f'depsland version: {__version__}')
 
 
 @cli.cmd()
-def full_build(oss_scheme: str, add_python_path=True, clean_pypi=False):
+def full_build(oss_scheme: str, pypi_scheme='full',
+               add_python_path=True) -> None:
     """
     generate `dist/depsland-setup-<version>` folder.
     
@@ -35,6 +36,12 @@ def full_build(oss_scheme: str, add_python_path=True, clean_pypi=False):
             aliyun: you need to prepare a file named -
             'conf/depsland_for_dev.yaml', which contains aliyun oss access -
             & secret keys.
+    kwargs:
+        pypi_scheme (-p): 'full', 'least', 'none'
+            full: link `<proj>/pypi_self` to `<dist>/pypi`.
+            least: init `<dist>/pypi`, and link `<proj>/pypi_self/downloads` -
+                to `<dist>/pypi/downloads`.
+            none: just init `<dist>/pypi`.
     """
     root_i = paths.project.root
     root_o = '{dist}/depsland-setup-{version}'.format(
@@ -92,24 +99,38 @@ def full_build(oss_scheme: str, add_python_path=True, clean_pypi=False):
     if add_python_path:
         fs.make_link(f'{root_i}/python',
                      f'{root_o}/python')
-    if clean_pypi:
+    if pypi_scheme == 'full':
+        fs.make_link(f'{root_i}/pypi_self',
+                     f'{root_o}/pypi')
+    else:
         os.mkdir(f'{root_o}/pypi')
         os.mkdir(f'{root_o}/pypi/cache')
         os.mkdir(f'{root_o}/pypi/index')
-        os.mkdir(f'{root_o}/pypi/downloads')
+        if pypi_scheme == 'least':
+            fs.make_link(f'{root_i}/pypi_self/downloads',
+                         f'{root_o}/pypi/downloads')
+        else:
+            os.mkdir(f'{root_o}/pypi/downloads')
         os.mkdir(f'{root_o}/pypi/installed')
+        
+        # init index files
         # below is a copy of `./self_build.py : def init_pypi_index()`.
         dumps({}, f'{root_o}/pypi/index/dependencies.pkl')
         dumps(defaultdict(list), f'{root_o}/pypi/index/name_2_versions.pkl')
         dumps({}, f'{root_o}/pypi/index/name_id_2_paths.pkl')
         dumps({}, f'{root_o}/pypi/index/updates.pkl')
-    else:
-        fs.make_link(f'{root_i}/pypi_self',
-                     f'{root_o}/pypi')
     
-    # init files
+    # dump manifest
     dump_manifest(load_manifest(f'{root_i}/manifest.json'),
                   f'{root_o}/manifest.pkl')
+    
+    # post check
+    if pypi_scheme == 'least':
+        fs.copy_file(f'{root_i}/build/exe/setup2.exe',
+                     f'{root_o}/setup.exe')
+    if pypi_scheme in ('least', 'none'):
+        print('note: you need to manually remove `python/lib/site-packages/'
+              '<symlinked_names>` before publishing this dist', ':v3')
     
     print(':t', 'see result at ' + fs.relpath(root_o))
 
