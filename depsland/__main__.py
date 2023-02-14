@@ -80,6 +80,12 @@ def launch_gui() -> None:
     """
     launch depsland gui. [red](warning: experimental feature)[/]
     """
+    try:
+        import qmlease
+    except ModuleNotFoundError:
+        print('launching GUI failed. you may forget to install qt for python '
+              'library (suggest `pip install pyside6` etc.)', ':v4')
+        return
     # import os
     # os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
