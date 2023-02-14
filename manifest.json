@@ -1,15 +1,21 @@
 {
-    "appid": "depsland",
-    "name": "Depsland",
-    "version": "0.4.0",
+    "appid": "depsland_appstore",
+    "name": "Depsland Store",
+    "version": "0.5.1a0",
     "assets": {
-        "build": "all",
-        "conf": "root",
-        "conf/depsland.yaml": "all",
+        "apps/.bin": "root",
+        "apps/.venv": "root",
+        "conf/depsland_for_dev.yaml": "all",
         "depsland": "all",
         "dist": "root",
-        "docs": "all",
-        "sidework": "all",
+        "oss/apps": "root",
+        "oss/test": "root",
+        "pypi/cache": "root",
+        "pypi/downloads": "root",
+        "pypi/index": "root",
+        "pypi/installed": "root",
+        "temp/.self_upgrade": "root",
+        "temp/.unittests": "root",
         "CHANGELOG.zh.md": "all",
         "manifest.json": "all",
         "README.md": "all",
@@ -18,20 +24,23 @@
     },
     "dependencies": {
         "argsense": ">=0.5.2",
-        "lk-logger": ">=5.4.7",
-        "lk-utils": ">=2.5.2",
+        "lk-logger": ">=5.4.8",
+        "lk-utils": ">=2.5.3",
         "oss2": "",
         "pyyaml": "",
+        "qmlease": ">=3.1.0a15",
         "rich": "",
-        "semver": ">=3.0.0dev3"
+        "semver": ">=3.0.0dev4"
     },
-    "pypi": [],
+    "pypi": [
+        "chore/custom_packages/qmlease-3.1.0a15-py3-none-any.whl"
+    ],
     "launcher": {
-        "script": "depsland",
+        "script": "depsland launch-gui",
         "icon": "build/exe/launcher.ico",
         "cli_tool": true,
         "desktop": true,
         "start_menu": false
     },
-    "depsland_version": "0.4.0"
+    "depsland_version": "0.5.1"
 }
