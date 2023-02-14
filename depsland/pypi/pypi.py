@@ -170,6 +170,7 @@ class LocalPyPI(Index):
             if path0 != path1:
                 fs.copy_file(path0, path1)
             if not os.path.exists(path2):
+                print(':v', f'perform local pip install on {name_id}')
                 fs.make_dirs(path2)
                 self.pip.run(
                     'install', path1, ('-t', path2),
@@ -263,7 +264,10 @@ class LocalPyPI(Index):
     
     def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
         from .insight import _analyse_metadata_1
-        dir0 = self.name_id_2_paths[name_id][1]
+        dir0 = '{}/{}'.format(
+            pypi_paths.root,
+            self.name_id_2_paths[name_id][1]
+        )
         for name in os.listdir(dir0):
             if name.endswith('.dist-info'):
                 dir1 = f'{dir0}/{name}'
