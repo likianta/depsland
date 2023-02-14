@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.5.0b14"
+version = "0.5.0"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]

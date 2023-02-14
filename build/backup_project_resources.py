@@ -33,21 +33,24 @@ def copy_build_dir() -> None:
                  f'{dir_m}/build/build.py')
     fs.copy_file(f'{dir_i}/build/depsland_setup.py',
                  f'{dir_m}/build/depsland_setup.py')
+    # DELETE: about to remove
     fs.copy_file(f'{dir_i}/build/install_requirements.py',
                  f'{dir_m}/build/install_requirements.py')
     fs.copy_file(f'{dir_i}/build/readme.zh.md',
                  f'{dir_m}/build/readme.zh.md')
+    fs.copy_file(f'{dir_i}/build/self_build.py',
+                 f'{dir_m}/build/self_build.py')
     compress_dir(f'{dir_m}/build', f'{dir_o}/build.zip', True)
 
 
-def copy_conf_dir():
+def copy_conf_dir() -> None:
     # make sure conf/depsland.yaml has configured local oss.
     assert loads(f'{dir_i}/conf/depsland.yaml')['oss']['server'] == 'local'
     fs.copy_file(f'{dir_i}/conf/depsland.yaml', f'{dir_m}/depsland.yaml')
     compress_dir(f'{dir_m}/depsland.yaml', f'{dir_o}/conf.zip', True)
 
 
-def copy_sidework_dir():
+def copy_sidework_dir() -> None:
     fs.make_dir(f'{dir_m}/sidework')
     for f in fs.find_files(f'{dir_i}/sidework'):
         i = f.path
