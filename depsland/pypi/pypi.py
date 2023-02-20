@@ -128,21 +128,22 @@ class LocalPyPI(Index):
             )
             return path, os.path.exists(path)
         
-        for name, version, downloaded_path in self.download(
-                packages, include_dependencies
-        ):
-            name_id = f'{name}-{version}'
-            installed_path, exist = get_installed_path(name_id)
-            if not exist:
-                print(':v', 'make dir', installed_path)
-                fs.make_dir(installed_path)
-                self.pip.run(
-                    'install', downloaded_path,
-                    '--no-deps', '--no-index',
-                    ('-t', installed_path),
-                    ('--find-links', pypi_paths.downloads),
-                )
-            yield name_id
+        with self.pip.multi_processing():
+            for name, version, downloaded_path in self.download(
+                    packages, include_dependencies
+            ):
+                name_id = f'{name}-{version}'
+                installed_path, exist = get_installed_path(name_id)
+                if not exist:
+                    print(':v', 'make dir', installed_path)
+                    fs.make_dir(installed_path)
+                    self.pip.run(
+                        'install', downloaded_path,
+                        '--no-deps', '--no-index',
+                        ('-t', installed_path),
+                        ('--find-links', pypi_paths.downloads),
+                    )
+                yield name_id
     
     @staticmethod
     def linking(name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
