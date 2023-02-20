@@ -1,6 +1,9 @@
 """
 py build/backup_project_resources.py
 """
+import os
+os.environ['DEPSLAND_CONFIG_PATH'] = ''
+
 from os.path import exists
 
 from lk_utils import fs

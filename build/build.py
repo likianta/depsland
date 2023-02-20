@@ -41,14 +41,6 @@ def full_build(oss_scheme: str, pypi_scheme='full',
                 to `<dist>/pypi/downloads`.
             none: just init `<dist>/pypi`.
     """
-    # check environment variables
-    if oss_scheme == 'aliyun':
-        assert exists(os.getenv('DEPSLAND_CONFIG_PATH'))
-    else:
-        os.environ['DEPSLAND_CONFIG_PATH'] = ''
-    
-    # -------------------------------------------------------------------------
-    
     root_i = paths.project.root
     root_o = '{dist}/depsland-setup-{version}'.format(
         dist=paths.project.dist,
@@ -65,7 +57,7 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/build/exe')
-    # os.mkdir(f'{root_o}/conf')
+    os.mkdir(f'{root_o}/conf')
     # os.mkdir(f'{root_o}/depsland')
     os.mkdir(f'{root_o}/dist')
     os.mkdir(f'{root_o}/docs')
@@ -102,6 +94,14 @@ def full_build(oss_scheme: str, pypi_scheme='full',
                  f'{root_o}/sidework')
     fs.copy_file(f'{root_i}/.depsland_project',
                  f'{root_o}/.depsland_project')
+    
+    if oss_scheme == 'aliyun':
+        assert exists(custom := os.getenv('DEPSLAND_CONFIG_PATH'))
+        fs.copy_file(f'{custom}/depsland.yaml',
+                     f'{root_o}/conf/depsland.yaml')
+    else:
+        fs.copy_file(f'{root_i}/conf/depsland.yaml',
+                     f'{root_o}/conf/depsland.yaml')
     
     if add_python_path:
         if pypi_scheme == 'full':
