@@ -48,16 +48,52 @@ def install_by_appid(
 ) -> None:
     m1, m0 = _get_manifests(appid)
     if m0 is None:
-        m0 = init_manifest(m1['appid'], m1['name'])
-        install(m1, m0)
-    elif _check_version(m1, m0):
+        m0 = init_manifest(appid, m1['name'])
+    install(m1, m0, upgrade, reinstall)
+
+
+def install_local(
+        manifest_file: T.Path,
+        upgrade: bool = True,
+        reinstall: bool = False,
+) -> None:
+    m1 = load_manifest(manifest_file)
+    
+    if exists(d := '{}/.oss'.format(m1['start_directory'])):
+        custom_oss_root = d
+    else:
+        custom_oss_root = None
+    
+    init_target_tree(m1, d := '{}/{}/{}'.format(
+        paths.project.apps, m1['appid'], m1['version']
+    ))
+    change_start_directory(m1, d)
+    
+    appid, name = m1['appid'], m1['name']
+    if x := _get_dir_to_last_installed_version(appid):
+        m0 = load_manifest(f'{x}/manifest.pkl')
+    else:
+        m0 = init_manifest(appid, name)
+    
+    install(m1, m0, upgrade, reinstall, custom_oss_root)
+
+
+def install(
+        manifest_new: T.Manifest,
+        manifest_old: T.Manifest = None,
+        upgrade: bool = True,
+        reinstall: bool = False,
+        custom_oss_root: T.Path = None,
+) -> None:
+    appid = manifest_new['appid']
+    if _check_version(manifest_new, manifest_old):
         if upgrade:
             # install first, then uninstall old.
-            install(m1, m0)
+            _install(manifest_new, manifest_old, custom_oss_root)
             # TODO: for safety consideration, below is temporarily disabled,
             #   wait for a future version that supports complete auto-upgrade.
             # _uninstall(appid, m0['version'],
-            #               remove_venv=False, remove_bin=False)
+            #            remove_venv=False, remove_bin=False)
         else:
             print('new version available but not installed. you can use '
                   '`depsland install -u {appid}` or `depsland upgrade {appid}` '
@@ -66,7 +102,7 @@ def install_by_appid(
         if reinstall:
             from .uninstall import main as _uninstall
             # assert m0['version'] == m1['version']
-            _uninstall(appid, m0['version'])
+            _uninstall(appid, manifest_old['version'])
             install_by_appid(appid, upgrade=False, reinstall=False)
         else:
             print('current version is up to date. you can use `depsland '
@@ -74,8 +110,11 @@ def install_by_appid(
                   'reinstall it.'.format(appid=appid))
 
 
-def install(manifest_new: T.Manifest, manifest_old: T.Manifest,
-            custom_oss_root: T.Path = None) -> None:
+def _install(
+        manifest_new: T.Manifest,
+        manifest_old: T.Manifest,
+        custom_oss_root: T.Path = None
+) -> None:
     dir_m = make_temp_dir()
     
     if custom_oss_root:
@@ -229,6 +268,7 @@ def _install_dependencies(
         dst_dir = paths.apps.make_packages(
             manifest_new['appid'], manifest_new['version'], clear_exists=True
         )
+    
     # else: make sure `dst_dir` does exist.
     
     def is_same() -> bool:

@@ -164,67 +164,11 @@ def install(appid: str, upgrade=True, reinstall=False) -> None:
 
 
 @cli.cmd()
-def install_dist(manifest: str) -> None:
-    """
-    to install a distributed package.
-    this function is provided for user that clicks '<some_dist>/setup.exe' to -
-    get to work.
-    
-    TODO: is it better to rename this function to 'setup'?
-    """
-    from os.path import exists
-    from .manifest import change_start_directory
-    from .manifest import init_manifest
-    from .manifest import init_target_tree
-    from .manifest import load_manifest
-    
-    m1 = load_manifest(_fix_manifest_param(manifest))
-    
-    if exists(d := '{}/.oss'.format(m1['start_directory'])):
-        custom_oss_root = d
-    else:
-        custom_oss_root = None
-    
-    init_target_tree(m1, d := '{}/{}/{}'.format(
-        paths.project.apps, m1['appid'], m1['version']
-    ))
-    change_start_directory(m1, d)
-    
-    appid, name = m1['appid'], m1['name']
-    if x := _get_dir_to_last_installed_version(appid):
-        m0 = load_manifest(f'{x}/manifest.pkl')
-        if _check_version(m1, m0):
-            # install first, then uninstall old.
-            api.install(m1, m0, custom_oss_root)
-            api.uninstall(appid, m0['version'],
-                          remove_venv=False, remove_bin=False)
-        else:
-            print('you already have the latest version installed: '
-                  + m0['version'])
-    else:
-        m0 = init_manifest(appid, name)
-        api.install(m1, m0, custom_oss_root)
-    
-    print(':rt', '[green]installation done.[/]')
-
-
-@cli.cmd()
 def upgrade(appid: str) -> None:
     """
     upgrade an app from oss by querying appid.
     """
     api.install_by_appid(appid, upgrade=True, reinstall=False)
-
-
-# @cli.cmd()
-# def reinstall(appid: str) -> None:
-#     # TODO: reinstall is not supported. the server side provides only latest
-#     #     verison. which may not be matched with local one.
-#     from .manifest import load_manifest
-#     if x := _get_dir_to_last_installed_version(appid):
-#         manifest0 = load_manifest(f'{x}/manifest.pkl')
-#         api.uninstall(appid, manifest0['version'])
-#         api.install(appid, manifest0['version'])
 
 
 @cli.cmd()
