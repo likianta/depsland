@@ -50,6 +50,10 @@ class Home(QObject):
             'For example: "hello_world".'
         )
         
+        @bind_signal(input_bar.submit)
+        def _(text: str) -> None:
+            self._install(text)
+        
         @bind_signal(self._info_updated)
         def _(text: str) -> None:
             self._info_item['text'] = text
@@ -61,21 +65,7 @@ class Home(QObject):
         
         @bind_signal(install_btn.clicked)
         def _() -> None:
-            if self.running:
-                self._transient_info(_yellow('Task is already running!'))
-                return
-            
-            appid = input_bar['text']
-            # check appid
-            if not appid:
-                self._transient_info(
-                    _red('Appid cannot be empty!'),
-                    _default_text
-                )
-                return
-            
-            self._start_timer(appid)
-            self._installing_thread = self._install(appid)
+            self._install(input_bar['text'])
         
         @bind_signal(self._installation_done)
         def _(success: bool) -> None:
@@ -109,15 +99,27 @@ class Home(QObject):
                     duration=10
                 )
     
-    @new_thread()
-    def _install(self, appid: str):
-        from ...__main__ import install
-        try:
-            install(appid)
-            self._installation_done.emit(True)
-        except Exception as e:
-            print(''.join(format_exception(e)), ':v4')
-            self._installation_done.emit(False)
+    def _install(self, appid: str) -> None:
+        # check ability
+        if self.running:
+            self._transient_info(_yellow('Task is already running!'))
+            return
+        if not appid:
+            self._transient_info(_red('Appid cannot be empty!'))
+            return
+        
+        @new_thread()
+        def install(appid: str) -> None:
+            from ...__main__ import install
+            try:
+                install(appid)
+                self._installation_done.emit(True)
+            except Exception as e:
+                print(''.join(format_exception(e)), ':v4')
+                self._installation_done.emit(False)
+        
+        self._start_timer(appid)
+        install(appid)
     
     @new_thread()
     def _start_timer(self, appid: str) -> None:

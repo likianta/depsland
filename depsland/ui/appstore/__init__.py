@@ -1,1 +1,1 @@
-from .home import launch_app
+from .app import launch_app
