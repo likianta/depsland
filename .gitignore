@@ -8,6 +8,7 @@
 /build/manifest.pkl
 /chore/custom_packages/*
 /chore/*
+/conf/auto_saved.pkl
 /deleted/
 /depsland/webui/assets/
 /depsland/webui/static/

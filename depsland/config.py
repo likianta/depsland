@@ -1,10 +1,11 @@
 import typing as t
 
+from conflore import Conflore
 from lk_utils import loads
 
 from . import paths
 
-__all__ = ['app_settings', 'controls']
+__all__ = ['app_settings', 'auto_saved', 'controls']
 
 
 class T:
@@ -36,6 +37,16 @@ class T:
             'update_interval': int,
         }),
     })
+    
+    # noinspection PyTypedDict
+    AutoSaved = t.Union[
+        Conflore,
+        t.TypedDict('AutoSaved', {
+            'appstore': t.TypedDict('AppStore', {
+                'last_input': str
+            })
+        })
+    ]
 
 
 class GlobalControls:  # TODO: no usage yet.
@@ -45,3 +56,7 @@ class GlobalControls:  # TODO: no usage yet.
 
 app_settings: T.AppSettings = loads(paths.conf.depsland)
 controls = GlobalControls()
+auto_saved: T.AutoSaved = Conflore(
+    paths.conf.auto_saved,
+    {'appstore': {'last_input': ''}},
+)

@@ -1,6 +1,7 @@
 # run command: py build/install_requirements.py -h
 
 argsense
+conflore
 lk-logger >= 5.4.8
 lk-utils
 oss2

@@ -184,6 +184,7 @@ class Conf:
         else:
             self.root = f'{project.root}/conf'
         
+        self.auto_saved = f'{self.root}/auto_saved.pkl'
         self.depsland = f'{self.root}/depsland.yaml'
         # self.oss_client = f'{self.root}/oss_client.yaml'
         # self.oss_server = f'{self.root}/oss_server.yaml'

@@ -44,6 +44,11 @@ class Home(QObject):
             stop_btn: QObject,
             info: QObject
     ) -> None:
+        from ...config import auto_saved
+        input_bar['text'] = auto_saved['appstore']['last_input']
+        auto_saved.bind('appstore.last_input', lambda: input_bar['text'])
+        app.on_exit_register(auto_saved.save)
+        
         self._info_item = info
         self._info_item['text'] = _default_text = _gray(
             'Input an appid to install. '
