@@ -75,15 +75,14 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
     
     # -------------------------------------------------------------------------
     
-    for f in fs.find_files(pypi_paths.downloads):
-        if f.name.startswith('.'):  # '.gitkeep', '.DS_Store', etc.
-            continue
-        
-        ver = verspec.get_verspec_from_filename(f.name)
-        
-        update_name_2_versions()
-        update_name_id_2_paths()
-        update_updates()
+    with pip.multi_processing():
+        for f in fs.find_files(pypi_paths.downloads):
+            if f.name.startswith('.'):  # '.gitkeep', '.DS_Store', etc.
+                continue
+            ver = verspec.get_verspec_from_filename(f.name)
+            update_name_2_versions()
+            update_name_id_2_paths()
+            update_updates()
     
     # noinspection PyTypeChecker
     for v in name_2_versions.values():
