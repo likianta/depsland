@@ -8,9 +8,6 @@
 /build/manifest.pkl
 /chore/custom_packages/*
 /chore/*
-/conf/.redirect
-/conf/depsland_for_dev.yaml
-/conf/oss_*
 /deleted/
 /depsland/webui/assets/
 /depsland/webui/static/

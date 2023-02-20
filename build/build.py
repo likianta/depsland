@@ -41,6 +41,14 @@ def full_build(oss_scheme: str, pypi_scheme='full',
                 to `<dist>/pypi/downloads`.
             none: just init `<dist>/pypi`.
     """
+    # check environment variables
+    if oss_scheme == 'aliyun':
+        assert exists(os.getenv('DEPSLAND_CONFIG_PATH'))
+    else:
+        os.environ['DEPSLAND_CONFIG_PATH'] = ''
+    
+    # -------------------------------------------------------------------------
+    
     root_i = paths.project.root
     root_o = '{dist}/depsland-setup-{version}'.format(
         dist=paths.project.dist,
@@ -49,13 +57,15 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     assert not exists(root_o)
     os.mkdir(root_o)
     
+    # -------------------------------------------------------------------------
+    
     # make empty dirs
     os.mkdir(f'{root_o}/apps')
     os.mkdir(f'{root_o}/apps/.bin')
     os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/build/exe')
-    os.mkdir(f'{root_o}/conf')
+    # os.mkdir(f'{root_o}/conf')
     # os.mkdir(f'{root_o}/depsland')
     os.mkdir(f'{root_o}/dist')
     os.mkdir(f'{root_o}/docs')
@@ -68,6 +78,8 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     os.mkdir(f'{root_o}/temp')
     os.mkdir(f'{root_o}/temp/.self_upgrade')
     os.mkdir(f'{root_o}/temp/.unittests')
+    
+    # -------------------------------------------------------------------------
     
     # copy files
     fs.copy_file(f'{root_i}/build/exe/depsland.exe',
@@ -82,18 +94,15 @@ def full_build(oss_scheme: str, pypi_scheme='full',
                  f'{root_o}/build/setup_wizard')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
                  f'{root_o}/build/depsland_setup.py')
+    fs.copy_tree(f'{root_i}/conf',
+                 f'{root_o}/conf')
     fs.copy_tree(f'{root_i}/depsland',
                  f'{root_o}/depsland')
     fs.copy_tree(f'{root_i}/sidework',
                  f'{root_o}/sidework')
     fs.copy_file(f'{root_i}/.depsland_project',
                  f'{root_o}/.depsland_project')
-    if oss_scheme == 'local':
-        fs.copy_file(f'{root_i}/conf/depsland.yaml',
-                     f'{root_o}/conf/depsland.yaml')
-    else:
-        fs.copy_file(f'{root_i}/conf/depsland_for_dev.yaml',
-                     f'{root_o}/conf/depsland.yaml')
+    
     if add_python_path:
         if pypi_scheme == 'full':
             fs.make_link(f'{root_i}/python',
@@ -102,6 +111,7 @@ def full_build(oss_scheme: str, pypi_scheme='full',
             assert exists(f'{root_i}/tests/pure_python_standalone')
             fs.make_link(f'{root_i}/tests/pure_python_standalone',
                          f'{root_o}/python')
+    
     if pypi_scheme == 'full':
         fs.make_link(f'{root_i}/pypi_self',
                      f'{root_o}/pypi')
@@ -119,6 +129,8 @@ def full_build(oss_scheme: str, pypi_scheme='full',
         assert exists(f'{root_i}/tests/pure_pypi_index')
         fs.copy_tree(f'{root_i}/tests/pure_pypi_index',
                      f'{root_o}/pypi')
+    
+    # -------------------------------------------------------------------------
     
     # dump manifest
     dump_manifest(load_manifest(f'{root_i}/manifest.json'),

@@ -18,7 +18,7 @@ from lk_utils.subproc import run_cmd_args
 if True:
     import os
     pypi_root = xpath('../pypi_self')
-    os.environ['DEPSLAND_PYPI'] = pypi_root
+    os.environ['DEPSLAND_PYPI_PATH'] = pypi_root
 
 try:
     from depsland import normalization as norm

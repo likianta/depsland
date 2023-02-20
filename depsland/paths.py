@@ -1,5 +1,9 @@
 """
 ref: ~/docs/project-structure.md
+
+environment variables:
+    DEPSLAND_CONFIG_PATH: redirect config root.
+    DEPSLAND_PYPI_PATH: redirect pypi root.
 """
 import os
 import sys
@@ -8,7 +12,6 @@ from os.path import exists
 
 from lk_utils import dumps
 from lk_utils import fs
-from lk_utils import loads
 
 __all__ = [
     'apps',
@@ -21,6 +24,11 @@ __all__ = [
     'system',
     'temp',
 ]
+
+_env = {
+    'CONF_ROOT': os.getenv('DEPSLAND_CONFIG_PATH'),
+    'PYPI_ROOT': os.getenv('DEPSLAND_PYPI_PATH'),
+}
 
 
 class System:
@@ -170,23 +178,15 @@ class Build:
 class Conf:
     
     def __init__(self):
-        self.root = f'{project.root}/conf'
-        self.depsland = f'{self.root}/depsland.yaml'
-        self.oss_client = f'{self.root}/oss_client.yaml'
-        self.oss_server = f'{self.root}/oss_server.yaml'
+        if x := _env['CONF_ROOT']:
+            print(':r', f'[yellow dim]relocate config root to {x}[/]')
+            self.root = x
+        else:
+            self.root = f'{project.root}/conf'
         
-        if exists(x := f'{project.conf}/.redirect'):
-            if new_root := loads(x).strip():  # either be emptry or a dirpath.
-                if not os.path.isabs(new_root):
-                    # if new_root is relpath, it is relative to .redirect file.
-                    new_root = fs.normpath(f'{x}/../{new_root}', True)
-                assert os.path.isdir(new_root), ('invalid new_root', new_root)
-                print(':r', f'[yellow dim]relocate config root: {new_root}[/]')
-                
-                self.root = new_root
-                self.depsland = f'{new_root}/depsland.yaml'
-                self.oss_client = f'{new_root}/oss_client.yaml'
-                self.oss_server = f'{new_root}/oss_server.yaml'
+        self.depsland = f'{self.root}/depsland.yaml'
+        # self.oss_client = f'{self.root}/oss_client.yaml'
+        # self.oss_server = f'{self.root}/oss_server.yaml'
 
 
 class Oss:  # note: this is a local dir that mimics OSS structure.
@@ -200,7 +200,8 @@ class Oss:  # note: this is a local dir that mimics OSS structure.
 class PyPI:
     
     def __init__(self):
-        if x := os.getenv('DEPSLAND_PYPI'):
+        if x := _env['PYPI_ROOT']:
+            print(':r', f'[yellow dim]relocate pypi root to {x}[/]')
             self.root = x
         else:
             self.root = f'{project.root}/pypi'
