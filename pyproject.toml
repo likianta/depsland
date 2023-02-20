@@ -20,7 +20,7 @@ lk-utils = ">=2.5.2,<2.6.0"
 oss2 = "*"
 # pyside6 = "*"
 pyyaml = "*"
-qmlease = "*"
+qmlease = "^3.1.0"
 rich = "*"
 semver = "^3.0.0dev4"
 

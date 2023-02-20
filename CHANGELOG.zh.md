@@ -7,7 +7,8 @@
 
 ### 0.5.3 (wip)
 
-- appstore 记忆上次的输入
+- 优化 appstore 体验
+- appstore 支持传入本地 manifest 文件
 
 ### 0.5.2 (2023-02-20)
 

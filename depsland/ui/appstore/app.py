@@ -1,3 +1,4 @@
+import os.path
 import typing as t
 from time import sleep
 from traceback import format_exception
@@ -5,6 +6,7 @@ from typing import cast
 
 from lk_utils import new_thread
 from lk_utils import xpath
+from lk_utils.filesniff import filename
 from lk_utils.subproc import ThreadWorker
 
 from qmlease import AutoProp
@@ -36,13 +38,14 @@ class Home(QObject):
         from ... import __version__
         return f'v{__version__}'
     
-    @slot(object, object, object, object)
+    @slot(object, object, object, object, object)
     def init_view(
             self,
             input_bar: QObject,
             install_btn: QObject,
             stop_btn: QObject,
-            info: QObject
+            info: QObject,
+            drop_area: QObject,
     ) -> None:
         from ...config import auto_saved
         input_bar['text'] = auto_saved['appstore']['last_input']
@@ -55,22 +58,47 @@ class Home(QObject):
             'For example: "hello_world".'
         )
         
+        # ---------------------------------------------------------------------
+        
         @bind_signal(input_bar.submit)
         def _(text: str) -> None:
             self._install(text)
         
-        @bind_signal(self._info_updated)
-        def _(text: str) -> None:
-            self._info_item['text'] = text
+        @bind_signal(install_btn.clicked)
+        def _() -> None:
+            self._install(input_bar['text'])
+        
+        @bind_signal(stop_btn.clicked)
+        def _() -> None:
+            if self._installing_thread.kill():
+                self._stop_timer()
+                self._transient_info(
+                    _red('User force stopped.'),
+                    _default_text
+                )
+            else:
+                self._transient_info(
+                    _red('Failed to stop the task! If you want to manually '
+                         'stop it, please shutdown the window and restart it.'),
+                    duration=10
+                )
+        
+        @bind_signal(drop_area.fileDropped)
+        def _(path: str) -> None:
+            if path.endswith(('.pkl', '.yaml', '.yml', '.json')):
+                if filename(path, suffix=False) == 'manifest':
+                    input_bar['text'] = path
+        
+        # ---------------------------------------------------------------------
         
         @bind_signal(self.running_changed)
         def _(running: bool) -> None:
             install_btn['text'] = 'Install' if not running else 'Installing...'
             stop_btn['width'] = 100 if running else 0
         
-        @bind_signal(install_btn.clicked)
-        def _() -> None:
-            self._install(input_bar['text'])
+        @bind_signal(self._info_updated)
+        def _(text: str) -> None:
+            self._info_item['text'] = text
         
         @bind_signal(self._installation_done)
         def _(success: bool) -> None:
@@ -88,23 +116,14 @@ class Home(QObject):
                     _default_text,
                     duration=5
                 )
-        
-        @bind_signal(stop_btn.clicked)
-        def _() -> None:
-            if self._installing_thread.kill():
-                self._stop_timer()
-                self._transient_info(
-                    _red('User force stopped.'),
-                    _default_text
-                )
-            else:
-                self._transient_info(
-                    _red('Failed to stop the task! If you want to manually '
-                         'stop it, please shutdown the window and restart it.'),
-                    duration=10
-                )
     
     def _install(self, appid: str) -> None:
+        """
+        note: the param `appid` may not be a real appid, it could be an
+        absolute path to a local manifest file.
+        use `os.path.isabs` to check its type. it leads to different install
+        methods of api core.
+        """
         # check ability
         if self.running:
             self._transient_info(_yellow('Task is already running!'))
@@ -114,8 +133,12 @@ class Home(QObject):
             return
         
         @new_thread()
-        def install(appid: str) -> None:
-            from ...__main__ import install
+        def install(appid: str, is_local=False) -> None:
+            if is_local:
+                from ...api.user_api import install_by_appid as install
+            else:
+                print('detected manifest file. use local install')
+                from ...api.user_api import install_local as install
             try:
                 install(appid)
                 self._installation_done.emit(True)
@@ -124,7 +147,7 @@ class Home(QObject):
                 self._installation_done.emit(False)
         
         self._start_timer(appid)
-        install(appid)
+        install(appid, is_local=os.path.isabs(appid))
     
     @new_thread()
     def _start_timer(self, appid: str) -> None:

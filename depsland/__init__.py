@@ -19,4 +19,4 @@ from .pypi import rebuild_index as rebuild_pypi_index
 from .utils import bat_2_exe
 
 __version__ = '0.5.3'
-__date__ = '2023-02-20'
+__date__ = '2023-02-21'

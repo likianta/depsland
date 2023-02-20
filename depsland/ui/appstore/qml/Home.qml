@@ -12,9 +12,9 @@ LKWindow {
     LKColumn {
         id: _main_column
         anchors {
-            top: parent.top
             left: parent.left
             right: parent.right
+            verticalCenter: parent.verticalCenter
             margins: 24
         }
         height: childrenRect.height
@@ -103,7 +103,14 @@ LKWindow {
         }
     }
 
+    LKFileDrop {
+        id: _drop_area
+        anchors { fill: parent }
+    }
+
     Component.onCompleted: {
-        py.home.init_view(_input, _install_btn, _stop_btn, _info)
+        py.home.init_view(
+            _input, _install_btn, _stop_btn, _info, _drop_area
+        )
     }
 }
