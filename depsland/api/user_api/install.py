@@ -88,7 +88,7 @@ def install(manifest_new: T.Manifest, manifest_old: T.Manifest,
     
     _install_files(manifest_new, manifest_old, oss, dir_m)
     _install_custom_packages(manifest_new, manifest_old, oss)
-    _install_dependencies(manifest_new)
+    _install_dependencies(manifest_new, manifest_old)
     _create_launcher(manifest_new)
     
     _save_history(manifest_new['appid'], manifest_new['version'])
@@ -220,15 +220,31 @@ def _install_custom_packages(
                 pypi.add_to_index(dl, download_dependencies=True)
 
 
-def _install_dependencies(manifest: T.Manifest, dst_dir: str = None) -> None:
+def _install_dependencies(
+        manifest_new: T.Manifest,
+        manifest_old: T.Manifest,
+        dst_dir: str = None
+) -> None:
     if dst_dir is None:
         dst_dir = paths.apps.make_packages(
-            manifest['appid'], manifest['version'], clear_exists=True
+            manifest_new['appid'], manifest_new['version'], clear_exists=True
         )
-    # note: make sure `dst_dir` does exist.
+    # else: make sure `dst_dir` does exist.
+    
+    def is_same() -> bool:
+        new_deps = set(manifest_new['dependencies'].items())
+        old_deps = set(manifest_old['dependencies'].items())
+        return new_deps == old_deps
+    
+    if is_same():
+        src_dir = paths.apps.get_packages(
+            manifest_old['appid'], manifest_old['version']
+        )
+        fs.make_link(src_dir, dst_dir, True)
+        return
     
     packages = {}
-    for name, vspec in manifest['dependencies'].items():
+    for name, vspec in manifest_new['dependencies'].items():
         name = normalize_name(name)
         vspecs = tuple(normalize_version_spec(name, vspec))
         packages[name] = vspecs
