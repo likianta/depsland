@@ -8,6 +8,7 @@ from lk_utils import new_thread
 from lk_utils import xpath
 from lk_utils.filesniff import filename
 from lk_utils.subproc import ThreadWorker
+
 from qmlease import AutoProp
 from qmlease import QObject
 from qmlease import app
@@ -17,12 +18,20 @@ from qmlease import signal
 from qmlease import slot
 
 
-def launch_app() -> None:
+class T:
+    AppToken = t.Optional[str]
+
+
+def launch_app(startup_run: T.AppToken = None) -> None:
+    """
+    args:
+        startup_run: an appid or a path to a manifest file.
+            if not given, the app will start normally.
+    """
     pyassets.set_root(xpath('qml/Assets'))
     app.set_app_icon(xpath('../launcher.ico'))
-    app.register(Home())
+    app.register(Home(startup_run))
     app.run(xpath('qml/Home.qml'))
-    # app.run(xpath('qml/Home.qml'), debug=True)
 
 
 class Home(QObject):
@@ -31,6 +40,11 @@ class Home(QObject):
     _info_updated = signal(str)  # this is for sub-thread to emit.
     _installation_done = signal(bool)
     _installing_thread: t.Optional[ThreadWorker] = None
+    _startup_run: T.AppToken
+    
+    def __init__(self, app_token: T.AppToken = None):
+        super().__init__()
+        self._startup_run = app_token
     
     @slot(result=str)
     def get_app_version(self) -> str:
@@ -47,7 +61,8 @@ class Home(QObject):
             drop_area: QObject,
     ) -> None:
         from ...config import auto_saved
-        input_bar['text'] = auto_saved['appstore']['last_input']
+        input_bar['text'] = self._startup_run \
+                            or auto_saved['appstore']['last_input']
         auto_saved.bind('appstore.last_input', lambda: input_bar['text'])
         app.on_exit_register(auto_saved.save)
         
@@ -57,86 +72,88 @@ class Home(QObject):
             'For example: "hello_world".'
         )
         
-        # ---------------------------------------------------------------------
-        
-        @bind_signal(input_bar.submit)
-        def _(text: str) -> None:
-            self._install(text)
-        
-        @bind_signal(install_btn.clicked)
-        def _() -> None:
-            self._install(input_bar['text'])
-        
-        @bind_signal(stop_btn.clicked)
-        def _() -> None:
-            if self._installing_thread.kill():
+        def bind_events():
+            
+            @bind_signal(input_bar.submit)
+            def _(text: str) -> None:
+                self._install(text)
+            
+            @bind_signal(install_btn.clicked)
+            def _() -> None:
+                self._install(input_bar['text'])
+            
+            @bind_signal(stop_btn.clicked)
+            def _() -> None:
+                if self._installing_thread.kill():
+                    self._stop_timer()
+                    self._transient_info(
+                        _red('User force stopped.'),
+                        _default_text
+                    )
+                else:
+                    self._transient_info(
+                        _red('Failed to stop the task! If you want to manually '
+                             'stop it, please shutdown the window and restart '
+                             'it.'),
+                        duration=10
+                    )
+            
+            @bind_signal(drop_area.fileDropped)
+            def _(path: str) -> None:
+                if path.endswith(('.pkl', '.yaml', '.yml', '.json')):
+                    if filename(path, suffix=False) == 'manifest':
+                        input_bar['text'] = path
+            
+            # -----------------------------------------------------------------
+            
+            @bind_signal(self.running_changed)
+            def _(running: bool) -> None:
+                install_btn['text'] = 'Install' if not running \
+                    else 'Installing...'
+                stop_btn['width'] = 100 if running else 0
+            
+            @bind_signal(self._info_updated)
+            def _(text: str) -> None:
+                self._info_item['text'] = text
+            
+            @bind_signal(self._installation_done)
+            def _(success: bool) -> None:
+                # self._installing_thread.join()
                 self._stop_timer()
-                self._transient_info(
-                    _red('User force stopped.'),
-                    _default_text
-                )
-            else:
-                self._transient_info(
-                    _red('Failed to stop the task! If you want to manually '
-                         'stop it, please shutdown the window and restart it.'),
-                    duration=10
-                )
+                if success:
+                    self._transient_info(
+                        _green('Installation done.'),
+                        _default_text
+                    )
+                else:
+                    self._transient_info(
+                        _red('Installation failed. '
+                             'See console output for details.'),
+                        _default_text,
+                        duration=5
+                    )
         
-        @bind_signal(drop_area.fileDropped)
-        def _(path: str) -> None:
-            if path.endswith(('.pkl', '.yaml', '.yml', '.json')):
-                if filename(path, suffix=False) == 'manifest':
-                    input_bar['text'] = path
+        bind_events()
         
-        # ---------------------------------------------------------------------
-        
-        @bind_signal(self.running_changed)
-        def _(running: bool) -> None:
-            install_btn['text'] = 'Install' if not running else 'Installing...'
-            stop_btn['width'] = 100 if running else 0
-        
-        @bind_signal(self._info_updated)
-        def _(text: str) -> None:
-            self._info_item['text'] = text
-        
-        @bind_signal(self._installation_done)
-        def _(success: bool) -> None:
-            # self._installing_thread.join()
-            self._stop_timer()
-            if success:
-                self._transient_info(
-                    _green('Installation done.'),
-                    _default_text
-                )
-            else:
-                self._transient_info(
-                    _red('Installation failed. '
-                         'See console output for details.'),
-                    _default_text,
-                    duration=5
-                )
+        if self._startup_run:
+            self._install(self._startup_run)
     
-    def _install(self, text: str) -> None:
-        """
-        note: the param `text` may be an appid or an absolute path to a
-        manifest file. we use `os.path.isabs` to check its type. it leads to
-        different install methods of api core.
-        """
+    def _install(self, app_token: T.AppToken) -> None:
         # check ability
         if self.running:
             self._transient_info(_yellow('Task is already running!'))
             return
-        if not text:
+        if not app_token:
             self._transient_info(_red('Appid cannot be empty!'))
             return
         
-        if os.path.isabs(text):
+        if os.path.isabs(app_token):
             from ...manifest import load_manifest
-            m = load_manifest(text)
+            m = load_manifest(app_token)
             appid = m['appid']
             is_local = True
         else:
-            appid = text
+            appid = app_token
             is_local = False
         
         @new_thread()
@@ -154,7 +171,7 @@ class Home(QObject):
                 self._installation_done.emit(False)
         
         self._start_timer(appid)
-        install(text, is_local)
+        install(app_token, is_local)
     
     @new_thread()
     def _start_timer(self, appid: str) -> None:

@@ -1,6 +1,9 @@
+import os
 import typing as t
+from os.path import exists
 
 from argsense import CommandLineInterface
+from lk_utils import fs
 
 from . import __path__
 from . import __version__
@@ -76,9 +79,13 @@ def welcome(confirm_close=False) -> None:
 
 
 @cli.cmd()
-def launch_gui() -> None:
+def launch_gui(_app_token: str = None) -> None:
     """
-    launch depsland gui. [red](warning: experimental feature)[/]
+    launch depsland gui.
+    
+    args:
+        _app_token: an appid or a path to a manifest file.
+            if given, the app will launch and instantly install it.
     """
     try:
         import qmlease
@@ -86,10 +93,12 @@ def launch_gui() -> None:
         print('launching GUI failed. you may forget to install qt for python '
               'library (suggest `pip install pyside6` etc.)', ':v4')
         return
+    if _app_token and os.path.isfile(_app_token):
+        _app_token = fs.normpath(_app_token, True)
     # import os
     # os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
-    launch_app()
+    launch_app(_app_token)
 
 
 # -----------------------------------------------------------------------------
@@ -229,7 +238,6 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         return
     
     import lk_logger
-    import os
     import subprocess
     from argsense import args_2_cargs
     from .manifest import load_manifest
@@ -292,19 +300,16 @@ def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
 
 
 def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
-    from lk_utils.filesniff import normpath
-    from os.path import exists, isdir
-    if isdir(manifest):
-        out = normpath(f'{manifest}/manifest.json', True)
+    if os.path.isdir(manifest):
+        out = fs.normpath(f'{manifest}/manifest.json', True)
     else:
-        out = normpath(manifest, True)
+        out = fs.normpath(manifest, True)
         assert exists(out), f'path not exists: {out}'
     # print(':v', out)
     return out
 
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
-    from os.path import exists
     if last_ver := get_last_installed_version(appid):
         dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
         assert exists(dir_), dir_
@@ -313,7 +318,6 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
 
 
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
-    from lk_utils import fs
     from .manifest import change_start_directory
     from .manifest import init_target_tree
     from .manifest import load_manifest
