@@ -248,6 +248,7 @@ def _install_custom_packages(
     pypi1: T.ManifestPypi = manifest_new['pypi']
     downloads_dir = paths.pypi.downloads
     
+    new_files = []
     for name in pypi1:
         if name not in pypi0:
             if not os.path.exists(f'{downloads_dir}/{name}'):
@@ -256,7 +257,10 @@ def _install_custom_packages(
                     f'{oss.path.pypi}/{name}',
                     dl := f'{downloads_dir}/{name}',
                 )
-                pypi.add_to_index(dl, download_dependencies=True)
+                new_files.append(dl)
+    
+    if new_files:
+        pypi.add_to_indexes(*new_files, download_dependencies=True)
 
 
 def _install_dependencies(

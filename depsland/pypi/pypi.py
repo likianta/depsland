@@ -61,7 +61,8 @@ class LocalPyPI(Index):
                             for nid in self.dependencies[name_id]['resolved']:
                                 a, b = nid.split('-', 1)
                                 yield a, b, get_downloaded_path(nid)
-                            yield from self._download_unresolved_part(name_id)
+                            if x := self.dependencies[name_id]['unresolved']:
+                                yield from self._download_unresolved_part(x)
                         continue
                     else:
                         print('cannot find proper version in local index, '
@@ -154,11 +155,28 @@ class LocalPyPI(Index):
     # -------------------------------------------------------------------------
     # side methods
     
+    def add_to_indexes(
+            self,
+            *downloaded_package_files: str,
+            download_dependencies=False
+    ) -> None:
+        name_ids = []
+        for f in downloaded_package_files:
+            name_ids.append(
+                self.add_to_index(f, analyze_dependencies=False)
+            )
+        if download_dependencies:
+            for nid in name_ids:
+                if x := self.dependencies[nid]['unresolved']:
+                    print(f'predownload dependencies for {nid}')
+                    # just exhaust the generator
+                    for _ in self._download_unresolved_part(x): pass
+    
     def add_to_index(
             self,
             downloaded_package_file: str,
-            download_dependencies=False
-    ) -> None:
+            analyze_dependencies=True
+    ) -> T.NameId:
         filename = fs.filename(downloaded_package_file)
         name, version = norm.filename_2_name_version(filename)
         name_id = f'{name}-{version}'
@@ -178,7 +196,7 @@ class LocalPyPI(Index):
                     '--no-deps', '--no-index',
                 )
         
-        def add_to_indexes() -> None:
+        def indexing() -> None:
             self.name_2_versions[name].insert(0, version)
             
             self.name_id_2_paths[name_id] = (
@@ -186,13 +204,8 @@ class LocalPyPI(Index):
                 fs.relpath(path2, pypi_paths.root),
             )
             
-            for (a, b), is_name_id in self._find_dependencies(name_id):
-                if is_name_id:
-                    self.dependencies[name_id]['resolved'].append(f'{a}-{b}')
-                else:
-                    self.dependencies[name_id]['unresolved'][a] = tuple(
-                        norm.normalize_version_spec(a, b)
-                    )
+            if analyze_dependencies:
+                self._analyze_dependencies(name_id)
             
             if name not in self.updates:
                 self.updates[name] = get_updated_time(path0)
@@ -201,12 +214,10 @@ class LocalPyPI(Index):
         
         if name_id not in self.name_id_2_paths:
             fill_local_dirs()
-            add_to_indexes()
+            indexing()
         # else: assert name_id in all indexes...
         
-        if download_dependencies and self.dependencies[name_id]['unresolved']:
-            print(f'predownload dependencies for {name_id}')
-            tuple(self._download_unresolved_part(name_id))
+        return name_id
     
     # -------------------------------------------------------------------------
     # general
@@ -222,6 +233,15 @@ class LocalPyPI(Index):
     @staticmethod
     def split(name_id: T.NameId) -> t.Tuple[T.Name, T.Version]:
         return name_id.split('-', 1)  # noqa
+    
+    def _analyze_dependencies(self, name_id: T.NameId) -> None:
+        for (a, b), is_name_id in self._find_dependencies(name_id):
+            if is_name_id:
+                self.dependencies[name_id]['resolved'].append(f'{a}-{b}')
+            else:
+                vspecs = tuple(norm.normalize_version_spec(a, b))
+                self.dependencies[name_id]['unresolved'][a] = vspecs
+                # yield a, vspecs
     
     def _download(
             self, name: T.Name, specs: T.VersionSpecs,
@@ -253,15 +273,14 @@ class LocalPyPI(Index):
             yield m.group(), True
     
     def _download_unresolved_part(
-            self, name_id: T.NameId
+            self, packages: T.Packages
     ) -> t.Iterator[t.Tuple[T.Name, T.Version, T.Path]]:
-        if x := self.dependencies[name_id]['unresolved']:
-            yield from self.download(
-                x,
-                include_dependencies=True,
-                _check_local_existed_versions=False,
-            )
-            x.clear()
+        yield from self.download(
+            packages,
+            include_dependencies=True,
+            _check_local_existed_versions=False,
+        )
+        packages.clear()
     
     def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
         from .insight import _analyse_metadata_1
