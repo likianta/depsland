@@ -113,8 +113,8 @@ def soft_link_to_site_packages(
     # print(pypi.name_2_versions, ':lv')
     
     origin_name_ids = []
-    names = ('argsense', 'lk_logger', 'lk_utils', 'oss2', 'pyyaml', 'qmlease',
-             'semver')
+    names = ('argsense', 'conflore', 'lk_logger', 'lk_utils', 'oss2', 'pyyaml',
+             'qmlease', 'semver')
     for n in names:
         # print(n)
         v = pypi.name_2_versions[n][0]
