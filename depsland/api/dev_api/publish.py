@@ -61,11 +61,15 @@ def main(manifest_file: str, full_upload=False) -> None:
         bat_file = f'{dist_dir}/setup.bat'
         command = dedent(r'''
             cd /d %~dp0
-            "%DEPSLAND%\depsland.exe" install-dist manifest.pkl
-            pause
+            "%DEPSLAND%\depsland-su.exe" launch-gui manifest.pkl
         ''').strip()
         dumps(command, bat_file)
-        bat_2_exe(bat_file, icon=paths.build.launcher_ico, remove_bat=True)
+        bat_2_exe(bat_file,
+                  # icon=paths.build.launcher_ico,
+                  icon=manifest['launcher']['icon']
+                       or paths.build.launcher_ico,
+                  show_console=False,
+                  remove_bat=True)
     
     appinfo['history'].insert(0, appinfo['version'])
     dumps(appinfo['history'],
