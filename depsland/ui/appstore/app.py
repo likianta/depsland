@@ -8,7 +8,6 @@ from lk_utils import new_thread
 from lk_utils import xpath
 from lk_utils.filesniff import filename
 from lk_utils.subproc import ThreadWorker
-
 from qmlease import AutoProp
 from qmlease import QObject
 from qmlease import app
@@ -117,40 +116,49 @@ class Home(QObject):
                     duration=5
                 )
     
-    def _install(self, appid: str) -> None:
+    def _install(self, text: str) -> None:
         """
-        note: the param `appid` may not be a real appid, it could be an
-        absolute path to a local manifest file.
-        use `os.path.isabs` to check its type. it leads to different install
-        methods of api core.
+        note: the param `text` may be an appid or an absolute path to a
+        manifest file. we use `os.path.isabs` to check its type. it leads to
+        different install methods of api core.
         """
         # check ability
         if self.running:
             self._transient_info(_yellow('Task is already running!'))
             return
-        if not appid:
+        if not text:
             self._transient_info(_red('Appid cannot be empty!'))
             return
         
+        if os.path.isabs(text):
+            from ...manifest import load_manifest
+            m = load_manifest(text)
+            appid = m['appid']
+            is_local = True
+        else:
+            appid = text
+            is_local = False
+        
         @new_thread()
-        def install(appid: str, is_local=False) -> None:
+        def install(text: str, is_local=False) -> None:
             if is_local:
-                from ...api.user_api import install_by_appid as install
-            else:
                 print('detected manifest file. use local install')
                 from ...api.user_api import install_local as install
+            else:
+                from ...api.user_api import install_by_appid as install
             try:
-                install(appid)
+                install(text)
                 self._installation_done.emit(True)
             except Exception as e:
                 print(''.join(format_exception(e)), ':v4')
                 self._installation_done.emit(False)
         
         self._start_timer(appid)
-        install(appid, is_local=os.path.isabs(appid))
+        install(text, is_local)
     
     @new_thread()
     def _start_timer(self, appid: str) -> None:
+        print(':t0s')  # reset timer
         time_sec = 0
         self.running = True
         while True:
