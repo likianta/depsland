@@ -26,7 +26,7 @@ py build/build.py bat-2-exe -h
 # 生成命令行工具
 py build/build.py bat-2-exe build/exe/depsland.bat
 # 添加 UAC 标识, 不显示控制台
-py build/build.py bat-2-exe build/exe/depsland-su.bat -C -u
+py build/build.py bat-2-exe build/exe/depslandw.bat -C -u
 
 # 生成桌面启动器 (UAC 标识)
 py build/build.py bat-2-exe build/exe/desktop.bat -u
@@ -164,7 +164,7 @@ py build/build.py full-build aliyun -p full
 py build/build.py full-build aliyun -p least
 
 py build/build.py bat-2-exe build/exe/depsland.bat
-py build/build.py bat-2-exe build/exe/depsland-su.bat -C -u
+py build/build.py bat-2-exe build/exe/depslandw.bat -C -u
 py build/build.py bat-2-exe build/exe/desktop.bat -u
 py build/build.py bat-2-exe build/exe/setup.bat -C -u
 ```

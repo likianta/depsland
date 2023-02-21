@@ -133,6 +133,8 @@ def _install(
     _save_history(manifest_new['appid'], manifest_new['version'])
     _save_manifest(manifest_new)
 
+    print(':rt', '[green]installation done[/]')
+
 
 # -----------------------------------------------------------------------------
 # callees for `install_by_appid`
