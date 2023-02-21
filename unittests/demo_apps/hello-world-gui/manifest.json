@@ -1,7 +1,7 @@
 {
     "appid": "hello_world_gui",
     "name": "Hello World",
-    "version": "0.1.5",
+    "version": "0.1.8",
     "assets": {
         "src": ""
     },
@@ -17,5 +17,5 @@
         "start_menu": false,
         "show_console": false
     },
-    "depsland_version": "0.5.0"
+    "depsland_version": "0.5.3"
 }

@@ -272,6 +272,8 @@ def _install_dependencies(
     # else: make sure `dst_dir` does exist.
     
     def is_same() -> bool:
+        if manifest_old['version'] == '0.0.0':
+            return False
         new_deps = set(manifest_new['dependencies'].items())
         old_deps = set(manifest_old['dependencies'].items())
         return new_deps == old_deps

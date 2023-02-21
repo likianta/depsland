@@ -15,7 +15,11 @@ class T:
     Ownership = t.Dict[RelPath, NameId]
 
 
-def link_venv(name_ids: T.NameIds, venv_dir: T.AbsPath) -> None:
+def link_venv(
+        name_ids: T.NameIds,
+        venv_dir: T.AbsPath,
+        overwrite: bool = None
+) -> None:
     dirname_2_name_ids = defaultdict(list)
     for nid in name_ids:
         dir_ = _name_id_2_path(nid)
@@ -38,7 +42,8 @@ def link_venv(name_ids: T.NameIds, venv_dir: T.AbsPath) -> None:
         # print(name_id, relpath, ':vs')
         fs.make_link(
             '{}/{}'.format(_name_id_2_path(name_id), relpath),
-            '{}/{}'.format(venv_dir, relpath)
+            '{}/{}'.format(venv_dir, relpath),
+            overwrite=overwrite
         )
 
 

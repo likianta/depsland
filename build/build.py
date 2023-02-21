@@ -12,6 +12,7 @@ from os.path import exists
 
 from argsense import cli
 from lk_utils import fs
+from lk_utils import loads
 
 from depsland import __version__
 from depsland import bat_2_exe as _b2e
@@ -86,8 +87,6 @@ def full_build(oss_scheme: str, pypi_scheme='full',
                  f'{root_o}/build/setup_wizard')
     fs.copy_file(f'{root_i}/build/depsland_setup.py',
                  f'{root_o}/build/depsland_setup.py')
-    fs.copy_tree(f'{root_i}/conf',
-                 f'{root_o}/conf')
     fs.copy_tree(f'{root_i}/depsland',
                  f'{root_o}/depsland')
     fs.copy_tree(f'{root_i}/sidework',
@@ -97,9 +96,11 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     
     if oss_scheme == 'aliyun':
         assert exists(custom := os.getenv('DEPSLAND_CONFIG_PATH'))
+        assert loads(f'{custom}/depsland.yaml')['oss']['server'] == 'aliyun'
         fs.copy_file(f'{custom}/depsland.yaml',
                      f'{root_o}/conf/depsland.yaml')
     else:
+        assert loads(f'{root_i}/conf/depsland.yaml')['oss']['server'] == 'local'
         fs.copy_file(f'{root_i}/conf/depsland.yaml',
                      f'{root_o}/conf/depsland.yaml')
     
