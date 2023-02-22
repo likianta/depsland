@@ -261,6 +261,10 @@ def _install_custom_packages(
                 )
                 new_files.append(dl)
     
+    if pypi1 and not new_files:
+        print('no newly custom packages downloaded')
+        print(':vl', pypi0, pypi1)
+    
     if new_files:
         pypi.add_to_indexes(*new_files, download_dependencies=True)
 
@@ -285,6 +289,7 @@ def _install_dependencies(
         return new_deps == old_deps
     
     if is_same():
+        print('fast link venv from old version')
         src_dir = paths.apps.get_packages(
             manifest_old['appid'], manifest_old['version']
         )

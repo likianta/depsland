@@ -161,10 +161,21 @@ class LocalPyPI(Index):
             download_dependencies=False
     ) -> None:
         name_ids = []
-        for f in downloaded_package_files:
-            name_ids.append(
-                self.add_to_index(f, analyze_dependencies=False)
-            )
+        with self.pip.multi_processing():
+            for f in downloaded_package_files:
+                name_ids.append(
+                    self.add_to_index(
+                        f,
+                        _indexing_dependencies=False,
+                        _download_dependencies=False,
+                    )
+                )
+        
+        # post indexing dependencies
+        for nid in name_ids:
+            self._indexing_dependencies(nid)
+        
+        # post download dependencies
         if download_dependencies:
             for nid in name_ids:
                 if x := self.dependencies[nid]['unresolved']:
@@ -175,7 +186,8 @@ class LocalPyPI(Index):
     def add_to_index(
             self,
             downloaded_package_file: str,
-            analyze_dependencies=True
+            _indexing_dependencies=True,
+            _download_dependencies=True,
     ) -> T.NameId:
         filename = fs.filename(downloaded_package_file)
         name, version = norm.filename_2_name_version(filename)
@@ -204,8 +216,8 @@ class LocalPyPI(Index):
                 fs.relpath(path2, pypi_paths.root),
             )
             
-            if analyze_dependencies:
-                self._analyze_dependencies(name_id)
+            if _indexing_dependencies:
+                self._indexing_dependencies(name_id)
             
             if name not in self.updates:
                 self.updates[name] = get_updated_time(path0)
@@ -216,6 +228,11 @@ class LocalPyPI(Index):
             fill_local_dirs()
             indexing()
         # else: assert name_id in all indexes...
+        
+        if _download_dependencies:
+            if x := self.dependencies[name_id]['unresolved']:
+                print(f'predownload dependencies for {name_id}')
+                for _ in self._download_unresolved_part(x): pass
         
         return name_id
     
@@ -233,15 +250,6 @@ class LocalPyPI(Index):
     @staticmethod
     def split(name_id: T.NameId) -> t.Tuple[T.Name, T.Version]:
         return name_id.split('-', 1)  # noqa
-    
-    def _analyze_dependencies(self, name_id: T.NameId) -> None:
-        for (a, b), is_name_id in self._find_dependencies(name_id):
-            if is_name_id:
-                self.dependencies[name_id]['resolved'].append(f'{a}-{b}')
-            else:
-                vspecs = tuple(norm.normalize_version_spec(a, b))
-                self.dependencies[name_id]['unresolved'][a] = vspecs
-                # yield a, vspecs
     
     def _download(
             self, name: T.Name, specs: T.VersionSpecs,
@@ -273,14 +281,15 @@ class LocalPyPI(Index):
             yield m.group(), True
     
     def _download_unresolved_part(
-            self, packages: T.Packages
+            self, packages: T.Packages, clear_then=True,
     ) -> t.Iterator[t.Tuple[T.Name, T.Version, T.Path]]:
         yield from self.download(
             packages,
             include_dependencies=True,
             _check_local_existed_versions=False,
         )
-        packages.clear()
+        if clear_then:
+            packages.clear()
     
     def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
         from .insight import _analyse_metadata_1
@@ -296,6 +305,17 @@ class LocalPyPI(Index):
                 break
         else:
             raise Exception(f'cannot find dist-info for {name_id}')
+    
+    def _indexing_dependencies(self, name_id: T.NameId) -> None:
+        for (a, b), is_name_id in self._find_dependencies(name_id):
+            if is_name_id:
+                name, ver = a, b
+                self.dependencies[name_id]['resolved'].append(f'{name}-{ver}')
+            else:
+                name, verspecs_str = a, b
+                self.dependencies[name_id]['unresolved'][name] = tuple(
+                    norm.normalize_version_spec(name, verspecs_str)
+                )
 
 
 pypi = LocalPyPI()
