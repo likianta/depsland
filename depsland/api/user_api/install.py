@@ -263,7 +263,7 @@ def _install_custom_packages(
     
     if pypi1 and not new_files:
         print('no newly custom packages downloaded')
-        print(':vl', pypi0, pypi1)
+        # print(':vl', pypi0, pypi1)
     
     if new_files:
         pypi.add_to_indexes(*new_files, download_dependencies=True)
