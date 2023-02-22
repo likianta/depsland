@@ -1,4 +1,5 @@
 import os
+import sys
 import typing as t
 from os.path import exists
 
@@ -11,6 +12,12 @@ from . import api
 from . import paths
 from .manifest import T
 from .manifest import get_last_installed_version
+
+# fix sys.argv
+if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
+    # e.g. ['E:\depsland_app\depsland\__main__.py',
+    #       'E:\depsland_app\depsland.exe', ...]
+    sys.argv.pop(1)
 
 cli = CommandLineInterface('depsland')
 print('depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
@@ -229,7 +236,6 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     """
     a general launcher to start an installed app.
     """
-    import sys
     print(sys.argv, ':lv')
     
     version = _version or get_last_installed_version(appid)
