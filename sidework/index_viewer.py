@@ -18,6 +18,10 @@ def main(
 ):
     """
     kwargs:
+        show_name_2_versions (-s0):
+        show_name_id_2_paths (-s1):
+        show_dependencies (-s2):
+        show_updates (-s3):
         pypi_root (-p):
     """
     if pypi_root:
