@@ -25,16 +25,32 @@ py build/build.py bat-2-exe -h
 
 # 生成命令行工具
 py build/build.py bat-2-exe build/exe/depsland.bat
-# 添加 UAC 标识, 不显示控制台
-py build/build.py bat-2-exe build/exe/depslandw.bat -C -u
 
 # 生成桌面启动器 (UAC 标识)
 py build/build.py bat-2-exe build/exe/desktop.bat -u
 
-# 生成安装向导启动器 (UAC 标识, 不显示控制台)
-py build/build.py bat-2-exe build/exe/setup.bat -C -u
-py build/build.py bat-2-exe build/exe/setup_patch.bat -u
+# ... 更多命令见附录 - 常用命令备忘.
 ```
+
+关于 depsland 及几个别名的解释:
+
+- depsland: 命令行工具, 无 UAC 标识, 有控制台窗口
+
+    适合在命令行使用. 使用者可选择普通命令行或管理员身份启动的命令行.
+
+- depsland-sui: "sui" 指 super user interface, 有 UAC 标识, 有控制台窗口
+
+    适合其他 no-GUI 程序调用, 显示控制台.
+
+- depsland-suw: "suw" 指 super user windowless, 有 UAC 标识, 无控制台窗口
+
+    适合其他 GUI 程序调用.
+
+关联代码 (备忘):
+
+- `build/build.py : def full_build : cmt copy files`
+- `build/setup_wizard/wizard.py : def wind_up`
+- `depsland/api/dev_api/publish.py : def main`
 
 ## 打包
 
@@ -164,7 +180,8 @@ py build/build.py full-build aliyun -p full
 py build/build.py full-build aliyun -p least
 
 py build/build.py bat-2-exe build/exe/depsland.bat
-py build/build.py bat-2-exe build/exe/depslandw.bat -C -u
+py build/build.py bat-2-exe build/exe/depsland-sui.bat -u
+py build/build.py bat-2-exe build/exe/depsland-suw.bat -C -u
 py build/build.py bat-2-exe build/exe/desktop.bat -u
 py build/build.py bat-2-exe build/exe/setup.bat -C -u
 ```

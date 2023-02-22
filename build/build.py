@@ -77,6 +77,10 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     # copy files
     fs.copy_file(f'{root_i}/build/exe/depsland.exe',
                  f'{root_o}/build/exe/depsland.exe')
+    fs.copy_file(f'{root_i}/build/exe/depsland-sui.exe',
+                 f'{root_o}/build/exe/depsland-sui.exe')
+    fs.copy_file(f'{root_i}/build/exe/depsland-suw.exe',
+                 f'{root_o}/build/exe/depsland-suw.exe')
     fs.copy_file(f'{root_i}/build/exe/desktop.exe',
                  f'{root_o}/build/exe/desktop.exe')
     fs.copy_file(f'{root_i}/build/exe/launcher.ico',

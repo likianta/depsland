@@ -42,10 +42,13 @@ class SetupWizard(QObject):
     def wind_up(self, dir_o: str) -> None:
         print('create executables')
         
-        # to %DEPSLAND% root
-        file_i = f'{dir_o}/build/exe/depsland.exe'
-        file_o = f'{dir_o}/depsland.exe'
-        fs.move(file_i, file_o, True)
+        # move exe to %DEPSLAND% root
+        for name in (
+            'depsland.exe', 'depsland-sui.exe', 'depsland-suw.exe'
+        ):
+            file_i = f'{dir_o}/build/exe/{name}'
+            file_o = f'{dir_o}/{name}'
+            fs.move(file_i, file_o, True)
         
         # to desktop
         file_i = f'{dir_o}/build/exe/desktop.exe'

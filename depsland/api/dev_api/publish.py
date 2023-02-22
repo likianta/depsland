@@ -61,7 +61,7 @@ def main(manifest_file: str, full_upload=False) -> None:
         bat_file = f'{dist_dir}/setup.bat'
         command = dedent(r'''
             cd /d %~dp0
-            "%DEPSLAND%\depslandw.exe" launch-gui manifest.pkl
+            "%DEPSLAND%\depsland-sui.exe" launch-gui manifest.pkl
         ''').strip()
         dumps(command, bat_file)
         bat_2_exe(bat_file,
