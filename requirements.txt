@@ -3,7 +3,7 @@
 argsense
 conflore
 lk-logger >= 5.4.8
-lk-utils
+lk-utils >= 2.5.5
 oss2
 pyyaml
 rich

@@ -1,8 +1,7 @@
 import os
 
 from argsense import cli
-from lk_utils.subproc import compose_cmd
-from lk_utils.subproc import run_cmd_args
+from lk_utils import run_cmd_args
 
 _IS_WINDOWS = os.name == 'nt'
 
@@ -20,16 +19,18 @@ pip_options = (
 
 @cli.cmd()
 def install_all() -> None:
-    run_cmd_args(*compose_cmd(
-        pip, 'install', '-r', 'requirements.txt', pip_options
-    ), verbose=True)
+    run_cmd_args(
+        pip, 'install', '-r', 'requirements.txt', pip_options,
+        verbose=True
+    )
 
 
 @cli.cmd()
 def install_one(package: str) -> None:
-    run_cmd_args(*compose_cmd(
-        pip, 'install', package, pip_options
-    ), verbose=True)
+    run_cmd_args(
+        pip, 'install', package, pip_options,
+        verbose=True
+    )
 
 
 if __name__ == '__main__':

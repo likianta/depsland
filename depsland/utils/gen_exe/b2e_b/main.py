@@ -2,7 +2,6 @@ import os
 from os.path import exists
 from subprocess import call
 
-from lk_utils import new_thread
 from lk_utils import xpath
 from lk_utils.subproc import compose_cmd
 from lk_utils.time_utils import timeout_gen

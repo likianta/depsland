@@ -11,9 +11,8 @@ from sys import executable
 from argsense import cli
 from lk_utils import dumps
 from lk_utils import fs
+from lk_utils import run_cmd_args
 from lk_utils import xpath
-from lk_utils.subproc import compose_cmd
-from lk_utils.subproc import run_cmd_args
 
 if True:
     import os
@@ -68,15 +67,13 @@ def build_depsland_dependencies(
 
 def _download(dir_o: str) -> None:
     run_cmd_args(
-        *compose_cmd(
-            (executable, '-m', 'pip'),
-            ('download',
-             '-d', dir_o,
-             '-r', xpath('../requirements.txt'),
-             '-f', xpath('../chore/custom_packages'),
-             '-f', dir_o,
-             '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple'),
-        ),
+        (executable, '-m', 'pip'),
+        ('download',
+         '-d', dir_o,
+         '-r', xpath('../requirements.txt'),
+         '-f', xpath('../chore/custom_packages'),
+         '-f', dir_o,
+         '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple'),
         verbose=True
     )
 
@@ -89,15 +86,13 @@ def _install(dir_i: str, dir_o: str) -> None:
         if exists(d): continue
         fs.make_dirs(d)
         run_cmd_args(
-            *compose_cmd(
-                (executable, '-m', 'pip'),
-                ('install',
-                 f.path,
-                 '-t', d,
-                 '--no-warn-script-location',
-                 '--no-deps',
-                 '--no-index')
-            ),
+            (executable, '-m', 'pip'),
+            ('install',
+             f.path,
+             '-t', d,
+             '--no-warn-script-location',
+             '--no-deps',
+             '--no-index'),
             verbose=True
         )
 
