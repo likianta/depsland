@@ -48,7 +48,7 @@ class Pip:
     
     def enable_multi_processing(self) -> None:
         assert self._multi_proc is None
-        self._multi_proc = Pool()
+        # self._multi_proc = Pool()  # FIXME: temporarily disabled
     
     def join_multi_processing(self) -> None:
         if self._multi_proc:
