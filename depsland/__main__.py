@@ -253,7 +253,7 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         paths.project.apps, appid, version
     ))
     assert manifest['version'] == version
-    command = parse_script_info(manifest)
+    command, args0, kwargs0 = parse_script_info(manifest)
     os.environ['DEPSLAND'] = paths.project.root
     os.environ['PYTHONPATH'] = '.;{app_dir};{pkg_dir}'.format(
         app_dir=manifest['start_directory'],
@@ -263,7 +263,11 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     # print(':v', args, kwargs)
     lk_logger.unload()
     subprocess.run(
-        (*command, *args_2_cargs(*args, **kwargs)),
+        (
+            *command,
+            *args_2_cargs(*args0, **kwargs0),
+            *args_2_cargs(*args, **kwargs),
+        ),
         cwd=manifest['start_directory']
     )
 
