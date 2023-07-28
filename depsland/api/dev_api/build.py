@@ -1,3 +1,4 @@
+from sys import platform
 from textwrap import dedent
 
 from lk_utils import dumps
@@ -13,7 +14,6 @@ def build(manifest_file: str, gen_exe=True) -> None:
     what does this function do:
         - create a dist folder
         - create a launcher (exe or bat)
-    TODO: is this too simple?
     """
     manifest = load_manifest(manifest_file, finalize=True)
     
@@ -23,15 +23,21 @@ def build(manifest_file: str, gen_exe=True) -> None:
     )
     fs.make_dirs(dir_o)
     
-    _create_bat(manifest, f'{dir_o}/launcher.bat')
-    
-    if gen_exe:
-        bat_2_exe(
-            f'{dir_o}/launcher.bat',
-            f'{dir_o}/launcher.exe',
-            icon=manifest['launcher']['icon'],
-            remove_bat=True
-        )
+    if platform == 'darwin':  # TEST
+        from ...utils.gen_app import gen_app
+        gen_app(manifest, f'{dir_o}/{manifest["name"]}.app')
+    elif platform == 'win32':
+        _create_bat(manifest, f'{dir_o}/launcher.bat')
+        
+        if gen_exe:
+            bat_2_exe(
+                f'{dir_o}/launcher.bat',
+                f'{dir_o}/launcher.exe',
+                icon=manifest['launcher']['icon'],
+                remove_bat=True
+            )
+    else:
+        raise NotImplementedError
     
     print(':t', 'build done. see result in "dist/{}-{}"'.format(
         manifest['appid'], manifest['version']

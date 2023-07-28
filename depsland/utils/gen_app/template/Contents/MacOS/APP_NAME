@@ -1,0 +1,5 @@
+#!/bin/zsh
+DEPSLAND_DIR=$(depsland self-location)
+echo $DEPSLAND_DIR
+export PYTHONPATH=$DEPSLAND_DIR/apps/{APPID}/{VERSION}:$DEPSLAND_DIR/apps/.venv/{APPID}
+depsland run {APPID} --:version {VERSION}

@@ -12,11 +12,7 @@ from .manifest import dump_manifest
 from .manifest import load_manifest
 
 
-class T(T0):
-    """
-    devnote: `T` must inherit `T0`, for porting all typehints in \
-    `./__init__.py`.
-    """
+class T:
     Appinfo = t.TypedDict(
         'Appinfo',
         {
@@ -30,6 +26,10 @@ class T(T0):
     )
     Launcher = T0.Launcher1
     Manifest = T0.Manifest1
+    
+    # extra ports for external use
+    AssetInfo = T0.AssetInfo
+    Scheme = T0.Scheme1
 
 
 def get_app_info(manifest_file: str) -> T.Appinfo:

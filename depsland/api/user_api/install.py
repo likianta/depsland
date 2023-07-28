@@ -32,8 +32,8 @@ from ...utils.verspec import semver_parse
 
 class T:
     AssetInfo = T0.AssetInfo
-    LauncherInfo = T0.Launcher1
-    Manifest = T0.Manifest1
+    LauncherInfo = T0.Launcher
+    Manifest = T0.Manifest
     ManifestPypi = t.Dict[str, None]
     Oss = T1.Oss
     Path = str

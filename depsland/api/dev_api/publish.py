@@ -23,7 +23,7 @@ class T:
     Manifest = T0.Manifest
     Oss = T1.Oss
     Path = str
-    Scheme = T0.Scheme1
+    Scheme = T0.Scheme
 
 
 def main(manifest_file: str, full_upload=False) -> None:
@@ -39,14 +39,14 @@ def main(manifest_file: str, full_upload=False) -> None:
     oss = _upload(
         manifest_new=manifest,
         manifest_old=(
-            load_manifest('{}/{}/{}/manifest.pkl'.format(
-                paths.project.apps,
-                appinfo['appid'],
-                appinfo['history'][0]
-            )) if not full_upload and appinfo['history'] else
-            init_manifest(
-                appinfo['appid'], appinfo['name']
-            )
+            load_manifest(
+                '{}/{}/{}/manifest.pkl'.format(
+                    paths.project.apps,
+                    appinfo['appid'],
+                    appinfo['history'][0],
+                )
+            ) if not full_upload and appinfo['history'] else
+            init_manifest(appinfo['appid'], appinfo['name'])
         ),
         dist_dir=appinfo['dst_dir']
     )
@@ -59,22 +59,27 @@ def main(manifest_file: str, full_upload=False) -> None:
         
         print('generate setup script to dist dir')
         bat_file = f'{dist_dir}/setup.bat'
-        command = dedent(r'''
+        command = dedent(
+            r'''
             cd /d %~dp0
             "%DEPSLAND%\depsland-sui.exe" launch-gui manifest.pkl
-        ''').strip()
+        '''
+        ).strip()
         dumps(command, bat_file)
-        bat_2_exe(bat_file,
-                  # icon=paths.build.launcher_ico,
-                  icon=manifest['launcher']['icon']
-                       or paths.build.launcher_ico,
-                  show_console=False,
-                  remove_bat=True)
+        bat_2_exe(
+            bat_file,
+            # icon=paths.build.launcher_ico,
+            icon=manifest['launcher']['icon'] or paths.build.launcher_ico,
+            show_console=False,
+            remove_bat=True
+        )
     
     appinfo['history'].insert(0, appinfo['version'])
-    dumps(appinfo['history'],
-          paths.apps.get_distribution_history(appinfo['appid']),
-          ftype='plain')
+    dumps(
+        appinfo['history'],
+        paths.apps.get_distribution_history(appinfo['appid']),
+        ftype='plain'
+    )
     
     dump_manifest(manifest, f'{dist_dir}/manifest.pkl')
     #   note: this is dumped to `dist_dir`, it is different from another usage
@@ -82,22 +87,24 @@ def main(manifest_file: str, full_upload=False) -> None:
     #   `appinfo['dst_dir']`, which is pointed to `paths.apps/{appid}/{version}
     #   /manifest.pkl`.
     
-    print('publish done. see result at "dist/{}-{}"'.format(
-        manifest['appid'], manifest['version']
-    ), ':t')
+    print(
+        'publish done. see result at "dist/{}-{}"'.format(
+            manifest['appid'], manifest['version']
+        ), ':t'
+    )
 
 
 def _upload(
-        manifest_new: T.Manifest,
-        manifest_old: T.Manifest,
-        dist_dir: str
+    manifest_new: T.Manifest, manifest_old: T.Manifest, dist_dir: str
 ) -> T.Oss:
     # print(':lv', manifest_new, manifest_old)
     
     _check_manifest(manifest_new, manifest_old)
-    print('updating manifest: [red]{}[/] -> [green]{}[/]'.format(
-        manifest_old['version'], manifest_new['version']
-    ), ':r')
+    print(
+        'updating manifest: [red]{}[/] -> [green]{}[/]'.format(
+            manifest_old['version'], manifest_new['version']
+        ), ':r'
+    )
     
     # -------------------------------------------------------------------------
     
@@ -126,9 +133,10 @@ def _upload(
         if info1 is not None:  # i.e. action != 'delete'
             source_path = fs.normpath(f'{root_new}/{relpath}')
             temp_path = _copy_assets(source_path, temp_dir, info1.scheme)
-            zipped_file = _compress(temp_path, temp_path + (
-                '.zip' if info1.type == 'dir' else '.fzip'
-            ))
+            zipped_file = _compress(
+                temp_path, temp_path +
+                ('.zip' if info1.type == 'dir' else '.fzip')
+            )
         else:
             zipped_file = ''
         
@@ -148,10 +156,11 @@ def _upload(
     for action, (whl_name, whl_file) in diff['pypi']:
         if action == 'ignore':
             continue
-        print(':sri', action, '[{}]{}[/]'.format(
-            'green' if action == 'append' else 'red',
-            whl_name
-        ))
+        print(
+            ':sri', action, '[{}]{}[/]'.format(
+                'green' if action == 'append' else 'red', whl_name
+            )
+        )
         match action:
             case 'append':
                 oss.upload(whl_file, f'{oss.path.pypi}/{whl_name}')
@@ -167,7 +176,8 @@ def _upload(
 
 
 def _check_manifest(
-        manifest_new: T.Manifest, manifest_old: T.Manifest,
+    manifest_new: T.Manifest,
+    manifest_old: T.Manifest,
 ) -> None:
     assert manifest_new['appid'] == manifest_old['appid']
     v_new, v_old = manifest_new['version'], manifest_old['version']
@@ -175,6 +185,7 @@ def _check_manifest(
 
 
 # -----------------------------------------------------------------------------
+
 
 def _compress(path_i: T.Path, file_o: T.Path) -> T.Path:
     if file_o.endswith('.zip'):
@@ -186,10 +197,9 @@ def _compress(path_i: T.Path, file_o: T.Path) -> T.Path:
 
 
 def _copy_assets(
-        path_i: T.Path,
-        root_dir_o: T.Path,
-        scheme: T.Scheme
+    path_i: T.Path, root_dir_o: T.Path, scheme: T.Scheme
 ) -> T.Path:
+    
     def safe_make_dir(dirname: str) -> str:
         sub_temp_dir = make_temp_dir(root_dir_o)
         os.mkdir(out := '{}/{}'.format(sub_temp_dir, dirname))

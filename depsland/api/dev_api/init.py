@@ -11,11 +11,11 @@ from ...manifest import init_manifest
 
 
 def init(
-        manifest_file: str = './manifest.json',
-        appname='',
-        overwrite=False,
-        auto_find_requirements=False
-):
+    manifest_file: str = './manifest.json',
+    appname='',
+    overwrite=False,
+    auto_find_requirements=False
+) -> None:
     # init/update parameters
     filepath = fs.normpath(manifest_file, True)
     dirpath = fs.parent_path(filepath)

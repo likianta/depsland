@@ -262,13 +262,15 @@ def finalize_manifest(manifest: T.Manifest1) -> T.Manifest1:
 
     def toabs(p: T.RelPath) -> T.AbsPath:
         return f'{root}/{p}'
-
-    for k, v in final_dict['assets'].items():
+    
+    final_dict['assets'].clear()
+    for k, v in manifest['assets'].items():
         final_dict['assets'][toabs(k)] = v
-
-    for k, v in final_dict['pypi'].items():
+    
+    final_dict['pypi'].clear()
+    for k, v in manifest['pypi'].items():
         final_dict['pypi'][k] = toabs(v)
-
+    
     for k in ('target', 'icon'):
         if v := final_dict['launcher'][k]:
             final_dict['launcher'][k] = toabs(v)  # noqa
