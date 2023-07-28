@@ -2,46 +2,63 @@
 ref: https://github.com/tfmoraes/macnolo
      docs/devnote/how-to-create-macos-app-bundle.md
 """
+import re
+
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 from lk_utils import xpath
 
+from ... import paths
 from ...manifest import T
 
 
-def gen_app(manifest: T.Manifest, path_o: str, icon: str = None) -> None:
+def gen_app(manifest: T.Manifest, path_o: str, icon: str = None) -> str:
     dir_i = xpath('template')
     dir_o = path_o
     assert dir_o.endswith('.app')
     
     fs.copy_tree(dir_i, dir_o, overwrite=True)
     
-    _inplace(f'{dir_o}/Contents/Info.plist', {
-        'APP_NAME': manifest['appid'],
-    })
+    # inplace `Info.plist`
+    _inplace(
+        f'{dir_o}/Contents/Info.plist', {
+            'APP_NAME': manifest['name'],
+            'APP_ID': manifest['appid'],
+            'APP_VERSION': manifest['version'],
+            'APP_VERSION_SHORT':
+                re.match(r'\d+\.\d+', manifest['version']).group(0),
+            'DEV_ID': 'dev.likianta',
+        }
+    )
     
+    # inplace `APP_NAME`
     fs.move(
         f'{dir_o}/Contents/MacOS/APP_NAME',
         f'{dir_o}/Contents/MacOS/{manifest["appid"]}'
     )
     _inplace(
         f'{dir_o}/Contents/MacOS/{manifest["appid"]}',
-        {'APPID': manifest['appid'], 'VERSION': manifest['version']}
+        {
+            'DEPSLAND_DIR': paths.project.root,  # TEST
+            'APPID': manifest['appid'],
+            'VERSION': manifest['version'],
+        }
     )
     
-    if icon:
-        assert icon.endswith('.icns')
-        fs.copy_file(
-            icon, f'{dir_o}/Contents/Resources/{manifest["appid"]}.icns'
-        )
+    # add icon
+    if not icon:
+        icon = paths.build.launcher_icns
+    assert icon.endswith('.icns')
+    fs.copy_file(icon, f'{dir_o}/Contents/Resources/{manifest["appid"]}.icns')
+    
+    return f'{dir_o}/Contents/Resources'
 
 
-def _create_plist() -> str:
-    pass
+_re_placeholder = re.compile(r'\$(\w+)')
 
 
 def _inplace(file: str, placeholders: dict) -> None:
     data_i: str = loads(file, 'plain')
-    data_o = data_i.format(**placeholders)
+    data_o = _re_placeholder.sub(lambda m: placeholders[m.group(1)], data_i)
     dumps(data_o, file, 'plain')

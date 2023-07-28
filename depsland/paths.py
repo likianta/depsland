@@ -172,7 +172,9 @@ class Build:
     
     def __init__(self):
         self.root = f'{project.root}/build'
-        self.launcher_ico = f'{self.root}/exe/launcher.ico'
+        self.icon = f'{self.root}/icon'
+        self.launcher_icns = f'{self.root}/icon/launcher.icns'
+        self.launcher_ico = f'{self.root}/icon/launcher.ico'
 
 
 class Conf:

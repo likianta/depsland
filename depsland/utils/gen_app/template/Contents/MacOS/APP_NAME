@@ -1,5 +1,16 @@
-#!/bin/zsh
-DEPSLAND_DIR=$(depsland self-location)
-echo $DEPSLAND_DIR
-export PYTHONPATH=$DEPSLAND_DIR/apps/{APPID}/{VERSION}:$DEPSLAND_DIR/apps/.venv/{APPID}
-depsland run {APPID} --:version {VERSION}
+#!/Users/Likianta/Desktop/programs/python/3.11/bin/python3
+import sys
+import subprocess as sp
+
+ROOT = '$DEPSLAND_DIR'
+APPID = '$APPID'
+VERSION = '$VERSION'
+
+sys.path.insert(0, f'{ROOT}')
+sys.path.insert(0, f'{ROOT}/apps/.venv/{APPID}')
+sys.path.insert(0, f'{ROOT}/apps/{APPID}/{VERSION}')
+
+sp.run(
+    (sys.executable, '-m', 'depsland', 'run', APPID, '--:version', VERSION),
+    stdout=sp.PIPE, stderr=sp.PIPE,
+)
