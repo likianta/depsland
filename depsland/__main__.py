@@ -32,9 +32,13 @@ def version() -> None:
     """
     # ref: the rich text (with gradient color) effect is copied from
     #   likianta/lk-logger project.
-    from lk_logger.control import _blend_text  # noqa
     from random import choice
-    from . import __date__, __path__, __version__
+    
+    from lk_logger.control import _blend_text  # noqa
+    
+    from . import __date__
+    from . import __path__
+    from . import __version__
     
     color_pairs_group = (
         ('#0a87ee', '#9294f0'),  # calm blue -> light blue
@@ -55,29 +59,35 @@ def version() -> None:
 
 
 @cli.cmd()
+def self_location() -> None:
+    print(fs.xpath('..', True))
+
+
+@cli.cmd()
 def welcome(confirm_close=False) -> None:
     """
     show welcome message and exit.
     """
-    from lk_logger.console import console
-    from rich.markdown import Markdown
     from textwrap import dedent
+    
+    from rich.markdown import Markdown
+    
     from . import __date__
     from . import __version__
     
-    console.print(Markdown(dedent('''
+    print(':r1', Markdown(dedent('''
         # Depsland
-
+        
         Depsland is a python apps manager for non-developer users.
         
         - Version: {}
         - Release date: {}
         - Author: {}
-        - Official website: {}
+        - Official site: {}
     ''').format(
         __version__,
         __date__,
-        'Likianta <likianta@foxmail.com>',
+        'Likianta (likianta@foxmail.com)',
         'https://github.com/likianta/depsland'
     )))
     
@@ -95,7 +105,7 @@ def launch_gui(_app_token: str = None) -> None:
             if given, the app will launch and instantly install it.
     """
     try:
-        import qmlease
+        pass
     except ModuleNotFoundError:
         print('launching GUI failed. you may forget to install qt for python '
               'library (suggest `pip install pyside6` etc.)', ':v4')
@@ -112,59 +122,62 @@ def launch_gui(_app_token: str = None) -> None:
 # ordered by lifecycle
 
 @cli.cmd()
-def init(manifest='.', app_name='', overwrite=False,
+def init(target='.', app_name='', overwrite=False,
          auto_find_requirements=False) -> None:
     """
     create a "manifest.json" file in project directory.
     
     kwargs:
-        manifest (-m): if directory of manifest not exists, it will be created.
+        target (-t): given the directory to the project, or a path to the -
+            manifest file.
+            if the directory doesn't exist, will create it.
+            if it is the manifest file path, we recommend you using -
+            'manifest.json' as its file name.
+            be noticed the file extension can only be '.json'.
         appname (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
         overwrite (-w):
     """
-    api.init(_fix_manifest_param(manifest), app_name, overwrite,
+    manifest_file = _get_manifest_path(target, ensure_exists=False)
+    if exists(manifest_file):
+        print(':v3s', 'target already exists')
+        return
+    api.init(manifest_file,
+             app_name,
+             overwrite,
              auto_find_requirements)
 
 
 @cli.cmd()
-def build(manifest='.', gen_exe=True) -> None:
+def build(target='.', gen_exe=True) -> None:
     """
     build your python application based on manifest file.
     the build result is stored in "dist" directory.
     [dim]if "dist" not exists, it will be auto created.[/]
     
     kwargs:
-        manifest (-m): a path to the project directory (suggested) or to a -
-            mainfest file.
-            if project directory is given, will search 'manifest.json' file -
-            under this dir.
-            [red dim]╰─ if no such file found, will raise a FileNotFound -
-            error.[/]
-            if a file is given, it must be '.json' type. depsland will treat -
-            its folder as the project directory.
-            [blue dim]╰─ if a file is given, the file name could be custom. -
-            (we suggest using 'manifest.json' as canondical.)[/]
-        icon: a '.ico' file (optional), suggest size above 128 * 128.
-            if you don't have '.ico' format, please use a convert tool (for -
-            example [u i]https://findicons.com/convert[/]) to get it.
+        target (-t):
+        
+    tip:
+        if you want to add a custom icon, you need to define it in manifest.
     """
-    api.build(_fix_manifest_param(manifest), gen_exe)
+    api.build(_get_manifest_path(target), gen_exe)
 
 
 @cli.cmd()
-def publish(manifest='.', full_upload=False) -> None:
+def publish(target='.', full_upload=False) -> None:
     """
     publish dist assets to oss.
     if you configured a local oss server, it will generate assets to -
     `~/oss/apps/<appid>/<version>` directory.
     
     kwargs:
+        target (-t):
         full_upload (-f): if true, will upload all assets, ignore the files -
             which may already exist in oss (they all will be overwritten).
             this option is useful if you found the oss server not work properly.
     """
-    api.publish(_fix_manifest_param(manifest), full_upload)
+    api.publish(_get_manifest_path(target), full_upload)
 
 
 @cli.cmd()
@@ -227,7 +240,7 @@ def show(appid: str, version: str = None) -> None:
 @cli.cmd()
 def view_manifest(manifest: str = '.') -> None:
     from .manifest import load_manifest
-    manifest = load_manifest(_fix_manifest_param(manifest))
+    manifest = load_manifest(_get_manifest_path(manifest))
     print(manifest, ':l')
 
 
@@ -243,9 +256,11 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         print(':v4', f'cannot find installed version of {appid}')
         return
     
-    import lk_logger
     import subprocess
+    
+    import lk_logger
     from argsense import args_2_cargs
+    
     from .manifest import load_manifest
     from .manifest import parse_script_info
     
@@ -309,16 +324,6 @@ def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
     return compare_version(new['version'], '>', old['version'])
 
 
-def _fix_manifest_param(manifest: str) -> str:  # return a file path to manifest
-    if os.path.isdir(manifest):
-        out = fs.normpath(f'{manifest}/manifest.json', True)
-    else:
-        out = fs.normpath(manifest, True)
-        assert exists(out), f'path not exists: {out}'
-    # print(':v', out)
-    return out
-
-
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     if last_ver := get_last_installed_version(appid):
         dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
@@ -358,6 +363,21 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
         manifest_old = None
     
     return manifest_old, manifest_new
+
+
+def _get_manifest_path(target: str, ensure_exists=True) -> str:
+    """ return an abspath to manifest file. """
+    if target.endswith('.json'):
+        out = fs.normpath(target, True)
+    else:
+        assert not os.path.isfile(target)
+        if not os.path.exists(target):
+            os.mkdir(target)
+        out = fs.normpath(f'{target}/manifest.json', True)
+    if ensure_exists:
+        assert exists(out)
+    print(out, ':pv')
+    return out
 
 
 def _run_cli():
