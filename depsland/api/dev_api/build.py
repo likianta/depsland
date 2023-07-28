@@ -15,7 +15,7 @@ def build(manifest_file: str, gen_exe=True) -> None:
         - create a launcher (exe or bat)
     TODO: is this too simple?
     """
-    manifest = load_manifest(manifest_file)
+    manifest = load_manifest(manifest_file, finalize=True)
     
     dir_i = manifest['start_directory']
     dir_o = '{}/dist/{}-{}'.format(

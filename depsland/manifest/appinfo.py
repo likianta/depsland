@@ -12,7 +12,11 @@ from .manifest import dump_manifest
 from .manifest import load_manifest
 
 
-class T:
+class T(T0):
+    """
+    devnote: `T` must inherit `T0`, for porting all typehints in \
+    `./__init__.py`.
+    """
     Appinfo = t.TypedDict(
         'Appinfo',
         {

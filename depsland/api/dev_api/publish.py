@@ -28,7 +28,7 @@ class T:
 
 def main(manifest_file: str, full_upload=False) -> None:
     appinfo = get_app_info(manifest_file)
-    manifest = load_manifest(manifest_file)
+    manifest = load_manifest(manifest_file, finalize=True)
     dist_dir = '{root}/dist/{name}-{ver}'.format(
         root=manifest['start_directory'],
         name=manifest['appid'],

@@ -1,3 +1,19 @@
+"""
+the core conception:
+    manifest:
+        manifest is a dict.
+        all path-typed items in this dict must be relative paths - except \
+        'start_directory' and 'pypi' - they are abspath.
+        usually if you want to get the file location from an item, you need to \
+        use `manifest['start_directory'] + some_relpath_item`.
+            to simplify this transition, we provide a function \
+            `finalize_manifest(manifest)`.
+        why we are using relpaths, why we don't all use abspaths directly?
+            because we sometimes change the start_directory, we don't want to \
+            couple them too much.
+            besides, loading and dumping relpath-typed items are more \
+            universal than abs-ones.
+"""
 import os
 import typing as t
 from collections import namedtuple
@@ -26,8 +42,8 @@ __all__ = [
 
 # noinspection PyTypedDict
 class T:
-    AbsPath = _RelPath = _AnyPath = str
-    #   the _RelPath is relative to manifest file's location.
+    AbsPath = RelPath = AnyPath = str
+    #   the RelPath is relative to manifest file's location.
 
     Scheme0 = t.Literal[
         'root',
@@ -43,11 +59,11 @@ class T:
         'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs'
     ]
 
-    Assets0 = t.Dict[_AnyPath, Scheme0]
+    Assets0 = t.Dict[AnyPath, Scheme0]
     #   anypath: abspath or relpath, '/' or '\\' both allowed.
     #   scheme: scheme or empty string. if empty string, it means 'all'.
     Assets1 = t.Dict[
-        _RelPath,
+        RelPath,
         AssetInfo := t.NamedTuple(
             'AssetInfo',
             (
@@ -63,18 +79,16 @@ class T:
     Dependencies0 = t.Dict[str, str]  # dict[name, verspec]
     Dependencies1 = Dependencies0
 
-    PyPI0 = t.List[_AnyPath]  # list[anypath_to_python_wheel]
-    PyPI1 = t.Dict[str, str]  # dict[filename, abspath]
+    PyPI0 = t.List[AnyPath]  # list[anypath_to_python_wheel]
+    PyPI1 = t.Dict[str, AbsPath]  # dict[filename, abspath]
 
     Launcher0 = t.TypedDict(
         'Launcher0',
         {
-            'target': str,
-            'icon': str,
+            'target': AnyPath,
+            'icon': AnyPath,
             #   the origin icon could be: empty, a relpath, or an abspath.
-            #   when it is loaded to program, it converts to an abspath.
-            #   when it is dumped to a file, it converts to a relpath.
-            'type': t.LiteralString['executable', 'module', 'package'],
+            'type': t.Literal['executable', 'module', 'package'],
             'args': t.List[t.Any],
             'kwargs': t.Dict[str, t.Any],
             'enable_cli': bool,
@@ -84,6 +98,7 @@ class T:
         },
     )
     Launcher1 = Launcher0
+    #   same with Launcher0 but 'target' and 'icon' are RelPath.
 
     # -------------------------------------------------------------------------
 
@@ -138,7 +153,7 @@ class T:
     AssetsDiff = t.Iterator[
         t.Tuple[
             Action,
-            _RelPath,
+            RelPath,
             t.Tuple[t.Optional[AssetInfo], t.Optional[AssetInfo]],
             #   tuple[old_info, new_info]
         ]
@@ -197,7 +212,7 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
     }
 
 
-def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
+def load_manifest(manifest_file: T.ManifestFile, finalize=False) -> T.Manifest1:
     from .. import __version__
 
     manifest_file = fs.normpath(manifest_file, force_abspath=True)
@@ -210,32 +225,20 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
         # skip precheck and postcheck.
         data_o = data_i  # noqa
         data_o['start_directory'] = manifest_dir
-        if data_o['launcher']['icon']:
-            # fix icon path (from relpath to abspath)
-            data_o['launcher']['icon'] = fs.normpath(
-                '{}/{}'.format(manifest_dir, data_o['launcher']['icon'])
-            )
+        if finalize:
+            return finalize_manifest(data_o)
         return data_o
 
     # -------------------------------------------------------------------------
 
     _precheck_manifest(data_i)
-
-    # assert required keys
-    required_keys = ('appid', 'name', 'version', 'assets')
-    assert all(x in data_i for x in required_keys), (
-        'the required keys are not complete',
-        required_keys,
-        tuple(data_i.keys()),
-    )
-
     data_o.update(
         {
             'appid': data_i['appid'],
             'name': data_i['name'],
             'version': data_i['version'],
             'start_directory': manifest_dir,
-            'assets': _update_assets(data_i.get('assets'), manifest_dir),
+            'assets': _update_assets(data_i.get('assets', {}), manifest_dir),
             'dependencies': _update_dependencies(
                 data_i.get('dependencies', {})
             ),
@@ -246,31 +249,76 @@ def load_manifest(manifest_file: T.ManifestFile) -> T.Manifest1:
             'depsland_version': data_i.get('depsland_version', __version__),
         }
     )
-
     _postcheck_manifest(data_o)
+    if finalize:
+        return finalize_manifest(data_o)
     return data_o
+
+
+def finalize_manifest(manifest: T.Manifest1) -> T.Manifest1:
+    """replace all relpathed items to abs ones."""
+    final_dict: T.Manifest1 = manifest.copy()
+    root = final_dict['start_directory']
+
+    def toabs(p: T.RelPath) -> T.AbsPath:
+        return f'{root}/{p}'
+
+    for k, v in final_dict['assets'].items():
+        final_dict['assets'][toabs(k)] = v
+
+    for k, v in final_dict['pypi'].items():
+        final_dict['pypi'][k] = toabs(v)
+
+    for k in ('target', 'icon'):
+        if v := final_dict['launcher'][k]:
+            final_dict['launcher'][k] = toabs(v)  # noqa
+
+    return t.cast(T.Manifest1, _FronzenDict(manifest, final_dict))
+
+
+class _FronzenDict:
+    def __init__(self, data0: T.Manifest1, data1: T.Manifest1):
+        self.origin = data0
+        self._data = data1
+
+    def __getitem__(self, item: str) -> t.Any:
+        return self._data[item]  # noqa
+
+    def __setitem__(self, key: str, value: t.Any) -> None:
+        raise Exception(
+            'the finalized manifest cannot be modified.', (key, value)
+        )
+
+    def __iter__(self) -> t.Iterator:
+        return iter(self._data)
+
+    def __copy__(self) -> '_FronzenDict':
+        return _FronzenDict(self.origin.copy(), self._data.copy())
 
 
 def change_start_directory(manifest: T.Manifest1, new_dir: str) -> None:
     r"""
-    if you want to change manifest['start_directory'], you should use this
-    function instead of changing it directly.
-
-    tip: for IDE refactoring, you can search
-    `manifest\w*\['start_directory'\] = ` to find all misused occurrences.
+    this is (slightly) a better way to update `manifest['start_directory']`.
+    ps: the traditional way (`manifest['start_directory'] = ...`) is still \
+    available. but as a suggestion, if you want to follow this paradigm, you \
+    can use regex to search `manifest\w*\['start_directory'\] = ` in your IDE \
+    to find all legacy use cases.
     """
-    old_dir = manifest['start_directory']
-    manifest['start_directory'] = new_dir
-    if manifest['launcher']['icon']:
-        manifest['launcher']['icon'] = '{}/{}'.format(
-            new_dir, fs.relpath(manifest['launcher']['icon'], old_dir)
-        )
+    manifest['start_directory'] = fs.abspath(new_dir)
 
 
 # -----------------------------------------------------------------------------
 
 
 def _precheck_manifest(manifest: T.Manifest0) -> None:
+    # assert required keys
+    required_keys = ('appid', 'name', 'version', 'assets')
+    assert all(x in manifest for x in required_keys), (
+        'the required keys are not complete',
+        required_keys,
+        tuple(manifest.keys()),
+    )
+
     assert manifest['assets'], 'field `assets` cannot be empty!'
     assert all(not x.startswith('../') for x in manifest['assets']), (
         'manifest should be put at the root of project, and there shall be no '
@@ -300,39 +348,39 @@ def _postcheck_manifest(manifest: T.Manifest1) -> None:
     launcher: T.Launcher1 = manifest['launcher']
 
     # check script
-    target = launcher['target']
-    assert os.path.isabs(target)
+    target_path = '{}/{}'.format(
+        manifest['start_directory'], launcher['target']
+    )
     target_type = launcher['type']
     try:
         if target_type == 'module':
-            assert target.endswith('.py')
-            assert os.path.exists(target)
+            assert target_path.endswith('.py')
+            assert os.path.exists(target_path)
         elif target_type == 'package':
-            assert os.path.isdir(target)
-            assert os.path.exists('{}/__init__.py'.format(target))
-            assert os.path.exists('{}/__main__.py'.format(target))
+            assert os.path.isdir(target_path)
+            assert os.path.exists('{}/__init__.py'.format(target_path))
+            assert os.path.exists('{}/__main__.py'.format(target_path))
         else:
-            assert os.path.exists(target)
+            assert os.path.exists(target_path)
     except AssertionError as e:
         raise Exception(
-            'the target is not found in your file system. '
-            'you may check: '
-            '1. do not use abspath in script; '
-            '2. the path should exist.'
+            'the target is not found in your file system', target_path
         ) from e
 
     # check icon
-    icon = launcher['icon']
-    if icon:
-        assert os.path.isabs(icon)
+    if launcher['icon']:
+        icon_path = '{}/{}'.format(
+            manifest['start_directory'], launcher['icon']
+        )
+        assert os.path.exists(icon_path)
 
-        assert icon.endswith('.ico'), (
+        assert icon_path.endswith('.ico'), (
             'make sure the icon file is ".ico" format. if you have other file '
             'type, please use a online converter (for example '
             'https://findicons.com/convert) to get one.'
         )
 
-        icon_relpath = fs.relpath(icon, manifest['start_directory'])
+        icon_relpath = fs.relpath(icon_path, manifest['start_directory'])
         try:
             assert icon_relpath.startswith(tuple(manifest['assets'].keys()))
         except AssertionError:
@@ -353,7 +401,7 @@ def _postcheck_manifest(manifest: T.Manifest1) -> None:
 
         # TODO: check icon size and give suggestions (the icon is suggested
         #  128x128 or above.)
-        
+
     if kwargs := launcher['kwargs']:
         assert all(' ' not in k for k in kwargs)
         # TODO: shall we check `'-' not in k`?
@@ -361,15 +409,15 @@ def _postcheck_manifest(manifest: T.Manifest1) -> None:
     if launcher['add_to_start_menu']:
         print(
             ':v3',
-            '`launcher.add_to_start_menu` is not tested yet. this is '
-            'an experimental feature.',
+            '`launcher.add_to_start_menu` is not tested yet. this is an '
+            'experimental feature.',
         )
 
 
 # -----------------------------------------------------------------------------
 
 
-def _update_assets(assets0: T.Assets0, manifest_dir: T.AbsPath) -> T.Assets1:
+def _update_assets(assets0: T.Assets0, start_directory: T.AbsPath) -> T.Assets1:
     def generate_hash() -> str:
         # nonlocal: abspath, ftype (file_type)
         # generate: fhash (file_hash)
@@ -396,9 +444,9 @@ def _update_assets(assets0: T.Assets0, manifest_dir: T.AbsPath) -> T.Assets1:
             scheme = 'all'
         if os.path.isabs(path):
             abspath = fs.normpath(path)
-            relpath = fs.relpath(path, manifest_dir)
+            relpath = fs.relpath(path, start_directory)
         else:
-            abspath = fs.normpath(f'{manifest_dir}/{path}')
+            abspath = fs.normpath(f'{start_directory}/{path}')
             relpath = fs.normpath(path)
         if not exists(abspath):
             raise FileNotFoundError(path)
@@ -421,24 +469,24 @@ def _update_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
     return deps0
 
 
-def _update_pypi(pypi0: T.PyPI0, manifest_dir: str) -> T.PyPI1:
+def _update_pypi(pypi0: T.PyPI0, start_directory: T.AbsPath) -> T.PyPI1:
     out = {}
     for path in pypi0:
         if os.path.isabs(path):
             abspath = fs.normpath(path)
         else:
-            abspath = fs.normpath(f'{manifest_dir}/{path}')
+            abspath = fs.normpath(f'{start_directory}/{path}')
         out[fs.filename(abspath)] = abspath
     return out
 
 
 def _update_launcher(
-    launcher0: T.Launcher0, start_directory: str
+    launcher0: T.Launcher0, start_directory: T.AbsPath
 ) -> T.Launcher1:
     out: T.Launcher1 = {
         'target': '',
         'icon': '',
-        'type': '',
+        'type': '',  # noqa
         'args': [],
         'kwargs': {},
         'enable_cli': False,
@@ -450,40 +498,30 @@ def _update_launcher(
 
     # noinspection PyTypedDict
     def normalize_paths() -> None:
-        for key in ('target', 'icon'):
-            if value := out[key]:
-                if os.path.isabs(value):
-                    out[key] = fs.normpath(value)
+        for k in ('target', 'icon'):
+            if v := out[k]:
+                if os.path.isabs(v):
+                    out[k] = fs.relpath(v, start_directory)
                 else:
-                    out[key] = fs.normpath(f'{start_directory}/{value}')
+                    out[k] = fs.normpath(v)
 
     # TODO: not used
-    # noinspection PyUnusedLocal
+    # noinspection PyUnusedLocal,PyTypedDict
     def deduce_type() -> None:
-        if not out['type']:
-            if out['target'].endswith('.py'):
-                out['type'] = 'module'
-            elif out['target'] and (
-                (d0 := os.path.isabs(out['target']))
-                or (
-                    d1 := os.path.isabs(
-                        '{}/{}'.format(start_directory, out['target'])
-                    )
-                )
-            ):
-                if os.path.exists(
-                    '{}/__init__.py'.format(d0 and d0 or d1)  # noqa
-                ):
-                    out['type'] = 'package'
-                else:
-                    out['type'] = 'executable'
+        if out['target'].endswith('.py'):
+            out['type'] = 'module'
+        elif out['target'] and (
+            d := os.path.isdir('{}/{}'.format(start_directory, out['target']))
+        ):
+            if os.path.exists('{}/__init__.py'.format(d)):  # noqa
+                out['type'] = 'package'
             else:
-                raise Exception(
-                    'cannot deduce the launcher type!', out['target']
-                )
+                out['type'] = 'executable'
+        else:
+            raise Exception('cannot deduce the launcher type!', out['target'])
 
     normalize_paths()
-    # deduce_type()
+    # if not out['type']: deduce_type()
     return out
 
 
@@ -491,19 +529,13 @@ def _update_launcher(
 
 
 def dump_manifest(manifest: T.Manifest1, file_o: T.ManifestFile) -> None:
+    if isinstance(manifest, _FronzenDict):
+        manifest = manifest.origin
     manifest_i = manifest
     manifest_o: T.Manifest1 = manifest_i.copy()
-
-    if manifest_i['launcher']['icon']:
-        manifest_o['launcher'] = manifest_i['launcher'].copy()
-        for key in ('target', 'icon'):
-            manifest_o['launcher'][key] = fs.relpath(
-                manifest_o['launcher'][key], manifest_o['start_directory']
-            )
     if file_o.endswith('.json'):
         manifest_o['assets'] = _plainify_assets(manifest_i['assets'])  # noqa
-
-    manifest_o['start_directory'] = fs.parent_path(file_o)
+    manifest_o['start_directory'] = fs.parent_path(file_o)  # or set to ''?
     dumps(manifest_o, file_o)
 
 
