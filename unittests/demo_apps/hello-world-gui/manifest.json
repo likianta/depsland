@@ -1,21 +1,24 @@
 {
     "appid": "hello_world_gui",
     "name": "Hello World",
-    "version": "0.1.8",
+    "version": "0.2.1",
     "assets": {
-        "src": ""
+        "src": "all"
     },
     "dependencies": {
-        "qmlease": ""
+        "qmlease": ">=3.0.3"
     },
     "pypi": [],
     "launcher": {
-        "script": "src/main.py",
+        "target": "src/main.py",
         "icon": "",
-        "cli_tool": false,
-        "desktop": true,
-        "start_menu": false,
+        "type": "module",
+        "args": [],
+        "kwargs": {},
+        "enable_cli": false,
+        "add_to_desktop": true,
+        "add_to_start_menu": false,
         "show_console": false
     },
-    "depsland_version": "0.6.0"
+    "depsland_version": "0.6.0b3"
 }
