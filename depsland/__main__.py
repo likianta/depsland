@@ -20,9 +20,12 @@ if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
     sys.argv.pop(1)
 
 cli = CommandLineInterface('depsland')
-print('depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
-    __version__, __path__[0]
-), ':r')
+print(
+    'depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
+        __version__, __path__[0]
+    ),
+    ':r',
+)
 
 
 @cli.cmd()
@@ -75,7 +78,10 @@ def welcome(confirm_close=False) -> None:
     from . import __date__
     from . import __version__
     
-    print(':r1', Markdown(dedent('''
+    print(
+        ':r1',
+        Markdown(
+            dedent('''
         # Depsland
         
         Depsland is a python apps manager for non-developer users.
@@ -85,11 +91,13 @@ def welcome(confirm_close=False) -> None:
         - Author: {}
         - Official site: {}
     ''').format(
-        __version__,
-        __date__,
-        'Likianta (likianta@foxmail.com)',
-        'https://github.com/likianta/depsland'
-    )))
+                __version__,
+                __date__,
+                'Likianta (likianta@foxmail.com)',
+                'https://github.com/likianta/depsland',
+            )
+        ),
+    )
     
     if confirm_close:
         input('press enter to close window...')
@@ -107,23 +115,29 @@ def launch_gui(_app_token: str = None) -> None:
     try:
         pass
     except ModuleNotFoundError:
-        print('launching GUI failed. you may forget to install qt for python '
-              'library (suggest `pip install pyside6` etc.)', ':v4')
+        print(
+            'launching GUI failed. you may forget to install qt for python '
+            'library (suggest `pip install pyside6` etc.)',
+            ':v4',
+        )
         return
     if _app_token and os.path.isfile(_app_token):
         _app_token = fs.normpath(_app_token, True)
     # import os
     # os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
+    
     launch_app(_app_token)
 
 
 # -----------------------------------------------------------------------------
 # ordered by lifecycle
 
+
 @cli.cmd()
-def init(target='.', app_name='', overwrite=False,
-         auto_find_requirements=False) -> None:
+def init(
+    target='.', app_name='', overwrite=False, auto_find_requirements=False
+) -> None:
     """
     create a "manifest.json" file in project directory.
     
@@ -133,19 +147,15 @@ def init(target='.', app_name='', overwrite=False,
             if the directory doesn't exist, will create it.
             if it is the manifest file path, we recommend you using -
             'manifest.json' as its file name.
+            if target already exists, will stop and return. you can pass `-w` -
+            to force overwrite.
             be noticed the file extension can only be '.json'.
         appname (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
         overwrite (-w):
     """
     manifest_file = _get_manifest_path(target, ensure_exists=False)
-    if exists(manifest_file):
-        print(':v3s', 'target already exists')
-        return
-    api.init(manifest_file,
-             app_name,
-             overwrite,
-             auto_find_requirements)
+    api.init(manifest_file, app_name, overwrite, auto_find_requirements)
 
 
 @cli.cmd()
@@ -157,7 +167,7 @@ def build(target='.', gen_exe=True) -> None:
     
     kwargs:
         target (-t):
-        
+    
     tip:
         if you want to add a custom icon, you need to define it in manifest.
     """
@@ -223,12 +233,14 @@ def uninstall(appid: str, version: str = None) -> None:
 
 # -----------------------------------------------------------------------------
 
+
 @cli.cmd()
 def show(appid: str, version: str = None) -> None:
     """
     show manifest of an app.
     """
     from .manifest import load_manifest
+    
     if version is None:
         version = get_last_installed_version(appid)
     assert version is not None
@@ -240,6 +252,7 @@ def show(appid: str, version: str = None) -> None:
 @cli.cmd()
 def view_manifest(manifest: str = '.') -> None:
     from .manifest import load_manifest
+    
     manifest = load_manifest(_get_manifest_path(manifest))
     print(manifest, ':l')
 
@@ -264,15 +277,15 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     from .manifest import load_manifest
     from .manifest import parse_script_info
     
-    manifest = load_manifest('{}/{}/{}/manifest.pkl'.format(
-        paths.project.apps, appid, version
-    ))
+    manifest = load_manifest(
+        '{}/{}/{}/manifest.pkl'.format(paths.project.apps, appid, version)
+    )
     assert manifest['version'] == version
     command, args0, kwargs0 = parse_script_info(manifest)
     os.environ['DEPSLAND'] = paths.project.root
     os.environ['PYTHONPATH'] = '.;{app_dir};{pkg_dir}'.format(
         app_dir=manifest['start_directory'],
-        pkg_dir=paths.apps.get_packages(appid, version)
+        pkg_dir=paths.apps.get_packages(appid, version),
     )
     
     # print(':v', args, kwargs)
@@ -283,11 +296,12 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
             *args_2_cargs(*args0, **kwargs0),
             *args_2_cargs(*args, **kwargs),
         ),
-        cwd=manifest['start_directory']
+        cwd=manifest['start_directory'],
     )
 
 
 # -----------------------------------------------------------------------------
+
 
 @cli.cmd()
 def rebuild_pypi_index(full: bool = False) -> None:
@@ -300,27 +314,29 @@ def rebuild_pypi_index(full: bool = False) -> None:
             a `pip install` action.
     """
     from .doctor import rebuild_pypi_index
+    
     rebuild_pypi_index(perform_pip_install=full)
 
 
 @cli.cmd()
 def get_package_size(
-        name: str,
-        version: str = None,
-        include_dependencies: bool = False
+    name: str, version: str = None, include_dependencies: bool = False
 ) -> None:
     """
     kwargs:
         include_dependencies (-d):
     """
     from .pypi import insight
+    
     insight.measure_package_size(name, version, include_dependencies)
 
 
 # -----------------------------------------------------------------------------
 
+
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
     from .utils import compare_version
+    
     return compare_version(new['version'], '>', old['version'])
 
 
@@ -344,29 +360,35 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     oss = get_oss_client(appid)
     oss.download(oss.path.manifest, x := f'{temp_dir}/manifest.pkl')
     manifest_new = load_manifest(x)
-    change_start_directory(manifest_new, '{}/{}/{}'.format(
-        paths.project.apps,
-        manifest_new['appid'],
-        manifest_new['version']
-    ))
+    change_start_directory(
+        manifest_new,
+        '{}/{}/{}'.format(
+            paths.project.apps, manifest_new['appid'], manifest_new['version']
+        ),
+    )
     init_target_tree(manifest_new)
     fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
     
     if x := _get_dir_to_last_installed_version(appid):
         manifest_old = load_manifest(f'{x}/manifest.pkl')
     else:
-        print('no previous version found, it may be your first time to install '
-              f'{appid}')
-        print('[dim]be noted the first-time installation may consume a long '
-              'time. depsland will try to reduce the consumption in the '
-              'succeeding upgrades/installations.[/]', ':r')
+        print(
+            'no previous version found, it may be your first time to install '
+            f'{appid}'
+        )
+        print(
+            '[dim]be noted the first-time installation may consume a long '
+            'time. depsland will try to reduce the consumption in the '
+            'succeeding upgrades/installations.[/]',
+            ':r',
+        )
         manifest_old = None
     
     return manifest_old, manifest_new
 
 
 def _get_manifest_path(target: str, ensure_exists=True) -> str:
-    """ return an abspath to manifest file. """
+    """return an abspath to manifest file."""
     if target.endswith('.json'):
         out = fs.normpath(target, True)
     else:
@@ -381,7 +403,7 @@ def _get_manifest_path(target: str, ensure_exists=True) -> str:
 
 
 def _run_cli():
-    """ this function is for poetry to generate script entry point. """
+    """this function is for poetry to generate script entry point."""
     cli.run()
 
 

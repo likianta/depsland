@@ -18,27 +18,22 @@ def init(
 ) -> None:
     # init/update parameters
     filepath = fs.normpath(manifest_file, True)
+    if exists(filepath):
+        if overwrite:
+            os.remove(filepath)
+        else:
+            print(':v3s', 'target already exists!', filepath)
+            return
+    
     dirpath = fs.parent_path(filepath)
+    if not exists(dirpath):
+        os.mkdir(dirpath)
+        
     dirname = fs.dirname(dirpath)
     if appname == '':
         appname = dirname.replace('-', ' ').replace('_', ' ').title()
     appid = appname.replace(' ', '_').replace('-', '_').lower()
     print(':v2f2', appname, appid)
-    
-    # check path exists
-    if not exists(dirpath):
-        os.mkdir(dirpath)
-    if exists(filepath):
-        if overwrite:
-            os.remove(filepath)
-        else:
-            r = input(f'target file ({filepath}) already exists, would '
-                      f'you like to overwrite it? (y/n): ')
-            if r == 'y':
-                os.remove(filepath)
-            else:
-                print('[dim]no file creates[/]', ':r')
-                return
     
     manifest: T.Manifest = init_manifest(appid, appname)
     manifest.pop('start_directory')  # noqa
