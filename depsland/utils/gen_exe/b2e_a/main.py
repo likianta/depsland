@@ -5,6 +5,8 @@ from lk_utils import loads
 from lk_utils import run_cmd_args
 from lk_utils import xpath
 
+from ...compat_py38 import substitute_suffix
+
 _is_windows = os.name == 'nt'
 _template_exe = xpath('template_static.exe')
 _rcedit_exe = xpath('rcedit.exe')
@@ -24,7 +26,7 @@ def bat_2_exe(
     if file_o:
         assert file_o.endswith('.exe')
     else:
-        file_o = file_i.removesuffix('.bat') + '.exe'
+        file_o = substitute_suffix(file_i, '.bat', '.exe')
     if icon:
         assert icon.endswith('.ico')
         assert os.path.exists(icon)

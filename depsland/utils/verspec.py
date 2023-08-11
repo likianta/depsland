@@ -5,7 +5,7 @@ import semver  # https://github.com/python-semver/python-semver
 
 from ..normalization import T
 from ..normalization import VersionSpec
-from ..normalization import filename_2_name_version
+from ..normalization import split_filename_of_package
 from ..normalization import normalize_version_spec
 
 
@@ -53,7 +53,7 @@ def find_proper_version(
 
 
 def get_verspec_from_filename(filename: str) -> VersionSpec:
-    name, ver = filename_2_name_version(filename)
+    name, ver = split_filename_of_package(filename)
     verspec_ = tuple(normalize_version_spec(name, ver))
     assert len(verspec_) == 1
     verspec = verspec_[0]

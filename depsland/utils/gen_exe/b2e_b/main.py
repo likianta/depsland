@@ -6,6 +6,8 @@ from lk_utils import xpath
 from lk_utils.subproc import compose_cmd
 from lk_utils.time_utils import timeout_gen
 
+from ...compat_py38 import substitute_suffix
+
 _is_windows = os.name == 'nt'
 _b2e_exe = xpath('b2e.exe')
 
@@ -27,7 +29,7 @@ def bat_2_exe(
     if file_o:
         assert file_o.endswith('.exe')
     else:
-        file_o = file_i.removesuffix('.bat') + '.exe'
+        file_o = substitute_suffix(file_i, '.bat', '.exe')
     if icon:
         assert icon.endswith('.ico')
         assert os.path.exists(icon)
