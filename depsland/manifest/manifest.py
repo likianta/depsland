@@ -44,7 +44,7 @@ __all__ = [
 class T:
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
-
+    
     Scheme0 = t.Literal[
         'root',
         'all',
@@ -58,7 +58,7 @@ class T:
     Scheme1 = t.Literal[
         'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs'
     ]
-
+    
     Assets0 = t.Dict[AnyPath, Scheme0]
     #   anypath: abspath or relpath, '/' or '\\' both allowed.
     #   scheme: scheme or empty string. if empty string, it means 'all'.
@@ -75,20 +75,20 @@ class T:
             ),
         ),
     ]
-
+    
     Dependencies0 = t.Dict[str, str]  # dict[name, verspec]
     Dependencies1 = Dependencies0
-
+    
     PyPI0 = t.List[AnyPath]  # list[anypath_to_python_wheel]
     PyPI1 = t.Dict[str, AbsPath]  # dict[filename, abspath]
-
+    
     Launcher0 = t.TypedDict(
         'Launcher0',
         {
             'target': AnyPath,
+            'type': t.Literal['executable', 'module', 'package'],
             'icon': AnyPath,
             #   the origin icon could be: empty, a relpath, or an abspath.
-            'type': t.Literal['executable', 'module', 'package'],
             'args': t.List[t.Any],
             'kwargs': t.Dict[str, t.Any],
             'enable_cli': bool,
@@ -99,9 +99,9 @@ class T:
     )
     Launcher1 = Launcher0
     #   same with Launcher0 but 'target' and 'icon' are RelPath.
-
+    
     # -------------------------------------------------------------------------
-
+    
     # Manifest0
     #   this is a json-compatible dict. it is either made by user or dumped by
     #   `dump_manifest` function (when caller passes a '.json' file param to
@@ -120,7 +120,7 @@ class T:
         },
         total=False,
     )
-
+    
     # Manifest1
     #   this is core and unified data structure for program to use. it is
     #   loaded from a '.pkl' file, or parsed and formalized from a '.json' file
@@ -143,13 +143,13 @@ class T:
             'depsland_version': str,
         },
     )
-
+    
     ManifestFile = str  # a '.json' or '.pkl' file
-
+    
     # -------------------------------------------------------------------------
-
+    
     Action = t.Literal['append', 'update', 'delete', 'ignore']
-
+    
     AssetsDiff = t.Iterator[
         t.Tuple[
             Action,
@@ -158,17 +158,17 @@ class T:
             #   tuple[old_info, new_info]
         ]
     ]
-
+    
     DependenciesDiff = t.Iterator[
         t.Tuple[Action, t.Tuple[str, str]]  # tuple[name, verspec]
     ]
-
+    
     PyPIDiff = t.Iterator[
         t.Tuple[
             Action, t.Tuple[str, t.Optional[str]]  # tuple[filename, filepath]
         ]
     ]
-
+    
     ManifestDiff = t.TypedDict(
         'ManifestDiff',
         {
@@ -188,7 +188,7 @@ AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
 def init_manifest(appid: str, appname: str) -> T.Manifest1:
     """return a manifest template."""
     from .. import __version__
-
+    
     return {
         'appid': appid,
         'name': appname,
@@ -199,8 +199,8 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
         'pypi': {},
         'launcher': {
             'target': '',
-            'icon': '',
             'type': '',
+            'icon': '',
             'args': [],
             'kwargs': {},
             'enable_cli': False,
@@ -214,13 +214,13 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
 
 def load_manifest(manifest_file: T.ManifestFile, finalize=False) -> T.Manifest1:
     from .. import __version__
-
+    
     manifest_file = fs.normpath(manifest_file, force_abspath=True)
     manifest_dir = fs.parent_path(manifest_file)
-
+    
     data_i: t.Union[T.Manifest0, T.Manifest1] = loads(manifest_file)
     data_o: T.Manifest1 = {}
-
+    
     if manifest_file.endswith('.pkl'):
         # skip precheck and postcheck.
         data_o = data_i  # noqa
@@ -228,9 +228,9 @@ def load_manifest(manifest_file: T.ManifestFile, finalize=False) -> T.Manifest1:
         if finalize:
             return finalize_manifest(data_o)
         return data_o
-
+    
     # -------------------------------------------------------------------------
-
+    
     _precheck_manifest(data_i)
     data_o.update(
         {
@@ -259,7 +259,7 @@ def finalize_manifest(manifest: T.Manifest1) -> T.Manifest1:
     """replace all relpathed items to abs ones."""
     final_dict: T.Manifest1 = manifest.copy()
     root = final_dict['start_directory']
-
+    
     def toabs(p: T.RelPath) -> T.AbsPath:
         return f'{root}/{p}'
     
@@ -274,7 +274,7 @@ def finalize_manifest(manifest: T.Manifest1) -> T.Manifest1:
     for k in ('target', 'icon'):
         if v := final_dict['launcher'][k]:
             final_dict['launcher'][k] = toabs(v)  # noqa
-
+    
     return t.cast(T.Manifest1, _FronzenDict(manifest, final_dict))
 
 
@@ -282,18 +282,18 @@ class _FronzenDict:
     def __init__(self, data0: T.Manifest1, data1: T.Manifest1):
         self.origin = data0
         self._data = data1
-
+    
     def __getitem__(self, item: str) -> t.Any:
         return self._data[item]  # noqa
-
+    
     def __setitem__(self, key: str, value: t.Any) -> None:
         raise Exception(
             'the finalized manifest cannot be modified.', (key, value)
         )
-
+    
     def __iter__(self) -> t.Iterator:
         return iter(self._data)
-
+    
     def __copy__(self) -> '_FronzenDict':
         return _FronzenDict(self.origin.copy(), self._data.copy())
 
@@ -320,13 +320,13 @@ def _precheck_manifest(manifest: T.Manifest0) -> None:
         required_keys,
         tuple(manifest.keys()),
     )
-
+    
     assert manifest['assets'], 'field `assets` cannot be empty!'
     assert all(not x.startswith('../') for x in manifest['assets']), (
         'manifest should be put at the root of project, and there shall be no '
         '"../" in your assets keys.'
     )
-
+    
     launcher: T.Launcher1 = manifest['launcher']
     target = launcher['target']
     assert target, 'field `launcher.target` cannot be empty!'
@@ -337,7 +337,7 @@ def _precheck_manifest(manifest: T.Manifest0) -> None:
         ),
         target,
     )
-
+    
     # TODO: currently we don't support auto deduce launcher type.
     assert launcher['type'], (
         'you must set `launcher.type` apparently. depsland does not support '
@@ -348,7 +348,7 @@ def _precheck_manifest(manifest: T.Manifest0) -> None:
 
 def _postcheck_manifest(manifest: T.Manifest1) -> None:
     launcher: T.Launcher1 = manifest['launcher']
-
+    
     # check script
     target_path = '{}/{}'.format(
         manifest['start_directory'], launcher['target']
@@ -368,20 +368,20 @@ def _postcheck_manifest(manifest: T.Manifest1) -> None:
         raise Exception(
             'the target is not found in your file system', target_path
         ) from e
-
+    
     # check icon
     if launcher['icon']:
         icon_path = '{}/{}'.format(
             manifest['start_directory'], launcher['icon']
         )
         assert os.path.exists(icon_path)
-
+        
         assert icon_path.endswith('.ico'), (
             'make sure the icon file is ".ico" format. if you have other file '
             'type, please use a online converter (for example '
             'https://findicons.com/convert) to get one.'
         )
-
+        
         icon_relpath = fs.relpath(icon_path, manifest['start_directory'])
         try:
             assert icon_relpath.startswith(tuple(manifest['assets'].keys()))
@@ -400,14 +400,14 @@ def _postcheck_manifest(manifest: T.Manifest1) -> None:
                     ':v3',
                 )
                 sleep(1)
-
+        
         # TODO: check icon size and give suggestions (the icon is suggested
         #  128x128 or above.)
-
+    
     if kwargs := launcher['kwargs']:
         assert all(' ' not in k for k in kwargs)
         # TODO: shall we check `'-' not in k`?
-
+    
     if launcher['add_to_start_menu']:
         print(
             ':v3',
@@ -426,7 +426,7 @@ def _update_assets(assets0: T.Assets0, start_directory: T.AbsPath) -> T.Assets1:
         if ftype == 'file':
             return get_file_hash(abspath)
         return ''
-
+    
     def generate_utime() -> int:
         # nonlocal: abspath, scheme
         # generate: utime (updated_time)
@@ -434,12 +434,12 @@ def _update_assets(assets0: T.Assets0, start_directory: T.AbsPath) -> T.Assets1:
             return get_updated_time(abspath, recursive=False)
         else:
             return get_updated_time(abspath, recursive=True)
-
+    
     def generate_uid() -> str:
         # nonlocal: ftype, relpath
         # generate: uid (hash_of_relpath)
         return get_content_hash(f'{ftype}:{relpath}')
-
+    
     out = {}
     for path, scheme in assets0.items():
         if scheme == '':
@@ -487,8 +487,8 @@ def _update_launcher(
 ) -> T.Launcher1:
     out: T.Launcher1 = {
         'target': '',
-        'icon': '',
         'type': '',  # noqa
+        'icon': '',
         'args': [],
         'kwargs': {},
         'enable_cli': False,
@@ -497,7 +497,7 @@ def _update_launcher(
         'show_console': True,
     }
     out.update(launcher0)  # noqa
-
+    
     # noinspection PyTypedDict
     def normalize_paths() -> None:
         for k in ('target', 'icon'):
@@ -506,8 +506,7 @@ def _update_launcher(
                     out[k] = fs.relpath(v, start_directory)
                 else:
                     out[k] = fs.normpath(v)
-
-    # TODO: not used
+    
     # noinspection PyUnusedLocal,PyTypedDict
     def deduce_type() -> None:
         if out['target'].endswith('.py'):
@@ -515,15 +514,18 @@ def _update_launcher(
         elif out['target'] and (
             d := os.path.isdir('{}/{}'.format(start_directory, out['target']))
         ):
-            if os.path.exists('{}/__init__.py'.format(d)):  # noqa
+            if os.path.exists('{}/__init__.py'.format(d)) and os.path.exists(
+                '{}/__main__.py'.format(d)
+            ):  # noqa
                 out['type'] = 'package'
             else:
                 out['type'] = 'executable'
         else:
             raise Exception('cannot deduce the launcher type!', out['target'])
-
+    
     normalize_paths()
-    # if not out['type']: deduce_type()
+    if not out['type']:
+        deduce_type()
     return out
 
 
@@ -598,11 +600,11 @@ def _compare_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
         if new.utime == old.utime:
             return True
         return False
-
+    
     for key0, info0 in old.items():
         if key0 not in new:
             yield 'delete', key0, (info0, None)
-
+    
     for key1, info1 in new.items():
         if key1 not in old:
             yield 'append', key1, (None, info1)

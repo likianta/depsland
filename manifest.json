@@ -1,12 +1,13 @@
 {
     "appid": "depsland_appstore",
-    "name": "Depsland Store",
-    "version": "0.5.3a0",
+    "name": "Depsland Appstore",
+    "version": "0.6.0b6",
     "assets": {
         "apps/.bin": "root",
         "apps/.venv": "root",
-        "build/exe/launcher.ico": "all",
+        "build/icon/launcher.ico": "all",
         "conf/depsland.yaml": "all",
+        "deps": "root",
         "depsland": "all",
         "dist": "root",
         "oss/apps": "root",
@@ -21,27 +22,34 @@
         "manifest.json": "all",
         "README.md": "all",
         "README.zh.md": "all",
-        "requirements.txt": "all"
+        "poetry.lock": "all"
     },
     "dependencies": {
-        "argsense": ">=0.5.2",
-        "lk-logger": ">=5.4.8",
-        "lk-utils": ">=2.5.3",
-        "oss2": "",
-        "pyyaml": "",
-        "qmlease": ">=3.1.0a15",
-        "rich": "",
-        "semver": ">=3.0.0dev4"
+        "custom_host": [
+            "argsense",
+            "conflore",
+            "lk-logger",
+            "lk-utils",
+            "qmlease"
+        ],
+        "official_host": [
+            "oss2",
+            "pyyaml",
+            "rich",
+            "semver"
+        ]
     },
-    "pypi": [
-        "chore/custom_packages/qmlease-3.1.0a15-py3-none-any.whl"
-    ],
+    "pypi": [],
     "launcher": {
-        "script": "depsland launch-gui",
-        "icon": "build/exe/launcher.ico",
-        "cli_tool": true,
-        "desktop": true,
-        "start_menu": false
+        "target": "depsland",
+        "type": "package",
+        "icon": "build/icon/launcher.ico",
+        "args": ["launch-gui"],
+        "kwargs": {},
+        "enable_cli": true,
+        "add_to_desktop": true,
+        "add_to_start_menu": false,
+        "show_console": true
     },
-    "depsland_version": "0.5.3"
+    "depsland_version": "0.6.0b6"
 }
