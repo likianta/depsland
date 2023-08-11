@@ -28,6 +28,7 @@ from lk_utils import loads
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
+from ..venv import target_venv
 
 __all__ = [
     'T',
@@ -44,6 +45,12 @@ __all__ = [
 class T:
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
+    DepsMap = target_venv.T.DepsMap
+    
+    PackageName = str
+    PackageVersion = str
+    PackagePaths = target_venv.T.PackagePaths
+    NameIdsGraph = target_venv.T.NameIdsGraph
     
     Scheme0 = t.Literal[
         'root',
@@ -76,8 +83,20 @@ class T:
         ),
     ]
     
-    Dependencies0 = t.Dict[str, str]  # dict[name, verspec]
-    Dependencies1 = Dependencies0
+    Dependencies0 = t.TypedDict(
+        'Dependencies0',
+        {
+            'custom_host': t.List[str],
+            'official_host': t.List[str],
+        },
+    )
+    Dependencies1 = t.TypedDict(
+        'Dependencies1',
+        {  # a flatten list
+            'custom_host': target_venv.T.PackagePaths,
+            'official_host': t.Dict[PackageName, PackageVersion],
+        },
+    )
     
     PyPI0 = t.List[AnyPath]  # list[anypath_to_python_wheel]
     PyPI1 = t.Dict[str, AbsPath]  # dict[filename, abspath]
@@ -160,7 +179,7 @@ class T:
     ]
     
     DependenciesDiff = t.Iterator[
-        t.Tuple[Action, t.Tuple[str, str]]  # tuple[name, verspec]
+        t.Tuple[Action, t.Tuple[str, str]]  # tuple[name, hash]
     ]
     
     PyPIDiff = t.Iterator[
@@ -195,7 +214,10 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
         'version': '0.0.0',
         'start_directory': '',
         'assets': {},
-        'dependencies': {},
+        'dependencies': {
+            'custom_host': {},
+            'official_host': {},
+        },
         'pypi': {},
         'launcher': {
             'target': '',
@@ -240,7 +262,14 @@ def load_manifest(manifest_file: T.ManifestFile, finalize=False) -> T.Manifest1:
             'start_directory': manifest_dir,
             'assets': _update_assets(data_i.get('assets', {}), manifest_dir),
             'dependencies': _update_dependencies(
-                data_i.get('dependencies', {})
+                manifest_dir,
+                data_i.get(
+                    'dependencies',
+                    {
+                        'custom_host': [],
+                        'official_host': [],
+                    },
+                ),
             ),
             'pypi': _update_pypi(data_i.get('pypi', []), manifest_dir),
             'launcher': _update_launcher(
@@ -466,9 +495,40 @@ def _update_assets(assets0: T.Assets0, start_directory: T.AbsPath) -> T.Assets1:
     return out  # noqa
 
 
-def _update_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
-    # just return as is.
-    return deps0
+def _update_dependencies(
+    target_root: T.AbsPath, deps0: T.Dependencies0
+) -> T.Dependencies1:
+    venv_index = target_venv.TargetVenvIndex(target_root)
+    
+    def build_deps_from_name_ids(
+        name_ids: T.NameIdsGraph, holder: T.DepsMap
+    ) -> T.DepsMap:
+        for nid, children in name_ids.items():
+            if nid in holder:
+                continue
+            holder[nid] = venv_index.all_deps[nid]
+            build_deps_from_name_ids(children, holder)
+        return holder
+    
+    # custom_host
+    name_ids = target_venv.expand_dependencies(
+        deps0['custom_host'], venv_index.all_deps
+    )
+    deps = build_deps_from_name_ids(name_ids, {})
+    pkg_paths = target_venv.reverse_mapping(venv_index.root, deps)
+    
+    # official_host
+    name_ids = target_venv.expand_dependencies(
+        deps0['official_host'], venv_index.all_deps
+    )
+    deps = build_deps_from_name_ids(name_ids, {})
+    pkg_name_2_version = {k: v['version'] for k, v in deps.items()}
+    
+    out: T.Dependencies1 = {
+        'custom_host': pkg_paths,
+        'official_host': pkg_name_2_version,
+    }
+    return out
 
 
 def _update_pypi(pypi0: T.PyPI0, start_directory: T.AbsPath) -> T.PyPI1:
@@ -616,21 +676,26 @@ def _compare_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             yield 'ignore', key1, (info0, info1)
 
 
+# TODO
 def _compare_dependencies(
     new: T.Dependencies1, old: T.Dependencies1
 ) -> T.DependenciesDiff:
-    for name0, verspec0 in old.items():
-        if name0 not in new:
-            yield 'delete', (name0, verspec0)
-    for name1, verspec1 in new.items():
-        if name1 not in old:
-            yield 'append', (name1, verspec1)
-            continue
-        verspec0 = old[name1]
-        if verspec1 != verspec0:
-            yield 'update', (name1, verspec1)
+    old_custom = old['custom_host']
+    new_custom = new['custom_host']
+    for name0, v0 in old_custom.items():
+        if v1 := new_custom.get(name0):
+            name1 = name0
+            if v1['type'] != v0['type'] or v1['hash'] != v0['hash']:
+                # TODO: update?
+                yield 'delete', (name0, v0['hash'])
+                yield 'append', (name1, v1['hash'])
+            else:
+                yield 'ignore', (name0, v0['hash'])
         else:
-            yield 'ignore', (name1, verspec1)
+            yield 'delete', (name0, v0['hash'])
+    for name1, v1 in new_custom.items():
+        if name1 not in old_custom:
+            yield 'append', (name1, v1['hash'])
 
 
 def _compare_pypi(new: T.PyPI1, old: T.PyPI1) -> T.PyPIDiff:
