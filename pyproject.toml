@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "depsland"
-version = "0.6.0a0"
-description = ""
+version = "0.6.0a1"
+description = "The core features of Pyportable Installer."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
 homepage = "https://github.com/likianta/depsland"
@@ -17,7 +17,7 @@ oss2 = "*"
 pyyaml = "*"
 qmlease = "^3.0.3"
 rich = "*"
-semver = "^3.0.0dev4"
+semver = "^3.0.1"
 
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'
