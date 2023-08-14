@@ -50,6 +50,7 @@ class T:
     
     ExpandedPackageNames = T0.PackageRelations
     ExpandedPackages = T0.Packages0
+    # PackageId = T0.PackageId
     PackageName = T0.PackageName
     PackageVersion = T0.ExactVersion
     Packages = T0.Packages0
@@ -176,7 +177,7 @@ class T:
     ]
     
     DependenciesDiff = t.Iterator[
-        t.Tuple[Action, t.Tuple[T0.PackageId, str]]  # tuple[pkgid, hash]
+        t.Tuple[Action, t.Tuple[T0.PackageId, t.Iterable[AbsPath]]]
     ]
     
     ManifestDiff = t.TypedDict(
@@ -646,11 +647,11 @@ def _compare_dependencies(
         name1, v1 = name0, new_custom[name0]
         if v1['type'] != v0['type'] or v1['hash'] != v0['hash']:
             # TODO: update?
-            yield 'delete', (name0, v0['hash'])
-            yield 'append', (name1, v1['hash'])
+            yield 'delete', (name0, v0['package_id'])
+            yield 'append', (name1, v1['package_id'])
         else:
-            yield 'ignore', (name0, v0['hash'])
+            yield 'ignore', (name0, v0['package_id'])
     
     for name1, v1 in new_custom.items():
         if name1 not in old_custom:
-            yield 'append', (name1, v1['hash'])
+            yield 'append', (name1, v1['package_id'])

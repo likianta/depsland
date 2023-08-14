@@ -17,7 +17,8 @@ class T:
     ExactVersion = str
     PackageId = str  # str['{name}-{version}']
     PackageName = str
-    PathName = str  # union[dir_name, file_name, bin_name]
+    PathName = str  # union[dir_name, file_name, bin_name]  # DELETE
+    Path = str  # an absolute path
     
     PackageInfo0 = t.TypedDict(
         'PackageInfo0',
@@ -44,6 +45,15 @@ class T:
     Packages1 = t.Dict[PackageName, PackageInfo1]  # TODO: not used
 
 
+def get_target_venv_root(target_working_dir: str) -> str:
+    poetry_cli = (sys.executable, '-m', 'poetry')
+    return fs.abspath(
+        run_cmd_args(
+            poetry_cli, 'env', 'info', '--path', '-C', target_working_dir
+        )
+    )
+
+
 class PackagesIndex:
     packages: T.Packages0
     root: str
@@ -51,16 +61,8 @@ class PackagesIndex:
     
     def __init__(self, working_dir: str):
         self._working_dir = working_dir
-        self.root = self.get_target_venv_root()
+        self.root = get_target_venv_root(self._working_dir)
         self.packages = self.index_packages(self.root)
-    
-    def get_target_venv_root(self) -> str:
-        poetry_cli = (sys.executable, '-m', 'poetry')
-        return fs.normpath(
-            run_cmd_args(
-                poetry_cli, 'env', 'info', '--path', '-C', self._working_dir
-            )
-        )
     
     # -------------------------------------------------------------------------
     
