@@ -356,7 +356,15 @@ class Manifest:
         self._finalize_mainfest()
     
     def __getitem__(self, item: str) -> t.Any:
+        if item == 'start_directory':
+            return self._start_directory
         return self._manifest2[item]  # noqa
+    
+    def __setitem__(self, key: str, value: t.Any) -> None:
+        if key == 'start_directory':
+            self.start_directory = value
+        else:
+            raise Exception('cannot modify top field of manifest!', key, value)
     
     def _finalize_mainfest(self) -> None:
         dir0 = self._start_directory

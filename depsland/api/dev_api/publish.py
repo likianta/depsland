@@ -102,11 +102,10 @@ def _upload(
     # print(':lv', manifest_new, manifest_old)
     
     _check_manifest(manifest_new, manifest_old)
-    print(
-        'updating manifest: [red]{}[/] -> [green]{}[/]'.format(
-            manifest_old['version'], manifest_new['version']
-        ),
-        ':r',
+    _print_change(
+        'updating manifest',
+        manifest_old['version'],
+        manifest_new['version'],
     )
     
     # -------------------------------------------------------------------------
@@ -127,14 +126,11 @@ def _upload(
             if action == 'ignore':
                 continue
             
-            print(
-                ':sri',
-                action,
-                relpath,
-                '[dim]([red]{}[/] -> [green]{}[/])[/]'.format(
-                    info0 and info0.uid,
-                    info1 and info1.uid,
-                ),
+            _print_change(
+                f'{action = }, {relpath = }',
+                info0 and info0.uid,
+                info1 and info1.uid,
+                True,
             )
             
             if action in ('append', 'update'):
@@ -160,13 +156,8 @@ def _upload(
             if action == 'ignore':
                 continue
             
-            print(
-                ':sri',
-                action,
-                pkg_name,
-                '[dim]([red]{}[/] -> [green]{}[/])[/]'.format(
-                    pkg_id_0, pkg_id_1
-                ),
+            _print_change(
+                f'{action = }, {pkg_name = }', pkg_id_0, pkg_id_1, True
             )
             
             if action in ('append', 'update'):
@@ -283,3 +274,12 @@ def _copy_assets(
                 os.mkdir('{}/{}'.format(dir_o, dn))
     
     return dir_o
+
+
+def _print_change(
+    title: str, old: t.AnyStr, new: t.AnyStr, show_index: bool = False
+) -> None:
+    print(
+        ':psr{}'.format('i' if show_index else ''),
+        '{}: [dim]([red]{}[/] -> [green]{}[/])[/]'.format(title, old, new),
+    )
