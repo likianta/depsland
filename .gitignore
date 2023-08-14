@@ -27,6 +27,7 @@
 /unittests/demo_project/hello-world/dist/
 /unittests/demo_project/hello-world/manifest.pkl
 /unittests/depsland_run_test/dist/
+/manifest.bak.json
 
 __pycache__/
 dist/
