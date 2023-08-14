@@ -63,11 +63,11 @@ def about() -> None:
 
 @cli.cmd()
 def self_location() -> None:
-    print(fs.xpath('..', True))
+    print('[green b u]{}[/]'.format(fs.xpath('..', True)), ':s1r')
 
 
 @cli.cmd()
-def welcome(confirm_close=False) -> None:
+def welcome(confirm_close: bool = False) -> None:
     """
     show welcome message and exit.
     """
@@ -82,15 +82,15 @@ def welcome(confirm_close=False) -> None:
         ':r1',
         Markdown(
             dedent('''
-        # Depsland
-        
-        Depsland is a python apps manager for non-developer users.
-        
-        - Version: {}
-        - Release date: {}
-        - Author: {}
-        - Official site: {}
-    ''').format(
+            # DEPSLAND
+            
+            Depsland is a python apps manager for non-developer users.
+            
+            - Version: {}
+            - Release date: {}
+            - Author: {}
+            - Official site: {}
+            ''').format(
                 __version__,
                 __date__,
                 'Likianta (likianta@foxmail.com)',
@@ -122,7 +122,8 @@ def launch_gui(_app_token: str = None) -> None:
         )
         return
     if _app_token and os.path.isfile(_app_token):
-        _app_token = fs.normpath(_app_token, True)
+        _app_token = fs.abspath(_app_token)
+    
     # import os
     # os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
@@ -139,7 +140,7 @@ def init(
     target: str = '.',
     app_name: str = '',
     force_create: bool = False,
-    auto_find_requirements: bool = False
+    auto_find_requirements: bool = False,
 ) -> None:
     """
     create a "manifest.json" file in project directory.
@@ -162,11 +163,11 @@ def init(
 
 
 @cli.cmd()
-def build(target='.', gen_exe=True) -> None:
+def build(target: str = '.', gen_exe: bool = True) -> None:
     """
     build your python application based on manifest file.
     the build result is stored in "dist" directory.
-    [dim]if "dist" not exists, it will be auto created.[/]
+    [dim i](if "dist" not exists, it will be auto created.)[/]
     
     kwargs:
         target (-t):
@@ -397,7 +398,7 @@ def _get_manifest_path(target: str, ensure_exists=True) -> str:
         out = fs.normpath(f'{target}/manifest.json', True)
     if ensure_exists:
         assert exists(out)
-    print(out, ':pv')
+    print(out, ':pvs')
     return out
 
 

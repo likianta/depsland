@@ -1,6 +1,6 @@
 """
 init `~/pypi` folder based on depsland's own requirements.
-requirements:
+this script requires:
     - argsense
     - lk-utils
 """

@@ -46,6 +46,7 @@ class T:
 
 
 def get_target_venv_root(target_working_dir: str) -> str:
+    print(target_working_dir, ':pv')
     poetry_cli = (sys.executable, '-m', 'poetry')
     return fs.abspath(
         run_cmd_args(
@@ -57,11 +58,9 @@ def get_target_venv_root(target_working_dir: str) -> str:
 class PackagesIndex:
     packages: T.Packages0
     root: str
-    _working_dir: str
     
-    def __init__(self, working_dir: str):
-        self._working_dir = working_dir
-        self.root = get_target_venv_root(self._working_dir)
+    def __init__(self, venv_root: str):
+        self.root = venv_root
         self.packages = self.index_packages(self.root)
     
     # -------------------------------------------------------------------------
@@ -168,7 +167,7 @@ class PackagesIndex:
                         if not line.startswith(head):
                             break
                     # assert flag == 1
-                    yield line[len(head) :]
+                    yield line[len(head):]
         
         for line in walk():
             if ';' in line:
