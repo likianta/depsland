@@ -162,15 +162,25 @@ class T:
         t.Tuple[
             Action,
             RelPath,
-            t.Tuple[t.Optional[AssetInfo], t.Optional[AssetInfo]],
-            #   tuple[old_info, new_info]
+            t.Tuple[
+                t.Optional[AssetInfo],
+                t.Optional[AssetInfo],
+            ],
         ]
     ]
     
     DependenciesDiff = t.Iterator[
-        t.Tuple[Action, t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]]]
+        t.Tuple[
+            Action,
+            PackageName,
+            t.Tuple[
+                t.Optional[t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]]],
+                t.Optional[t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]]],
+            ],
+        ]
     ]
     
+    # see `depsland.api.dev_api.publish._upload`
     ManifestDiff = t.TypedDict(
         'ManifestDiff',
         {
@@ -668,17 +678,27 @@ def _diff_dependencies(
     
     for name0, v0 in old_custom.items():
         if name0 not in new_custom:
-            yield 'delete', (v0['package_id'], v0['paths'])
+            yield 'delete', name0, (
+                (v0['package_id'], v0['paths']),
+                (None, None),
+            )
             continue
         
         name1, v1 = name0, new_custom[name0]
         if v1['package_id'] != v0['package_id']:
-            # TODO: update?
-            yield 'delete', (v0['package_id'], v0['paths'])
-            yield 'append', (v1['package_id'], v1['paths'])
+            yield 'update', name1, (
+                (v0['package_id'], v0['paths']),
+                (v1['package_id'], v1['paths']),
+            )
         else:
-            yield 'ignore', (v0['package_id'], v0['paths'])
+            yield 'ignore', name0, (
+                (v0['package_id'], v0['paths']),
+                (v1['package_id'], v1['paths']),
+            )
     
     for name1, v1 in new_custom.items():
         if name1 not in old_custom:
-            yield 'append', (v1['package_id'], v1['paths'])
+            yield 'append', name1, (
+                (None, None),
+                (v1['package_id'], v1['paths']),
+            )
