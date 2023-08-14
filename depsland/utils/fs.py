@@ -13,7 +13,7 @@ if register_fake_type:
     T = register_fake_type('T')
 else:
     class T:
-        from depsland.manifest.manifest2 import Manifest
+        from depsland.manifest.manifest import Manifest
 
 
 def get_content_hash(content: str) -> str:

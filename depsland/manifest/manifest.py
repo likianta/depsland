@@ -1,22 +1,7 @@
-"""
-the core conception:
-    manifest:
-        manifest is a dict.
-        all path-typed items in this dict must be relative paths - except \
-        'start_directory' and 'pypi' - they are abspath.
-        usually if you want to get the file location from an item, you need to \
-        use `manifest['start_directory'] + some_relpath_item`.
-            to simplify this transition, we provide a function \
-            `finalize_manifest(manifest)`.
-        why we are using relpaths, why we don't all use abspaths directly?
-            because we may change the start_directory in runtime, we don't want
-            to couple them too much.
-            besides, loading and dumping relpath-typed items are more \
-            universal than abs-ones.
-"""
 import os
 import typing as t
 from collections import namedtuple
+from copy import deepcopy
 from os.path import exists
 from textwrap import dedent
 from time import sleep
@@ -30,17 +15,7 @@ from ..utils import get_file_hash
 from ..utils import get_updated_time
 from ..venv import target_venv
 from ..venv.target_venv import T as T0
-
-__all__ = [
-    'T',
-    'change_start_directory',
-    'compare_manifests',
-    'dump_manifest',
-    'finalize_manifest',
-    'init_manifest',
-    'init_target_tree',
-    'load_manifest',
-]
+from ..venv.target_venv import get_target_venv_root
 
 
 # noinspection PyTypedDict
@@ -51,19 +26,14 @@ class T:
     ExpandedPackageNames = T0.PackageRelations
     ExpandedPackages = T0.Packages0
     # PackageId = T0.PackageId
+    PackageInfo = T0.PackageInfo0
     PackageName = T0.PackageName
     PackageVersion = T0.ExactVersion
     Packages = T0.Packages0
     
     Scheme0 = t.Literal[
-        'root',
-        'all',
-        'all_dirs',
-        'top',
-        'top_files',
-        'top_dirs',
-        '',
-        #   empty str means 'all'
+        'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs',  # fmt:skip
+        ''  # empty str means 'all'  # fmt:skip
     ]
     Scheme1 = t.Literal[
         'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs'
@@ -85,6 +55,7 @@ class T:
             ),
         ),
     ]
+    Assets2 = t.Dict[AbsPath, AssetInfo]
     
     Dependencies0 = t.TypedDict(
         'Dependencies0',
@@ -96,6 +67,14 @@ class T:
     Dependencies1 = t.TypedDict(
         'Dependencies1',
         {  # a flatten list
+            'root': AbsPath,
+            'custom_host': ExpandedPackages,
+            'official_host': ExpandedPackages,
+        },
+    )
+    Dependencies2 = t.TypedDict(
+        'Dependencies2',
+        {  # all path related items are abspaths.
             'custom_host': ExpandedPackages,
             'official_host': ExpandedPackages,
         },
@@ -118,12 +97,14 @@ class T:
     )
     Launcher1 = Launcher0
     #   same with Launcher0 but 'target' and 'icon' are RelPath.
+    Launcher2 = Launcher1
+    #   same with Launcher1 but 'target' and 'icon' are AbsPath.
     
     # -------------------------------------------------------------------------
     
-    # Manifest0
-    #   this is a json-compatible dict. it is either made by user or dumped by
-    #   `dump_manifest` function (when caller passes a '.json' file param to
+    # Manifest0: original manifest
+    #   this is a json-compatible dict. it is either made by user or dumped by \
+    #   `dump_manifest` function (when caller passes a '.json' file param to \
     #   it).
     Manifest0 = t.TypedDict(
         'Manifest0',
@@ -139,10 +120,10 @@ class T:
         total=False,
     )
     
-    # Manifest1
-    #   this is core and unified data structure for program to use. it is
-    #   loaded from a '.pkl' file, or parsed and formalized from a '.json' file
-    #   (i.e. from `Manifest0` data).
+    # Manifest1: standard manifest
+    #   this is core and unified data structure for program to use. it is \
+    #   loaded from a '.pkl' file, or parsed from a '.json' file by \
+    #   `Manifest.load_from_file`.
     #   the differences between Manifest0 and Manifest1 are:
     #       1. ~1 has an unified path form (all must be abspath).
     #       2. ~1 has an extra key 'start_directory'.
@@ -161,7 +142,20 @@ class T:
         },
     )
     
-    ManifestFile = str  # a '.json' or '.pkl' file
+    # Manifest2: finalized manifest for easy accessing path-based items.
+    Manifest2 = t.TypedDict(
+        'Manifest2',
+        {
+            'appid': str,
+            'name': str,
+            'version': str,
+            'start_directory': AbsPath,
+            'assets': Assets2,
+            'dependencies': Dependencies2,
+            'launcher': Launcher2,
+            'depsland_version': str,
+        },
+    )
     
     # -------------------------------------------------------------------------
     
@@ -171,15 +165,25 @@ class T:
         t.Tuple[
             Action,
             RelPath,
-            t.Tuple[t.Optional[AssetInfo], t.Optional[AssetInfo]],
-            #   tuple[old_info, new_info]
+            t.Tuple[
+                t.Optional[AssetInfo],
+                t.Optional[AssetInfo],
+            ],
         ]
     ]
     
     DependenciesDiff = t.Iterator[
-        t.Tuple[Action, t.Tuple[T0.PackageId, t.Iterable[AbsPath]]]
+        t.Tuple[
+            Action,
+            PackageName,
+            t.Tuple[
+                t.Optional[t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]]],
+                t.Optional[t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]]],
+            ],
+        ]
     ]
     
+    # see `depsland.api.dev_api.publish._upload`
     ManifestDiff = t.TypedDict(
         'ManifestDiff',
         {
@@ -189,414 +193,459 @@ class T:
     )
 
 
-AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
-
-
 # -----------------------------------------------------------------------------
 
 
-def init_manifest(appid: str, appname: str) -> T.Manifest1:
-    """return a manifest template."""
-    from .. import __version__
-    
+def init_manifest(appname: str, appid: str) -> 'Manifest':
+    return Manifest.init(appname, appid)
+
+
+def load_manifest(file: T.AnyPath) -> t.Union[T.Manifest2, 'Manifest']:
+    out = Manifest()
+    out.load_from_file(file)
+    return out
+
+
+def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
+    assert isinstance(manifest, Manifest)
+    manifest.dump_to_file(file)
+
+
+def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
     return {
-        'appid': appid,
-        'name': appname,
-        'version': '0.0.0',
-        'start_directory': '',
-        'assets': {},
-        'dependencies': {
-            'custom_host': {},
-            'official_host': {},
-        },
-        'launcher': {
-            'target': '',
-            'type': '',
-            'icon': '',
-            'args': [],
-            'kwargs': {},
-            'enable_cli': False,
-            'add_to_desktop': True,
-            'add_to_start_menu': False,
-            'show_console': True,
-        },
-        'depsland_version': __version__,
-    }
-
-
-def load_manifest(manifest_file: T.ManifestFile, finalize=False) -> T.Manifest1:
-    from .. import __version__
-    
-    manifest_file = fs.normpath(manifest_file, force_abspath=True)
-    manifest_dir = fs.parent_path(manifest_file)
-    
-    data_i: t.Union[T.Manifest0, T.Manifest1] = loads(manifest_file)
-    data_o: T.Manifest1 = {}
-    
-    if manifest_file.endswith('.pkl'):
-        # skip precheck and postcheck.
-        data_o = data_i  # noqa
-        data_o['start_directory'] = manifest_dir
-        if finalize:
-            return finalize_manifest(data_o)
-        return data_o
-    
-    # -------------------------------------------------------------------------
-    
-    _precheck_manifest(data_i)
-    data_o.update(
-        {
-            'appid': data_i['appid'],
-            'name': data_i['name'],
-            'version': data_i['version'],
-            'start_directory': manifest_dir,
-            'assets': _update_assets(data_i.get('assets', {}), manifest_dir),
-            'dependencies': _update_dependencies(
-                manifest_dir,
-                data_i.get(
-                    'dependencies',
-                    {
-                        'custom_host': [],
-                        'official_host': [],
-                    },
-                ),
-            ),
-            'launcher': _update_launcher(
-                data_i.get('launcher', {}), manifest_dir
-            ),
-            'depsland_version': data_i.get('depsland_version', __version__),
-        }
-    )
-    _postcheck_manifest(data_o)
-    if finalize:
-        return finalize_manifest(data_o)
-    return data_o
-
-
-def finalize_manifest(manifest: T.Manifest1) -> T.Manifest1:
-    """replace all relpathed items to abs ones."""
-    final_dict: T.Manifest1 = manifest.copy()
-    root = final_dict['start_directory']
-    
-    def toabs(p: T.RelPath) -> T.AbsPath:
-        return f'{root}/{p}'
-    
-    final_dict['assets'].clear()
-    for k, v in manifest['assets'].items():
-        final_dict['assets'][toabs(k)] = v
-    
-    for k in ('target', 'icon'):
-        if v := final_dict['launcher'][k]:
-            final_dict['launcher'][k] = toabs(v)  # noqa
-    
-    return t.cast(T.Manifest1, _FronzenDict(manifest, final_dict))
-
-
-class _FronzenDict:
-    def __init__(self, data0: T.Manifest1, data1: T.Manifest1):
-        self.origin = data0
-        self._data = data1
-    
-    def __getitem__(self, item: str) -> t.Any:
-        return self._data[item]  # noqa
-    
-    def __setitem__(self, key: str, value: t.Any) -> None:
-        raise Exception(
-            'the finalized manifest cannot be modified.', (key, value)
-        )
-    
-    def __iter__(self) -> t.Iterator:
-        return iter(self._data)
-    
-    def __copy__(self) -> '_FronzenDict':
-        return _FronzenDict(self.origin.copy(), self._data.copy())
-
-
-def change_start_directory(manifest: T.Manifest1, new_dir: str) -> None:
-    r"""
-    this is (slightly) a better way to update `manifest['start_directory']`.
-    ps: the traditional way (`manifest['start_directory'] = ...`) is still \
-    available. but as a suggestion, if you want to follow this paradigm, you \
-    can use regex to search `manifest\w*\['start_directory'\] = ` in your IDE \
-    to find all legacy use cases.
-    """
-    manifest['start_directory'] = fs.abspath(new_dir)
-
-
-# -----------------------------------------------------------------------------
-
-
-def _precheck_manifest(manifest: T.Manifest0) -> None:
-    # assert required keys
-    required_keys = ('appid', 'name', 'version', 'assets')
-    assert all(x in manifest for x in required_keys), (
-        'the required keys are not complete',
-        required_keys,
-        tuple(manifest.keys()),
-    )
-    
-    assert manifest['assets'], 'field `assets` cannot be empty!'
-    assert all(not x.startswith('../') for x in manifest['assets']), (
-        'manifest should be put at the root of project, and there shall be no '
-        '"../" in your assets keys.'
-    )
-    
-    launcher: T.Launcher1 = manifest['launcher']
-    target = launcher['target']
-    assert target, 'field `launcher.target` cannot be empty!'
-    assert not target.startswith('../'), (
-        (
-            'manifest should be put at the root of project, and there shall be'
-            ' no "../*" in your script path.'
+        'assets': _diff_assets(
+            new['assets'], old['assets']  # fmt:skip
         ),
-        target,
-    )
-    
-    # TODO: currently we don't support auto deduce launcher type.
-    assert launcher['type'], (
-        'you must set `launcher.type` apparently. depsland does not support '
-        'auto deducing it yet.'
-    )
-    assert launcher['type'] in ('executable', 'module', 'package')
-
-
-def _postcheck_manifest(manifest: T.Manifest1) -> None:
-    launcher: T.Launcher1 = manifest['launcher']
-    
-    # check script
-    target_path = '{}/{}'.format(
-        manifest['start_directory'], launcher['target']
-    )
-    target_type = launcher['type']
-    try:
-        if target_type == 'module':
-            assert target_path.endswith('.py')
-            assert os.path.exists(target_path)
-        elif target_type == 'package':
-            assert os.path.isdir(target_path)
-            assert os.path.exists('{}/__init__.py'.format(target_path))
-            assert os.path.exists('{}/__main__.py'.format(target_path))
-        else:
-            assert os.path.exists(target_path)
-    except AssertionError as e:
-        raise Exception(
-            'the target is not found in your file system', target_path
-        ) from e
-    
-    # check icon
-    if launcher['icon']:
-        icon_path = '{}/{}'.format(
-            manifest['start_directory'], launcher['icon']
-        )
-        assert os.path.exists(icon_path)
-        
-        assert icon_path.endswith('.ico'), (
-            'make sure the icon file is ".ico" format. if you have other file '
-            'type, please use a online converter (for example '
-            'https://findicons.com/convert) to get one.'
-        )
-        
-        icon_relpath = fs.relpath(icon_path, manifest['start_directory'])
-        try:
-            assert icon_relpath.startswith(tuple(manifest['assets'].keys()))
-        except AssertionError:
-            if '' in manifest['assets']:
-                pass
-            else:
-                print(
-                    dedent('''
-                        the launcher icon is not added to your assets list.
-                        you may stop current progress right now, and re-check
-                        your manifest file.
-                        (if you confirm that the icon is added, it may be a bug
-                        from depsland.)
-                    '''),
-                    ':v3',
-                )
-                sleep(1)
-        
-        # TODO: check icon size and give suggestions (the icon is suggested
-        #  128x128 or above.)
-    
-    if kwargs := launcher['kwargs']:
-        assert all(' ' not in k for k in kwargs)
-        # TODO: shall we check `'-' not in k`?
-    
-    if launcher['add_to_start_menu']:
-        print(
-            ':v3',
-            '`launcher.add_to_start_menu` is not tested yet. this is an '
-            'experimental feature.',
-        )
-
-
-# -----------------------------------------------------------------------------
-
-
-def _update_assets(assets0: T.Assets0, start_directory: T.AbsPath) -> T.Assets1:
-    def generate_hash() -> str:
-        # nonlocal: abspath, ftype (file_type)
-        # generate: fhash (file_hash)
-        if ftype == 'file':
-            return get_file_hash(abspath)
-        return ''
-    
-    def generate_utime() -> int:
-        # nonlocal: abspath, scheme
-        # generate: utime (updated_time)
-        if scheme in ('root', 'top', 'top_files', 'top_dirs'):
-            return get_updated_time(abspath, recursive=False)
-        else:
-            return get_updated_time(abspath, recursive=True)
-    
-    def generate_uid() -> str:
-        # nonlocal: ftype, relpath
-        # generate: uid (hash_of_relpath)
-        return get_content_hash(f'{ftype}:{relpath}')
-    
-    out = {}
-    for path, scheme in assets0.items():
-        if scheme == '':
-            scheme = 'all'
-        if os.path.isabs(path):
-            abspath = fs.normpath(path)
-            relpath = fs.relpath(path, start_directory)
-        else:
-            abspath = fs.normpath(f'{start_directory}/{path}')
-            relpath = fs.normpath(path)
-        if not exists(abspath):
-            raise FileNotFoundError(path)
-        # minor fix relpath
-        if relpath == '.':
-            # `fs.relpath` may return '.', we need to convert it to ''.
-            relpath = ''
-        out[relpath] = AssetInfo(
-            type=(ftype := 'file' if os.path.isfile(abspath) else 'dir'),
-            scheme=scheme,
-            utime=generate_utime(),
-            hash=generate_hash(),
-            uid=generate_uid(),
-        )
-    return out  # noqa
-
-
-def _update_dependencies(
-    target_root: T.AbsPath, deps0: T.Dependencies0
-) -> T.Dependencies1:
-    _venv_index = target_venv.PackagesIndex(target_root)
-    
-    def expand_packages(
-        key: t.Literal['custom_host', 'official_host']
-    ) -> T.ExpandedPackages:
-        names = target_venv.expand_package_names(
-            deps0[key], _venv_index.packages
-        )
-        return {k: _venv_index.packages[k] for k in names}
-    
-    return {
-        'custom_host': expand_packages('custom_host'),
-        'official_host': expand_packages('official_host'),
-    }
-
-
-def _update_launcher(
-    launcher0: T.Launcher0, start_directory: T.AbsPath
-) -> T.Launcher1:
-    out: T.Launcher1 = {
-        'target': '',
-        'type': '',  # noqa
-        'icon': '',
-        'args': [],
-        'kwargs': {},
-        'enable_cli': False,
-        'add_to_desktop': False,
-        'add_to_start_menu': False,
-        'show_console': True,
-    }
-    out.update(launcher0)  # noqa
-    
-    # noinspection PyTypedDict
-    def normalize_paths() -> None:
-        for k in ('target', 'icon'):
-            if v := out[k]:
-                if os.path.isabs(v):
-                    out[k] = fs.relpath(v, start_directory)
-                else:
-                    out[k] = fs.normpath(v)
-    
-    # noinspection PyUnusedLocal,PyTypedDict
-    def deduce_type() -> None:
-        if out['target'].endswith('.py'):
-            out['type'] = 'module'
-        elif out['target'] and (
-            d := os.path.isdir('{}/{}'.format(start_directory, out['target']))
-        ):
-            if os.path.exists('{}/__init__.py'.format(d)) and os.path.exists(
-                '{}/__main__.py'.format(d)
-            ):  # noqa
-                out['type'] = 'package'
-            else:
-                out['type'] = 'executable'
-        else:
-            raise Exception('cannot deduce the launcher type!', out['target'])
-    
-    normalize_paths()
-    if not out['type']:
-        deduce_type()
-    return out
-
-
-# -----------------------------------------------------------------------------
-
-
-def dump_manifest(manifest: T.Manifest1, file_o: T.ManifestFile) -> None:
-    if isinstance(manifest, _FronzenDict):
-        manifest = manifest.origin
-    manifest_i = manifest
-    manifest_o: T.Manifest1 = manifest_i.copy()
-    if file_o.endswith('.json'):
-        manifest_o['assets'] = _plainify_assets(manifest_i['assets'])  # noqa
-    manifest_o['start_directory'] = fs.parent_path(file_o)  # or set to ''?
-    dumps(manifest_o, file_o)
-
-
-def _plainify_assets(assets1: T.Assets1) -> T.Assets0:
-    out = {}
-    for path, info in assets1.items():
-        out[path] = info.scheme
-    return out
-
-
-# -----------------------------------------------------------------------------
-# more
-
-
-def init_target_tree(manifest: T.Manifest1, root_dir: str = None) -> None:
-    if not root_dir:
-        root_dir = manifest['start_directory']
-    print('init making tree', root_dir)
-    paths_to_be_created = set()
-    for k, v in manifest['assets'].items():
-        abspath = fs.normpath(f'{root_dir}/{k}')
-        if v.type == 'dir':
-            paths_to_be_created.add(abspath)
-        else:
-            paths_to_be_created.add(fs.parent_path(abspath))
-    paths_to_be_created = sorted(paths_to_be_created)
-    print(':l', paths_to_be_created)
-    [os.makedirs(x, exist_ok=True) for x in paths_to_be_created]
-
-
-def compare_manifests(new: T.Manifest1, old: T.Manifest1) -> T.ManifestDiff:
-    return {
-        'assets': _compare_assets(new['assets'], old['assets']),
-        'dependencies': _compare_dependencies(
+        'dependencies': _diff_dependencies(
             new['dependencies'], old['dependencies']
         ),
     }
 
 
-def _compare_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
+# -----------------------------------------------------------------------------
+
+
+AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
+
+
+class Manifest:
+    _file: T.AbsPath
+    _manifest1: T.Manifest1
+    _manifest2: T.Manifest2
+    _start_directory: T.AbsPath
+    _venv_root: T.AbsPath
+    
+    @classmethod
+    def init(cls, appid: str, appname: str) -> 'Manifest':
+        from .. import __version__
+        
+        out = Manifest()
+        
+        out._file = ''
+        out._start_directory = ''
+        out._venv_root = ''
+        
+        out._manifest2 = out._manifest1 = {
+            'appid': appid,
+            'name': appname,
+            'version': '0.0.0',
+            'start_directory': '',
+            'assets': {},
+            'dependencies': {
+                'root': '',
+                'custom_host': {},
+                'official_host': {},
+            },
+            'launcher': {
+                'target': '',
+                'type': '',
+                'icon': '',
+                'args': [],
+                'kwargs': {},
+                'enable_cli': False,
+                'add_to_desktop': True,
+                'add_to_start_menu': False,
+                'show_console': True,
+            },
+            'depsland_version': __version__,
+        }
+        
+        return out
+    
+    def load_from_file(self, file: T.AnyPath) -> None:
+        """
+        args:
+            file: a '.json' or a '.pkl' file.
+        """
+        from .. import __version__
+        
+        self._file = fs.abspath(file)
+        self._start_directory = fs.parent_path(self._file)
+        self._venv_root = get_target_venv_root(self._start_directory)
+        
+        data0: t.Union[T.Manifest0, T.Manifest1]
+        data1: T.Manifest1
+        
+        if self._file.endswith('.pkl'):
+            data0: T.Manifest1 = loads(self._file)
+            data1 = data0
+            data1['start_directory'] = self._start_directory
+        else:
+            assert self._file.endswith('.json')
+            data0: T.Manifest0 = loads(self._file)
+            
+            self._precheck_manifest(data0)
+            data1 = {
+                'appid': data0['appid'],
+                'name': data0['name'],
+                'version': data0['version'],
+                'start_directory': self._start_directory,
+                'assets': self._update_assets(
+                    data0.get('assets', {}),
+                    self._start_directory,
+                ),
+                'dependencies': self._update_dependencies(
+                    self._venv_root,
+                    data0.get('dependencies', {}),
+                ),
+                'launcher': self._update_launcher(
+                    data0.get('launcher', {}),
+                    self._start_directory,
+                ),
+                'depsland_version': data0.get(
+                    'depsland_version',
+                    __version__,
+                ),
+            }
+            
+            self._postcheck_manifest(data1)
+        
+        self._manifest1 = data1
+        self._finalize_mainfest()
+    
+    def dump_to_file(self, file: T.AnyPath = None) -> None:
+        if file is None:
+            file = self._file
+        
+        data1: T.Manifest1 = self._manifest1
+        data0: T.Manifest0 = self._manifest1.copy()
+        
+        if file.endswith('.pkl'):
+            data0['start_directory'] = fs.parent_path(fs.abspath(file))  # noqa
+            #   or set to ''?
+        else:
+            data0.pop('start_directory')
+            data0['assets'] = self._plainify_assets(data1['assets'])
+            data0['dependencies'] = self._plainify_dependencies(
+                data1['dependencies']
+            )
+        
+        dumps(data0, file)
+    
+    # -------------------------------------------------------------------------
+    
+    @property
+    def data(self) -> T.Manifest2:
+        return self._manifest2
+    
+    @property
+    def start_directory(self) -> T.AbsPath:
+        return self._start_directory
+    
+    @start_directory.setter
+    def start_directory(self, path: T.AnyPath) -> None:
+        path = fs.abspath(path)
+        self._start_directory = path
+        self._finalize_mainfest()
+    
+    def __getitem__(self, item: str) -> t.Any:
+        if item == 'start_directory':
+            return self._start_directory
+        return self._manifest2[item]  # noqa
+    
+    def __setitem__(self, key: str, value: t.Any) -> None:
+        if key == 'start_directory':
+            self.start_directory = value
+        else:
+            raise Exception('cannot modify top field of manifest!', key, value)
+    
+    def _finalize_mainfest(self) -> None:
+        dir0 = self._start_directory
+        dir1 = self._venv_root
+        
+        data1: T.Manifest1 = self._manifest1
+        data2: T.Manifest2 = {
+            'appid': data1['appid'],
+            'name': data1['name'],
+            'version': data1['version'],
+            'start_directory': data1['start_directory'],
+            'assets': {f'{dir0}/{k}': v for k, v in data1['assets'].items()},
+            'dependencies': deepcopy(data1['dependencies']),
+            'launcher': data1['launcher'],
+            'depsland_version': data1['depsland_version'],
+        }
+        # postfix dependencies
+        for k, v in data2['dependencies']['custom_host'].items():
+            v['paths'] = tuple(f'{dir1}/{x}' for x in v['paths'])
+        
+        self._manifest2 = data2
+    
+    # -------------------------------------------------------------------------
+    
+    @staticmethod
+    def _precheck_manifest(manifest: T.Manifest0) -> None:
+        # assert required keys
+        required_keys = ('appid', 'name', 'version', 'assets')
+        assert all(x in manifest for x in required_keys), (
+            'the required keys are not complete',
+            required_keys,
+            tuple(manifest.keys()),
+        )
+        
+        assert manifest['assets'], 'field `assets` cannot be empty!'
+        assert all(not x.startswith('../') for x in manifest['assets']), (
+            'manifest should be put at the root of project, and there shall be '
+            'no "../" in your assets keys.'
+        )
+        
+        launcher: T.Launcher1 = manifest['launcher']
+        target = launcher['target']
+        assert target, 'field `launcher.target` cannot be empty!'
+        assert not target.startswith('../'), (
+            (
+                'manifest should be put at the root of project, and there '
+                'shall be no "../*" in your script path.'
+            ),
+            target,
+        )
+        
+        # TODO: currently we don't support auto deduce launcher type.
+        assert launcher['type'], (
+            'you must set `launcher.type` apparently. depsland does not '
+            'support auto deducing it yet.'
+        )
+        assert launcher['type'] in ('executable', 'module', 'package')
+    
+    @staticmethod
+    def _postcheck_manifest(manifest: T.Manifest1) -> None:
+        launcher: T.Launcher1 = manifest['launcher']
+        
+        # check script
+        target_path = '{}/{}'.format(
+            manifest['start_directory'], launcher['target']
+        )
+        target_type = launcher['type']
+        try:
+            if target_type == 'module':
+                assert target_path.endswith('.py')
+                assert os.path.exists(target_path)
+            elif target_type == 'package':
+                assert os.path.isdir(target_path)
+                assert os.path.exists('{}/__init__.py'.format(target_path))
+                assert os.path.exists('{}/__main__.py'.format(target_path))
+            else:
+                assert os.path.exists(target_path)
+        except AssertionError as e:
+            raise Exception(
+                'the target is not found in your file system', target_path
+            ) from e
+        
+        # check icon
+        if launcher['icon']:
+            icon_path = '{}/{}'.format(
+                manifest['start_directory'], launcher['icon']
+            )
+            assert os.path.exists(icon_path)
+            
+            assert icon_path.endswith('.ico'), (
+                'make sure the icon file is ".ico" format. if you have other '
+                'file type, please use a online converter (for example '
+                'https://findicons.com/convert) to get one.'
+            )
+            
+            icon_relpath = fs.relpath(icon_path, manifest['start_directory'])
+            try:
+                assert icon_relpath.startswith(tuple(manifest['assets'].keys()))
+            except AssertionError:
+                if '' in manifest['assets']:
+                    pass
+                else:
+                    print(
+                        dedent('''
+                            the launcher icon is not added to your assets list.
+                            you may stop current progress right now, and
+                            re-check your manifest file.
+                            (if you confirm that the icon is added, it may be a
+                            bug from depsland.)
+                        '''),
+                        ':v3',
+                    )
+                    sleep(1)
+            
+            # TODO: check icon size and give suggestions (the icon is suggested
+            #  128x128 or above.)
+        
+        if kwargs := launcher['kwargs']:
+            assert all(' ' not in k for k in kwargs)
+            # TODO: shall we check `'-' not in k`?
+        
+        if launcher['add_to_start_menu']:
+            print(
+                ':v3',
+                '`launcher.add_to_start_menu` is not tested yet. this is an '
+                'experimental feature.',
+            )
+    
+    # -------------------------------------------------------------------------
+    
+    @staticmethod
+    def _update_assets(
+        assets0: T.Assets0, start_directory: T.AbsPath
+    ) -> T.Assets1:
+        def generate_hash() -> str:
+            # nonlocal: abspath, ftype (file_type)
+            # generate: fhash (file_hash)
+            if ftype == 'file':
+                return get_file_hash(abspath)
+            return ''
+        
+        def generate_utime() -> int:
+            # nonlocal: abspath, scheme
+            # generate: utime (updated_time)
+            if scheme in ('root', 'top', 'top_files', 'top_dirs'):
+                return get_updated_time(abspath, recursive=False)
+            else:
+                return get_updated_time(abspath, recursive=True)
+        
+        def generate_uid() -> str:
+            # nonlocal: ftype, relpath
+            # generate: uid (hash_of_relpath)
+            return get_content_hash(f'{ftype}:{relpath}')
+        
+        out = {}
+        for path, scheme in assets0.items():
+            if scheme == '':
+                scheme = 'all'
+            if os.path.isabs(path):
+                abspath = fs.normpath(path)
+                relpath = fs.relpath(path, start_directory)
+            else:
+                abspath = fs.normpath(f'{start_directory}/{path}')
+                relpath = fs.normpath(path)
+            if not exists(abspath):
+                raise FileNotFoundError(
+                    'please check the path you defined in manifest does exist',
+                    path
+                )
+            # minor fix relpath
+            if relpath == '.':
+                # `fs.relpath` may return '.', we need to convert it to ''.
+                relpath = ''
+            out[relpath] = AssetInfo(
+                type=(ftype := 'file' if os.path.isfile(abspath) else 'dir'),
+                scheme=scheme,
+                utime=generate_utime(),
+                hash=generate_hash(),
+                uid=generate_uid(),
+            )
+        return out  # noqa
+    
+    @staticmethod
+    def _update_dependencies(
+        venv_root: T.AbsPath, deps0: T.Dependencies0
+    ) -> T.Dependencies1:
+        _venv_index = target_venv.PackagesIndex(venv_root)
+        
+        def expand_packages(
+            key: t.Literal['custom_host', 'official_host']
+        ) -> T.ExpandedPackages:
+            if key not in deps0:
+                return {}
+            names = target_venv.expand_package_names(
+                deps0[key], _venv_index.packages
+            )
+            return {k: _venv_index.packages[k] for k in names}
+        
+        return {
+            'root': venv_root,
+            'custom_host': expand_packages('custom_host'),
+            'official_host': expand_packages('official_host'),
+        }
+    
+    @staticmethod
+    def _update_launcher(
+        launcher0: T.Launcher0, start_directory: T.AbsPath
+    ) -> T.Launcher1:
+        out: T.Launcher1 = {
+            'target': '',
+            'type': '',  # noqa
+            'icon': '',
+            'args': [],
+            'kwargs': {},
+            'enable_cli': False,
+            'add_to_desktop': False,
+            'add_to_start_menu': False,
+            'show_console': True,
+        }
+        out.update(launcher0)  # noqa
+        
+        # noinspection PyTypedDict
+        def normalize_paths() -> None:
+            for k in ('target', 'icon'):
+                if v := out[k]:
+                    if os.path.isabs(v):
+                        out[k] = fs.relpath(v, start_directory)
+                    else:
+                        out[k] = fs.normpath(v)
+        
+        # noinspection PyUnusedLocal,PyTypedDict
+        def deduce_type() -> None:
+            if out['target'].endswith('.py'):
+                out['type'] = 'module'
+            elif out['target'] and (
+                d := os.path.isdir(
+                    '{}/{}'.format(start_directory, out['target'])
+                )
+            ):
+                if os.path.exists(
+                    '{}/__init__.py'.format(d)
+                ) and os.path.exists(
+                    '{}/__main__.py'.format(d)
+                ):  # noqa
+                    out['type'] = 'package'
+                else:
+                    out['type'] = 'executable'
+            else:
+                raise Exception(
+                    'cannot deduce the launcher type!', out['target']
+                )
+        
+        normalize_paths()
+        if not out['type']:
+            deduce_type()
+        return out
+    
+    # -------------------------------------------------------------------------
+    
+    @staticmethod
+    def _plainify_assets(assets1: T.Assets1) -> T.Assets0:
+        out = {}
+        for path, info in assets1.items():
+            out[path] = info.scheme
+        return out
+    
+    @staticmethod
+    def _plainify_dependencies(deps: T.Dependencies1) -> T.Dependencies0:
+        return {
+            'custom_host': [k for k in deps['custom_host']],
+            'official_host': [k for k in deps['official_host']],
+        }
+
+
+# -----------------------------------------------------------------------------
+
+
+def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
     def is_same(new: T.AssetInfo, old: T.AssetInfo) -> bool:
         """
         comparing assets is considered based on a variety of factors:
@@ -632,26 +681,38 @@ def _compare_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             yield 'ignore', key1, (info0, info1)
 
 
-# TODO
-def _compare_dependencies(
-    new: T.Dependencies1, old: T.Dependencies1
+def _diff_dependencies(
+    new: T.Dependencies2, old: T.Dependencies2
 ) -> T.DependenciesDiff:
     old_custom = old['custom_host']
     new_custom = new['custom_host']
     
+    v0: T.PackageInfo
+    v1: T.PackageInfo
+    
     for name0, v0 in old_custom.items():
         if name0 not in new_custom:
-            yield 'delete', (name0, v0['hash'])
+            yield 'delete', name0, (
+                (v0['package_id'], v0['paths']),
+                (None, None),
+            )
             continue
         
         name1, v1 = name0, new_custom[name0]
-        if v1['type'] != v0['type'] or v1['hash'] != v0['hash']:
-            # TODO: update?
-            yield 'delete', (name0, v0['package_id'])
-            yield 'append', (name1, v1['package_id'])
+        if v1['package_id'] != v0['package_id']:
+            yield 'update', name1, (
+                (v0['package_id'], v0['paths']),
+                (v1['package_id'], v1['paths']),
+            )
         else:
-            yield 'ignore', (name0, v0['package_id'])
+            yield 'ignore', name0, (
+                (v0['package_id'], v0['paths']),
+                (v1['package_id'], v1['paths']),
+            )
     
     for name1, v1 in new_custom.items():
         if name1 not in old_custom:
-            yield 'append', (name1, v1['package_id'])
+            yield 'append', name1, (
+                (None, None),
+                (v1['package_id'], v1['paths']),
+            )

@@ -6,10 +6,10 @@ from lk_utils import fs
 from lk_utils import loads
 from lk_utils.read_and_write import ropen
 
-from .manifest2 import Manifest
-from .manifest2 import T as T0
-from .manifest2 import dump_manifest
-from .manifest2 import load_manifest
+from .manifest import Manifest
+from .manifest import T as T0
+from .manifest import dump_manifest
+from .manifest import load_manifest
 from .. import paths
 
 
