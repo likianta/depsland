@@ -659,6 +659,20 @@ url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "fake-typing"
+version = "0.1.0b4"
+description = ""
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "fake_typing-0.1.0b4-py3-none-any.whl", hash = "sha256:89b4d6fc3a384fdad84b43be3df149321967bb0161a19199648995025fb2cf34"},
+]
+
+[package.source]
+type = "url"
+url = "http://likianta.pro:2006/fake-typing/fake_typing-0.1.0b4-py3-none-any.whl"
+
+[[package]]
 name = "filelock"
 version = "3.12.2"
 description = "A platform independent file lock."
@@ -2396,4 +2410,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "7a8930a76647f4da3cc485f49a0efd624aec2c813a7391d590a7827f76ec5b8f"
+content-hash = "ada03089773f8d53833c5bd24b91e7e24b3d47f565de3f93a61d3da695302d67"
