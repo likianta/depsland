@@ -10,12 +10,13 @@ from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
 
+from .. import normalization as norm
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
 from ..venv import target_venv
 from ..venv.target_venv import T as T0
-from ..venv.target_venv import get_target_venv_root
+from ..venv.target_venv import get_venv_packages_root
 
 
 # noinspection PyTypedDict
@@ -233,7 +234,7 @@ class Manifest:
     _manifest1: T.Manifest1
     _manifest2: T.Manifest2
     _start_directory: T.AbsPath
-    _venv_root: T.AbsPath
+    _venv_packages_root: T.AbsPath
     
     @classmethod
     def init(cls, appid: str, appname: str) -> 'Manifest':
@@ -243,7 +244,7 @@ class Manifest:
         
         out._file = ''
         out._start_directory = ''
-        out._venv_root = ''
+        out._venv_packages_root = ''
         
         out._manifest2 = out._manifest1 = {
             'appid': appid,
@@ -281,7 +282,9 @@ class Manifest:
         
         self._file = fs.abspath(file)
         self._start_directory = fs.parent_path(self._file)
-        self._venv_root = get_target_venv_root(self._start_directory)
+        self._venv_packages_root = get_venv_packages_root(
+            self._start_directory
+        )
         
         data0: t.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
@@ -305,8 +308,11 @@ class Manifest:
                     self._start_directory,
                 ),
                 'dependencies': self._update_dependencies(
-                    self._venv_root,
-                    data0.get('dependencies', {}),
+                    self._start_directory,
+                    data0.get('dependencies', {
+                        'custom_host': [],
+                        'official_host': [],
+                    }),
                 ),
                 'launcher': self._update_launcher(
                     data0.get('launcher', {}),
@@ -371,7 +377,7 @@ class Manifest:
     
     def _finalize_mainfest(self) -> None:
         dir0 = self._start_directory
-        dir1 = self._venv_root
+        dir1 = self._venv_packages_root
         
         data1: T.Manifest1 = self._manifest1
         data2: T.Manifest2 = {
@@ -552,22 +558,21 @@ class Manifest:
     
     @staticmethod
     def _update_dependencies(
-        venv_root: T.AbsPath, deps0: T.Dependencies0
+        working_root: T.AbsPath, deps0: T.Dependencies0
     ) -> T.Dependencies1:
-        _venv_index = target_venv.PackagesIndex(venv_root)
+        _venv_index = target_venv.PackagesIndex(working_root)
         
         def expand_packages(
             key: t.Literal['custom_host', 'official_host']
         ) -> T.ExpandedPackages:
-            if key not in deps0:
-                return {}
             names = target_venv.expand_package_names(
-                deps0[key], _venv_index.packages
+                map(norm.normalize_name, deps0[key]),
+                _venv_index.packages
             )
             return {k: _venv_index.packages[k] for k in names}
         
         return {
-            'root': venv_root,
+            'root': _venv_index.packages_root,
             'custom_host': expand_packages('custom_host'),
             'official_host': expand_packages('official_host'),
         }

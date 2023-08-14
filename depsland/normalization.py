@@ -121,6 +121,7 @@ def split_dirname_of_dist_info(dirname: str) -> t.Tuple[T.Name, T.Version]:
     from .utils.compat_py38 import remove_suffix
     dirname = remove_suffix(dirname, '.dist-info')
     name, version = dirname.split('-')
+    name = normalize_name(name)
     return name, version
 
 
