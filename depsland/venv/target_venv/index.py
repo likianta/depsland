@@ -193,3 +193,17 @@ class PackagesIndex:
             else:
                 name = path.split('/', 1)[0]
             yield name
+
+
+def get_top_level_package_names(root: str) -> t.Iterator[T.PackageName]:
+    # note: there is a bug in `poetry show -T` so we don't use it.
+    #   instead we use `poetry show -t` and manually parse the output.
+    content = run_cmd_args(
+        (sys.executable, '-m', 'poetry'),
+        ('show', '-t', '--no-dev'),
+        ('--directory', root),
+    )
+    re_pkg_name = re.compile(r'^[-\w]+')
+    for line in content.splitlines():
+        if m := re_pkg_name.match(line):
+            yield m.group()

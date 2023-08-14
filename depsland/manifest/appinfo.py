@@ -30,6 +30,7 @@ class T:
     # extra ports for external use
     AssetInfo = T0.AssetInfo
     Scheme = T0.Scheme1
+    UserManifest = T0.Manifest0
 
 
 def get_app_info(manifest_file: str) -> T.Appinfo:

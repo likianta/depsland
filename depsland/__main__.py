@@ -29,7 +29,7 @@ print(
 
 
 @cli.cmd()
-def version() -> None:
+def about() -> None:
     """
     show basic information about depsland.
     """
@@ -136,7 +136,10 @@ def launch_gui(_app_token: str = None) -> None:
 
 @cli.cmd()
 def init(
-    target='.', app_name='', overwrite=False, auto_find_requirements=False
+    target: str = '.',
+    app_name: str = '',
+    force_create: bool = False,
+    auto_find_requirements: bool = False
 ) -> None:
     """
     create a "manifest.json" file in project directory.
@@ -147,15 +150,15 @@ def init(
             if the directory doesn't exist, will create it.
             if it is the manifest file path, we recommend you using -
             'manifest.json' as its file name.
-            if target already exists, will stop and return. you can pass `-w` -
-            to force overwrite.
+            if target already exists, will stop and return. you can pass `-f` -
+            to overwrite.
             be noticed the file extension can only be '.json'.
         appname (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
-        overwrite (-w):
+        force_create (-f):
     """
     manifest_file = _get_manifest_path(target, ensure_exists=False)
-    api.init(manifest_file, app_name, overwrite, auto_find_requirements)
+    api.init(manifest_file, app_name, force_create, auto_find_requirements)
 
 
 @cli.cmd()
