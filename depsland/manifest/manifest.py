@@ -9,8 +9,8 @@ the core conception:
             to simplify this transition, we provide a function \
             `finalize_manifest(manifest)`.
         why we are using relpaths, why we don't all use abspaths directly?
-            because we sometimes change the start_directory, we don't want to \
-            couple them too much.
+            because we may change the start_directory in runtime, we don't want
+            to couple them too much.
             besides, loading and dumping relpath-typed items are more \
             universal than abs-ones.
 """
@@ -29,12 +29,14 @@ from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
 from ..venv import target_venv
+from ..venv.target_venv import T as T0
 
 __all__ = [
     'T',
     'change_start_directory',
     'compare_manifests',
     'dump_manifest',
+    'finalize_manifest',
     'init_manifest',
     'init_target_tree',
     'load_manifest',
@@ -45,12 +47,12 @@ __all__ = [
 class T:
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
-    DepsMap = target_venv.T.DepsMap
     
-    PackageName = str
-    PackageVersion = str
-    PackagePaths = target_venv.T.PackagePaths
-    NameIdsGraph = target_venv.T.NameIdsGraph
+    ExpandedPackageNames = T0.PackageRelations
+    ExpandedPackages = T0.Packages0
+    PackageName = T0.PackageName
+    PackageVersion = T0.ExactVersion
+    Packages = T0.Packages0
     
     Scheme0 = t.Literal[
         'root',
@@ -86,20 +88,17 @@ class T:
     Dependencies0 = t.TypedDict(
         'Dependencies0',
         {
-            'custom_host': t.List[str],
-            'official_host': t.List[str],
+            'custom_host': t.List[PackageName],
+            'official_host': t.List[PackageName],
         },
     )
     Dependencies1 = t.TypedDict(
         'Dependencies1',
         {  # a flatten list
-            'custom_host': target_venv.T.PackagePaths,
-            'official_host': t.Dict[PackageName, PackageVersion],
+            'custom_host': ExpandedPackages,
+            'official_host': ExpandedPackages,
         },
     )
-    
-    PyPI0 = t.List[AnyPath]  # list[anypath_to_python_wheel]
-    PyPI1 = t.Dict[str, AbsPath]  # dict[filename, abspath]
     
     Launcher0 = t.TypedDict(
         'Launcher0',
@@ -133,7 +132,6 @@ class T:
             'version': str,
             'assets': Assets0,
             'dependencies': Dependencies0,
-            'pypi': PyPI0,
             'launcher': Launcher0,
             'depsland_version': str,
         },
@@ -157,7 +155,6 @@ class T:
             'start_directory': AbsPath,
             'assets': Assets1,
             'dependencies': Dependencies1,
-            'pypi': PyPI1,
             'launcher': Launcher1,
             'depsland_version': str,
         },
@@ -179,13 +176,7 @@ class T:
     ]
     
     DependenciesDiff = t.Iterator[
-        t.Tuple[Action, t.Tuple[str, str]]  # tuple[name, hash]
-    ]
-    
-    PyPIDiff = t.Iterator[
-        t.Tuple[
-            Action, t.Tuple[str, t.Optional[str]]  # tuple[filename, filepath]
-        ]
+        t.Tuple[Action, t.Tuple[T0.PackageId, str]]  # tuple[pkgid, hash]
     ]
     
     ManifestDiff = t.TypedDict(
@@ -193,7 +184,6 @@ class T:
         {
             'assets': AssetsDiff,
             'dependencies': DependenciesDiff,
-            'pypi': PyPIDiff,
         },
     )
 
@@ -218,7 +208,6 @@ def init_manifest(appid: str, appname: str) -> T.Manifest1:
             'custom_host': {},
             'official_host': {},
         },
-        'pypi': {},
         'launcher': {
             'target': '',
             'type': '',
@@ -271,7 +260,6 @@ def load_manifest(manifest_file: T.ManifestFile, finalize=False) -> T.Manifest1:
                     },
                 ),
             ),
-            'pypi': _update_pypi(data_i.get('pypi', []), manifest_dir),
             'launcher': _update_launcher(
                 data_i.get('launcher', {}), manifest_dir
             ),
@@ -295,10 +283,6 @@ def finalize_manifest(manifest: T.Manifest1) -> T.Manifest1:
     final_dict['assets'].clear()
     for k, v in manifest['assets'].items():
         final_dict['assets'][toabs(k)] = v
-    
-    final_dict['pypi'].clear()
-    for k, v in manifest['pypi'].items():
-        final_dict['pypi'][k] = toabs(v)
     
     for k in ('target', 'icon'):
         if v := final_dict['launcher'][k]:
@@ -498,48 +482,20 @@ def _update_assets(assets0: T.Assets0, start_directory: T.AbsPath) -> T.Assets1:
 def _update_dependencies(
     target_root: T.AbsPath, deps0: T.Dependencies0
 ) -> T.Dependencies1:
-    venv_index = target_venv.TargetVenvIndex(target_root)
+    _venv_index = target_venv.PackagesIndex(target_root)
     
-    def build_deps_from_name_ids(
-        name_ids: T.NameIdsGraph, holder: T.DepsMap
-    ) -> T.DepsMap:
-        for nid, children in name_ids.items():
-            if nid in holder:
-                continue
-            holder[nid] = venv_index.all_deps[nid]
-            build_deps_from_name_ids(children, holder)
-        return holder
+    def expand_packages(
+        key: t.Literal['custom_host', 'official_host']
+    ) -> T.ExpandedPackages:
+        names = target_venv.expand_package_names(
+            deps0[key], _venv_index.packages
+        )
+        return {k: _venv_index.packages[k] for k in names}
     
-    # custom_host
-    name_ids = target_venv.expand_dependencies(
-        deps0['custom_host'], venv_index.all_deps
-    )
-    deps = build_deps_from_name_ids(name_ids, {})
-    pkg_paths = target_venv.reverse_mapping(venv_index.root, deps)
-    
-    # official_host
-    name_ids = target_venv.expand_dependencies(
-        deps0['official_host'], venv_index.all_deps
-    )
-    deps = build_deps_from_name_ids(name_ids, {})
-    pkg_name_2_version = {k: v['version'] for k, v in deps.items()}
-    
-    out: T.Dependencies1 = {
-        'custom_host': pkg_paths,
-        'official_host': pkg_name_2_version,
+    return {
+        'custom_host': expand_packages('custom_host'),
+        'official_host': expand_packages('official_host'),
     }
-    return out
-
-
-def _update_pypi(pypi0: T.PyPI0, start_directory: T.AbsPath) -> T.PyPI1:
-    out = {}
-    for path in pypi0:
-        if os.path.isabs(path):
-            abspath = fs.normpath(path)
-        else:
-            abspath = fs.normpath(f'{start_directory}/{path}')
-        out[fs.filename(abspath)] = abspath
-    return out
 
 
 def _update_launcher(
@@ -636,7 +592,6 @@ def compare_manifests(new: T.Manifest1, old: T.Manifest1) -> T.ManifestDiff:
         'dependencies': _compare_dependencies(
             new['dependencies'], old['dependencies']
         ),
-        'pypi': _compare_pypi(new['pypi'], old['pypi']),
     }
 
 
@@ -682,28 +637,20 @@ def _compare_dependencies(
 ) -> T.DependenciesDiff:
     old_custom = old['custom_host']
     new_custom = new['custom_host']
+    
     for name0, v0 in old_custom.items():
-        if v1 := new_custom.get(name0):
-            name1 = name0
-            if v1['type'] != v0['type'] or v1['hash'] != v0['hash']:
-                # TODO: update?
-                yield 'delete', (name0, v0['hash'])
-                yield 'append', (name1, v1['hash'])
-            else:
-                yield 'ignore', (name0, v0['hash'])
-        else:
+        if name0 not in new_custom:
             yield 'delete', (name0, v0['hash'])
+            continue
+        
+        name1, v1 = name0, new_custom[name0]
+        if v1['type'] != v0['type'] or v1['hash'] != v0['hash']:
+            # TODO: update?
+            yield 'delete', (name0, v0['hash'])
+            yield 'append', (name1, v1['hash'])
+        else:
+            yield 'ignore', (name0, v0['hash'])
+    
     for name1, v1 in new_custom.items():
         if name1 not in old_custom:
             yield 'append', (name1, v1['hash'])
-
-
-def _compare_pypi(new: T.PyPI1, old: T.PyPI1) -> T.PyPIDiff:
-    for name0, _ in old.items():  # the old.values() are all None.
-        if name0 not in new:
-            yield 'delete', (name0, None)
-    for name1, path1 in new.items():  # path1 is a local abspath to a whl file.
-        if name1 not in old:
-            yield 'append', (name1, path1)
-        else:
-            yield 'ignore', (name1, path1)

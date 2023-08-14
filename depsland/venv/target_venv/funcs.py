@@ -6,16 +6,23 @@ from .index import T as T0
 
 # noinspection PyTypedDict
 class T(T0):
-    NameIdsGraph = t.Dict[T0.NameId, t.Tuple[T0.NameId, ...]]
-    PathToPackage = t.TypedDict('DependencyAsset', {
-        'type': t.Literal['bin', 'dir', 'file'],
-        'hash': str,
-        'source': t.TypedDict('Source', {
-            'name': T0.PkgName,
-            'version': T0.ExactVersion,
-            'url': str,
-        })
-    })
+    PackageRelations = t.Dict[T0.PackageName, t.Tuple[T0.PackageName, ...]]
+    # DELETE
+    PathToPackage = t.TypedDict(
+        'DependencyAsset',
+        {
+            'type': t.Literal['bin', 'dir', 'file'],
+            'hash': str,
+            'source': t.TypedDict(
+                'Source',
+                {
+                    'name': T0.PackageName,
+                    'version': T0.ExactVersion,
+                    'url': str,
+                },
+            ),
+        },
+    )
     '''
     example:
         lib/site-packages
@@ -35,28 +42,28 @@ class T(T0):
                     #   `PyYAML-6.0.1.dist-info`, then extract the `url` field \
                     #   from it.
     '''
-    PackagePaths = t.Dict[T0.TopName, PathToPackage]
+    PackagePaths = t.Dict[T0.PathName, PathToPackage]
 
 
-def expand_dependencies(
-    request_name_ids: t.Iterable[T.NameId], deps: T.DepsMap
-) -> T.NameIdsGraph:
+def expand_package_names(
+    request_names: t.Iterable[T.PackageName], packages: T.Packages0
+) -> T.PackageRelations:
     def recurse(
-        name_id: T.NameId, temp_holder: t.Set[T.NameId]
-    ) -> t.Iterator[T.NameId]:
-        for sub in deps[name_id]['dependencies']:
+        name: T.PackageName, temp_holder: t.Set[T.PackageName]
+    ) -> t.Iterator[T.PackageName]:
+        for sub in packages[name]['dependencies']:
             if sub not in temp_holder:
                 yield sub
                 temp_holder.add(sub)
                 yield from recurse(sub, temp_holder)
     
     out = {}
-    for name_id in request_name_ids:
-        out[name_id] = tuple(sorted(recurse(name_id, set())))
+    for name in request_names:
+        out[name] = tuple(sorted(recurse(name, set())))
     return out
 
 
-def reverse_mapping(root: str, deps: T.DepsMap) -> T.PackagePaths:
+def paths_2_package(root: str, deps: T.Packages1) -> T.PackagePaths:
     """
     from (e.g.):
         lk_utils:
@@ -87,14 +94,19 @@ def reverse_mapping(root: str, deps: T.DepsMap) -> T.PackagePaths:
         for top_name in v0['paths']:
             out[top_name] = {
                 'type': (
-                    'bin' if top_name.startswith('bin/') else
-                    'dir' if os.path.isdir(f'{root}/{top_name}') else 'file'
+                    'bin'
+                    if top_name.startswith('bin/')
+                    else (
+                        'dir'
+                        if os.path.isdir(f'{root}/{top_name}')
+                        else 'file'
+                    )
                 ),
                 'hash': v0['hash'],
                 'source': {
                     'name': pkg_name,
                     'version': v0['version'],
                     'url': v0['url'],
-                }
+                },
             }
     return out
