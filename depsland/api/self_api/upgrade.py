@@ -9,6 +9,7 @@ from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_client
 from ...utils import compare_version
+from ...utils import init_target_tree
 from ...utils import make_temp_dir
 
 
@@ -78,22 +79,6 @@ def _init_directories(
     dir0 = paths.system.depsland
     dir1 = paths.temp.self_upgrade + '/' + manifest1['version']
     assert dir0 is not None
-    
-    def init_target_tree(manifest: T.Manifest, root_dir: str = None) -> None:
-        if not root_dir:
-            root_dir = manifest['start_directory']
-        print('init making tree', root_dir)
-        paths_to_be_created = set()
-        for k, v in manifest['assets'].items():
-            abspath = fs.normpath(f'{root_dir}/{k}')
-            if v.type == 'dir':
-                paths_to_be_created.add(abspath)
-            else:
-                paths_to_be_created.add(fs.parent_path(abspath))
-        paths_to_be_created = sorted(paths_to_be_created)
-        print(':l', paths_to_be_created)
-        [os.makedirs(x, exist_ok=True) for x in paths_to_be_created]
-    
     init_target_tree(manifest1, dir1)  # complete tree of `dir1`
     manifest0['start_directory'] = dir0
     manifest1['start_directory'] = dir1

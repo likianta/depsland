@@ -10,12 +10,10 @@ from lk_utils import loads
 
 from ... import paths
 from ...manifest import T as T0
-from ...manifest import change_start_directory
-from ...manifest import compare_manifests
+from ...manifest import diff_manifest
 from ...manifest import dump_manifest
 from ...manifest import get_last_installed_version
 from ...manifest import init_manifest
-from ...manifest import init_target_tree
 from ...manifest import load_manifest
 from ...normalization import normalize_name
 from ...normalization import normalize_version_spec
@@ -25,6 +23,7 @@ from ...pypi import pypi
 from ...utils import bat_2_exe
 from ...utils import compare_version
 from ...utils import create_shortcut
+from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...utils.verspec import semver_parse
@@ -55,24 +54,24 @@ def install_local(
     manifest_file: T.Path, upgrade: bool = True, reinstall: bool = False
 ) -> None:
     m1 = load_manifest(manifest_file)
-
+    
     if exists(d := '{}/.oss'.format(m1['start_directory'])):
         custom_oss_root = d
     else:
         custom_oss_root = None
-
+    
     init_target_tree(
         m1,
         d := '{}/{}/{}'.format(paths.project.apps, m1['appid'], m1['version']),
     )
-    change_start_directory(m1, d)
-
+    m1.start_directory = d
+    
     appid, name = m1['appid'], m1['name']
     if x := _get_dir_to_last_installed_version(appid):
         m0 = load_manifest(f'{x}/manifest.pkl')
     else:
         m0 = init_manifest(appid, name)
-
+    
     install(m1, m0, upgrade, reinstall, custom_oss_root)
 
 
@@ -101,7 +100,7 @@ def install(
     else:  # TODO
         if reinstall:
             from .uninstall import main as _uninstall
-
+            
             # assert m0['version'] == m1['version']
             _uninstall(appid, manifest_old['version'])
             install_by_appid(appid, upgrade=False, reinstall=False)
@@ -119,7 +118,7 @@ def _install(
     custom_oss_root: T.Path = None,
 ) -> None:
     dir_m = make_temp_dir()
-
+    
     if custom_oss_root:
         print('use local oss server', ':v2')
         oss = get_oss_client(manifest_new['appid'], server='local')
@@ -127,15 +126,15 @@ def _install(
     else:
         oss = get_oss_client(manifest_new['appid'])
     print(oss.path)
-
+    
     _install_files(manifest_new, manifest_old, oss, dir_m)
     _install_custom_packages(manifest_new, manifest_old, oss)
     _install_dependencies(manifest_new, manifest_old)
     _create_launcher(manifest_new)
-
+    
     _save_history(manifest_new['appid'], manifest_new['version'])
     _save_manifest(manifest_new)
-
+    
     print(':rt', '[green]installation done[/]')
 
 
@@ -167,18 +166,15 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
         oss = get_oss_client(appid)
         oss.download(oss.path.manifest, x := f'{tmp_dir}/manifest.pkl')
         manifest_new = load_manifest(x)
-        change_start_directory(
-            manifest_new,
-            '{}/{}/{}'.format(
-                paths.project.apps,
-                manifest_new['appid'],
-                manifest_new['version'],
-            ),
+        manifest_new.start_directory = '{}/{}/{}'.format(
+            paths.project.apps,
+            manifest_new['appid'],
+            manifest_new['version'],
         )
         init_target_tree(manifest_new)
         fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
         return manifest_new
-
+    
     def find_old() -> t.Optional[T.Manifest]:
         if x := _get_dir_to_last_installed_version(appid):
             return load_manifest(f'{x}/manifest.pkl')
@@ -194,7 +190,7 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
                 ':r',
             )
             return None
-
+    
     new, old = download_new(), find_old()
     return new, old
 
@@ -211,14 +207,14 @@ def _install_files(
 ) -> None:
     root0 = manifest_old['start_directory']
     root1 = manifest_new['start_directory']
-
-    diff = compare_manifests(manifest_new, manifest_old)
-
+    
+    diff = diff_manifest(manifest_new, manifest_old)
+    
     def download_from_oss(i: str, m: str, o: str) -> None:
         print(fs.relpath(o, root1))
         oss.download(i, m)
         ziptool.extract_file(m, o, overwrite=True)
-
+    
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.
         assert not o.startswith(i + '/')
@@ -228,7 +224,7 @@ def _install_files(
             fs.copy_file(i, o, True)
         else:
             fs.copy_tree(i, o, True)
-
+    
     for action, relpath, (info0, info1) in diff['assets']:
         if action == 'ignore':
             path0 = fs.normpath(f'{root0}/{relpath}')
@@ -239,7 +235,7 @@ def _install_files(
             else:
                 print('turn ignore to append action')
                 action = 'append'
-
+        
         if action in ('append', 'update'):
             path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
             path_m = fs.normpath(
@@ -260,7 +256,7 @@ def _install_custom_packages(
     pypi0: T.ManifestPypi = manifest_old['pypi']
     pypi1: T.ManifestPypi = manifest_new['pypi']
     downloads_dir = paths.pypi.downloads
-
+    
     new_files = []
     for name in pypi1:
         if name not in pypi0:
@@ -270,11 +266,11 @@ def _install_custom_packages(
                     f'{oss.path.pypi}/{name}', dl := f'{downloads_dir}/{name}'
                 )
                 new_files.append(dl)
-
+    
     if pypi1 and not new_files:
         print('no newly custom packages downloaded')
         # print(':vl', pypi0, pypi1)
-
+    
     if new_files:
         pypi.add_to_indexes(*new_files, download_dependencies=True)
 
@@ -286,16 +282,16 @@ def _install_dependencies(
         dst_dir = paths.apps.make_packages(
             manifest_new['appid'], manifest_new['version'], clear_exists=True
         )
-
+    
     # else: make sure `dst_dir` does exist.
-
+    
     def is_same() -> bool:
         if manifest_old['version'] == '0.0.0':
             return False
         new_deps = set(manifest_new['dependencies'].items())
         old_deps = set(manifest_old['dependencies'].items())
         return new_deps == old_deps
-
+    
     if is_same():
         print('fast link venv from old version')
         src_dir = paths.apps.get_packages(
@@ -303,16 +299,15 @@ def _install_dependencies(
         )
         fs.make_link(src_dir, dst_dir, True)
         return
-
+    
     packages = {}
     for name, vspec in manifest_new['dependencies'].items():
         name = normalize_name(name)
         vspecs = tuple(normalize_version_spec(name, vspec))
         packages[name] = vspecs
-    if not packages:
-        return
+    if not packages: return
     print(':vl', packages)
-
+    
     name_ids = pypi.install(packages, include_dependencies=True)
     name_ids = tuple(dict.fromkeys(name_ids))  # deduplicate and remain sequence
     name_ids = _resolve_conflicting_name_ids(name_ids)
@@ -325,7 +320,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
     appname = manifest['name']
     version = manifest['version']
     launcher: T.LauncherInfo = manifest['launcher']
-
+    
     # bat command
     command = (
         dedent(r'''
@@ -335,10 +330,12 @@ def _create_launcher(manifest: T.Manifest) -> None:
     ''')
         .strip()
         .format(
-            py=r'"%DEPSLAND%\python\python.exe"', appid=appid, version=version
+            py=r'"%DEPSLAND%\python\python.exe"',
+            appid=appid,
+            version=version,
         )
     )
-
+    
     # bat to exe
     dumps(
         command,
@@ -352,7 +349,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
         show_console=launcher['show_console'],
         remove_bat=True,
     )
-
+    
     # create shortcuts
     if launcher['enable_cli']:
         fs.copy_file(exe_file, '{}/{}.exe'.format(paths.apps.bin, appid))

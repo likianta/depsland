@@ -4,12 +4,13 @@ from . import verspec
 from . import ziptool
 from .compat_py38 import remove_suffix
 from .compat_py38 import substitute_suffix
+from .fs import make_temp_dir
+from .fs import get_content_hash
+from .fs import get_file_hash
+from .fs import get_updated_time
+from .fs import init_target_tree
 from .gen_exe import bat_2_exe
 from .gen_exe import create_shortcut
-from .chore import make_temp_dir
-from .chore import get_content_hash
-from .chore import get_file_hash
-from .chore import get_updated_time
 from .mklink import mergelink
 from .mklink import mergelinks
 from .mklink import mklink
