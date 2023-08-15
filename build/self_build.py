@@ -17,7 +17,7 @@ from lk_utils import xpath
 if True:
     import os
     pypi_root = xpath('../pypi_self')
-    os.environ['DEPSLAND_PYPI_PATH'] = pypi_root
+    os.environ['DEPSLAND_PYPI_ROOT'] = pypi_root
 
 try:
     from depsland import normalization as norm

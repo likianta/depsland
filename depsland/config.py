@@ -54,9 +54,9 @@ class GlobalControls:  # TODO: no usage yet.
     ignore_old_manifest = False
 
 
-app_settings: T.AppSettings = loads(paths.conf.depsland)
+app_settings: T.AppSettings = loads(paths.config.depsland)
 controls = GlobalControls()
 auto_saved: T.AutoSaved = Conflore(
-    paths.conf.auto_saved,
+    paths.config.auto_saved,
     {'appstore': {'last_input': ''}},
 )

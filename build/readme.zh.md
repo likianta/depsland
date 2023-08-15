@@ -74,7 +74,7 @@ py build/build.py bat-2-exe build/exe/desktop.bat -u
     windows terminal (powershell):
 
     ```sh
-    $env:DEPSLAND_CONFIG_PATH="tests/conf"
+    $env:DEPSLAND_CONFIG_ROOT="tests/conf"
     py build/build.py full-build aliyun
     ```
 

@@ -25,7 +25,7 @@ def main(
         pypi_root (-p):
     """
     if pypi_root:
-        os.environ['DEPSLAND_PYPI_PATH'] = pypi_root
+        os.environ['DEPSLAND_PYPI_ROOT'] = pypi_root
     
     from depsland import pypi
     

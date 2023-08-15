@@ -1,9 +1,5 @@
 """
 ref: ~/docs/project-structure.md
-
-environment variables:
-    DEPSLAND_CONFIG_PATH: redirect config root.
-    DEPSLAND_PYPI_PATH: redirect pypi root.
 """
 import os
 import sys
@@ -16,7 +12,7 @@ from lk_utils import fs
 __all__ = [
     'apps',
     'build',
-    'conf',
+    'config',
     'oss',
     'project',
     'pypi',
@@ -24,11 +20,6 @@ __all__ = [
     'system',
     'temp',
 ]
-
-_env = {
-    'CONF_ROOT': os.getenv('DEPSLAND_CONFIG_PATH'),
-    'PYPI_ROOT': os.getenv('DEPSLAND_PYPI_PATH'),
-}
 
 
 class System:
@@ -177,14 +168,32 @@ class Build:
         self.launcher_ico = f'{self.root}/icon/launcher.ico'
 
 
-class Conf:
+class Config:
+    """
+    redirect config:
+        there are two ways to redirect config root:
+            1. the dynamic way:
+                by setting environment variable `DEPSLAND_CONFIG_ROOT`
+            2. the static way:
+                put a file '.redirect' in `config` folder. the file content is \
+                a relative or absolute path points to the new config root.
+        the dynamic is prior to the static.
+    """
     
     def __init__(self):
-        if x := _env['CONF_ROOT']:
-            print(':r', f'[yellow dim]relocate config root to {x}[/]')
-            self.root = x
+        if x := os.getenv('DEPSLAND_CONFIG_ROOT'):
+            self.root = fs.abspath(x)
+            print(':r', f'[yellow dim]relocate config root to {self.root}[/]')
+        elif exists(f'{project.root}/config/.redirect'):
+            with open(f'{project.root}/config/.redirect', 'r') as f:
+                x = f.read().strip()
+                if os.path.isabs(x):
+                    self.root = fs.normpath(x)
+                else:  # e.g. '../tests/config'
+                    self.root = fs.normpath(f'{project.root}/config/{x}')
+            print(':r', f'[yellow dim]relocate config root to {self.root}[/]')
         else:
-            self.root = f'{project.root}/conf'
+            self.root = f'{project.root}/config'
         
         self.auto_saved = f'{self.root}/auto_saved.pkl'
         self.depsland = f'{self.root}/depsland.yaml'
@@ -201,11 +210,14 @@ class Oss:  # note: this is a local dir that mimics OSS structure.
 
 
 class PyPI:
+    """
+    to redirect pypi root, use environment variable 'DEPSLAND_PYPI_ROOT'.
+    """
     
     def __init__(self):
-        if x := _env['PYPI_ROOT']:
-            print(':r', f'[yellow dim]relocate pypi root to {x}[/]')
-            self.root = x
+        if x := os.getenv('DEPSLAND_PYPI_ROOT'):
+            self.root = fs.abspath(x)
+            print(':r', f'[yellow dim]relocate pypi root to {self.root}[/]')
         else:
             self.root = f'{project.root}/pypi'
         
@@ -255,7 +267,7 @@ project = Project()
 
 apps = Apps()
 build = Build()
-conf = Conf()
+config = Config()
 oss = Oss()
 pypi = PyPI()
 python = Python()

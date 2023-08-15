@@ -1,8 +1,11 @@
 """
 py build/backup_project_resources.py
 """
-import os
-os.environ['DEPSLAND_CONFIG_PATH'] = ''
+if True:
+    import os
+    from lk_utils import xpath
+    # make sure config root is original value
+    os.environ['DEPSLAND_CONFIG_ROOT'] = xpath('../config')
 
 from os.path import exists
 

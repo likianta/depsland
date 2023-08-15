@@ -99,7 +99,7 @@ def full_build(oss_scheme: str, pypi_scheme='full',
                  f'{root_o}/.depsland_project')
     
     if oss_scheme == 'aliyun':
-        assert exists(custom := os.getenv('DEPSLAND_CONFIG_PATH'))
+        assert exists(custom := os.getenv('DEPSLAND_CONFIG_ROOT'))
         assert loads(f'{custom}/depsland.yaml')['oss']['server'] == 'aliyun'
         fs.copy_file(f'{custom}/depsland.yaml',
                      f'{root_o}/conf/depsland.yaml')

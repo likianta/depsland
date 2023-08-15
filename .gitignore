@@ -8,7 +8,8 @@
 /build/manifest.pkl
 /chore/custom_packages/*
 /chore/*
-/conf/auto_saved.pkl
+/config/.redirect
+/config/auto_saved.pkl
 /deleted/
 /deps/*
 /depsland/webui/assets/
