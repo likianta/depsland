@@ -398,7 +398,7 @@ def _get_manifest_path(target: str, ensure_exists=True) -> str:
         assert not os.path.isfile(target)
         if not os.path.exists(target):
             os.mkdir(target)
-        out = fs.normpath(f'{target}/pydepsland.json', True)
+        out = fs.normpath(f'{target}/manifest.json', True)
     if ensure_exists:
         assert exists(out)
     print(out, ':pvs')
