@@ -1,3 +1,6 @@
+"""
+FIXME: not ready on macos and linux.
+"""
 from sys import platform
 from textwrap import dedent
 

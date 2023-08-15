@@ -1,7 +1,7 @@
 {
     "appid": "depsland_appstore",
     "name": "Depsland Store",
-    "version": "0.5.3a0",
+    "version": "0.6.0b9",
     "assets": {
         "apps/.bin": "root",
         "apps/.venv": "root",
@@ -24,14 +24,22 @@
         "requirements.txt": "all"
     },
     "dependencies": {
-        "argsense": ">=0.5.2",
-        "lk-logger": ">=5.4.8",
-        "lk-utils": ">=2.5.3",
-        "oss2": "",
-        "pyyaml": "",
-        "qmlease": ">=3.1.0a15",
-        "rich": "",
-        "semver": ">=3.0.0dev4"
+        "custom_host": [
+            "argsense",
+            "conflore",
+            "fake_typing",
+            "lk_logger",
+            "lk_utils",
+            "qmlease"
+        ],
+        "official_host": [
+            "oss2",
+            "poetry",
+            "pyyaml",
+            "rich",
+            "semver",
+            "typing_extensions"
+        ]
     },
     "pypi": [
         "chore/custom_packages/qmlease-3.1.0a15-py3-none-any.whl"
@@ -43,5 +51,5 @@
         "desktop": true,
         "start_menu": false
     },
-    "depsland_version": "0.5.3"
+    "depsland_version": "0.6.0b9"
 }
