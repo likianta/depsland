@@ -198,7 +198,7 @@ def publish(target='.', full_upload=False) -> None:
 
 
 @cli.cmd()
-def install(appid: str, upgrade=True, reinstall=False) -> None:
+def install(appid: str, upgrade: bool = True, reinstall: bool = False) -> None:
     """
     install an app from oss by querying appid.
     

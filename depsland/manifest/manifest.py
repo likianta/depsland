@@ -162,6 +162,25 @@ class T:
     
     Action = t.Literal['append', 'update', 'delete', 'ignore']
     
+    # TODO
+    # AssetsDiff = t.Iterator[
+    #     t.Tuple[
+    #         Action,
+    #         str,  # basename of dir/file.
+    #         t.Tuple[
+    #             t.Union[
+    #                 # t.Tuple[AbsPath, AssetInfo],
+    #                 t.Tuple[RelPath, AssetInfo],
+    #                 t.Tuple[None, None],
+    #             ],
+    #             t.Union[
+    #                 # t.Tuple[AbsPath, AssetInfo],
+    #                 t.Tuple[RelPath, AssetInfo],
+    #                 t.Tuple[None, None],
+    #             ],
+    #         ],
+    #     ]
+    # ]
     AssetsDiff = t.Iterator[
         t.Tuple[
             Action,
@@ -178,8 +197,14 @@ class T:
             Action,
             PackageName,
             t.Tuple[
-                t.Optional[t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]]],
-                t.Optional[t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]]],
+                t.Union[
+                    t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]],
+                    t.Tuple[None, None],
+                ],
+                t.Union[
+                    t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]],
+                    t.Tuple[None, None],
+                ],
             ],
         ]
     ]
@@ -197,8 +222,8 @@ class T:
 # -----------------------------------------------------------------------------
 
 
-def init_manifest(appname: str, appid: str) -> 'Manifest':
-    return Manifest.init(appname, appid)
+def init_manifest(appid: str, appname: str) -> 'Manifest':
+    return Manifest.init(appid, appname)
 
 
 def load_manifest(file: T.AnyPath) -> t.Union[T.Manifest2, 'Manifest']:
@@ -215,7 +240,7 @@ def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
 def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
     return {
         'assets': _diff_assets(
-            new['assets'], old['assets']  # fmt:skip
+            new.model['assets'], old.model['assets']  # fmt:skip
         ),
         'dependencies': _diff_dependencies(
             new['dependencies'], old['dependencies']
@@ -349,11 +374,12 @@ class Manifest:
     # -------------------------------------------------------------------------
     
     @property
+    def model(self) -> T.Manifest1:
+        return self._manifest1
+    
+    @property
     def data(self) -> T.Manifest2:
         return self._manifest2
-    
-    def to_dict(self) -> T.Manifest1:
-        return self._manifest1
     
     @property
     def start_directory(self) -> T.AbsPath:

@@ -79,7 +79,7 @@ def init(
 def init_user_manifest(
     root: str, appname: str, appid: str, version: str = '0.1.0'
 ) -> T.UserManifest:
-    manifest = init_manifest(appid, appname).to_dict()
+    manifest = init_manifest(appid, appname).model
     
     manifest.pop('start_directory')  # noqa
     manifest['version'] = version
