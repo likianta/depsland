@@ -95,11 +95,20 @@ class PackagesIndex:
         return top_pkgs
     
     def _get_all_packages(self) -> T.Packages0:
-        def find_dist_info_dirs() -> t.Iterator[t.Tuple[str, str]]:
+        # noinspection PyUnusedLocal
+        def find_dist_info_dirs() -> t.Iterator[t.Tuple[str, str]]:  # DELETE?
             for d in fs.find_dirs(self.packages_root):
                 if d.name.endswith('.dist-info'):
                     yield d.name, d.path
         
+        def find_dist_info_dirs_2() -> t.Sequence[t.Tuple[str, str]]:  # sorted
+            out = []
+            for d in fs.find_dirs(self.packages_root):
+                if d.name.endswith('.dist-info'):
+                    out.append((d.name, d.path))
+            out.sort(key=lambda x: x[0])
+            return out
+            
         def get_custom_url(pkg_dir: str) -> t.Optional[str]:
             if fs.exists(f := f'{pkg_dir}/direct_url.json'):
                 data = loads(f)
@@ -108,7 +117,7 @@ class PackagesIndex:
         
         out: T.Packages0 = {}  # noqa
         
-        for dname, dpath in find_dist_info_dirs():
+        for dname, dpath in find_dist_info_dirs_2():
             name, ver = norm.split_dirname_of_dist_info(dname)
             pkg_id = f'{name}-{ver}'
             url = get_custom_url(dpath)
@@ -182,7 +191,7 @@ class PackagesIndex:
     ) -> t.Dict[T.PackageName, t.Set[T.PackageName]]:
         out = defaultdict(set)
         
-        for dname, dpath in self._find_dist_info_dirs(self.working_root):
+        for dname, dpath in self._find_dist_info_dirs():
             parent_name, _ = norm.split_dirname_of_dist_info(dname)
             assert parent_name in packages
             
@@ -205,9 +214,8 @@ class PackagesIndex:
     
     # -------------------------------------------------------------------------
     
-    @staticmethod
-    def _find_dist_info_dirs(root: str) -> t.Iterator[t.Tuple[str, str]]:
-        for d in fs.find_dirs(root):
+    def _find_dist_info_dirs(self) -> t.Iterator[t.Tuple[str, str]]:
+        for d in fs.find_dirs(self.packages_root):
             if d.name.endswith('.dist-info'):
                 yield d.name, d.path
     
