@@ -141,6 +141,7 @@ def init(
     app_name: str = '',
     force_create: bool = False,
     auto_find_requirements: bool = False,
+    **kwargs,
 ) -> None:
     """
     create a "manifest.json" file in project directory.
@@ -159,7 +160,9 @@ def init(
         force_create (-f):
     """
     manifest_file = _get_manifest_path(target, ensure_exists=False)
-    api.init(manifest_file, app_name, force_create, auto_find_requirements)
+    api.init(
+        manifest_file, app_name, force_create, auto_find_requirements, **kwargs
+    )
 
 
 @cli.cmd()
@@ -395,7 +398,7 @@ def _get_manifest_path(target: str, ensure_exists=True) -> str:
         assert not os.path.isfile(target)
         if not os.path.exists(target):
             os.mkdir(target)
-        out = fs.normpath(f'{target}/manifest.json', True)
+        out = fs.normpath(f'{target}/pydepsland.json', True)
     if ensure_exists:
         assert exists(out)
     print(out, ':pvs')

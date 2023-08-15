@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import typing as t
 from os.path import exists
 
@@ -14,10 +15,14 @@ from ...venv.target_venv import get_top_level_package_names
 
 class T(T0):
     # ref: T0.Launcher0
-    TargetInfo = t.TypedDict('TargetInfo', {
-        'name': str,
-        'type': t.Literal['executable', 'module', 'package']
-    })
+    TargetInfo = t.TypedDict(
+        'TargetInfo',
+        {
+            'target': str,  # relpath
+            'type': t.Literal['executable', 'module', 'package'],
+            'icon': str,  # relpath or empty
+        },
+    )
 
 
 def init(
@@ -25,34 +30,36 @@ def init(
     appname: str = '',
     force_create: bool = False,
     auto_find_requirements: bool = False,
+    **kwargs,
 ) -> None:
     # init/update parameters
-    filepath = fs.normpath(manifest_file, True)
-    if exists(filepath):
+    file_o = fs.normpath(manifest_file, True)
+    del manifest_file
+    if exists(file_o):
         if force_create:
-            os.remove(filepath)
+            os.remove(file_o)
         else:
-            print(':v3s', 'target already exists! (stop processing)', filepath)
+            print(':v3s', 'target already exists! (stop processing)', file_o)
             return
     
-    dirpath = fs.parent_path(filepath)
-    if not exists(dirpath):
-        os.mkdir(dirpath)
+    dir_o = fs.parent_path(file_o)
+    if not exists(dir_o):
+        os.mkdir(dir_o)
     
-    dirname = fs.dirname(dirpath)
+    dirname = fs.dirname(dir_o)
     if appname == '':
         appname = dirname.replace('-', ' ').replace('_', ' ').title()
     appid = appname.replace(' ', '_').replace('-', '_').lower()
     print(':v2f2', appname, appid)
     
-    manifest = init_user_manifest(dirpath, appname, appid)
+    manifest = init_user_manifest(dir_o, appname, appid, **kwargs)
     
     if auto_find_requirements:
         # TODO (2023-08-14): currently only support poetry environment.
         deps: t.List[str] = manifest['dependencies']['official_host']
-        if exists(f'{dirpath}/poetry.lock'):
-            deps.extend(get_top_level_package_names(dirpath))
-        elif exists(x := f'{dirpath}/requirements.txt'):
+        if exists(f'{dir_o}/poetry.lock'):
+            deps.extend(get_top_level_package_names(dir_o))
+        elif exists(x := f'{dir_o}/requirements.txt'):
             print(
                 ':v3',
                 'experimentally finding dependencies from requirements.txt',
@@ -64,44 +71,99 @@ def init(
         if deps:
             print(':l', deps)
     
-    dumps(manifest, x := f'{dirpath}/manifest.json')
-    print(f'see manifest file at \n\t"{x}"', ':tv2s')
+    dumps(manifest, file_o)
+    print(f'see manifest file at \n\t"{file_o}"', ':tv2s')
 
 
-def init_user_manifest(root: str, appname: str, appid: str) -> T.UserManifest:
-    manifest: T.Manifest = init_manifest(appid, appname)
+def init_user_manifest(
+    root: str, appname: str, appid: str, version: str = '0.1.0'
+) -> T.UserManifest:
+    manifest = init_manifest(appid, appname).to_dict()
+    
     manifest.pop('start_directory')  # noqa
-    manifest['version'] = '0.1.0'
+    manifest['version'] = version
+    manifest['dependencies'].pop('root')
     manifest['dependencies']['custom_host'] = []
     manifest['dependencies']['official_host'] = []
-    if x := _deduce_target(root, appid):
-        manifest['launcher']['target'] = x['name']
-        manifest['launcher']['type'] = x['type']
+    
+    if x := _deduce_target(root, appname, appid):
+        manifest['launcher']['target'] = x['target']
+        manifest['launcher']['type'] = x['type'] or 'module'  # as fallback
+        manifest['launcher']['icon'] = x['icon']
+        
+        manifest['assets'][rel_src_dir := fs.dirpath(x['target'])] = 'all'
+        if x['icon'] and not x['icon'].startswith(rel_src_dir):
+            manifest['assets'][x['icon']] = 'all'
     else:
         manifest['launcher']['type'] = 'module'  # as default
+    
     return manifest
 
 
-def _deduce_target(root: str, appid: str) -> t.Optional[T.TargetInfo]:
-    for possible_path in (
-        f'{root}/{appid}',
-        f'{root}/src/{appid}',
-        f'{root}/{appid}.py',
-        f'{root}/src/{appid}.py',
-        f'{root}/{appid}.exe',
-        f'{root}/{appid}',
-    ):
-        if exists(possible_path):
-            if os.path.isdir(possible_path):
-                if exists(f'{possible_path}/__init__.py') and exists(
-                    f'{possible_path}/__main__.py'
-                ):
-                    return {'name': appid, 'type': 'package'}
+def _deduce_target(
+    root: str, appname: str, appid: str
+) -> t.Optional[T.TargetInfo]:
+    def main() -> t.Optional[T.TargetInfo]:
+        for possible_path in (
+            f'{root}/{appid}',
+            f'{root}/src/{appid}',
+            f'{root}/{appid}.py',
+            f'{root}/src/{appid}.py',
+            f'{root}/{appid}.exe',
+            f'{root}/{appid}',
+            f'{root}/src',
+            f'{root}/src/main.py',
+            f'{root}/src/app.py',
+            f'{root}/src/run.py',
+        ):
+            if exists(possible_path):
+                # the fields 'target' and 'type' are required, while 'icon' is \
+                # optional.
+                if t := _possible_type(possible_path):
+                    # noinspection PyTypeChecker
+                    return {
+                        'target': fs.relpath(possible_path, root),  # required
+                        'type': t,  # required
+                        'icon': _possible_launcher_icon() or '',  # optional
+                    }
+        return None
+    
+    def _possible_launcher_icon() -> t.Optional[str]:
+        """
+        find possible launcher icon in follwing positions:
+            - {root}/launcher.{ext}
+            - {root}/build/launcher.{ext}
+        """
+        possible_paths = {
+            'darwin': ('launcher.icns', f'{appid}.icns', f'{appname}.icns'),
+            'linux': ('launcher.png', f'{appid}.png', f'{appname}.png'),
+            'win32': ('launcher.ico', f'{appid}.ico', f'{appname}.ico'),
+        }
+        # prefer the platform-related candidates, then the others for a \
+        # fallback (they can be someway inter-converted then).
+        for _, candidates in sorted(
+            possible_paths.items(),
+            key=lambda x: 0 if x[0] == sys.platform else 1,
+        ):
+            for x in candidates:
+                if exists(y := f'{root}/{x}'):
+                    return y
+                if exists(y := f'{root}/build/{x}'):
+                    return y
+        return None
+    
+    def _possible_type(path: str) -> t.Optional[str]:
+        if os.path.isdir(path):
+            if exists(f'{path}/__init__.py') and exists(f'{path}/__main__.py'):
+                return 'package'
             else:
-                if possible_path.endswith('.py'):
-                    return {'name': appid, 'type': 'module'}
-                elif possible_path.endswith('.exe'):
-                    return {'name': appid, 'type': 'executable'}
-                else:
-                    return {'name': appid, 'type': 'executable'}
-    return None
+                return None
+        else:
+            if path.endswith('.py'):
+                return 'module'
+            elif path.endswith('.exe'):
+                return 'executable'
+            else:
+                return 'executable'
+    
+    return main()

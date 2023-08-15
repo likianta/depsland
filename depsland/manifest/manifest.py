@@ -354,6 +354,9 @@ class Manifest:
     def data(self) -> T.Manifest2:
         return self._manifest2
     
+    def to_dict(self) -> T.Manifest1:
+        return self._manifest1
+    
     @property
     def start_directory(self) -> T.AbsPath:
         return self._start_directory
