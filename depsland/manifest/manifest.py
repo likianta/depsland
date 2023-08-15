@@ -24,8 +24,8 @@ class T:
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
     
-    ExpandedPackageNames = T0.PackageRelations
-    ExpandedPackages = T0.Packages
+    FlattenPackageNames = T0.PackageRelations
+    FlattenPackages = T0.Packages
     # PackageId = T0.PackageId
     PackageInfo = T0.PackageInfo
     PackageName = T0.PackageName
@@ -69,15 +69,15 @@ class T:
         'Dependencies1',
         {  # a flatten list
             'root': AbsPath,
-            'custom_host': ExpandedPackages,
-            'official_host': ExpandedPackages,
+            'custom_host': FlattenPackages,
+            'official_host': FlattenPackages,
         },
     )
     Dependencies2 = t.TypedDict(
         'Dependencies2',
         {  # all path related items are abspaths.
-            'custom_host': ExpandedPackages,
-            'official_host': ExpandedPackages,
+            'custom_host': FlattenPackages,
+            'official_host': FlattenPackages,
         },
     )
     
@@ -566,7 +566,7 @@ class Manifest:
         
         def expand_packages(
             key: t.Literal['custom_host', 'official_host']
-        ) -> T.ExpandedPackages:
+        ) -> T.FlattenPackages:
             names = target_venv.expand_package_names(
                 map(norm.normalize_name, deps0[key]),
                 indexer.packages

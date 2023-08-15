@@ -85,10 +85,10 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
     )
     
     dump_manifest(manifest, f'{dist_dir}/manifest.pkl')
-    #   note: this is dumped to `dist_dir`, it is different from another usage
-    #   in `_upload : the bottom lines`. the latter is dumped to
-    #   `appinfo['dst_dir']`, which is pointed to `paths.apps/{appid}/{version}
-    #   /manifest.pkl`.
+    #   note: this is dumped to `dist_dir`, it is different from another \
+    #   usage in `_upload : the bottom lines`. the latter is dumped to \
+    #   `appinfo['dst_dir']`, which is pointed to `paths.apps/{appid} \
+    #   /{version}/manifest.pkl`.
     
     print(
         'publish done. see result at "dist/{}-{}"'.format(

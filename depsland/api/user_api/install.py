@@ -31,10 +31,11 @@ from ...utils.verspec import semver_parse
 
 class T:
     AssetInfo = T0.AssetInfo
-    CustomDependencies = T0.Dependencies
+    FlattenPackages = T0.FlattenPackages
     LauncherInfo = T0.Launcher
     Manifest = T0.Manifest
     Oss = T1.Oss
+    PackageInfo = T0.PackageInfo
     Path = str
 
 
@@ -83,8 +84,10 @@ def install(
     custom_oss_root: T.Path = None,
 ) -> None:
     """
-    in incremental worker, that installs all stuff to the target directory of \
+    download and install assets from oss & pypi to the target directory of \
     `manifest_new`.
+    this is an incremental operation. we download only the different parts and \
+    try to reuse existed stuff as much as possible.
     usually the target directory is `<depsland.paths.apps>/<appid>/<version>`.
     """
     appid = manifest_new['appid']
@@ -133,7 +136,7 @@ def _install(
     print(oss.path)
     
     _install_files(manifest_new, manifest_old, oss, dir_m)
-    _install_custom_packages(manifest_new, manifest_old, oss)
+    _install_custom_packages(manifest_new, manifest_old, oss, dir_m)
     _install_dependencies(manifest_new, manifest_old)
     _create_launcher(manifest_new)
     
@@ -255,30 +258,33 @@ def _install_files(
 
 
 def _install_custom_packages(
-    manifest_new: T.Manifest, manifest_old: T.Manifest, oss: T.Oss
+    manifest_new: T.Manifest,
+    manifest_old: T.Manifest,
+    oss: T.Oss,
+    temp_dir: T.Path,
 ) -> None:
-    deps0: T.CustomDependencies = manifest_old['dependencies']['custom_host']
-    deps1: T.CustomDependencies = manifest_new['dependencies']['custom_host']
-    downloads_dir = paths.pypi.downloads
+    # _root0 = manifest_old['start_directory']
+    # _root1 = manifest_new['start_directory']
     
-    diff = diff_manifest(manifest_new, manifest_old)
+    # pkgs0: T.FlattenPackages = manifest_old['dependencies']['custom_host']
+    # pkgs1: T.FlattenPackages = manifest_new['dependencies']['custom_host']
     
-    new_files = []
-    for name in deps1:
-        if name not in deps0:
-            if not os.path.exists(f'{downloads_dir}/{name}'):
-                print('download package (whl) from oss', name)
-                oss.download(
-                    f'{oss.path.pypi}/{name}', dl := f'{downloads_dir}/{name}'
-                )
-                new_files.append(dl)
+    def main() -> None:
+        downloads_dir: str = paths.pypi.downloads
+        diff = diff_manifest(manifest_new, manifest_old)
+        info0: T.PackageInfo
+        info1: T.PackageInfo
+        for action, pkg_name, (info0, info1) in diff['dependencies']:
+            if action in ('append', 'update'):
+                if not pypi.exists(info1['package_id']):
+                    print('download custom package from oss', pkg_name)
+                    oss.download(
+                        f'{oss.path.pypi}/{info1["package_id"]}',
+                        f'{downloads_dir}/{info1["package_id"]}.zip',
+                    )
+                    # TODO: extract, then update `pypi`s index.
     
-    if deps1 and not new_files:
-        print('no newly custom packages downloaded')
-        # print(':vl', pypi0, pypi1)
-    
-    if new_files:
-        pypi.add_to_indexes(*new_files, download_dependencies=True)
+    main()
 
 
 def _install_dependencies(
