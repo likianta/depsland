@@ -6,7 +6,7 @@
         "apps/.bin": "root",
         "apps/.venv": "root",
         "build/icon/launcher.ico": "all",
-        "conf/depsland.yaml": "all",
+        "config/depsland.yaml": "all",
         "deps": "root",
         "depsland": "all",
         "dist": "root",

@@ -49,11 +49,11 @@ def copy_build_dir() -> None:
     compress_dir(f'{dir_m}/build', f'{dir_o}/build.zip', True)
 
 
-def copy_conf_dir() -> None:
-    # make sure conf/depsland.yaml has configured local oss.
-    assert loads(f'{dir_i}/conf/depsland.yaml')['oss']['server'] == 'local'
-    fs.copy_file(f'{dir_i}/conf/depsland.yaml', f'{dir_m}/depsland.yaml')
-    compress_dir(f'{dir_m}/depsland.yaml', f'{dir_o}/conf.zip', True)
+def copy_config_dir() -> None:
+    # make sure config/depsland.yaml has configured local oss.
+    assert loads(f'{dir_i}/config/depsland.yaml')['oss']['server'] == 'local'
+    fs.copy_file(f'{dir_i}/config/depsland.yaml', f'{dir_m}/depsland.yaml')
+    compress_dir(f'{dir_m}/depsland.yaml', f'{dir_o}/config.zip', True)
 
 
 def copy_sidework_dir() -> None:
@@ -66,5 +66,5 @@ def copy_sidework_dir() -> None:
 
 
 copy_build_dir()
-copy_conf_dir()
+copy_config_dir()
 copy_sidework_dir()

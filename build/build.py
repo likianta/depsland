@@ -33,7 +33,7 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     args:
         oss_scheme: 'aliyun' or 'local'
             aliyun: you need to prepare a file named -
-            'conf/depsland_for_dev.yaml', which contains aliyun oss access -
+            'config/depsland_for_dev.yaml', which contains aliyun oss access -
             & secret keys.
     kwargs:
         pypi_scheme (-p): 'full', 'least', 'none'
@@ -58,7 +58,7 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/build/exe')
-    os.mkdir(f'{root_o}/conf')
+    os.mkdir(f'{root_o}/config')
     # os.mkdir(f'{root_o}/depsland')
     os.mkdir(f'{root_o}/dist')
     os.mkdir(f'{root_o}/docs')
@@ -102,11 +102,11 @@ def full_build(oss_scheme: str, pypi_scheme='full',
         assert exists(custom := os.getenv('DEPSLAND_CONFIG_ROOT'))
         assert loads(f'{custom}/depsland.yaml')['oss']['server'] == 'aliyun'
         fs.copy_file(f'{custom}/depsland.yaml',
-                     f'{root_o}/conf/depsland.yaml')
+                     f'{root_o}/config/depsland.yaml')
     else:
-        assert loads(f'{root_i}/conf/depsland.yaml')['oss']['server'] == 'local'
-        fs.copy_file(f'{root_i}/conf/depsland.yaml',
-                     f'{root_o}/conf/depsland.yaml')
+        assert loads(f'{root_i}/config/depsland.yaml')['oss']['server'] == 'local'
+        fs.copy_file(f'{root_i}/config/depsland.yaml',
+                     f'{root_o}/config/depsland.yaml')
     
     if add_python_path:
         if pypi_scheme == 'full':

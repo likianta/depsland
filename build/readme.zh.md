@@ -74,7 +74,7 @@ py build/build.py bat-2-exe build/exe/desktop.bat -u
     windows terminal (powershell):
 
     ```sh
-    $env:DEPSLAND_CONFIG_ROOT="tests/conf"
+    $env:DEPSLAND_CONFIG_ROOT="tests/config"
     py build/build.py full-build aliyun
     ```
 
@@ -112,7 +112,7 @@ py build/build.py bat-2-exe build/exe/desktop.bat -u
 
 2. 检查 `depsland/chore/*`
 
-    如果自上次发布以来, 你的 build, conf, sidework 等目录有文件更新, 则需要重新生成 `depsland/chore`.
+    如果自上次发布以来, 你的 build, config, sidework 等目录有文件更新, 则需要重新生成 `depsland/chore`.
     
     命令:
         

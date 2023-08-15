@@ -56,7 +56,7 @@ class Project:
         
         self.apps = f'{self.root}/apps'
         self.build = f'{self.root}/build'
-        self.conf = f'{self.root}/conf'
+        self.config = f'{self.root}/config'
         self.depsland = f'{self.root}/depsland'
         self.dist = f'{self.root}/dist'
         self.manifest_json = f'{self.root}/manifest.json'
@@ -77,7 +77,7 @@ class Project:
         os.mkdir(f'{root}/apps/.bin')
         os.mkdir(f'{root}/apps/.venv')
         # os.mkdir(f'{root}/build')  # later
-        # os.mkdir(f'{root}/conf')  # later
+        # os.mkdir(f'{root}/config')  # later
         os.mkdir(f'{root}/dist')
         os.mkdir(f'{root}/oss')
         os.mkdir(f'{root}/oss/apps')
@@ -100,7 +100,7 @@ class Project:
         # unzip files
         from .utils.ziptool import extract_file
         extract_file(fs.xpath('chore/build.zip'), f'{root}/build')
-        extract_file(fs.xpath('chore/conf.zip'), f'{root}/conf')
+        extract_file(fs.xpath('chore/config.zip'), f'{root}/config')
         extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
         
         # init files
