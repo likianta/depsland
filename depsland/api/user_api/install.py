@@ -31,9 +31,9 @@ from ...utils.verspec import semver_parse
 
 class T:
     AssetInfo = T0.AssetInfo
+    CustomDependencies = T0.Dependencies
     LauncherInfo = T0.Launcher
     Manifest = T0.Manifest
-    ManifestPypi = t.Dict[str, None]
     Oss = T1.Oss
     Path = str
 
@@ -82,12 +82,17 @@ def install(
     reinstall: bool = False,
     custom_oss_root: T.Path = None,
 ) -> None:
+    """
+    in incremental worker, that installs all stuff to the target directory of \
+    `manifest_new`.
+    usually the target directory is `<depsland.paths.apps>/<appid>/<version>`.
+    """
     appid = manifest_new['appid']
     if _check_version(manifest_new, manifest_old):
         if upgrade:
             # install first, then uninstall old.
             _install(manifest_new, manifest_old, custom_oss_root)
-            # TODO: for safety consideration, below is temporarily disabled,
+            # TODO: for safety consideration, below is temporarily disabled, \
             #   wait for a future version that supports complete auto-upgrade.
             # _uninstall(appid, m0['version'],
             #            remove_venv=False, remove_bin=False)
@@ -210,11 +215,6 @@ def _install_files(
     
     diff = diff_manifest(manifest_new, manifest_old)
     
-    def download_from_oss(i: str, m: str, o: str) -> None:
-        print(fs.relpath(o, root1))
-        oss.download(i, m)
-        ziptool.extract_file(m, o, overwrite=True)
-    
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.
         assert not o.startswith(i + '/')
@@ -224,6 +224,11 @@ def _install_files(
             fs.copy_file(i, o, True)
         else:
             fs.copy_tree(i, o, True)
+    
+    def download_from_oss(i: str, m: str, o: str) -> None:
+        print(fs.relpath(o, root1))
+        oss.download(i, m)
+        ziptool.extract_file(m, o, overwrite=True)
     
     for action, relpath, (info0, info1) in diff['assets']:
         if action == 'ignore':
@@ -238,9 +243,8 @@ def _install_files(
         
         if action in ('append', 'update'):
             path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
-            path_m = fs.normpath(
+            path_m = fs.normpath(  # an intermediate file (zip)
                 '{}/{}.{}'.format(
-                    # an intermediate file (zip)
                     temp_dir,
                     info1.uid,
                     'zip' if info1.type == 'dir' else 'fzip',
@@ -253,13 +257,15 @@ def _install_files(
 def _install_custom_packages(
     manifest_new: T.Manifest, manifest_old: T.Manifest, oss: T.Oss
 ) -> None:
-    pypi0: T.ManifestPypi = manifest_old['pypi']
-    pypi1: T.ManifestPypi = manifest_new['pypi']
+    deps0: T.CustomDependencies = manifest_old['dependencies']['custom_host']
+    deps1: T.CustomDependencies = manifest_new['dependencies']['custom_host']
     downloads_dir = paths.pypi.downloads
     
+    diff = diff_manifest(manifest_new, manifest_old)
+    
     new_files = []
-    for name in pypi1:
-        if name not in pypi0:
+    for name in deps1:
+        if name not in deps0:
             if not os.path.exists(f'{downloads_dir}/{name}'):
                 print('download package (whl) from oss', name)
                 oss.download(
@@ -267,7 +273,7 @@ def _install_custom_packages(
                 )
                 new_files.append(dl)
     
-    if pypi1 and not new_files:
+    if deps1 and not new_files:
         print('no newly custom packages downloaded')
         # print(':vl', pypi0, pypi1)
     
