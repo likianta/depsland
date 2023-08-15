@@ -79,7 +79,7 @@ class LocalPyPI(Index):
             ):
                 filename = fs.filename(filepath)
                 # extract name and version info from filename.
-                name, version = norm.filename_2_name_version(filename)
+                name, version = norm.split_filename_of_package(filename)
                 name_id = f'{name}-{version}'
                 print(':v', 'downloaded package via pip', name_id)
                 
@@ -190,7 +190,7 @@ class LocalPyPI(Index):
             _download_dependencies=True,
     ) -> T.NameId:
         filename = fs.filename(downloaded_package_file)
-        name, version = norm.filename_2_name_version(filename)
+        name, version = norm.split_filename_of_package(filename)
         name_id = f'{name}-{version}'
         
         path0 = fs.normpath(downloaded_package_file, True)

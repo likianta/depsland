@@ -1,6 +1,14 @@
-if True:
+if 1:
     import lk_logger
     lk_logger.setup(quiet=True, show_varnames=True)
+    
+if 2:
+    # check python version, if lower than 3.11, import typing_extensions
+    import sys
+    if sys.version_info < (3, 11):
+        import typing
+        from typing_extensions import Self
+        setattr(typing, 'Self', Self)
 
 from . import api
 from . import config
@@ -18,5 +26,5 @@ from .pypi import pypi
 from .pypi import rebuild_index as rebuild_pypi_index
 from .utils import bat_2_exe
 
-__version__ = '0.6.0b3'
-__date__ = '2023-07-27'
+__version__ = '0.6.0b9'
+__date__ = '2023-08-15'

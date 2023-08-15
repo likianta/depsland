@@ -1,6 +1,6 @@
 """
 init `~/pypi` folder based on depsland's own requirements.
-requirements:
+this script requires:
     - argsense
     - lk-utils
 """
@@ -81,7 +81,7 @@ def _download(dir_o: str) -> None:
 def _install(dir_i: str, dir_o: str) -> None:
     for f in fs.find_files(dir_i):
         if f.name.startswith('.'): continue
-        name, ver = norm.filename_2_name_version(f.name)
+        name, ver = norm.split_filename_of_package(f.name)
         d = f'{dir_o}/{name}/{ver}'
         if exists(d): continue
         fs.make_dirs(d)

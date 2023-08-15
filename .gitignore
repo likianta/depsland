@@ -31,6 +31,7 @@
 __pycache__/
 dist/
 *.bak.*
+*.bak[0123456789].*
 .DS_Store
 
 !/apps/*/.gitkeep

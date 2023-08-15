@@ -29,7 +29,7 @@ print(
 
 
 @cli.cmd()
-def version() -> None:
+def about() -> None:
     """
     show basic information about depsland.
     """
@@ -63,11 +63,11 @@ def version() -> None:
 
 @cli.cmd()
 def self_location() -> None:
-    print(fs.xpath('..', True))
+    print('[green b u]{}[/]'.format(fs.xpath('..', True)), ':s1r')
 
 
 @cli.cmd()
-def welcome(confirm_close=False) -> None:
+def welcome(confirm_close: bool = False) -> None:
     """
     show welcome message and exit.
     """
@@ -82,15 +82,15 @@ def welcome(confirm_close=False) -> None:
         ':r1',
         Markdown(
             dedent('''
-        # Depsland
-        
-        Depsland is a python apps manager for non-developer users.
-        
-        - Version: {}
-        - Release date: {}
-        - Author: {}
-        - Official site: {}
-    ''').format(
+            # DEPSLAND
+            
+            Depsland is a python apps manager for non-developer users.
+            
+            - Version: {}
+            - Release date: {}
+            - Author: {}
+            - Official site: {}
+            ''').format(
                 __version__,
                 __date__,
                 'Likianta (likianta@foxmail.com)',
@@ -122,7 +122,8 @@ def launch_gui(_app_token: str = None) -> None:
         )
         return
     if _app_token and os.path.isfile(_app_token):
-        _app_token = fs.normpath(_app_token, True)
+        _app_token = fs.abspath(_app_token)
+    
     # import os
     # os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
@@ -136,7 +137,11 @@ def launch_gui(_app_token: str = None) -> None:
 
 @cli.cmd()
 def init(
-    target='.', app_name='', overwrite=False, auto_find_requirements=False
+    target: str = '.',
+    app_name: str = '',
+    force_create: bool = False,
+    auto_find_requirements: bool = False,
+    **kwargs,
 ) -> None:
     """
     create a "manifest.json" file in project directory.
@@ -147,23 +152,25 @@ def init(
             if the directory doesn't exist, will create it.
             if it is the manifest file path, we recommend you using -
             'manifest.json' as its file name.
-            if target already exists, will stop and return. you can pass `-w` -
-            to force overwrite.
+            if target already exists, will stop and return. you can pass `-f` -
+            to overwrite.
             be noticed the file extension can only be '.json'.
         appname (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
-        overwrite (-w):
+        force_create (-f):
     """
     manifest_file = _get_manifest_path(target, ensure_exists=False)
-    api.init(manifest_file, app_name, overwrite, auto_find_requirements)
+    api.init(
+        manifest_file, app_name, force_create, auto_find_requirements, **kwargs
+    )
 
 
 @cli.cmd()
-def build(target='.', gen_exe=True) -> None:
+def build(target: str = '.', gen_exe: bool = True) -> None:
     """
     build your python application based on manifest file.
     the build result is stored in "dist" directory.
-    [dim]if "dist" not exists, it will be auto created.[/]
+    [dim i](if "dist" not exists, it will be auto created.)[/]
     
     kwargs:
         target (-t):
@@ -349,10 +356,9 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
 
 
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
-    from .manifest import change_start_directory
-    from .manifest import init_target_tree
     from .manifest import load_manifest
     from .oss import get_oss_client
+    from .utils import init_target_tree
     from .utils import make_temp_dir
     
     temp_dir = make_temp_dir()
@@ -360,11 +366,8 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     oss = get_oss_client(appid)
     oss.download(oss.path.manifest, x := f'{temp_dir}/manifest.pkl')
     manifest_new = load_manifest(x)
-    change_start_directory(
-        manifest_new,
-        '{}/{}/{}'.format(
-            paths.project.apps, manifest_new['appid'], manifest_new['version']
-        ),
+    manifest_new.start_directory = '{}/{}/{}'.format(
+        paths.project.apps, manifest_new['appid'], manifest_new['version']
     )
     init_target_tree(manifest_new)
     fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
@@ -395,10 +398,10 @@ def _get_manifest_path(target: str, ensure_exists=True) -> str:
         assert not os.path.isfile(target)
         if not os.path.exists(target):
             os.mkdir(target)
-        out = fs.normpath(f'{target}/manifest.json', True)
+        out = fs.normpath(f'{target}/pydepsland.json', True)
     if ensure_exists:
         assert exists(out)
-    print(out, ':pv')
+    print(out, ':pvs')
     return out
 
 

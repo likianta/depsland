@@ -10,7 +10,7 @@ class T:
     Name = str  # e.g. 'lk_logger', 'pyside6', etc.
     Version = str  # a semantic version.
     #   it could be empty, means 'any version'.
-    #   there is no such thing like: '0.0.0', 'latest', 'any', '*', because
+    #   there is no such thing like: '0.0.0', 'latest', 'any', '*', because \
     #   they are not semantic versions.
     VersionSpec = t.ForwardRef('VersionSpec')
 
@@ -46,38 +46,20 @@ class VersionSpec:
         return f'{self.name}{self.comparator}{self.version}'
 
 
-def filename_2_name_version(filename: str) -> t.Tuple[T.Name, T.Version]:
-    """
-    examples:
-        'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl' -> ('pyyaml', '6.0')
-        'lk-logger-4.0.7.tar.gz' -> ('lk_logger', '4.0.7')
-        'aliyun-python-sdk-2.2.0.zip' -> ('aliyun_python_sdk', '2.2.0')
-    """
-    for ext in ('.whl', '.tar.gz', '.zip'):
-        if filename.endswith(ext):
-            filename = filename.removesuffix(ext)
-            break
-    else:
-        raise ValueError(filename)
-    # assert ext
-    if ext == '.whl':
-        a, b, _ = filename.split('-', 2)
-    else:
-        a, b = filename.rsplit('-', 1)
-    a = normalize_name(a)
-    return a, b
-
-
 def normalize_name(raw_name: T.RawName) -> T.Name:
     """
-    e.g. 'lk-logger' -> 'lk_logger'
-         'PySide6' -> 'pyside6'
+    examples:
+        'PySide6'           -> 'pyside6'
+        'PyYAML'            -> 'pyyaml'
+        'lk-logger'         -> 'lk_logger'
+        'jaraco.classes'    -> 'jaraco_classes'
+            https://pypi.tuna.tsinghua.edu.cn/simple/jaraco-classes/
     """
-    return raw_name.strip().lower().replace('-', '_')
+    return raw_name.strip().lower().replace('-', '_').replace('.', '_')
 
 
 def normalize_version_spec(
-        name: T.Name, raw_verspec: T.RawVersionSpec
+    name: T.Name, raw_verspec: T.RawVersionSpec
 ) -> t.Iterator[T.VersionSpec]:
     """
     e.g.
@@ -120,27 +102,53 @@ def normalize_version_spec(
         
         else:
             assert comp in ('>=', '==')
-            assert (m := re.search(r'((?:\d\.)+)\*$', ver)), \
-                'the asterisk symbol could only be in minor or patch position'
+            assert (
+                m := re.search(r'((?:\d\.)+)\*$', ver)
+            ), 'the asterisk symbol could only be in minor or patch position'
             minor_or_patch = 'minor' if m.group(1).count('.') == 1 else 'patch'
             bottom_ver = semver_parse(ver)
-            bumped_ver = (bottom_ver.bump_major() if minor_or_patch == 'minor'
-                          else bottom_ver.bump_minor())
-            yield VersionSpec(
-                name=name,
-                version=str(bottom_ver),
-                comparator='>='
+            bumped_ver = (
+                bottom_ver.bump_major()
+                if minor_or_patch == 'minor'
+                else bottom_ver.bump_minor()
             )
             yield VersionSpec(
-                name=name,
-                version=str(bumped_ver),
-                comparator='<'
+                name=name, version=str(bottom_ver), comparator='>='
+            )
+            yield VersionSpec(
+                name=name, version=str(bumped_ver), comparator='<'
             )
 
 
-# DELETE: no usage
-def split_name_and_verspec(text: str) -> t.Tuple[T.RawName, T.RawVersionSpec]:
-    text = text.replace(' ', '')
-    pattern = re.compile(r'([-\w]+)(.*)')
-    raw_name, verspec = pattern.match(text).groups()
-    return raw_name, verspec
+def split_dirname_of_dist_info(dirname: str) -> t.Tuple[T.Name, T.Version]:
+    # e.g. 'qmlease-3.1.0a15.dist-info' -> ('qmlease', '3.1.0a15')
+    from .utils.compat_py38 import remove_suffix
+    
+    dirname = remove_suffix(dirname, '.dist-info')
+    name, version = dirname.split('-')
+    name = normalize_name(name)
+    return name, version
+
+
+def split_filename_of_package(filename: str) -> t.Tuple[T.Name, T.Version]:
+    """
+    examples:
+        'PyYAML-6.0-cp310-cp310-macosx_10_9_x86_64.whl' -> ('pyyaml', '6.0')
+        'lk-logger-4.0.7.tar.gz' -> ('lk_logger', '4.0.7')
+        'aliyun-python-sdk-2.2.0.zip' -> ('aliyun_python_sdk', '2.2.0')
+    """
+    from .utils.compat_py38 import remove_suffix
+    
+    for ext in ('.whl', '.tar.gz', '.zip'):
+        if filename.endswith(ext):
+            filename = remove_suffix(filename, ext)
+            break
+    else:
+        raise ValueError(filename)
+    # assert ext
+    if ext == '.whl':
+        a, b, _ = filename.split('-', 2)
+    else:
+        a, b = filename.rsplit('-', 1)
+    a = normalize_name(a)
+    return a, b

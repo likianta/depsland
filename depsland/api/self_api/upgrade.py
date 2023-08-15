@@ -5,12 +5,11 @@ from lk_utils import fs
 
 from ... import paths
 from ...manifest import T as T0
-from ...manifest import change_start_directory
-from ...manifest import init_target_tree
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_client
 from ...utils import compare_version
+from ...utils import init_target_tree
 from ...utils import make_temp_dir
 
 
@@ -81,8 +80,8 @@ def _init_directories(
     dir1 = paths.temp.self_upgrade + '/' + manifest1['version']
     assert dir0 is not None
     init_target_tree(manifest1, dir1)  # complete tree of `dir1`
-    change_start_directory(manifest0, dir0)
-    change_start_directory(manifest1, dir1)
+    manifest0['start_directory'] = dir0
+    manifest1['start_directory'] = dir1
     return dir0, dir1
 
 

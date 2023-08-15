@@ -202,9 +202,8 @@ def _analyse_metadata_1(
             if `is_resolved` is True, result is a `tuple[name, version]`.
             if `is_resolved` is False, result is a `tuple[name, raw_verspec]`.
     """
-    pattern = re.compile(r'([-\w]+)(?: \(([^)]+)\))?')
-    
-    #                      ^~~~~~~1      ^~~~~~2
+    pattern = re.compile(r'([-\w]+)(?: \(([^)]+)\))?')  # fmt:skip
+    #                      ^~~~~~~1      ^~~~~~2        # fmt:skip
     #   e.g. 'argsense (>=0.4.2,<0.5.0)' -> ('argsense', '>=0.4.2,<0.5.0')
     
     def walk() -> t.Iterator[str]:

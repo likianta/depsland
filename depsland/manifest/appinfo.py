@@ -6,10 +6,11 @@ from lk_utils import fs
 from lk_utils import loads
 from lk_utils.read_and_write import ropen
 
-from .. import paths
+from .manifest import Manifest
 from .manifest import T as T0
 from .manifest import dump_manifest
 from .manifest import load_manifest
+from .. import paths
 
 
 class T:
@@ -25,11 +26,12 @@ class T:
         },
     )
     Launcher = T0.Launcher1
-    Manifest = T0.Manifest1
+    Manifest = Manifest
     
     # extra ports for external use
     AssetInfo = T0.AssetInfo
     Scheme = T0.Scheme1
+    UserManifest = T0.Manifest0
 
 
 def get_app_info(manifest_file: str) -> T.Appinfo:
@@ -44,11 +46,11 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
         ),
         'history': [],
     }
-
+    
     if not exists(d := data_o['dst_dir']):
         os.makedirs(d)
     dump_manifest(data_i, f'{d}/manifest.json')
-
+    
     # update history
     history_file = paths.apps.get_distribution_history(data_o['appid'])
     if exists(history_file):
@@ -61,21 +63,19 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
             ':v2',
         )
         # dumps('', history_file, ftype='plain')
-
+    
     return data_o
 
 
 def get_last_installed_version(appid: str) -> t.Optional[str]:
     file = paths.apps.get_installation_history(appid)
-    if not exists(file):
-        return None
+    if not exists(file): return None
     return _quick_read_line(file)
 
 
 def get_last_released_version(appid: str) -> t.Optional[str]:
     file = paths.apps.get_distribution_history(appid)
-    if not exists(file):
-        return None
+    if not exists(file): return None
     return _quick_read_line(file)
 
 
@@ -85,17 +85,17 @@ def parse_script_info(
     appid = manifest['appid']
     version = manifest['version']
     launcher: T.Launcher = manifest['launcher']
-
+    
     src_path = launcher['target']
     dst_path = '{}{}'.format(
         f'{paths.project.apps}/{appid}/{version}',
         fs.relpath(src_path, manifest['start_directory']),
     )
-
+    
     command: t.Tuple[str, ...]
     args: t.Tuple[str, ...]
     kwargs: t.Dict[str, t.Any]
-
+    
     if launcher['type'] == 'executable':
         command = (dst_path,)
     elif launcher['type'] == 'module':
@@ -106,7 +106,7 @@ def parse_script_info(
         raise ValueError(launcher)
     args = tuple(launcher['args'])
     kwargs = launcher['kwargs']
-
+    
     return command, args, kwargs
 
 

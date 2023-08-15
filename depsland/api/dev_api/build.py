@@ -12,13 +12,13 @@ from ...manifest import load_manifest
 from ...utils import bat_2_exe
 
 
-def build(manifest_file: str, gen_exe=True) -> None:
+def build(manifest_file: str, gen_exe: bool = True) -> None:
     """
     what does this function do:
         - create a dist folder
         - create a launcher (exe or bat)
     """
-    manifest = load_manifest(manifest_file, finalize=True)
+    manifest = load_manifest(manifest_file)
     
     dir_i = manifest['start_directory']
     dir_o = '{}/dist/{}-{}'.format(
@@ -36,7 +36,7 @@ def build(manifest_file: str, gen_exe=True) -> None:
             bat_2_exe(
                 f'{dir_o}/launcher.bat',
                 f'{dir_o}/launcher.exe',
-                icon=manifest['launcher']['icon'],
+                icon=manifest['launcher']['icon'],  # noqa
                 remove_bat=True
             )
     else:

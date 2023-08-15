@@ -1,0 +1,28 @@
+{
+    "appid": "hello_world",
+    "name": "Hello World",
+    "version": "0.3.8",
+    "assets": {
+        "src": "all"
+    },
+    "dependencies": {
+        "custom_host": [],
+        "official_host": [
+            "lk_utils",
+            "pyside6",
+            "qmlease"
+        ]
+    },
+    "launcher": {
+        "target": "src/main.py",
+        "type": "module",
+        "icon": "",
+        "args": [],
+        "kwargs": {},
+        "enable_cli": false,
+        "add_to_desktop": true,
+        "add_to_start_menu": false,
+        "show_console": true
+    },
+    "depsland_version": "0.6.0b9"
+}
