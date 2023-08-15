@@ -48,10 +48,14 @@ class VersionSpec:
 
 def normalize_name(raw_name: T.RawName) -> T.Name:
     """
-    e.g. 'lk-logger' -> 'lk_logger'
-         'PySide6' -> 'pyside6'
+    examples:
+        'PySide6'           -> 'pyside6'
+        'PyYAML'            -> 'pyyaml'
+        'lk-logger'         -> 'lk_logger'
+        'jaraco.classes'    -> 'jaraco_classes'
+            https://pypi.tuna.tsinghua.edu.cn/simple/jaraco-classes/
     """
-    return raw_name.strip().lower().replace('-', '_')
+    return raw_name.strip().lower().replace('-', '_').replace('.', '_')
 
 
 def normalize_version_spec(
@@ -119,6 +123,7 @@ def normalize_version_spec(
 def split_dirname_of_dist_info(dirname: str) -> t.Tuple[T.Name, T.Version]:
     # e.g. 'qmlease-3.1.0a15.dist-info' -> ('qmlease', '3.1.0a15')
     from .utils.compat_py38 import remove_suffix
+    
     dirname = remove_suffix(dirname, '.dist-info')
     name, version = dirname.split('-')
     name = normalize_name(name)

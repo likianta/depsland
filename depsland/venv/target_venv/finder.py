@@ -52,7 +52,7 @@ def get_top_package_names(
             if file.endswith('pyproject.toml')
             else 'requirements.txt'
         )
-    if format == 'pyproject':
+    if format == 'pyproject.toml':
         yield from _get_top_names_by_poetry_2(working_root=fs.parent(file))
     else:
         yield from _get_top_names_from_requirements_file(file)

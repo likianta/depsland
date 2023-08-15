@@ -53,11 +53,20 @@ def init(
     manifest = init_user_manifest(dir_o, appname, appid, **kwargs)
     
     if auto_find_requirements:
+        def finetune_name(name: str) -> str:
+            return name.replace('_', '-')
+        
         deps: t.List[str] = manifest['dependencies']['official_host']
         if exists(f := f'{dir_o}/requirements.txt'):
-            deps.extend(sorted(get_top_package_names(f, 'requirements.txt')))
+            deps.extend(map(
+                finetune_name,
+                sorted(get_top_package_names(f, 'requirements.txt')),
+            ))
         elif exists(f := f'{dir_o}/pyproject.toml'):
-            deps.extend(sorted(get_top_package_names(f, 'pyproject.toml')))
+            deps.extend(map(
+                finetune_name,
+                sorted(get_top_package_names(f, 'pyproject.toml')),
+            ))
         else:
             print(':v3', 'no dependency detected')
         if deps:

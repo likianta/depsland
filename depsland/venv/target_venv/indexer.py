@@ -50,7 +50,7 @@ def index_all_package_references(
 ) -> t.Iterator[t.Tuple[T.PackageName, t.Tuple[str, T.Path]]]:
     """this is for quick indexing that is faster than `index_packages`"""
     for dname, dpath in _find_dist_info_dirs(library_root):
-        pkg_name, _ = norm.split_dirname_of_dist_info(dname)[0]
+        pkg_name, _ = norm.split_dirname_of_dist_info(dname)
         yield pkg_name, (dname, dpath)
 
 
@@ -87,7 +87,15 @@ class LibraryIndexer:
         
         # self._all_pgk_refs = dict(quick_index_packages(self.library_root))
         self.packages = self.index_packages()
-        # print(self.packages_root, self.packages, ':lv')
+        # print(self.library_root, self.packages, ':lv')
+        print(
+            {
+                (i, k): len(v['dependencies'])
+                for i, (k, v) in enumerate(sorted(self.packages.items()), 1)
+            },
+            ':lv',
+        )
+        print(':t', 'indexing packages done', len(self.packages))
     
     # -------------------------------------------------------------------------
     
@@ -102,19 +110,23 @@ class LibraryIndexer:
         top_pkgs: T.Packages = {}
         for top_name in top_pkg_names:
             print(':i2', top_name)
-            assert top_name in all_pgk_refs
-            assert top_name not in top_pkgs, (
-                (
-                    'currently we do not support one package with multiple '
-                    'versions installed in same environment'
-                ),
-                (top_name, top_pkgs[top_name]['version']),
-            )
+            # assert top_name in all_pgk_refs
+            # assert top_name not in top_pkgs, (
+            #     (
+            #         'currently we do not support one package with multiple '
+            #         'versions installed in same environment'
+            #     ),
+            #     (top_name, top_pkgs[top_name]['version']),
+            # )
             dname, dpath = all_pgk_refs[top_name]  # dist-info dir
             top_pkgs[top_name] = self._create_package_info(dname, dpath)
         self._fill_dependencies(top_pkgs)
+        # print(top_pkgs, ':lv')
         
+        before = len(top_pkgs)
         out = self._flatten_packages(top_pkgs, all_pgk_refs)
+        after = len(out)
+        print('flatten packages done', f'count: {before} -> {after}', ':v2')
         return out
     
     @staticmethod
@@ -125,17 +137,22 @@ class LibraryIndexer:
         
         record_file = f'{dpath}/RECORD'
         assert fs.exists(record_file)
-        path_names = set(_analyze_records(record_file))
+        path_names = set(analyze_records(record_file))
         
         return {
             'package_id': pkg_id,
             'version': ver,
             'url': url or '',  # noqa
-            'paths': sorted(path_names),
+            'paths': tuple(sorted(path_names)),
             'dependencies': [],
         }
     
     def _fill_dependencies(self, packages: T.Packages) -> None:
+        """
+        notice: this method only works for top-level packages. i.e. it is not \
+        available for `self._flatten_packages`.
+        """
+        
         def get_secondary_packages() -> (
             t.Iterator[t.Tuple[T.PackageName, T.PackageName]]
         ):
@@ -146,16 +163,17 @@ class LibraryIndexer:
                 ('--directory', self.working_root),
             )
             
-            re_lv0 = re.compile(r'^\w+')
+            re_lv0 = re.compile(r'^[-\w]+')
             re_lv1 = re.compile(r'^├── ([-\w]+)')
             
-            parent_name = ''
+            name0 = ''
             for line in content.splitlines():
                 if m := re_lv0.match(line):
-                    parent_name = m.group()
+                    name0 = norm.normalize_name(m.group())
                 elif m := re_lv1.match(line):
-                    assert parent_name
-                    yield parent_name, m.group(1)
+                    assert name0
+                    name1 = norm.normalize_name(m.group(1))
+                    yield name0, name1
         
         for pkg_name, dep_name in get_secondary_packages():
             # assert parent_name in top_packages
@@ -163,14 +181,17 @@ class LibraryIndexer:
     
     @staticmethod
     def _fill_dependencies_2(  # not used.
-        packages: T.Packages, all_package_references: T.PackageReferences
+        packages: T.Packages,
+        # base_packages: T.Packages,
+        all_package_references: T.PackageReferences,
     ) -> None:
         """another implementation, based on metadata."""
         for name, v in packages.items():
+            # print(':i2', 'filling an indirect package', name)
             _, dpath = all_package_references[name]
             metadata_file = f'{dpath}/METADATA'
             if fs.exists(metadata_file):
-                for dep_name, verspecs in _analyze_metadata(metadata_file):
+                for dep_name, verspecs in analyze_metadata(metadata_file):
                     v['dependencies'].append(dep_name)
                     # TODO: check the `verspecs` match existed info in \
                     #   `packages` or info in `all_package_references`.
@@ -191,7 +212,7 @@ class LibraryIndexer:
         nested: T.Packages = packages
         flatten: T.Packages = packages.copy()
         
-        def recurse(unindexed_names: t.Set[T.PackageName]) -> None:
+        def recurse(unindexed_names: t.Sequence[T.PackageName]) -> None:
             """
             result: the nonlocal `flatten` gets updated.
             """
@@ -200,9 +221,9 @@ class LibraryIndexer:
                 dname, dpath = all_package_references[name]
                 info = self._create_package_info(dname, dpath)
                 temp[name] = info
-            self._fill_dependencies(temp)
+            self._fill_dependencies_2(temp, all_package_references)
             flatten.update(temp)
-            if x := set(collect_unindexed_names(temp, flatten)):
+            if x := tuple(collect_unindexed_names(temp, flatten)):
                 recurse(x)
         
         def collect_unindexed_names(
@@ -213,7 +234,7 @@ class LibraryIndexer:
                     if name not in flatten:
                         yield name
         
-        if x := set(collect_unindexed_names(nested, flatten)):
+        if x := tuple(collect_unindexed_names(nested, flatten)):
             recurse(x)
         return flatten
 
@@ -221,13 +242,27 @@ class LibraryIndexer:
 # -----------------------------------------------------------------------------
 
 
-def _analyze_metadata(
+def analyze_metadata(
     metadata_file: str,
 ) -> t.Iterator[t.Tuple[T.PackageName, t.Iterator[verspec.VersionSpec]]]:
-    pattern = re.compile(r'([-\w]+)(?: \(([^)]+)\))?')  # fmt:skip
-    
-    #                      ^~~~~~~1      ^~~~~~2        # fmt:skip
-    #   e.g. 'argsense (>=0.4.2,<0.5.0)' -> ('argsense', '>=0.4.2,<0.5.0')
+    """
+    all possibile line cases:
+        Requires-Dist: colorama; os_name == "nt"
+        Requires-Dist: distlib<1,>=0.3.7
+        Requires-Dist: jsonschema-specifications>=2023.03.6
+        Requires-Dist: jaraco.classes
+        Requires-Dist: jaraco.packages ; extra == "testing"
+        Requires-Dist: mdurl~=0.1 ; extra == "ext"
+        Requires-Dist: packaging >= 19.0
+        Requires-Dist: poetry (>=1.5.0,<2.0.0)
+        Requires-Dist: poetry-core (>=1.6.0,<2.0.0)
+        Requires-Dist: pyproject_hooks
+        Requires-Dist: SecretStorage (>=3.2) ; sys_platform == "linux"
+        Requires-Dist: sphinx ~= 4.0 ; extra == "docs"
+        Requires-Dist: sphinx-autodoc-typehints!=1.23.4,>=1.23; extra == 'docs'
+    """
+    pattern = re.compile(r'^([-.\w]+)(?: \(([^)]+)\)|([^;]+))?')
+    #                       ^1------^      ^2----^   ^3----^
     
     def walk() -> t.Iterator[str]:
         with ropen(metadata_file) as f:
@@ -245,23 +280,27 @@ def _analyze_metadata(
                     if not line.startswith(head):
                         break
                 # assert flag == 1
-                yield norm.normalize_name(line[len(head) :])
+                # print(':v', line.rstrip())
+                yield line[len(head) :].strip()
     
     for line in walk():
         if ';' in line:
             # e.g. 'Requires-Dist: toml; extra == "ext"'
             continue
         try:
-            raw_name, raw_verspec = pattern.match(line).groups()
+            m = pattern.match(line)
+            raw_name = m.group(1)
+            raw_verspec = m.group(2) or m.group(3) or ''
+            raw_verspec = raw_verspec.replace(' ', '')
         except AttributeError as e:
             print(':lv4', metadata_file, line, e)
             raise e
         name = norm.normalize_name(raw_name)
-        verspecs = norm.normalize_version_spec(name, raw_verspec or '')
+        verspecs = norm.normalize_version_spec(name, raw_verspec)
         yield name, verspecs
 
 
-def _analyze_records(record_file: str) -> t.Iterator[T.PathName]:
+def analyze_records(record_file: str) -> t.Iterator[T.PathName]:
     records = loads(record_file, 'plain').splitlines()
     for line in records:
         path = fs.normpath(line.rsplit(',', 2)[0])
@@ -273,7 +312,7 @@ def _analyze_records(record_file: str) -> t.Iterator[T.PathName]:
             # assert path.lstrip('./').startswith('bin/')
             # raise Exception(path)
         elif path.startswith('bin/'):
-            name = 'bin/{}'.format(path[4:].split('/', 1)[0])
+            path_name = 'bin/{}'.format(path[4:].split('/', 1)[0])
         else:
-            name = path.split('/', 1)[0]
-        yield name
+            path_name = path.split('/', 1)[0]
+        yield path_name

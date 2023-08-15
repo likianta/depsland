@@ -51,6 +51,19 @@ def expand_package_names(
     def recurse(
         name: T.PackageName, temp_holder: t.Set[T.PackageName]
     ) -> t.Iterator[T.PackageName]:
+        if name not in packages:
+            print(':v4l', sorted(packages.keys()), name)
+            print(':v4', '''
+                the requested package name "{}" is not found in the index (see
+                above list).
+                possible reasons:
+                    - the name was misspelled.
+                    - the name was not registered in the
+                        "pyproject.toml"/"requirements.txt".
+                    - if you were using "pyproject.toml", you may put the
+                        package in `dev` section.
+            '''.format(name))
+            raise KeyError(name)
         for dep_name in packages[name]['dependencies']:
             if dep_name not in temp_holder:
                 yield dep_name
