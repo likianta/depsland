@@ -21,8 +21,10 @@ from ...utils import ziptool
 
 
 class T:
+    AssetInfo = T0.AssetInfo
     Manifest = T0.Manifest
     Oss = T1.Oss
+    PackageInfo = T0.PackageInfo
     Path = str
     Scheme = T0.Scheme
 
@@ -53,10 +55,10 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
         dist_dir=app_info['dst_dir'],
     )
     
-    if oss.type_ in ('local', 'fake'):
+    if oss.type in ('local', 'fake'):
         print('pack oss assets to dist dir')
         dir_o = f'{dist_dir}/.oss'
-        fs.make_dirs(dir_o)
+        # fs.make_dirs(dir_o)
         fs.make_link(oss.path.root, dir_o, True)
         
         print('generate setup script to dist dir')
@@ -70,7 +72,7 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
         bat_2_exe(
             bat_file,
             # icon=paths.build.launcher_ico,
-            icon=manifest['launcher']['icon'] or paths.build.launcher_ico,
+            icon=manifest['launcher']['icon'] or paths.build.launcher_icon,
             show_console=False,
             remove_bat=True,
         )
@@ -122,6 +124,8 @@ def _upload(
     # -------------------------------------------------------------------------
     
     def upload_assets() -> None:
+        info0: T.AssetInfo
+        info1: T.AssetInfo
         for action, relpath, (info0, info1) in diff['assets']:
             if action == 'ignore':
                 continue
@@ -148,34 +152,41 @@ def _upload(
     
     def upload_dependencies() -> None:
         # `depsland.manifest.manifest._compare_dependencies`
-        for (
-            action,
-            pkg_name,
-            ((pkg_id_0, assets0), (pkg_id_1, assets1)),
-        ) in diff['dependencies']:
+        info0: T.PackageInfo
+        info1: T.PackageInfo
+        for action, pkg_name, (info0, info1) in diff['dependencies']:
             if action == 'ignore':
                 continue
             
             _print_change(
-                f'{action = }, {pkg_name = }', pkg_id_0, pkg_id_1, True
+                f'{action = }, {pkg_name = }',
+                info0 and info0['version'],
+                info1 and info1['version'],
+                True,
             )
             
             if action in ('append', 'update'):
-                zipped_file = _compress_dependency(pkg_id_1, assets1)
+                zipped_file = _compress_dependency(
+                    info1['package_id'], info1['paths']
+                )
             else:
                 zipped_file = None
             
             if action == 'append':
-                oss.upload(zipped_file, f'{oss.path.pypi}/{pkg_id_1}')
+                oss.upload(
+                    zipped_file, f'{oss.path.pypi}/{info1["package_id"]}'
+                )
             elif action == 'update':
-                oss.delete(f'{oss.path.pypi}/{pkg_id_0}')
-                oss.upload(zipped_file, f'{oss.path.pypi}/{pkg_id_1}')
+                oss.delete(f'{oss.path.pypi}/{info0["package_id"]}')
+                oss.upload(
+                    zipped_file, f'{oss.path.pypi}/{info1["package_id"]}'
+                )
             else:  # action == 'delete'
-                oss.delete(f'{oss.path.pypi}/{pkg_id_0}')
+                oss.delete(f'{oss.path.pypi}/{info0["package_id"]}')
     
     # -------------------------------------------------------------------------
     
-    def _compress_asset(info, relpath: str) -> T.Path:
+    def _compress_asset(info: T.AssetInfo, relpath: str) -> T.Path:
         source_path = fs.normpath(f'{root_new}/{relpath}')
         temp_path = _copy_assets(source_path, temp_dir, info.scheme)
         zipped_file = _compress(

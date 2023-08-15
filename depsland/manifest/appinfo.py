@@ -31,6 +31,7 @@ class T:
     # extra ports for external use
     AssetInfo = T0.AssetInfo
     Dependencies = T0.Dependencies2
+    PackageInfo = T0.PackageInfo
     Scheme = T0.Scheme1
     UserManifest = T0.Manifest0
 

@@ -9,7 +9,7 @@ from ._base import BaseOssPath
 
 
 class AliyunOss(BaseOss):
-    type_ = 'aliyun'
+    type = 'aliyun'
     
     def __init__(self, appid: str,
                  access_key: str, access_secret: str,

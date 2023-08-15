@@ -162,25 +162,6 @@ class T:
     
     Action = t.Literal['append', 'update', 'delete', 'ignore']
     
-    # TODO
-    # AssetsDiff = t.Iterator[
-    #     t.Tuple[
-    #         Action,
-    #         str,  # basename of dir/file.
-    #         t.Tuple[
-    #             t.Union[
-    #                 # t.Tuple[AbsPath, AssetInfo],
-    #                 t.Tuple[RelPath, AssetInfo],
-    #                 t.Tuple[None, None],
-    #             ],
-    #             t.Union[
-    #                 # t.Tuple[AbsPath, AssetInfo],
-    #                 t.Tuple[RelPath, AssetInfo],
-    #                 t.Tuple[None, None],
-    #             ],
-    #         ],
-    #     ]
-    # ]
     AssetsDiff = t.Iterator[
         t.Tuple[
             Action,
@@ -197,14 +178,8 @@ class T:
             Action,
             PackageName,
             t.Tuple[
-                t.Union[
-                    t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]],
-                    t.Tuple[None, None],
-                ],
-                t.Union[
-                    t.Tuple[T0.PackageId, t.Tuple[AbsPath, ...]],
-                    t.Tuple[None, None],
-                ],
+                t.Optional[PackageInfo],
+                t.Optional[PackageInfo],
             ],
         ]
     ]
@@ -719,32 +694,20 @@ def _diff_dependencies(
     old_custom = old['custom_host']
     new_custom = new['custom_host']
     
-    v0: T.PackageInfo
-    v1: T.PackageInfo
+    info0: T.PackageInfo
+    info1: T.PackageInfo
     
-    for name0, v0 in old_custom.items():
+    for name0, info0 in old_custom.items():
         if name0 not in new_custom:
-            yield 'delete', name0, (
-                (v0['package_id'], v0['paths']),
-                (None, None),
-            )
+            yield 'delete', name0, (info0, None)
             continue
         
-        name1, v1 = name0, new_custom[name0]
-        if v1['package_id'] != v0['package_id']:
-            yield 'update', name1, (
-                (v0['package_id'], v0['paths']),
-                (v1['package_id'], v1['paths']),
-            )
+        name1, info1 = name0, new_custom[name0]
+        if info1['package_id'] != info0['package_id']:
+            yield 'update', name1, (info0, info1)
         else:
-            yield 'ignore', name0, (
-                (v0['package_id'], v0['paths']),
-                (v1['package_id'], v1['paths']),
-            )
+            yield 'ignore', name0, (info0, info1)
     
-    for name1, v1 in new_custom.items():
+    for name1, info1 in new_custom.items():
         if name1 not in old_custom:
-            yield 'append', name1, (
-                (None, None),
-                (v1['package_id'], v1['paths']),
-            )
+            yield 'append', name1, (None, info1)

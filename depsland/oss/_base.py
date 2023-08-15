@@ -1,5 +1,5 @@
 class BaseOss:
-    type_ = 'base'
+    type = 'base'
     path: 'BaseOssPath'
     
     def upload(self, file: str, link: str) -> None:
