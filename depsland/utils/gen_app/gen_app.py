@@ -48,7 +48,7 @@ def gen_app(manifest: T.Manifest, path_o: str, icon: str = None) -> str:
     
     # add icon
     if not icon:
-        icon = paths.build.launcher_icns
+        icon = paths.build.launcher_icon
     assert icon.endswith('.icns')
     fs.copy_file(icon, f'{dir_o}/Contents/Resources/{manifest["appid"]}.icns')
     

@@ -1,5 +1,5 @@
 oss:
-  # depsland.oss.get_oss
+  # `depsland.oss.get_oss`
   server: local
   config:
     symlinks: false

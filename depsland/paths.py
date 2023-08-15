@@ -164,8 +164,14 @@ class Build:
     def __init__(self):
         self.root = f'{project.root}/build'
         self.icon = f'{self.root}/icon'
-        self.launcher_icns = f'{self.root}/icon/launcher.icns'
-        self.launcher_ico = f'{self.root}/icon/launcher.ico'
+        if sys.platform == 'darwin':
+            self.launcher_icon = f'{self.root}/icon/launcher.icns'
+        elif sys.platform == 'linux':
+            self.launcher_icon = f'{self.root}/icon/launcher.png'
+        elif sys.platform == 'win32':
+            self.launcher_icon = f'{self.root}/icon/launcher.ico'
+        else:
+            raise Exception(sys.platform)
 
 
 class Config:
