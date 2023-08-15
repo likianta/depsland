@@ -1,16 +1,14 @@
 import os
-import re
 import sys
 import typing as t
 from os.path import exists
 
 from lk_utils import dumps
 from lk_utils import fs
-from lk_utils import loads
 
 from ...manifest import T as T0
 from ...manifest import init_manifest
-from ...venv.target_venv import get_top_level_package_names
+from ...venv.target_venv import get_top_package_names
 
 
 class T(T0):
@@ -55,19 +53,13 @@ def init(
     manifest = init_user_manifest(dir_o, appname, appid, **kwargs)
     
     if auto_find_requirements:
-        # TODO (2023-08-14): currently only support poetry environment.
         deps: t.List[str] = manifest['dependencies']['official_host']
-        if exists(f'{dir_o}/poetry.lock'):
-            deps.extend(get_top_level_package_names(dir_o))
-        elif exists(x := f'{dir_o}/requirements.txt'):
-            print(
-                ':v3',
-                'experimentally finding dependencies from requirements.txt',
-            )
-            re_name = re.compile(r'^ *([-\w]+)', re.M)
-            deps.extend(re_name.findall(loads(x)))
+        if exists(f := f'{dir_o}/requirements.txt'):
+            deps.extend(sorted(get_top_package_names(f, 'requirements.txt')))
+        elif exists(f := f'{dir_o}/pyproject.toml'):
+            deps.extend(sorted(get_top_package_names(f, 'pyproject.toml')))
         else:
-            print(':v3', 'no dependency found')
+            print(':v3', 'no dependency detected')
         if deps:
             print(':l', deps)
     

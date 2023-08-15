@@ -1,7 +1,7 @@
 import os.path
 import typing as t
 
-from .index import T as T0
+from .indexer import T as T0
 
 
 # noinspection PyTypedDict
@@ -46,16 +46,16 @@ class T(T0):
 
 
 def expand_package_names(
-    request_names: t.Iterable[T.PackageName], packages: T.Packages0
+    request_names: t.Iterable[T.PackageName], packages: T.Packages
 ) -> T.PackageRelations:
     def recurse(
         name: T.PackageName, temp_holder: t.Set[T.PackageName]
     ) -> t.Iterator[T.PackageName]:
-        for sub in packages[name]['dependencies']:
-            if sub not in temp_holder:
-                yield sub
-                temp_holder.add(sub)
-                yield from recurse(sub, temp_holder)
+        for dep_name in packages[name]['dependencies']:
+            if dep_name not in temp_holder:
+                yield dep_name
+                temp_holder.add(dep_name)
+                yield from recurse(dep_name, temp_holder)
     
     out = {}
     for name in request_names:
@@ -63,7 +63,8 @@ def expand_package_names(
     return out
 
 
-def paths_2_package(root: str, deps: T.Packages1) -> T.PackagePaths:
+# DELETE
+def paths_2_package(root: str, deps: T.Packages) -> T.PackagePaths:
     """
     from (e.g.):
         lk_utils:

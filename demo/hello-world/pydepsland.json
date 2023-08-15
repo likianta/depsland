@@ -1,13 +1,17 @@
 {
     "appid": "hello_world",
     "name": "Hello World",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "assets": {
         "src": "all"
     },
     "dependencies": {
         "custom_host": [],
-        "official_host": []
+        "official_host": [
+            "lk_utils",
+            "pyside6",
+            "qmlease"
+        ]
     },
     "launcher": {
         "target": "src/main.py",

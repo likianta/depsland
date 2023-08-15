@@ -16,7 +16,7 @@ from ..utils import get_file_hash
 from ..utils import get_updated_time
 from ..venv import target_venv
 from ..venv.target_venv import T as T0
-from ..venv.target_venv import get_venv_packages_root
+from ..venv.target_venv import get_library_root
 
 
 # noinspection PyTypedDict
@@ -25,12 +25,12 @@ class T:
     #   the RelPath is relative to manifest file's location.
     
     ExpandedPackageNames = T0.PackageRelations
-    ExpandedPackages = T0.Packages0
+    ExpandedPackages = T0.Packages
     # PackageId = T0.PackageId
-    PackageInfo = T0.PackageInfo0
+    PackageInfo = T0.PackageInfo
     PackageName = T0.PackageName
     PackageVersion = T0.ExactVersion
-    Packages = T0.Packages0
+    Packages = T0.Packages
     
     Scheme0 = t.Literal[
         'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs',  # fmt:skip
@@ -234,7 +234,7 @@ class Manifest:
     _manifest1: T.Manifest1
     _manifest2: T.Manifest2
     _start_directory: T.AbsPath
-    _venv_packages_root: T.AbsPath
+    _venv_library_root: T.AbsPath
     
     @classmethod
     def init(cls, appid: str, appname: str) -> 'Manifest':
@@ -244,7 +244,7 @@ class Manifest:
         
         out._file = ''
         out._start_directory = ''
-        out._venv_packages_root = ''
+        out._venv_library_root = ''
         
         out._manifest2 = out._manifest1 = {
             'appid': appid,
@@ -282,9 +282,7 @@ class Manifest:
         
         self._file = fs.abspath(file)
         self._start_directory = fs.parent_path(self._file)
-        self._venv_packages_root = get_venv_packages_root(
-            self._start_directory
-        )
+        self._venv_library_root = get_library_root(self._start_directory)
         
         data0: t.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
@@ -380,7 +378,7 @@ class Manifest:
     
     def _finalize_mainfest(self) -> None:
         dir0 = self._start_directory
-        dir1 = self._venv_packages_root
+        dir1 = self._venv_library_root
         
         data1: T.Manifest1 = self._manifest1
         data2: T.Manifest2 = {
@@ -563,19 +561,19 @@ class Manifest:
     def _update_dependencies(
         working_root: T.AbsPath, deps0: T.Dependencies0
     ) -> T.Dependencies1:
-        _venv_index = target_venv.PackagesIndex(working_root)
+        indexer = target_venv.LibraryIndexer(working_root)
         
         def expand_packages(
             key: t.Literal['custom_host', 'official_host']
         ) -> T.ExpandedPackages:
             names = target_venv.expand_package_names(
                 map(norm.normalize_name, deps0[key]),
-                _venv_index.packages
+                indexer.packages
             )
-            return {k: _venv_index.packages[k] for k in names}
+            return {k: indexer.packages[k] for k in names}
         
         return {
-            'root': _venv_index.packages_root,
+            'root': indexer.library_root,
             'custom_host': expand_packages('custom_host'),
             'official_host': expand_packages('official_host'),
         }
