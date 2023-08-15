@@ -12,7 +12,7 @@ argsense = "^0.5.2"
 conflore = "^0.2.0"
 fake-typing = { url = "http://likianta.pro:2006/fake-typing/fake_typing-0.1.0b4-py3-none-any.whl" }
 lk-logger = "^5.6.2"
-lk-utils = { url = "http://likianta.pro:2006/lk-utils/lk_utils-2.6.0b7-py3-none-any.whl" }
+lk-utils = { url = "http://likianta.pro:2006/lk-utils/lk_utils-2.6.0b8-py3-none-any.whl" }
 oss2 = "*"
 # pip = "*"
 poetry = "*"
@@ -24,7 +24,9 @@ semver = "^3.0.1"
 typing-extensions = { version = "*", python = "<3.11" }
 
 [tool.poetry.group.dev.dependencies]
+icnsutil = "*"
 lkfmt = { url = "http://likianta.pro:2006/lkfmt/lkfmt-0.3.0a17-py3-none-any.whl" }
+pillow = "*"
 setuptools = "*"
 
 [tool.poetry.scripts]
