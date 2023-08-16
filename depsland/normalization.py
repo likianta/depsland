@@ -46,6 +46,10 @@ class VersionSpec:
         return f'{self.name}{self.comparator}{self.version}'
 
 
+def check_name_normalized(name: str) -> bool:
+    return name == normalize_name(name)
+
+
 def normalize_name(raw_name: T.RawName) -> T.Name:
     """
     examples:

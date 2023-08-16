@@ -12,6 +12,7 @@ from . import api
 from . import paths
 from .manifest import T
 from .manifest import get_last_installed_version
+from .normalization import check_name_normalized
 
 # fix sys.argv
 if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
@@ -206,6 +207,7 @@ def install(appid: str, upgrade: bool = True, reinstall: bool = False) -> None:
         upgrade (-u):
         reinstall (-r):
     """
+    assert check_name_normalized(appid)
     api.install_by_appid(appid, upgrade, reinstall)
 
 
