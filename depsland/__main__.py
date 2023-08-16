@@ -179,7 +179,7 @@ def build(target: str = '.', gen_exe: bool = True) -> None:
     tip:
         if you want to add a custom icon, you need to define it in manifest.
     """
-    api.build(_get_manifest_path(target), gen_exe)
+    api.build(_get_manifest_path(target), gen_exe=gen_exe)
 
 
 @cli.cmd()

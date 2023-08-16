@@ -18,10 +18,11 @@ from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_client
+from ...platform import IS_WINDOWS
+from ...platform import create_launcher
+from ...platform.windows import create_shortcut
 from ...pypi import pypi
-from ...utils import bat_2_exe
 from ...utils import compare_version
-from ...utils import create_shortcut
 from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
@@ -399,8 +400,13 @@ def _create_launcher(manifest: T.Manifest) -> None:
             apps=paths.project.apps, appid=appid, version=version
         ),
     )
-    exe_file = bat_2_exe(
-        bat_file,
+    
+    if not IS_WINDOWS:
+        # TODO: support linux and macos
+        return
+    
+    exe_file = create_launcher(
+        path_i=bat_file,
         icon=launcher['icon'],
         show_console=launcher['show_console'],
         remove_bat=True,

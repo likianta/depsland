@@ -1,5 +1,4 @@
 from . import compat_py38
-from . import gen_exe
 from . import verspec
 from . import ziptool
 from .compat_py38 import remove_suffix
@@ -9,8 +8,6 @@ from .fs import get_content_hash
 from .fs import get_file_hash
 from .fs import get_updated_time
 from .fs import init_target_tree
-from .gen_exe import bat_2_exe
-from .gen_exe import create_shortcut
 from .mklink import mergelink
 from .mklink import mergelinks
 from .mklink import mklink

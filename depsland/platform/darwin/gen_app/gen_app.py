@@ -9,8 +9,8 @@ from lk_utils import fs
 from lk_utils import loads
 from lk_utils import xpath
 
-from ... import paths
-from ...manifest import T
+from .... import paths
+from ....manifest import T
 
 
 def gen_app(manifest: T.Manifest, path_o: str, icon: str = None) -> str:

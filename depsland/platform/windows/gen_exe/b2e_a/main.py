@@ -5,7 +5,7 @@ from lk_utils import loads
 from lk_utils import run_cmd_args
 from lk_utils import xpath
 
-from ...compat_py38 import substitute_suffix
+from .....utils.compat_py38 import substitute_suffix
 
 _is_windows = os.name == 'nt'
 _template_exe = xpath('template_static.exe')

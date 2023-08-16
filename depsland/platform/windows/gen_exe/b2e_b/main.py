@@ -6,7 +6,7 @@ from lk_utils import xpath
 from lk_utils.subproc import compose_cmd
 from lk_utils.time_utils import timeout_gen
 
-from ...compat_py38 import substitute_suffix
+from .....utils.compat_py38 import substitute_suffix
 
 _is_windows = os.name == 'nt'
 _b2e_exe = xpath('b2e.exe')

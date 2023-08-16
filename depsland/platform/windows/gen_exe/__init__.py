@@ -1,7 +1,6 @@
 from .b2e_a import add_icon_to_exe
 # from .b2e_a import bat_2_exe as bat_2_exe_legacy
 # from .b2e_b import bat_2_exe
-from .shortcut import create_shortcut
 
 
 def bat_2_exe(

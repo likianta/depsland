@@ -14,7 +14,8 @@ from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_server
-from ...utils import bat_2_exe
+from ...platform import IS_WINDOWS
+from ...platform.windows import bat_2_exe
 from ...utils import compare_version
 from ...utils import make_temp_dir
 from ...utils import ziptool
@@ -68,14 +69,22 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
             "%DEPSLAND%\depsland-sui.exe" launch-gui manifest.pkl
         ''').strip()
         dumps(command, bat_file)
-        # noinspection PyTypeChecker
-        bat_2_exe(
-            bat_file,
-            # icon=paths.build.launcher_ico,
-            icon=manifest['launcher']['icon'] or paths.build.launcher_icon,
-            show_console=False,
-            remove_bat=True,
-        )
+        
+        if IS_WINDOWS:
+            # noinspection PyTypeChecker
+            bat_2_exe(
+                bat_file,
+                # icon=paths.build.launcher_ico,
+                icon=manifest['launcher']['icon'] or paths.build.launcher_icon,
+                show_console=False,
+                remove_bat=True,
+            )
+        else:
+            print(
+                '(TODO): "setup.exe" is not available on'
+                ' other platforms',
+                ':v3',
+            )
     
     app_info['history'].insert(0, app_info['version'])
     dumps(
