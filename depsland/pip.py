@@ -81,17 +81,26 @@ class Pip:
         #   ['pip', '22.3', 'from ...'] -> '22.3'
     
     def download(
-            self, name: str, version='',
-            dest=paths.pypi.downloads, no_deps=False
+        self,
+        name: str,
+        version: str = '',
+        destination: str = paths.pypi.downloads,
+        no_dependency: bool = False,
+        custom_args: t.Sequence[str] = (),
     ) -> str:
-        if self._multi_proc:
+        if self._multi_proc:  # FIXME
             self._multi_proc.apply_async(
                 self._run,
-                self._template.pip_download(name, version, dest, no_deps)
+                self._template.pip_download(
+                    name, version, destination, no_dependency
+                )
             )
             return ''
         return self._run(
-            *self._template.pip_download(name, version, dest, no_deps)
+            *self._template.pip_download(
+                name, version, destination, no_dependency
+            ),
+            *(custom_args and compose_cmd(*custom_args))
         )
     
     def download_r(self, file: str, dest=paths.pypi.downloads) -> str:

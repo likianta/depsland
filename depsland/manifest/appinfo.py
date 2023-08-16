@@ -30,7 +30,9 @@ class T:
     
     # extra ports for external use
     AssetInfo = T0.AssetInfo
+    DependenciesDiff = T0.DependenciesDiff
     FlattenPackages = T0.FlattenPackages
+    PackageId = str
     PackageInfo = T0.PackageInfo
     Scheme = T0.Scheme1
     UserManifest = T0.Manifest0

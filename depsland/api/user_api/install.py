@@ -3,6 +3,7 @@ import typing as t
 from collections import defaultdict
 from os.path import exists
 from textwrap import dedent
+from time import time
 
 from lk_utils import dumps
 from lk_utils import fs
@@ -15,8 +16,6 @@ from ...manifest import dump_manifest
 from ...manifest import get_last_installed_version
 from ...manifest import init_manifest
 from ...manifest import load_manifest
-from ...normalization import normalize_name
-from ...normalization import normalize_version_spec
 from ...oss import T as T1
 from ...oss import get_oss_client
 from ...pypi import pypi
@@ -29,13 +28,9 @@ from ...utils import ziptool
 from ...utils.verspec import semver_parse
 
 
-class T:
-    AssetInfo = T0.AssetInfo
-    FlattenPackages = T0.FlattenPackages
-    LauncherInfo = T0.Launcher
-    Manifest = T0.Manifest
+class T(T0):
+    LauncherInfo = T0.Launcher  # alias
     Oss = T1.Oss
-    PackageInfo = T0.PackageInfo
     Path = str
 
 
@@ -136,8 +131,7 @@ def _install(
     print(oss.path)
     
     _install_files(manifest_new, manifest_old, oss, dir_m)
-    _install_custom_packages(manifest_new, manifest_old, oss, dir_m)
-    _install_dependencies(manifest_new, manifest_old)
+    _install_packages(manifest_new, manifest_old, oss, dir_m)
     _create_launcher(manifest_new)
     
     _save_history(manifest_new['appid'], manifest_new['version'])
@@ -257,74 +251,124 @@ def _install_files(
             download_from_oss(path_i, path_m, path_o)
 
 
-def _install_custom_packages(
+def _install_packages(
     manifest_new: T.Manifest,
     manifest_old: T.Manifest,
     oss: T.Oss,
     temp_dir: T.Path,
+    dist_dir: T.Path = None,
 ) -> None:
-    # _root0 = manifest_old['start_directory']
-    # _root1 = manifest_new['start_directory']
-    
-    # pkgs0: T.FlattenPackages = manifest_old['dependencies']['custom_host']
-    # pkgs1: T.FlattenPackages = manifest_new['dependencies']['custom_host']
-    
-    def main() -> None:
-        downloads_dir: str = paths.pypi.downloads
-        diff = diff_manifest(manifest_new, manifest_old)
-        info0: T.PackageInfo
-        info1: T.PackageInfo
-        for action, pkg_name, (info0, info1) in diff['dependencies']:
-            if action in ('append', 'update'):
-                if not pypi.exists(info1['package_id']):
-                    print('download custom package from oss', pkg_name)
-                    oss.download(
-                        f'{oss.path.pypi}/{info1["package_id"]}',
-                        f'{downloads_dir}/{info1["package_id"]}.zip',
-                    )
-                    # TODO: extract, then update `pypi`s index.
-    
-    main()
-
-
-def _install_dependencies(
-    manifest_new: T.Manifest, manifest_old: T.Manifest, dst_dir: str = None
-) -> None:
-    if dst_dir is None:
-        dst_dir = paths.apps.make_packages(
+    if dist_dir is None:
+        dist_dir = paths.apps.make_packages(
             manifest_new['appid'], manifest_new['version'], clear_exists=True
         )
     
-    # else: make sure `dst_dir` does exist.
+    def main() -> None:
+        total_diff = diff_manifest(manifest_new, manifest_old)
+        collection = set()
+        collection.update(
+            _install_custom_packages(total_diff['dependencies']['custom'])
+        )
+        collection.update(
+            _install_official_packages(total_diff['dependencies']['official'])
+        )
+        
+        pypi.update_indexes(
+            {
+                **total_diff['dependencies']['custom'],
+                **total_diff['dependencies']['official'],
+            }
+        )
+        pypi.save_indexes()
+        
+        if collection:
+            pypi.linking(collection, dist_dir)
+        else:
+            _fast_link_venv(dist_dir)
     
-    def is_same() -> bool:
-        if manifest_old['version'] == '0.0.0':
-            return False
-        new_deps = set(manifest_new['dependencies'].items())
-        old_deps = set(manifest_old['dependencies'].items())
-        return new_deps == old_deps
+    def _install_custom_packages(
+        diff: T.DependenciesDiff,
+    ) -> t.Iterator[T.PackageId]:
+        info0: T.PackageInfo
+        info1: T.PackageInfo
+        for action, pkg_name, (info0, info1) in diff:
+            pkg_id = info1['package_id']
+            if action in ('append', 'update'):
+                if not pypi.exists(pkg_id):
+                    print('install custom package', pkg_id)
+                    zip_file = _download_from_oss(pkg_id)
+                    _install_package(pkg_id, zip_file)
+                    _index_package(
+                        pkg_id,
+                        (info1[x]['package_id'] for x in info1['dependencies']),
+                    )
+            if action != 'delete':
+                yield pkg_id
     
-    if is_same():
+    def _install_official_packages(
+        diff: T.DependenciesDiff,
+    ) -> t.Iterator[T.PackageId]:
+        collection = []
+        info0: T.PackageInfo
+        info1: T.PackageInfo
+        for action, pkg_name, (info0, info1) in diff:
+            pkg_id = info1['package_id']
+            if action in ('append', 'update'):
+                if not pypi.exists(pkg_id):
+                    collection.append(
+                        pypi.async_download_and_install_one(
+                            pkg_id, info1['url']
+                        )
+                    )
+            if action != 'delete':
+                yield pkg_id
+        # join futures
+        [x.result() for x in collection]
+    
+    # -------------------------------------------------------------------------
+    
+    def _download_from_oss(package_id: str) -> T.Path:
+        oss.download(
+            f'{oss.path.pypi}/{package_id}',
+            out := f'{paths.pypi.downloads}/{package_id}.zip',
+        )
+        return out
+    
+    def _fast_link_venv(dst_dir: T.Path) -> None:
         print('fast link venv from old version')
+        assert (
+            manifest_old['version'] != '0.0.0'
+        ), 'cannot do fast linking from a void version'
         src_dir = paths.apps.get_packages(
             manifest_old['appid'], manifest_old['version']
         )
         fs.make_link(src_dir, dst_dir, True)
-        return
     
-    packages = {}
-    for name, vspec in manifest_new['dependencies'].items():
-        name = normalize_name(name)
-        vspecs = tuple(normalize_version_spec(name, vspec))
-        packages[name] = vspecs
-    if not packages: return
-    print(':vl', packages)
+    def _index_package(
+        package_id: str, dependent_package_ids: t.Iterable[str]
+    ) -> None:
+        """manually update `pypi`s indexes."""
+        name, ver = pypi.split(package_id)
+        pypi.name_2_versions[name].append(ver)
+        pypi.name_id_2_paths[package_id] = (
+            f'downloads/{package_id}.zip',
+            f'installed/{name}/{ver}',
+        )
+        pypi.dependencies[package_id]['resolved'] = list(dependent_package_ids)
+        pypi.updates[name] = int(time())
     
-    name_ids = pypi.install(packages, include_dependencies=True)
-    name_ids = tuple(dict.fromkeys(name_ids))  # deduplicate and remain sequence
-    name_ids = _resolve_conflicting_name_ids(name_ids)
-    pypi.save_index()
-    pypi.linking(sorted(name_ids), dst_dir)
+    def _install_package(package_id: str, zip_file: T.Path) -> None:
+        """
+        TODO: this is a unformal implementation against `pypi.install`. \
+            because the custom package structure is self-made.
+        """
+        file_i = zip_file
+        dir_m = f'{temp_dir}/{package_id}'
+        dir_o = pypi.get_install_path(package_id)
+        ziptool.extract_file(file_i, dir_m, overwrite=True)
+        fs.move(dir_m, dir_o, overwrite=True)
+    
+    main()
 
 
 def _create_launcher(manifest: T.Manifest) -> None:
