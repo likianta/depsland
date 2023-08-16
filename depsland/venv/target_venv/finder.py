@@ -30,8 +30,9 @@ class T:
 def get_library_root(working_root: str) -> T.LibraryPath:
     venv_root = fs.normpath(
         run_cmd_args(
-            _poetry, 'env', 'info', '--path', '--no-ansi',
-            ('--directory', working_root)
+            (_poetry, 'env', 'info'),
+            ('--path', '--no-ansi'),
+            ('--directory', working_root),
         )
     )
     if os.name == 'nt':
@@ -66,6 +67,7 @@ def get_top_package_names_by_poetry(
 
 
 # -----------------------------------------------------------------------------
+
 
 def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
     # FIXME: there is a bug (?) that it may not show all top names if some \

@@ -22,7 +22,7 @@ class LocalOss(BaseOss):
             fs.make_link(file, link, True)
         else:
             fs.copy_file(file, link, True)
-        print(':trp', f'upload done [cyan]({name})[/]')
+        print(':t2rp', f'upload done [cyan]({name})[/]')
     
     def download(self, link: str, file: str) -> None:
         name = fs.filename(file)
@@ -33,12 +33,12 @@ class LocalOss(BaseOss):
                 fs.make_link(link, file, True)
         else:
             fs.copy_file(link, file, True)
-        print(':trp', f'download done [cyan]({name})[/]')
+        print(':t2rp', f'download done [cyan]({name})[/]')
     
     def delete(self, link: str) -> None:
         name = fs.filename(link)
         fs.remove_file(link)
-        print(':trp', f'[dim]delete done [cyan]({name})[/][/]')
+        print(':t2rp', f'[dim]delete done [cyan]({name})[/][/]')
 
 
 class LocalOssPath(BaseOssPath):

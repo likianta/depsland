@@ -242,7 +242,7 @@ AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
 class Manifest:
     _file: T.AbsPath
     _manifest1: T.Manifest1
-    _manifest2: T.Manifest2
+    _manifest2: T.Manifest2  # DELETE
     _start_directory: T.AbsPath
     _venv_library_root: T.AbsPath
     
@@ -379,7 +379,7 @@ class Manifest:
     def __getitem__(self, item: str) -> t.Any:
         if item == 'start_directory':
             return self._start_directory
-        return self._manifest2[item]  # noqa
+        return self._manifest1[item]  # noqa
     
     def __setitem__(self, key: str, value: t.Any) -> None:
         if key == 'start_directory':

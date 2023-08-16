@@ -310,7 +310,7 @@ def analyze_records(record_file: str) -> t.Iterator[T.PathName]:
         if path.startswith('../'):
             # e.g. '../../../bin/dulwich'
             # TODO: currently we don't take account of this case.
-            print(':vs', 'discard external binary', path)
+            # print(':vs', 'discard external binary', path)
             continue
             # assert path.lstrip('./').startswith('bin/')
             # raise Exception(path)

@@ -34,7 +34,7 @@ class AliyunOss(BaseOss):
                 self._update_progress, f'uploading {name}'
             )
         )
-        print(':rpt', f'upload done [cyan]({name})[/]')
+        print(':rpt2', f'upload done [cyan]({name})[/]')
     
     def download(self, link: str, file: str) -> None:
         name = basename(file)
@@ -44,12 +44,12 @@ class AliyunOss(BaseOss):
                 self._update_progress, f'downloading {name}'
             )
         )
-        print(':rpt', f'download done [cyan]({name})[/]')
+        print(':rpt2', f'download done [cyan]({name})[/]')
     
     def delete(self, link: str) -> None:
         name = basename(link)
         self._bucket.delete_object(link)
-        print(':rpt', f'[dim]delete done [cyan]({name})[/][/]')
+        print(':rpt2', f'[dim]delete done [cyan]({name})[/][/]')
 
 
 class AliyunOssPath(BaseOssPath):

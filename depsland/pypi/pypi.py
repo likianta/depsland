@@ -41,9 +41,7 @@ class LocalPyPI(Index):
     # -------------------------------------------------------------------------
     # main methods
     
-    def download_one(
-        self, name_id: T.NameId, custom_url: str = None
-    ) -> T.Path:
+    def download_one(self, name_id: T.NameId, custom_url: str = None) -> T.Path:
         if custom_url:
             assert name_id in custom_url, (name_id, custom_url)
             resp = self.pip.run(
@@ -52,8 +50,10 @@ class LocalPyPI(Index):
                 ('-d', pypi_paths.downloads),
             )
         else:
+            name, ver = self.split(name_id)
             resp = self.pip.download(
-                *self.split(name_id),
+                name,
+                f'=={ver}',
                 no_dependency=True,
             )
         """
@@ -66,6 +66,11 @@ class LocalPyPI(Index):
                     -none-any.whl
                     Successfully downloaded lk-utils
                 2.
+                    Collecting lk-utils==2.6.0b9
+                      File was already downloaded <abspath>/lk_utils-2.6.0-py3 \
+                      -none-any.whl
+                    Successfully downloaded lk-utils
+                3.
                     Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
                     Collecting argsense
                       Using cached https://pypi.tuna.tsinghua.edu.cn/packages \
@@ -78,8 +83,14 @@ class LocalPyPI(Index):
                     [notice] To update, run: pip install --upgrade pip
             we can use regex to parse the line which starts with 'Saved'.
         """
-        pattern = re.compile(r'Saved (.+)')
-        matches = pattern.findall(resp)
+        pattern1 = re.compile(r'Saved (.+)')
+        pattern2 = re.compile(r'File was already downloaded (.+)')
+        if 'Saved ' in resp:
+            matches = pattern1.findall(resp)
+        elif 'File was already downloaded ' in resp:
+            matches = pattern2.findall(resp)
+        else:
+            raise Exception(resp)
         assert len(matches) == 1, (resp, matches)
         filepath = fs.abspath(matches[0])
         return filepath
@@ -350,10 +361,12 @@ class LocalPyPI(Index):
     
     def get_download_path(self, name_id: T.NameId) -> T.Path:
         # FIXME: not a general way
-        return '{}/{}'.format(pypi_paths.root, self.name_id_2_paths[name_id][0])
+        return '{}/{}'.format(
+            pypi_paths.downloads, self.name_id_2_paths[name_id][0]
+        )
     
     def get_install_path(self, name_id: T.NameId) -> T.Path:
-        return '{}/{}/{}'.format(pypi_paths.root, *self.split(name_id))
+        return '{}/{}/{}'.format(pypi_paths.installed, *self.split(name_id))
     
     @staticmethod
     def split(name_id: T.NameId) -> t.Tuple[T.Name, T.Version]:

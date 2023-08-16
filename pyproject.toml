@@ -11,10 +11,10 @@ python = "^3.8"
 argsense = "^0.5.2"
 conflore = "^0.2.0"
 fake-typing = { url = "http://likianta.pro:2006/fake-typing/fake_typing-0.1.0b4-py3-none-any.whl" }
-lk-logger = "^5.6.2"
+lk-logger = { url = "http://likianta.pro:2006/lk-logger/lk_logger-5.7.0a9-py3-none-any.whl" }
 lk-utils = { url = "http://likianta.pro:2006/lk-utils/lk_utils-2.6.0-py3-none-any.whl" }
 oss2 = "*"
-# pip = "*"
+pip = "*"
 poetry = "*"
 pyside6 = { version = "^6.4,<6.5", python = ">=3.8,<3.12" }
 pyyaml = "*"

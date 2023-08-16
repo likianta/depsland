@@ -154,7 +154,7 @@ def _upload(
         # `depsland.manifest.manifest._compare_dependencies`
         info0: T.PackageInfo
         info1: T.PackageInfo
-        for action, pkg_name, (info0, info1) in diff['dependencies']:
+        for action, pkg_name, (info0, info1) in diff['dependencies']['custom']:
             if action == 'ignore':
                 continue
             
@@ -215,9 +215,6 @@ def _upload(
     upload_assets()
     upload_dependencies()
     
-    print(':i0s')
-    
-    manifest_new['pypi'] = {k: None for k in manifest_new['pypi'].keys()}
     dump_manifest(manifest_new, x := f'{dist_dir}/manifest.pkl')
     oss.upload(x, oss.path.manifest)
     

@@ -275,8 +275,8 @@ def _install_packages(
         
         pypi.update_indexes(
             {
-                **total_diff['dependencies']['custom'],
-                **total_diff['dependencies']['official'],
+                **manifest_new['dependencies']['custom_host'],
+                **manifest_new['dependencies']['official_host'],
             }
         )
         pypi.save_indexes()

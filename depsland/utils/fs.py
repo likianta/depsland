@@ -88,7 +88,7 @@ class _TempDirs:
     
     def clean_up(self) -> None:
         if self._dirs:
-            print(':vs', 'clean up temp created dirs', len(self._dirs))
+            print(':vs', f'clean up temp created dirs ({len(self._dirs)})')
             for d in self._dirs:
                 if os.path.exists(d):
                     shutil.rmtree(d)
