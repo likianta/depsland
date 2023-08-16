@@ -81,6 +81,8 @@ class LibraryIndexer:
             usage at `depsland/manifest/manifest.py:Manifest \
             ._update_dependencies()`.
         """
+        print(':t2s')
+        
         self.working_root = working_root
         self.library_root = finder.get_library_root(working_root)
         print(self.library_root, ':lv')
@@ -95,7 +97,7 @@ class LibraryIndexer:
             },
             ':lv',
         )
-        print(':t', 'indexing packages done', len(self.packages))
+        print(':t2', 'indexing packages done', len(self.packages))
     
     # -------------------------------------------------------------------------
     
@@ -106,6 +108,7 @@ class LibraryIndexer:
         top_pkg_names = finder.get_top_package_names_by_poetry(
             self.working_root
         )
+        print(len(all_pgk_refs))
         
         top_pkgs: T.Packages = {}
         for top_name in top_pkg_names:
@@ -159,7 +162,7 @@ class LibraryIndexer:
             _poetry = (sys.executable, '-m', 'poetry')
             content = run_cmd_args(
                 _poetry,
-                ('show', '-t', '--no-dev'),
+                ('show', '-t', '--no-dev', '--no-ansi'),
                 ('--directory', self.working_root),
             )
             

@@ -30,7 +30,8 @@ class T:
 def get_library_root(working_root: str) -> T.LibraryPath:
     venv_root = fs.normpath(
         run_cmd_args(
-            _poetry, 'env', 'info', '--path', '-C', working_root
+            _poetry, 'env', 'info', '--path', '--no-ansi',
+            ('--directory', working_root)
         )
     )
     if os.name == 'nt':
@@ -74,7 +75,7 @@ def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
         normalize_name,
         run_cmd_args(
             _poetry,
-            ('show', '-T'),
+            ('show', '-T', '--no-ansi'),
             ('--directory', working_root),
         ).splitlines(),
     )
@@ -83,11 +84,14 @@ def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
 def _get_top_names_by_poetry_2(working_root: str) -> t.Iterator[T.PackageName]:
     content = run_cmd_args(
         _poetry,
-        ('show', '-t', '--no-dev'),
+        ('show', '-t', '--no-dev', '--no-ansi'),
         ('--directory', working_root),
     )
     re_pkg_name = re.compile(r'^[-\w]+')
     for line in content.splitlines():
+        if line.startswith((' ', '│', '├', '└')):
+            continue
+        # print(':vi2', line, bool(re_pkg_name.match(line)))
         if m := re_pkg_name.match(line):
             yield normalize_name(m.group())
 
