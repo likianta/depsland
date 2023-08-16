@@ -30,7 +30,7 @@ class T:
 def get_library_root(working_root: str) -> T.LibraryPath:
     venv_root = fs.normpath(
         run_cmd_args(
-            (_poetry, 'env', 'info'),
+            (*_poetry, 'env', 'info'),
             ('--path', '--no-ansi'),
             ('--directory', working_root),
         )

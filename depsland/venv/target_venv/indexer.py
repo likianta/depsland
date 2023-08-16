@@ -85,18 +85,18 @@ class LibraryIndexer:
         
         self.working_root = working_root
         self.library_root = finder.get_library_root(working_root)
-        print(self.library_root, ':lv')
+        print(self.library_root)
         
         # self._all_pgk_refs = dict(quick_index_packages(self.library_root))
         self.packages = self.index_packages()
         # print(self.library_root, self.packages, ':lv')
-        print(
-            {
-                (i, k): len(v['dependencies'])
-                for i, (k, v) in enumerate(sorted(self.packages.items()), 1)
-            },
-            ':lv',
-        )
+        # print(
+        #     {
+        #         (i, k): len(v['dependencies'])
+        #         for i, (k, v) in enumerate(sorted(self.packages.items()), 1)
+        #     },
+        #     ':lv',
+        # )
         print(':t2', 'indexing packages done', len(self.packages))
     
     # -------------------------------------------------------------------------
