@@ -42,7 +42,7 @@ def create_venv(
     name_ids = pypi.install(packages, include_dependencies=True)
     name_ids = tuple(dict.fromkeys(name_ids))  # deduplicate and remain sequence
     name_ids = _resolve_conflicting_name_ids(name_ids)
-    pypi.save_index()
+    pypi.save_indexes()
     pypi.linking(sorted(name_ids), dst_dir)
 
 

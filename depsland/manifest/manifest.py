@@ -189,7 +189,10 @@ class T:
         'ManifestDiff',
         {
             'assets': AssetsDiff,
-            'dependencies': DependenciesDiff,
+            'dependencies': t.TypedDict('DependenciesDiff', {
+                'custom': DependenciesDiff,
+                'official': DependenciesDiff,
+            }),
         },
     )
 
@@ -217,9 +220,16 @@ def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
         'assets': _diff_assets(
             new.model['assets'], old.model['assets']  # fmt:skip
         ),
-        'dependencies': _diff_dependencies(
-            new['dependencies'], old['dependencies']
-        ),
+        'dependencies': {
+            'custom': _diff_dependencies(
+                new['dependencies']['custom_host'],
+                old['dependencies']['custom_host'],
+            ),
+            'official': _diff_dependencies(
+                new['dependencies']['official_host'],
+                old['dependencies']['official_host'],
+            ),
+        }
     }
 
 
@@ -689,25 +699,22 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
 
 
 def _diff_dependencies(
-    new: T.Dependencies2, old: T.Dependencies2
+    new: T.FlattenPackages, old: T.FlattenPackages
 ) -> T.DependenciesDiff:
-    old_custom = old['custom_host']
-    new_custom = new['custom_host']
-    
     info0: T.PackageInfo
     info1: T.PackageInfo
     
-    for name0, info0 in old_custom.items():
-        if name0 not in new_custom:
+    for name0, info0 in old.items():
+        if name0 not in new:
             yield 'delete', name0, (info0, None)
             continue
         
-        name1, info1 = name0, new_custom[name0]
+        name1, info1 = name0, new[name0]
         if info1['package_id'] != info0['package_id']:
             yield 'update', name1, (info0, info1)
         else:
             yield 'ignore', name0, (info0, info1)
     
-    for name1, info1 in new_custom.items():
-        if name1 not in old_custom:
+    for name1, info1 in new.items():
+        if name1 not in old:
             yield 'append', name1, (None, info1)

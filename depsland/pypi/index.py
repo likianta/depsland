@@ -21,9 +21,10 @@ class T:
         #   see also `./insight.py : def _analyse_metadata_1()`
     })]
     Name2Versions = t.Dict[Name, t.List[Version]]
-    #   t.List[...]: a sorted versions list, from new to old.
-    NameId2Paths = t.Dict[Version, t.Tuple[Path, Path]]
-    #   t.List[...]: tuple[downloaded_path, installed_path]
+    #   t.List[Version]: a sorted versions list, from new to old.
+    NameId2Paths = t.Dict[NameId, t.Tuple[Path, Path]]
+    #                             ^-----------------1
+    #   #1: tuple[downloaded_path, installed_path]
     #       notice: the paths are relative to `paths.pypi.root`
     #       why do we use relative paths?
     #       based on the experience of debugging depsland (in project mode),
@@ -55,7 +56,7 @@ class Index:
     def _dependency_item_gen() -> dict:
         return {'resolved': [], 'unresolved': {}}
     
-    def save_index(self) -> None:
+    def save_indexes(self) -> None:
         dumps(self.name_2_versions, pypi_paths.name_2_versions)
         dumps(self.name_id_2_paths, pypi_paths.name_id_2_paths)
         dumps(self.dependencies, pypi_paths.dependencies)
