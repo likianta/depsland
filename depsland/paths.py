@@ -22,18 +22,22 @@ __all__ = [
 ]
 
 
+class _Env:
+    CONFIG_ROOT = os.getenv('DEPSLAND_CONFIG_ROOT')
+    PYPI_ROOT = os.getenv('DEPSLAND_PYPI_ROOT')
+    PYTHON_STANDALONE = os.getenv('DEPSLAND_PYTHON_STANDALONE', '1')
+
+
 class System:
-    
     def __init__(self):
         self.is_windows = os.name == 'nt'
         if self.is_windows:
-            self.depsland = os.getenv('DEPSLAND')  # note it may be None
+            self.depsland = os.getenv('DEPSLAND')  # note this may be None
             self.desktop = fs.normpath(os.environ['USERPROFILE'] + '/Desktop')
             self.home = fs.normpath(os.environ['USERPROFILE'])
             self.local_app_data = fs.normpath(os.environ['LOCALAPPDATA'])
             self.start_menu = fs.normpath(
-                os.environ['APPDATA']
-                + '/Microsoft/Windows/Start Menu/Programs'
+                os.environ['APPDATA'] + '/Microsoft/Windows/Start Menu/Programs'
             )
             self.temp = fs.normpath(os.environ['TEMP'])
         else:
@@ -41,7 +45,6 @@ class System:
 
 
 class Project:
-    
     def __init__(self):
         if exists(fs.xpath('../.depsland_project')):
             self.root = fs.xpath('..', force_abspath=True)
@@ -50,8 +53,10 @@ class Project:
             self.root = fs.xpath('.project', True)
             self.is_project_mode = False
             if not exists(self.root):
-                print(':v2', 'first time run depsland, init a virtual '
-                             'project root...')
+                print(
+                    ':v2',
+                    'first time run depsland, init a virtual project root...',
+                )
                 self._init_project_root(self.root)
         
         self.apps = f'{self.root}/apps'
@@ -99,6 +104,7 @@ class Project:
         
         # unzip files
         from .utils.ziptool import extract_file
+        
         extract_file(fs.xpath('chore/build.zip'), f'{root}/build')
         extract_file(fs.xpath('chore/config.zip'), f'{root}/config')
         extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
@@ -112,8 +118,8 @@ class Project:
 
 # -----------------------------------------------------------------------------
 
+
 class Apps:
-    
     def __init__(self):
         self.root = f'{project.root}/apps'
         self.bin = f'{self.root}/.bin'
@@ -140,8 +146,9 @@ class Apps:
     def get_packages(self, appid: str, version: str) -> str:
         return self._venv_packages.format(appid=appid, version=version)
     
-    def make_packages(self, appid: str, version: str,
-                      clear_exists=False) -> str:
+    def make_packages(
+        self, appid: str, version: str, clear_exists=False
+    ) -> str:
         """
         create or clear a folder for venv packages.
         """
@@ -160,7 +167,6 @@ class Apps:
 
 
 class Build:
-    
     def __init__(self):
         self.root = f'{project.root}/build'
         self.icon = f'{self.root}/icon'
@@ -187,7 +193,7 @@ class Config:
     """
     
     def __init__(self):
-        if x := os.getenv('DEPSLAND_CONFIG_ROOT'):
+        if x := _Env.CONFIG_ROOT:
             self.root = fs.abspath(x)
             print(':r', f'[yellow dim]relocate config root to {self.root}[/]')
         elif exists(f'{project.root}/config/.redirect'):
@@ -208,7 +214,6 @@ class Config:
 
 
 class Oss:  # note: this is a local dir that mimics OSS structure.
-    
     def __init__(self):
         self.root = f'{project.root}/oss'
         self.apps = f'{self.root}/apps'
@@ -221,7 +226,7 @@ class PyPI:
     """
     
     def __init__(self):
-        if x := os.getenv('DEPSLAND_PYPI_ROOT'):
+        if x := _Env.PYPI_ROOT:
             self.root = fs.abspath(x)
             print(':r', f'[yellow dim]relocate pypi root to {self.root}[/]')
         else:
@@ -244,24 +249,34 @@ class PyPI:
 
 
 class Python:
-    
     def __init__(self):
-        if project.is_project_mode:
+        if project.is_project_mode and _Env.PYTHON_STANDALONE == '1':
             self.root = f'{project.root}/python'
+            assert exists(self.root), (
+                'cannot find standalone python interpreter. \n'
+                'if you want to setup one, please follow the instruction of '
+                '`{}/python/README.zh.md`; \n'
+                'if you do not want to setup, you can set the environment '
+                'variable `DEPSLAND_PYTHON_STANDALONE` to "0"'
+            )
         else:
-            self.root = sys.base_exec_prefix
+            self.root = fs.normpath(sys.base_exec_prefix)
         if system.is_windows:
             self.pip = f'{self.root}/Scripts/pip.exe'
             self.python = f'{self.root}/python.exe'
             self.site_packages = f'{self.root}/Lib/site-packages'
         else:
             self.pip = f'{self.root}/bin/pip'
-            self.python = f'{self.root}/bin/python3.10'
-            self.site_packages = f'{self.root}/lib/python3.10/site-packages'
+            self.python = f'{self.root}/bin/python3'
+            if self.root.startswith(f'{project.root}/python'):
+                self.site_packages = f'{self.root}/lib/python3.11/site-packages'
+            else:
+                self.site_packages = '{}/lib/python{}.{}/site-packages'.format(
+                    self.root, *sys.version_info[:2]
+                )
 
 
 class Temp:
-    
     def __init__(self):
         self.root = f'{project.root}/temp'
         self.self_upgrade = f'{self.root}/.self_upgrade'
