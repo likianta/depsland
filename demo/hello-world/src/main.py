@@ -1,3 +1,10 @@
-from lk_utils import xpath
-from qmlease import app
-app.run(xpath('view.qml'))
+from argsense import cli
+
+
+@cli.cmd()
+def hello(name: str = 'world') -> None:
+    print(f'hello {name}!')
+
+
+if __name__ == '__main__':
+    cli.run()
