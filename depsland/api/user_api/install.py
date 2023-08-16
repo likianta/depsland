@@ -313,6 +313,8 @@ def _install_packages(
         info0: T.PackageInfo
         info1: T.PackageInfo
         for action, pkg_name, (info0, info1) in diff:
+            if action == 'delete':
+                continue
             pkg_id = info1['package_id']
             if action in ('append', 'update'):
                 if not pypi.exists(pkg_id):
@@ -321,8 +323,7 @@ def _install_packages(
                             pkg_id, info1['url']
                         )
                     )
-            if action != 'delete':
-                yield pkg_id
+            yield pkg_id
         # join futures
         [x.result() for x in collection]
     

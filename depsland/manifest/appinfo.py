@@ -86,26 +86,21 @@ def get_last_released_version(appid: str) -> t.Optional[str]:
 def parse_script_info(
     manifest: T.Manifest,
 ) -> t.Tuple[t.Tuple[str, ...], t.Tuple[str, ...], t.Dict[str, t.Any]]:
-    appid = manifest['appid']
-    version = manifest['version']
     launcher: T.Launcher = manifest['launcher']
     
-    src_path = launcher['target']
-    dst_path = '{}{}'.format(
-        f'{paths.project.apps}/{appid}/{version}',
-        fs.relpath(src_path, manifest['start_directory']),
-    )
+    cwd = manifest['start_directory']
+    src = launcher['target']  # a relpath or a package name
     
     command: t.Tuple[str, ...]
     args: t.Tuple[str, ...]
     kwargs: t.Dict[str, t.Any]
     
     if launcher['type'] == 'executable':
-        command = (dst_path,)
+        command = (f'{cwd}/{src}',)
     elif launcher['type'] == 'module':
-        command = (paths.python.python, dst_path)
+        command = (paths.python.python, f'{cwd}/{src}')
     elif launcher['type'] == 'package':
-        command = (paths.python.python, '-m', dst_path)
+        command = (paths.python.python, '-m', src)
     else:
         raise ValueError(launcher)
     args = tuple(launcher['args'])

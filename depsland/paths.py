@@ -252,12 +252,14 @@ class Python:
     def __init__(self):
         if project.is_project_mode and _Env.PYTHON_STANDALONE == '1':
             self.root = f'{project.root}/python'
-            assert exists(self.root), (
+            assert len(os.listdir(self.root)) > 3, (
                 'cannot find standalone python interpreter. \n'
                 'if you want to setup one, please follow the instruction of '
                 '`{}/python/README.zh.md`; \n'
                 'if you do not want to setup, you can set the environment '
-                'variable `DEPSLAND_PYTHON_STANDALONE` to "0"'
+                'variable `DEPSLAND_PYTHON_STANDALONE` to "0"'.format(
+                    project.root
+                )
             )
         else:
             self.root = fs.normpath(sys.base_exec_prefix)

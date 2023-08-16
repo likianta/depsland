@@ -19,6 +19,7 @@ from ...platform.windows import bat_2_exe
 from ...utils import compare_version
 from ...utils import make_temp_dir
 from ...utils import ziptool
+from ...venv.target_venv import get_library_root
 
 
 class T:
@@ -175,6 +176,7 @@ def _upload(
             )
             
             if action in ('append', 'update'):
+                # print(info1['paths'], ':v')
                 zipped_file = _compress_dependency(
                     info1['package_id'], info1['paths']
                 )
@@ -203,21 +205,24 @@ def _upload(
         )
         return zipped_file
     
+    _library_root = get_library_root(manifest_new.start_directory)
+    
     def _compress_dependency(
         name_id: str, assets: t.Tuple[T.Path, ...]
     ) -> T.Path:
-        dir0 = make_temp_dir()
-        fs.make_dir(dir1 := f'{dir0}/{name_id}')
+        root_i = _library_root
+        root_o = make_temp_dir()
+        root_m = f'{root_o}/{name_id}'
+        fs.make_dir(root_m)
         
-        root0 = os.path.commonpath(assets)
-        root1 = dir1
+        for relpath_i in assets:
+            abspath_i = f'{root_i}/{relpath_i}'
+            abspath_m = f'{root_m}/{relpath_i}'
+            fs.make_link(abspath_i, abspath_m, True)
         
-        for path_i in assets:
-            path_o = '{}/{}'.format(root1, fs.relpath(path_i, root0))
-            fs.make_link(path_i, path_o, True)
-        
-        ziptool.compress_dir(root1, out := f'{dir0}/{name_id}.zip')
-        return out
+        abspath_o = f'{root_o}/{name_id}.zip'
+        ziptool.compress_dir(root_m, abspath_o)
+        return abspath_o
     
     # -------------------------------------------------------------------------
     
