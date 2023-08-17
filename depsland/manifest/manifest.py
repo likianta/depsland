@@ -420,6 +420,11 @@ class Manifest:
             tuple(manifest.keys()),
         )
         
+        assert norm.check_name_normalized(manifest['appid']), (
+            'the appid should be lowercase and only contains alphanumber and '
+            'underscore.'
+        )
+        
         assert manifest['assets'], 'field `assets` cannot be empty!'
         assert all(not x.startswith('../') for x in manifest['assets']), (
             'manifest should be put at the root of project, and there shall be '
@@ -577,11 +582,15 @@ class Manifest:
         def expand_packages(
             key: t.Literal['custom_host', 'official_host']
         ) -> T.FlattenPackages:
-            names = target_venv.expand_package_names(
+            name_relations = target_venv.expand_package_names(
                 map(norm.normalize_name, deps0[key]),
                 indexer.packages
             )
-            return {k: indexer.packages[k] for k in names}
+            out = {}
+            for lead, deps in name_relations.items():
+                out[lead] = indexer.packages[lead]
+                out.update({k: indexer.packages[k] for k in deps})
+            return out
         
         return {
             'root': indexer.library_root,

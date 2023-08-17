@@ -7,14 +7,14 @@ from .indexer import T as T0
 
 # noinspection PyTypedDict
 class T(T0):
-    PackageRelations = t.Dict[T0.PackageName, t.Tuple[T0.PackageName, ...]]
+    PackageRelations = t.Dict[T0.PackageName, t.Iterable[T0.PackageName]]
 
 
 def expand_package_names(
     request_names: t.Iterable[T.PackageName], packages: T.Packages
-) -> T.PackageRelations:
+) -> T.PackageRelations:  # returns dict[lead_name, iterable[dep_name]]
     def expanding(
-        name: T.PackageName, temp_holder: t.Set[T.PackageName]
+        name: T.PackageName, _temp_holder: t.Set[T.PackageName]
     ) -> t.Iterator[T.PackageName]:
         if name not in packages:
             print(':v4l', sorted(packages.keys()), name)
@@ -33,12 +33,12 @@ def expand_package_names(
             )
             raise KeyError(name)
         for dep_name in packages[name]['dependencies']:
-            if dep_name not in temp_holder:
+            if dep_name not in _temp_holder:
                 yield dep_name
-                temp_holder.add(dep_name)
-                yield from expanding(dep_name, temp_holder)
+                _temp_holder.add(dep_name)
+                yield from expanding(dep_name, _temp_holder)
     
     out = {}
     for name in request_names:
-        out[name] = tuple(sorted(expanding(name, set())))
+        out[name] = expanding(name, set())
     return out
