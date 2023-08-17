@@ -272,28 +272,27 @@ def _copy_assets(
         fs.make_link(path_i, file_o)
         return file_o
     
-    match scheme:
-        case 'root':
-            pass
-        case 'all':
-            fs.make_link(path_i, dir_o, True)
-        case 'all_dirs':
-            fs.clone_tree(path_i, dir_o, True)
-        case 'top':
-            for dn in fs.find_dir_names(path_i):
-                os.mkdir('{}/{}'.format(dir_o, dn))
-            for f in fs.find_files(path_i):
-                file_i = f.path
-                file_o = '{}/{}'.format(dir_o, f.name)
-                fs.make_link(file_i, file_o)
-        case 'top_files':
-            for f in fs.find_files(path_i):
-                file_i = f.path
-                file_o = '{}/{}'.format(dir_o, f.name)
-                fs.make_link(file_i, file_o)
-        case 'top_dirs':
-            for dn in fs.find_dir_names(path_i):
-                os.mkdir('{}/{}'.format(dir_o, dn))
+    if scheme == 'root':
+        pass
+    elif scheme == 'all':
+        fs.make_link(path_i, dir_o, True)
+    elif scheme == 'all_dirs':
+        fs.clone_tree(path_i, dir_o, True)
+    elif scheme == 'top':
+        for dn in fs.find_dir_names(path_i):
+            os.mkdir('{}/{}'.format(dir_o, dn))
+        for f in fs.find_files(path_i):
+            file_i = f.path
+            file_o = '{}/{}'.format(dir_o, f.name)
+            fs.make_link(file_i, file_o)
+    elif scheme == 'top_files':
+        for f in fs.find_files(path_i):
+            file_i = f.path
+            file_o = '{}/{}'.format(dir_o, f.name)
+            fs.make_link(file_i, file_o)
+    elif scheme == 'top_dirs':
+        for dn in fs.find_dir_names(path_i):
+            os.mkdir('{}/{}'.format(dir_o, dn))
     
     return dir_o
 
