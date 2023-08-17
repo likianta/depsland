@@ -128,6 +128,7 @@ class LibraryIndexer:
         
         before = len(top_pkgs)
         out = self._flatten_packages(top_pkgs, all_pgk_refs)
+        # print(out, ':lv')
         after = len(out)
         print('flatten packages done', f'count: {before} -> {after}', ':v2')
         return out
@@ -167,7 +168,7 @@ class LibraryIndexer:
             )
             
             re_lv0 = re.compile(r'^[-\w]+')
-            re_lv1 = re.compile(r'^├── ([-\w]+)')
+            re_lv1 = re.compile(r'^\W\W\W ([-\w]+)')
             
             name0 = ''
             for line in content.splitlines():
