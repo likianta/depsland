@@ -6,11 +6,6 @@ license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
 homepage = "https://github.com/likianta/depsland"
 
-[[tool.poetry.source]]
-name = "tsinghua"
-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
-default = true
-
 [tool.poetry.dependencies]
 python = "^3.10"
 argsense = "^0.5.2"
@@ -24,10 +19,13 @@ qmlease = "^3.0.3"
 rich = "*"
 semver = "^3.0.0dev4"
 
-[tool.poetry.extras]
-
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
+priority = "default"
 
 [build-system]
 requires = ["poetry"]

@@ -1,6 +1,6 @@
 # 下载便携版 Python
 
-下载地址: https://github.com/indygreg/python-build-standalone/releases/tag/20221002
+下载地址: https://github.com/indygreg/python-build-standalone/releases
 
 如何选择我要的版本:
 
@@ -44,5 +44,6 @@ current_dir
 # 安装依赖
 
 ```sh
-python/bin/python3.10 -m pip install --no-warn-script-location --disable-pip-version-check -r requirements.txt
+python/bin/python3 -m pip install wheel --no-warn-script-location --disable-pip-version-check
+python/bin/python3 -m pip install -r requirements_macos.lock --no-deps --no-warn-script-location --disable-pip-version-check
 ```
