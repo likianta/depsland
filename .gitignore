@@ -30,6 +30,7 @@
 __pycache__/
 dist/
 .DS_Store
+*.bak.*
 
 !/apps/*/.gitkeep
 !/chore/custom_packages/.gitkeep
