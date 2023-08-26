@@ -1,4 +1,3 @@
-import os
 import re
 import sys
 import typing as t
@@ -28,6 +27,8 @@ class T:
 
 
 def get_library_root(working_root: str) -> T.LibraryPath:
+    from ...platform import IS_WINDOWS
+
     venv_root = fs.normpath(
         run_cmd_args(
             (*_poetry, 'env', 'info'),
@@ -35,8 +36,8 @@ def get_library_root(working_root: str) -> T.LibraryPath:
             ('--directory', working_root),
         )
     )
-    if os.name == 'nt':
-        out = f'{venv_root}/Lib/site-packages'
+    if IS_WINDOWS:
+        out = '{}/Lib/site-packages'.format(venv_root)
     else:
         out = '{}/lib/python{}.{}/site-packages'.format(
             venv_root, sys.version_info.major, sys.version_info.minor
@@ -48,14 +49,21 @@ def get_library_root(working_root: str) -> T.LibraryPath:
 def get_top_package_names(
     file: str, format: T.Format = 'auto'
 ) -> t.Iterator[T.PackageName]:
+    """
+    NOTE: be sure the yielded result is normalized by `normalize_name`.
+    """
     if format == 'auto':
         format = (
-            'pyproject'
+            'pyproject.toml'
             if file.endswith('pyproject.toml')
             else 'requirements.txt'
         )
+    assert file.endswith(('.toml', '.txt'))
+    assert format in ('pyproject.toml', 'requirements.txt')
+    print(file, format)
     if format == 'pyproject.toml':
-        yield from _get_top_names_by_poetry_2(working_root=fs.parent(file))
+        # yield from _get_top_names_by_poetry_2(working_root=fs.parent(file))
+        yield from _get_top_names_by_poetry_3(file)
     else:
         yield from _get_top_names_from_requirements_file(file)
 
@@ -98,13 +106,24 @@ def _get_top_names_by_poetry_2(working_root: str) -> t.Iterator[T.PackageName]:
             yield normalize_name(m.group())
 
 
-# noinspection PyUnusedLocal
 def _get_top_names_by_poetry_3(toml_file: str) -> t.Iterator[T.PackageName]:
     """
     parse pyproject.toml and get the names.
     this may not a good idea. use `_get_top_names_by_poetry_2` instead.
     """
-    raise NotImplementedError
+    if sys.version_info >= (3, 11):
+        from tomllib import load
+    else:  # pip install toml
+        from toml import load  # noqa
+    with open(toml_file, 'rb') as f:
+        data: dict = load(f)
+    deps: dict = data['tool']['poetry']['dependencies']
+    for k, group in data['tool']['poetry']['group'].items():
+        # TODO: skip values if its restrictions not match current version.
+        if k != 'dev':
+            deps.update(group['dependencies'])
+    print(deps, ':l')
+    return map(normalize_name, deps.keys())
 
 
 def _get_top_names_from_requirements_file(

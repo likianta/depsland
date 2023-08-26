@@ -40,6 +40,8 @@ class T:
     )
     PackageReferences = t.Dict[PackageName, t.Tuple[str, Path]]
     Packages = t.Dict[PackageName, PackageInfo]
+    
+    FlattenPackages = Packages
 
 
 # -----------------------------------------------------------------------------
@@ -72,7 +74,7 @@ def _get_custom_url(pkg_dir: str) -> t.Optional[str]:
 
 class LibraryIndexer:
     library_root: T.Path
-    packages: T.Packages
+    packages: T.FlattenPackages
     working_root: T.Path
     
     def __init__(self, working_root: T.Path):
@@ -101,14 +103,26 @@ class LibraryIndexer:
     
     # -------------------------------------------------------------------------
     
-    def index_packages(self) -> T.Packages:
+    def index_packages(self) -> T.FlattenPackages:
         all_pgk_refs: T.PackageReferences = dict(
             index_all_package_references(self.library_root)
         )
-        top_pkg_names = finder.get_top_package_names_by_poetry(
-            self.working_root
-        )
         print(len(all_pgk_refs))
+        
+        # get top package names
+        for filename in (
+            'pyproject.toml',
+            'requirements.txt',
+            'requirements.lock',
+        ):
+            if fs.exists(f := f'{self.working_root}/{filename}'):
+                top_pkg_names = finder.get_top_package_names(f)
+                break
+        else:
+            raise FileNotFoundError(
+                'no available deps spec found in your working root!',
+                self.working_root,
+            )
         
         top_pkgs: T.Packages = {}
         for top_name in top_pkg_names:
@@ -121,17 +135,26 @@ class LibraryIndexer:
             #     ),
             #     (top_name, top_pkgs[top_name]['version']),
             # )
-            dname, dpath = all_pgk_refs[top_name]  # dist-info dir
+            try:
+                dname, dpath = all_pgk_refs[top_name]  # dist-info dir
+            except KeyError:
+                print(
+                    'discard unexist dependency (mostly because of its '
+                    'restriction)',
+                    top_name,
+                )
+                continue
             top_pkgs[top_name] = self._create_package_info(dname, dpath)
-        self._fill_dependencies(top_pkgs)
         # print(top_pkgs, ':lv')
+        self._fill_dependencies_2(top_pkgs, all_pgk_refs)
+        print(top_pkgs, ':lv')
         
         before = len(top_pkgs)
-        out = self._flatten_packages(top_pkgs, all_pgk_refs)
-        # print(out, ':lv')
-        after = len(out)
+        fletten_pkgs = self._flatten_packages(top_pkgs, all_pgk_refs)
+        print(fletten_pkgs, ':lv')
+        after = len(fletten_pkgs)
         print('flatten packages done', f'count: {before} -> {after}', ':v2')
-        return out
+        return fletten_pkgs
     
     @staticmethod
     def _create_package_info(dname: str, dpath: T.Path) -> T.PackageInfo:
@@ -155,6 +178,9 @@ class LibraryIndexer:
         """
         notice: this method only works for top-level packages. i.e. it is not \
         available for `self._flatten_packages`.
+        DELETE: since `poetry show` may increase the range of listing \
+            packages, it is not a good idea to use `poetry show` to get \
+            dependencies.
         """
         
         def get_secondary_packages() -> (
@@ -184,12 +210,15 @@ class LibraryIndexer:
             packages[pkg_name]['dependencies'].append(dep_name)
     
     @staticmethod
-    def _fill_dependencies_2(  # not used.
+    def _fill_dependencies_2(
         packages: T.Packages,
         # base_packages: T.Packages,
         all_package_references: T.PackageReferences,
     ) -> None:
-        """another implementation, based on metadata."""
+        """
+        fill dependencies field of `T.PackageInfo:[value]` by analyzing its \
+        metadata info.
+        """
         for name, v in packages.items():
             # print(':i2', 'filling an indirect package', name)
             _, dpath = all_package_references[name]
@@ -212,9 +241,9 @@ class LibraryIndexer:
     
     def _flatten_packages(
         self, packages: T.Packages, all_package_references: T.PackageReferences
-    ) -> T.Packages:
+    ) -> T.FlattenPackages:
         nested: T.Packages = packages
-        flatten: T.Packages = packages.copy()
+        flatten: T.FlattenPackages = packages.copy()
         
         def recurse(unindexed_names: t.Sequence[T.PackageName]) -> None:
             """
@@ -231,7 +260,7 @@ class LibraryIndexer:
                 recurse(x)
         
         def collect_unindexed_names(
-            nested: T.Packages, flatten: T.Packages
+            nested: T.Packages, flatten: T.FlattenPackages
         ) -> t.Iterator[T.PackageName]:
             for v in nested.values():
                 for name in v['dependencies']:

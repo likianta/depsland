@@ -183,7 +183,7 @@ def build(target: str = '.', gen_exe: bool = True) -> None:
 
 
 @cli.cmd()
-def publish(target='.', full_upload=False) -> None:
+def publish(target='.', full_upload: bool = False) -> None:
     """
     publish dist assets to oss.
     if you configured a local oss server, it will generate assets to -
@@ -392,7 +392,7 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     return manifest_old, manifest_new
 
 
-def _get_manifest_path(target: str, ensure_exists=True) -> str:
+def _get_manifest_path(target: str, ensure_exists: bool = True) -> str:
     """return an abspath to manifest file."""
     if target.endswith('.json'):
         out = fs.normpath(target, True)
@@ -407,7 +407,7 @@ def _get_manifest_path(target: str, ensure_exists=True) -> str:
     return out
 
 
-def _run_cli():
+def _run_cli() -> None:
     """this function is for poetry to generate script entry point."""
     cli.run()
 

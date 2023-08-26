@@ -184,7 +184,7 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
         else:
             print(
                 'no previous version found, it may be your first time to '
-                f'install {appid}'
+                f'install "{appid}"'
             )
             print(
                 '[dim]be noted the first-time installation may consume a '
@@ -268,7 +268,10 @@ def _install_packages(
         total_diff = diff_manifest(manifest_new, manifest_old)
         collection = set()
         collection.update(
-            _install_custom_packages(total_diff['dependencies']['custom'])
+            _install_custom_packages(
+                total_diff['dependencies']['custom'],
+                manifest_new['dependencies']['custom_host'],
+            )
         )
         collection.update(
             _install_official_packages(total_diff['dependencies']['official'])
@@ -289,6 +292,7 @@ def _install_packages(
     
     def _install_custom_packages(
         diff: T.DependenciesDiff,
+        custom_host: T.FlattenPackages,
     ) -> t.Iterator[T.PackageId]:
         info0: T.PackageInfo
         info1: T.PackageInfo
@@ -296,12 +300,15 @@ def _install_packages(
             pkg_id = info1['package_id']
             if action in ('append', 'update'):
                 if not pypi.exists(pkg_id):
-                    print('install custom package', pkg_id)
+                    print('install custom package', pkg_id, ':i2')
                     zip_file = _download_from_oss(pkg_id)
                     _install_package(pkg_id, zip_file)
                     _index_package(
                         pkg_id,
-                        (info1[x]['package_id'] for x in info1['dependencies']),
+                        (
+                            custom_host[x]['package_id']
+                            for x in info1['dependencies']
+                        ),
                     )
             if action != 'delete':
                 yield pkg_id
@@ -309,7 +316,7 @@ def _install_packages(
     def _install_official_packages(
         diff: T.DependenciesDiff,
     ) -> t.Iterator[T.PackageId]:
-        collection = []
+        collection = []  # list[Future]
         info0: T.PackageInfo
         info1: T.PackageInfo
         for action, pkg_name, (info0, info1) in diff:
@@ -356,7 +363,7 @@ def _install_packages(
             f'downloads/{package_id}.zip',
             f'installed/{name}/{ver}',
         )
-        pypi.dependencies[package_id]['resolved'] = list(dependent_package_ids)
+        pypi.dependencies[package_id] = list(dependent_package_ids)
         pypi.updates[name] = int(time())
     
     def _install_package(package_id: str, zip_file: T.Path) -> None:

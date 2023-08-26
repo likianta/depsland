@@ -59,7 +59,7 @@ class Pip:
     
     def run(self, *args: t.Union[str, t.Tuple[str, ...]]) -> str:
         args = compose_cmd(*args)
-        # print(':pv', args)
+        print(':pv', args)
         return self._run(*self._pip_exec, *args)
     
     @staticmethod

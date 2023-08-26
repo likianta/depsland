@@ -25,7 +25,7 @@ class T:
     #   the RelPath is relative to manifest file's location.
     
     FlattenPackageNames = T0.PackageRelations
-    FlattenPackages = T0.Packages
+    FlattenPackages = T0.FlattenPackages
     # PackageId = T0.PackageId
     PackageInfo = T0.PackageInfo
     PackageName = T0.PackageName
