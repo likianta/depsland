@@ -211,14 +211,20 @@ def _upload(
         name_id: str, assets: t.Tuple[T.Path, ...]
     ) -> T.Path:
         root_i = _library_root
-        root_o = make_temp_dir()
-        root_m = f'{root_o}/{name_id}'
+        root_m = f'{temp_dir}/{name_id}'
+        root_o = temp_dir
         fs.make_dir(root_m)
         
         for relpath_i in assets:
             abspath_i = f'{root_i}/{relpath_i}'
             abspath_m = f'{root_m}/{relpath_i}'
-            fs.make_link(abspath_i, abspath_m, True)
+            # # fs.make_link(abspath_i, abspath_m, True)
+            #   FIXME: `fs.make_link` doesn't work for `ziptool.compress_dir`.
+            if os.path.isdir(abspath_i):
+                fs.copy_tree(abspath_i, abspath_m, True)
+            else:
+                fs.copy_file(abspath_i, abspath_m, True)
+        # print(os.listdir(root_m), ':v')  # TEST
         
         abspath_o = f'{root_o}/{name_id}.zip'
         ziptool.compress_dir(root_m, abspath_o)
