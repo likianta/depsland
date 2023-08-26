@@ -81,7 +81,8 @@ class LocalPyPI(Index):
                     Successfully downloaded argsense
                     [notice] A new release of pip is available: 23.2 -> 23.2.1
                     [notice] To update, run: pip install --upgrade pip
-            we can use regex to parse the line which starts with 'Saved'.
+            we can use regex to parse the line which starts with 'Saved ...' \
+            or 'File was already downloaded ...'.
         """
         pattern1 = re.compile(r'Saved (.+)')
         pattern2 = re.compile(r'File was already downloaded (.+)')
@@ -257,7 +258,7 @@ class LocalPyPI(Index):
     
     @staticmethod
     def linking(name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
-        print(':d', f'linking environment packages to {dst_dir}')
+        print(':d', f'linking required packages to "{dst_dir}"')
         print(':l', name_ids)
         link_venv(name_ids, dst_dir)
     
@@ -375,14 +376,13 @@ class LocalPyPI(Index):
     def update_indexes(self, packages: T.FlattenPackages) -> None:
         def recurse_updating_dependencies(
             name: T.Name, _resolved: t.Set[T.Name]
-        ):
+        ) -> None:
+            """ result: inflated `self.dependencies`. """
             for dep_name in packages[name]['dependencies']:
                 if dep_name not in _resolved:
                     _resolved.add(dep_name)
                     dep_info = packages[dep_name]
-                    self.dependencies[name]['resolved'].append(
-                        dep_info['package_id']
-                    )
+                    self.dependencies[name].append(dep_info['package_id'])
                     recurse_updating_dependencies(dep_name, _resolved)
         
         for name, info in packages.items():
@@ -398,7 +398,7 @@ class LocalPyPI(Index):
         self,
         name: T.Name,
         specs: T.VersionSpecs,
-        include_dependencies=False,
+        include_dependencies: bool = False,
     ) -> t.Iterator[t.Tuple[T.Path, bool]]:
         """
         return: iter[tuple[abspath_of_whl_or_tar_file, is_new_file]]

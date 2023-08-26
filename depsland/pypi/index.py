@@ -15,13 +15,11 @@ class T:
     Version = T0.Version
     
     # indexes
-    Dependencies = t.Dict[NameId, t.TypedDict('Dependencies', {
-        'resolved'  : t.List[NameId],
-        'unresolved': t.Dict[Name, t.Tuple[T0.VersionSpec, ...]],
-        #   see also `./insight.py : def _analyse_metadata_1()`
-    })]
+    # TODO: change `t.List[...]` to `t.Set[...]` type?
+    Dependencies = t.Dict[NameId, t.List[NameId]]
     Name2Versions = t.Dict[Name, t.List[Version]]
     #   t.List[Version]: a sorted versions list, from new to old.
+    #       TODO: the order may be irrelevant, so we can use `t.Set[Version]`?
     NameId2Paths = t.Dict[NameId, t.Tuple[Path, Path]]
     #                             ^-----------------1
     #   #1: tuple[downloaded_path, installed_path]
@@ -47,14 +45,9 @@ class Index:
     def _load_index(self) -> None:
         self.name_2_versions = loads(pypi_paths.name_2_versions)
         self.name_id_2_paths = loads(pypi_paths.name_id_2_paths)
-        self.dependencies = defaultdict(self._dependency_item_gen)
-        #   note: do not use lambda here, because it will be pickled.
+        self.dependencies = defaultdict(list)
         self.dependencies.update(loads(pypi_paths.dependencies))
         self.updates = loads(pypi_paths.updates)
-    
-    @staticmethod
-    def _dependency_item_gen() -> dict:
-        return {'resolved': [], 'unresolved': {}}
     
     def save_indexes(self) -> None:
         dumps(self.name_2_versions, pypi_paths.name_2_versions)
