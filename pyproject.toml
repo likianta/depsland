@@ -16,12 +16,13 @@ lk-utils = { url = "http://likianta.pro:2006/lk-utils/lk_utils-2.6.1b0-py3-none-
 oss2 = "*"
 pip = "*"
 poetry = "*"
-pyside6 = { version = "^6.4,<6.5", python = ">=3.8,<3.12" }
+pyside6 = { version = ">=6.4,<6.5", python = ">=3.8,<3.12" }
 pyyaml = "*"
 qmlease = "^3.0.3"
 qtpy = "*"
 rich = "*"
 semver = "^3.0.1"
+toml = { version = "*", python = "<3.11" }
 typing-extensions = { version = "*", python = "<3.11" }
 
 [tool.poetry.group.dev.dependencies]
