@@ -208,10 +208,10 @@ def _upload(
     _library_root = get_library_root(manifest_new.start_directory)
     
     def _compress_dependency(
-        name_id: str, assets: t.Tuple[T.Path, ...]
+        package_id: str, assets: t.Tuple[T.Path, ...]
     ) -> T.Path:
         root_i = _library_root
-        root_m = f'{temp_dir}/{name_id}'
+        root_m = f'{temp_dir}/{package_id}'
         root_o = temp_dir
         fs.make_dir(root_m)
         
@@ -226,7 +226,7 @@ def _upload(
                 fs.copy_file(abspath_i, abspath_m, True)
         # print(os.listdir(root_m), ':v')  # TEST
         
-        abspath_o = f'{root_o}/{name_id}.zip'
+        abspath_o = f'{root_o}/{package_id}.zip'
         ziptool.compress_dir(root_m, abspath_o)
         return abspath_o
     
