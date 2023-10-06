@@ -40,10 +40,12 @@ def main(manifest_file: str) -> None:
     _init_dist_tree(manifest, dir_o)
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
-    print(':t2s', 'creating launcher... (this may be slow)')
+    print(':t2sr', 'creating launcher... [yellow dim](this may be slow)[/]')
     _create_launcher(manifest, dir_o)
+    _create_debug_launcher(manifest, dir_o)
     _create_updator(manifest, dir_o)
     print(':t2', 'creating launcher done')
+    print('see result at {}'.format(fs.relpath(dir_o)))
 
 
 def _init_dist_tree(
@@ -181,10 +183,42 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     file_exe = f'{dst_dir}/{manifest["name"]}.exe'
     
     template = dedent(r'''
+        @echo off
         cd /d %~dp0
         cd source
         set PYTHONPATH=.
         .\python\python.exe -m depsland run {appid} --version {version}
+    ''')
+    
+    dumps(
+        template.format(appid=manifest['appid'], version=manifest['version']),
+        file_bat
+    )
+    
+    bat_2_exe(
+        file_bat, file_exe,
+        icon=manifest['launcher']['icon'],
+        show_console=manifest['launcher']['show_console'],
+        # uac_admin=True,
+        remove_bat=True
+    )
+
+
+# TEST
+def _create_debug_launcher(manifest: T.Manifest, dst_dir: str) -> None:
+    assert sysinfo.platform.SYSTEM == 'windows', (
+        'not implemented yet', sysinfo.platform.SYSTEM
+    )
+    
+    file_bat = f'{dst_dir}/{manifest["name"]} (Debug).bat'
+    file_exe = f'{dst_dir}/{manifest["name"]} (Debug).exe'
+    
+    template = dedent(r'''
+        cd /d %~dp0
+        cd source
+        set PYTHONPATH=.
+        .\python\python.exe -m depsland run {appid} --version {version}
+        pause
     ''')
     
     dumps(
@@ -210,6 +244,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:
     file_exe = f'{dst_dir}/Check Updates.exe'
     
     template = dedent(r'''
+        @echo off
         cd /d %~dp0
         cd source
         set PYTHONPATH=.

@@ -1,7 +1,7 @@
 {
     "appid": "hello_world",
     "name": "Hello World",
-    "version": "0.1.11",
+    "version": "0.1.12",
     "assets": {
         "hello_world": "all"
     },
@@ -15,5 +15,5 @@
         "start_menu": false,
         "show_console": true
     },
-    "depsland_version": "0.6.0b10"
+    "depsland_version": "0.6.0b12"
 }
