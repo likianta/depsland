@@ -35,18 +35,19 @@ def main(manifest_file: str) -> None:
     )
     _init_dist_tree(manifest, dir_o)
     _copy_assets(manifest, dir_o)
+    _make_venv(manifest, dir_o)
     _create_launcher(manifest, '{}/{}.exe'.format(dir_o, manifest['name']))
 
 
 def _init_dist_tree(
-    manifest: T.Manifest, root: str, pypi: str = 'least'
+    manifest: T.Manifest, dst_dir: str, pypi: str = 'least'
 ) -> None:
     """
     params:
         pypi: 'standard', 'least'
     """
     root_i = proj_paths.root
-    root_o = root
+    root_o = dst_dir
     
     appid = manifest['appid']
     version = manifest['version']
@@ -123,6 +124,16 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
         assert action == 'append', action
         print(':i2', relpath)
         fs.make_link(f'{root_i}/{relpath}', f'{root_o}/{relpath}', True)
+
+
+def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
+    if not manifest['dependencies']: return
+    from ..user_api.install import _install_dependencies  # noqa
+    _install_dependencies(
+        manifest,
+        init_manifest(manifest['appid'], manifest['name']),
+        f'{dst_dir}/source/apps/.venv/{manifest["appid"]}/{manifest["version"]}'
+    )
 
 
 def _create_launcher(manifest: T.Manifest, file_o: str) -> None:

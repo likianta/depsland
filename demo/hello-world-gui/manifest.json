@@ -1,9 +1,9 @@
 {
     "appid": "hello_world_gui",
     "name": "Hello World",
-    "version": "0.1.9",
+    "version": "0.2.0",
     "assets": {
-        "src": ""
+        "src": "all"
     },
     "dependencies": {
         "qmlease": ""
@@ -17,5 +17,5 @@
         "start_menu": false,
         "show_console": false
     },
-    "depsland_version": "0.6.0"
+    "depsland_version": "0.6.0b10"
 }
