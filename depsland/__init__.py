@@ -1,6 +1,6 @@
 if True:
     import lk_logger
-    lk_logger.setup(quiet=True, show_varnames=True)
+    lk_logger.setup(quiet=True, show_varnames=True, async_=False)
 
 from . import api
 from . import config
@@ -18,5 +18,5 @@ from .pypi import pypi
 from .pypi import rebuild_index as rebuild_pypi_index
 from .utils import bat_2_exe
 
-__version__ = '0.6.0b2'
-__date__ = '2023-02-22'
+__version__ = '0.6.0'
+__date__ = '2023-10-06'
