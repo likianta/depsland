@@ -90,7 +90,7 @@ def launch_gui(_app_token: str = None) -> None:
     """
     launch depsland gui.
     
-    args:
+    kwargs:
         _app_token: an appid or a path to a manifest file.
             if given, the app will launch and instantly install it.
     """
@@ -119,7 +119,7 @@ def init(manifest='.', app_name='', overwrite=False,
     
     kwargs:
         manifest (-m): if directory of manifest not exists, it will be created.
-        appname (-n): if not given, will use directory name as app name.
+        app_name (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
         overwrite (-w):
     """
@@ -128,7 +128,11 @@ def init(manifest='.', app_name='', overwrite=False,
 
 
 @cli.cmd()
-def build(manifest='.', gen_exe=True) -> None:
+def build(
+    manifest: str = '.',
+    offline: bool = False,
+    gen_exe: bool = True
+) -> None:
     """
     build your python application based on manifest file.
     the build result is stored in "dist" directory.
@@ -145,11 +149,11 @@ def build(manifest='.', gen_exe=True) -> None:
             its folder as the project directory.
             [blue dim]╰─ if a file is given, the file name could be custom. -
             (we suggest using 'manifest.json' as canondical.)[/]
-        icon: a '.ico' file (optional), suggest size above 128 * 128.
-            if you don't have '.ico' format, please use a convert tool (for -
-            example [u i]https://findicons.com/convert[/]) to get it.
     """
-    api.build(_fix_manifest_param(manifest), gen_exe)
+    if offline:
+        api.build_offline(_fix_manifest_param(manifest))
+    else:
+        api.build(_fix_manifest_param(manifest), gen_exe)
 
 
 @cli.cmd()

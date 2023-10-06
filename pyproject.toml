@@ -1,16 +1,18 @@
 [tool.poetry]
 name = "depsland"
-version = "0.6.0"
+version = "0.6.0b10"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
 homepage = "https://github.com/likianta/depsland"
 
 # po export -o requirements.lock --without-hashes
+# python/python.exe -m pip install -r requirements.lock --no-deps \
+#   --no-warn-script-location --disable-pip-version-check
 
 [tool.poetry.dependencies]
 python = "^3.10"
-argsense = "^0.5.2"
+argsense = "^0.5.3"
 conflore = "^0.2.0"
 lk-logger = { url = "http://likianta.pro:2006/lk-logger/lk_logger-5.7.0a10-py3-none-any.whl" }
 lk-utils = { url = "http://likianta.pro:2006/lk-utils/lk_utils-2.7.0a8-py3-none-any.whl" }
