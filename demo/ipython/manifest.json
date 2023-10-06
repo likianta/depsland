@@ -1,0 +1,21 @@
+{
+    "appid": "ipython_test",
+    "name": "IPython Test",
+    "version": "0.1.4",
+    "assets": {
+        "play.py": ""
+    },
+    "dependencies": {
+        "ipython": "*"
+    },
+    "pypi": [],
+    "launcher": {
+        "script": "play.py",
+        "icon": "",
+        "cli_tool": false,
+        "desktop": false,
+        "start_menu": false,
+        "show_console": true
+    },
+    "depsland_version": "0.6.0b11"
+}
