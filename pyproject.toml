@@ -14,7 +14,7 @@ homepage = "https://github.com/likianta/depsland"
 python = "^3.10"
 argsense = "^0.5.3"
 conflore = "^0.2.0"
-lk-logger = { url = "http://likianta.pro:2006/lk-logger/lk_logger-5.7.0a10-py3-none-any.whl" }
+lk-logger = "^5.6.3"
 lk-utils = { url = "http://likianta.pro:2006/lk-utils/lk_utils-2.7.0a8-py3-none-any.whl" }
 oss2 = "*"
 # pyside6 = "*"

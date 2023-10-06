@@ -53,7 +53,7 @@ def _init_dist_tree(
     appid = manifest['appid']
     version = manifest['version']
     
-    fs.make_dir(f'{root_o}')
+    fs.make_dirs(f'{root_o}')
     fs.make_dir(f'{root_o}/source')
     fs.make_dir(f'{root_o}/source/apps')
     fs.make_dir(f'{root_o}/source/apps/.bin')
@@ -149,7 +149,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         cd /d %~dp0
         cd source
         set PYTHONPATH=.
-        .\python\python.exe -m depsland run {appid} --:version {version}
+        .\python\python.exe -m depsland run {appid} --version {version}
     ''')
     
     dumps(

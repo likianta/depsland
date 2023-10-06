@@ -431,12 +431,12 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "5.7.0a10"
+version = "5.6.3"
 description = "Python advanced print with varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-5.7.0a10-py3-none-any.whl", hash = "sha256:93dba800cc90bec46237523165ce165ec4eb5d21e62f4b147a5517b624ea644e"},
+    {file = "lk_logger-5.6.3-py3-none-any.whl", hash = "sha256:b3b474a86c7db92b6ccf551337785d3124da83319083653074c2bd569a4c3d37"},
 ]
 
 [package.dependencies]
@@ -444,8 +444,9 @@ objprint = "*"
 rich = "*"
 
 [package.source]
-type = "url"
-url = "http://likianta.pro:2006/lk-logger/lk_logger-5.7.0a10-py3-none-any.whl"
+type = "legacy"
+url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple"
+reference = "tsinghua"
 
 [[package]]
 name = "lk-utils"
@@ -1142,4 +1143,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "31020d3c71c6b9d30e17ea342221682a44d88ee07f4a8be3078740b2cc897b3d"
+content-hash = "4c50636b4043a33ff450897bc07c6a68023109b6be8155186d78d65407f67dbe"
