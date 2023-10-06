@@ -36,7 +36,8 @@ def main(manifest_file: str) -> None:
     _init_dist_tree(manifest, dir_o)
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
-    _create_launcher(manifest, '{}/{}.exe'.format(dir_o, manifest['name']))
+    _create_launcher(manifest, dir_o)
+    _create_updator(manifest, dir_o)
 
 
 def _init_dist_tree(
@@ -120,7 +121,7 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     root_o = f'{dst_dir}/source/apps/{manifest["appid"]}/{manifest["version"]}'
     init_target_tree(manifest, root_o)
     
-    for action, relpath, (info0, info1) in diff['assets']:
+    for action, relpath, _ in diff['assets']:
         assert action == 'append', action
         print(':i2', relpath)
         fs.make_link(f'{root_i}/{relpath}', f'{root_o}/{relpath}', True)
@@ -136,11 +137,13 @@ def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
     )
 
 
-def _create_launcher(manifest: T.Manifest, file_o: str) -> None:
+def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     assert sysinfo.platform.SYSTEM == 'windows', (
         'not implemented yet', sysinfo.platform.SYSTEM
     )
-    assert file_o.endswith('.exe')
+    
+    file_bat = f'{dst_dir}/{manifest["name"]}.bat'
+    file_exe = f'{dst_dir}/{manifest["name"]}.exe'
     
     template = dedent(r'''
         cd /d %~dp0
@@ -151,13 +154,42 @@ def _create_launcher(manifest: T.Manifest, file_o: str) -> None:
     
     dumps(
         template.format(appid=manifest['appid'], version=manifest['version']),
-        file_m := fs.replace_ext(file_o, 'bat')
+        file_bat
     )
     
     bat_2_exe(
-        file_m, file_o,
+        file_bat, file_exe,
         icon=manifest['launcher']['icon'],
         show_console=manifest['launcher']['show_console'],
         uac_admin=True,
+        remove_bat=True
+    )
+    
+    
+def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:
+    assert sysinfo.platform.SYSTEM == 'windows', (
+        'not implemented yet', sysinfo.platform.SYSTEM
+    )
+    
+    file_bat = f'{dst_dir}/Check Updates.bat'
+    file_exe = f'{dst_dir}/Check Updates.exe'
+    
+    template = dedent(r'''
+        cd /d %~dp0
+        cd source
+        set PYTHONPATH=.
+        .\python\python.exe -m depsland launch-gui {appid}
+    ''')
+    
+    dumps(
+        template.format(appid=manifest['appid']),
+        file_bat
+    )
+    
+    bat_2_exe(
+        file_bat, file_exe,
+        icon=manifest['launcher']['icon'],
+        show_console=False,
+        # uac_admin=True,
         remove_bat=True
     )

@@ -22,29 +22,33 @@ class T:
     AppToken = t.Optional[str]
 
 
-def launch_app(startup_run: T.AppToken = None) -> None:
+def launch_app(default: T.AppToken = None, run_at_once: bool = False) -> None:
     """
     args:
-        startup_run: an appid or a path to a manifest file.
+        default: an appid or a path to a manifest file.
             if not given, the app will start normally.
+        run_at_once: if true and default is set, will run app installation \
+            immediately when UI is shown.
     """
     pyassets.set_root(xpath('qml/Assets'))
     app.set_app_icon(xpath('../launcher.ico'))
-    app.register(Home(startup_run))
+    app.register(Home(default, run_at_once))
     app.run(xpath('qml/Home.qml'))
 
 
 class Home(QObject):
     running = cast(bool, AutoProp(False))
+    _default: T.AppToken
     _info_item: QObject
     _info_updated = signal(str)  # this is for sub-thread to emit.
     _installation_done = signal(bool)
     _installing_thread: t.Optional[ThreadWorker] = None
-    _startup_run: T.AppToken
+    _startup_run: bool
     
-    def __init__(self, app_token: T.AppToken = None):
+    def __init__(self, app_token: T.AppToken = None, run_at_once: bool = False):
         super().__init__()
-        self._startup_run = app_token
+        self._default = app_token
+        self._startup_run = run_at_once
     
     @slot(result=str)
     def get_app_version(self) -> str:
@@ -61,8 +65,9 @@ class Home(QObject):
             drop_area: QObject,
     ) -> None:
         from ...config import auto_saved
-        input_bar['text'] = self._startup_run \
-                            or auto_saved['appstore']['last_input']
+        input_bar['text'] = (
+            self._default or auto_saved['appstore']['last_input']
+        )
         auto_saved.bind('appstore.last_input', lambda: input_bar['text'])
         app.on_exit_register(auto_saved.save)
         
@@ -136,7 +141,7 @@ class Home(QObject):
         bind_events()
         
         if self._startup_run:
-            self._install(self._startup_run)
+            self._install(self._default)
     
     def _install(self, app_token: T.AppToken) -> None:
         # check ability

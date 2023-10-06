@@ -86,26 +86,35 @@ def welcome(confirm_close=False) -> None:
 
 
 @cli.cmd()
-def launch_gui(_app_token: str = None) -> None:
+def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
     """
     launch depsland gui.
     
     kwargs:
         _app_token: an appid or a path to a manifest file.
             if given, the app will launch and instantly install it.
+        _run_at_once:
+            for `true` example, see `./api/dev_api/publish.py : main() : -
+            \\[var] command`
+            for `false` example, see `./api/dev_api/offline_build.py : -
+            _create_updator()`
     """
+    # import os
+    # os.environ['QT_API'] = 'pyside6_lite'
     try:
         import qmlease
     except ModuleNotFoundError:
         print('launching GUI failed. you may forget to install qt for python '
               'library (suggest `pip install pyside6` etc.)', ':v4')
         return
+    
     if _app_token and os.path.isfile(_app_token):
-        _app_token = fs.normpath(_app_token, True)
-    # import os
-    # os.environ['QT_API'] = 'pyside6_lite'
+        _app_token = fs.abspath(_app_token)
+    # if _run_at_once is None:
+    #     _run_at_once = bool(_app_token)
+    
     from .ui import launch_app
-    launch_app(_app_token)
+    launch_app(_app_token, _run_at_once)
 
 
 # -----------------------------------------------------------------------------
