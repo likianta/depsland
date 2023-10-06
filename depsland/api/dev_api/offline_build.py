@@ -21,8 +21,12 @@ from lk_utils import fs
 from lk_utils.textwrap import dedent
 
 from ... import system_info as sysinfo
-from ...manifest import T, compare_manifests, init_manifest, init_target_tree
-from ...manifest import load_manifest, dump_manifest
+from ...manifest import T
+from ...manifest import compare_manifests
+from ...manifest import dump_manifest
+from ...manifest import init_manifest
+from ...manifest import init_target_tree
+from ...manifest import load_manifest
 from ...paths import project as proj_paths
 from ...utils import bat_2_exe
 
@@ -36,8 +40,10 @@ def main(manifest_file: str) -> None:
     _init_dist_tree(manifest, dir_o)
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
+    print(':t2s', 'creating launcher... (this may be slow)')
     _create_launcher(manifest, dir_o)
     _create_updator(manifest, dir_o)
+    print(':t2', 'creating launcher done')
 
 
 def _init_dist_tree(
@@ -112,6 +118,8 @@ def _init_dist_tree(
 
 
 def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
+    # from .publish import _copy_assets
+    
     diff = compare_manifests(
         new=manifest,
         old=init_manifest(manifest['appid'], manifest['name'])
@@ -121,10 +129,37 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     root_o = f'{dst_dir}/source/apps/{manifest["appid"]}/{manifest["version"]}'
     init_target_tree(manifest, root_o)
     
-    for action, relpath, _ in diff['assets']:
+    # info1: T.AssetInfo
+    for action, relpath, (info0, info1) in diff['assets']:
         assert action == 'append', action
+        
         print(':i2', relpath)
-        fs.make_link(f'{root_i}/{relpath}', f'{root_o}/{relpath}', True)
+        path_i = f'{root_i}/{relpath}'
+        path_o = f'{root_o}/{relpath}'
+        
+        # ref: `.publish._copy_assets : match case`
+        match info1.scheme:
+            case 'all':
+                fs.make_link(path_i, path_o, True)
+            case 'all_dirs':
+                fs.clone_tree(path_i, path_o, True)
+            case 'root':
+                pass
+            case 'top':
+                for dn in fs.find_dir_names(path_i):
+                    fs.make_dir('{}/{}'.format(path_o, dn))
+                for f in fs.find_files(path_i):
+                    file_i = f.path
+                    file_o = '{}/{}'.format(path_o, f.name)
+                    fs.make_link(file_i, file_o)
+            case 'top_files':
+                for f in fs.find_files(path_i):
+                    file_i = f.path
+                    file_o = '{}/{}'.format(path_o, f.name)
+                    fs.make_link(file_i, file_o)
+            case 'top_dirs':
+                for dn in fs.find_dir_names(path_i):
+                    fs.make_dir('{}/{}'.format(path_o, dn))
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
@@ -161,11 +196,11 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         file_bat, file_exe,
         icon=manifest['launcher']['icon'],
         show_console=manifest['launcher']['show_console'],
-        uac_admin=True,
+        # uac_admin=True,
         remove_bat=True
     )
-    
-    
+
+
 def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:
     assert sysinfo.platform.SYSTEM == 'windows', (
         'not implemented yet', sysinfo.platform.SYSTEM

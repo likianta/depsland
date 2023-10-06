@@ -204,12 +204,12 @@ def _copy_assets(
         return file_o
     
     match scheme:
-        case 'root':
-            pass
         case 'all':
             fs.make_link(path_i, dir_o, True)
         case 'all_dirs':
             fs.clone_tree(path_i, dir_o, True)
+        case 'root':
+            pass
         case 'top':
             for dn in fs.find_dir_names(path_i):
                 os.mkdir('{}/{}'.format(dir_o, dn))
