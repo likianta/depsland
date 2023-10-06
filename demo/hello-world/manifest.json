@@ -1,19 +1,19 @@
 {
     "appid": "hello_world",
     "name": "Hello World",
-    "version": "0.2.6",
+    "version": "0.1.11",
     "assets": {
-        "src": "",
-        "readme.md": ""
+        "hello_world": "all"
     },
     "dependencies": {},
     "pypi": [],
     "launcher": {
-        "script": "src/hello_world.py",
+        "script": "hello_world/main.py",
         "icon": "",
         "cli_tool": false,
         "desktop": false,
         "start_menu": false,
         "show_console": true
-    }
+    },
+    "depsland_version": "0.6.0b10"
 }
