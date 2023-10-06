@@ -25,8 +25,9 @@ print(':v2', f'depsland version: {__version__}')
 
 
 @cli.cmd()
-def full_build(oss_scheme: str, pypi_scheme='full',
-               add_python_path=True) -> None:
+def full_build(
+    oss_scheme: str, pypi_scheme='full', _add_python_path=True
+) -> None:
     """
     generate `dist/depsland-setup-<version>` folder.
     
@@ -44,8 +45,7 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     """
     root_i = paths.project.root
     root_o = '{dist}/depsland-setup-{version}'.format(
-        dist=paths.project.dist,
-        version=__version__
+        dist=paths.project.dist, version=__version__
     )
     assert not exists(root_o)
     os.mkdir(root_o)
@@ -75,80 +75,125 @@ def full_build(oss_scheme: str, pypi_scheme='full',
     # -------------------------------------------------------------------------
     
     # copy files
-    fs.copy_file(f'{root_i}/build/exe/depsland.exe',
-                 f'{root_o}/build/exe/depsland.exe')
-    fs.copy_file(f'{root_i}/build/exe/depsland-sui.exe',
-                 f'{root_o}/build/exe/depsland-sui.exe')
-    fs.copy_file(f'{root_i}/build/exe/depsland-suw.exe',
-                 f'{root_o}/build/exe/depsland-suw.exe')
-    fs.copy_file(f'{root_i}/build/exe/desktop.exe',
-                 f'{root_o}/build/exe/desktop.exe')
-    fs.copy_file(f'{root_i}/build/exe/launcher.ico',
-                 f'{root_o}/build/exe/launcher.ico')
-    fs.copy_file(f'{root_i}/build/exe/setup.exe',
-                 f'{root_o}/setup.exe')
-    fs.copy_tree(f'{root_i}/build/setup_wizard',
-                 f'{root_o}/build/setup_wizard')
-    fs.copy_file(f'{root_i}/build/depsland_setup.py',
-                 f'{root_o}/build/depsland_setup.py')
-    fs.copy_tree(f'{root_i}/depsland',
-                 f'{root_o}/depsland')
-    fs.copy_tree(f'{root_i}/sidework',
-                 f'{root_o}/sidework')
-    fs.copy_file(f'{root_i}/.depsland_project',
-                 f'{root_o}/.depsland_project')
+    fs.copy_file(
+        f'{root_i}/build/exe/depsland.exe',
+        f'{root_o}/build/exe/depsland.exe',
+    )
+    fs.copy_file(
+        f'{root_i}/build/exe/depsland-sui.exe',
+        f'{root_o}/build/exe/depsland-sui.exe',
+    )
+    fs.copy_file(
+        f'{root_i}/build/exe/depsland-suw.exe',
+        f'{root_o}/build/exe/depsland-suw.exe',
+    )
+    fs.copy_file(
+        f'{root_i}/build/exe/desktop.exe',
+        f'{root_o}/build/exe/desktop.exe',
+    )
+    fs.copy_file(
+        f'{root_i}/build/exe/launcher.ico',
+        f'{root_o}/build/exe/launcher.ico',
+    )
+    fs.copy_file(
+        f'{root_i}/build/exe/setup.exe',
+        f'{root_o}/setup.exe',
+    )
+    fs.copy_tree(
+        f'{root_i}/build/setup_wizard',
+        f'{root_o}/build/setup_wizard',
+    )
+    fs.copy_file(
+        f'{root_i}/build/depsland_setup.py',
+        f'{root_o}/build/depsland_setup.py',
+    )
+    fs.copy_tree(
+        f'{root_i}/depsland',
+        f'{root_o}/depsland',
+    )
+    fs.copy_tree(
+        f'{root_i}/sidework',
+        f'{root_o}/sidework',
+    )
+    fs.copy_file(
+        f'{root_i}/.depsland_project',
+        f'{root_o}/.depsland_project',
+    )
     
     if oss_scheme == 'aliyun':
         assert exists(custom := os.getenv('DEPSLAND_CONFIG_PATH'))
         assert loads(f'{custom}/depsland.yaml')['oss']['server'] == 'aliyun'
-        fs.copy_file(f'{custom}/depsland.yaml',
-                     f'{root_o}/conf/depsland.yaml')
+        fs.copy_file(
+            f'{custom}/depsland.yaml',
+            f'{root_o}/conf/depsland.yaml',
+        )
     else:
         assert loads(f'{root_i}/conf/depsland.yaml')['oss']['server'] == 'local'
-        fs.copy_file(f'{root_i}/conf/depsland.yaml',
-                     f'{root_o}/conf/depsland.yaml')
+        fs.copy_file(
+            f'{root_i}/conf/depsland.yaml',
+            f'{root_o}/conf/depsland.yaml',
+        )
     
-    if add_python_path:
+    if _add_python_path:
         if pypi_scheme == 'full':
-            fs.make_link(f'{root_i}/python',
-                         f'{root_o}/python')
+            fs.make_link(
+                f'{root_i}/python',
+                f'{root_o}/python',
+            )
         else:
             assert exists(f'{root_i}/tests/pure_python_standalone')
-            fs.make_link(f'{root_i}/tests/pure_python_standalone',
-                         f'{root_o}/python')
+            fs.make_link(
+                f'{root_i}/tests/pure_python_standalone',
+                f'{root_o}/python',
+            )
     
     if pypi_scheme == 'full':
-        fs.make_link(f'{root_i}/pypi_self',
-                     f'{root_o}/pypi')
+        fs.make_link(f'{root_i}/pypi_self', f'{root_o}/pypi')
     elif pypi_scheme == 'least':
         assert exists(f'{root_i}/tests/pure_pypi_index')
-        fs.copy_tree(f'{root_i}/tests/pure_pypi_index',
-                     f'{root_o}/pypi')
+        fs.copy_tree(
+            f'{root_i}/tests/pure_pypi_index',
+            f'{root_o}/pypi',
+        )
         fs.remove_tree(f'{root_o}/pypi/downloads')
-        fs.make_link(f'{root_i}/pypi_self/downloads',
-                     f'{root_o}/pypi/downloads')
+        fs.make_link(
+            f'{root_i}/pypi_self/downloads',
+            f'{root_o}/pypi/downloads',
+        )
         fs.remove_tree(f'{root_o}/pypi/installed')
-        fs.make_link(f'{root_i}/pypi_self/installed',
-                     f'{root_o}/pypi/installed')
+        fs.make_link(
+            f'{root_i}/pypi_self/installed',
+            f'{root_o}/pypi/installed',
+        )
     else:
         assert exists(f'{root_i}/tests/pure_pypi_index')
-        fs.copy_tree(f'{root_i}/tests/pure_pypi_index',
-                     f'{root_o}/pypi')
+        fs.copy_tree(
+            f'{root_i}/tests/pure_pypi_index',
+            f'{root_o}/pypi',
+        )
     
     # -------------------------------------------------------------------------
     
     # dump manifest
-    dump_manifest(load_manifest(f'{root_i}/manifest.json'),
-                  f'{root_o}/manifest.pkl')
+    dump_manifest(
+        load_manifest(f'{root_i}/manifest.json'),
+        f'{root_o}/manifest.pkl',
+    )
     
     # post check
     if pypi_scheme == 'least':
         print('overwrite setup.exe')
-        fs.copy_file(f'{root_i}/build/exe/setup2.exe',
-                     f'{root_o}/setup.exe', overwrite=True)
+        fs.copy_file(
+            f'{root_i}/build/exe/setup2.exe',
+            f'{root_o}/setup.exe',
+            overwrite=True,
+        )
     if pypi_scheme in ('least', 'none'):
-        print('note: you need to manually remove `python/lib/site-packages/'
-              '<symlinked_names>` before publishing this dist', ':v3')
+        print(
+            'note: you need to manually remove `python/lib/site-packages/'
+            '<symlinked_names>` before publishing this dist',
+            ':v3',
+        )
     
     print(':t', 'see result at ' + fs.relpath(root_o))
 
@@ -158,7 +203,7 @@ def bat_2_exe(file_i: str, show_console=True, uac_admin=False):
     """
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
-        
+    
     kwargs:
         show_console (-c):
         uac_admin (-u):
@@ -167,7 +212,7 @@ def bat_2_exe(file_i: str, show_console=True, uac_admin=False):
         file_i,
         icon=xpath('exe/launcher.ico'),
         show_console=show_console,
-        uac_admin=uac_admin
+        uac_admin=uac_admin,
     )
 
 
