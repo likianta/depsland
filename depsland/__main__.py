@@ -277,17 +277,32 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         pkg_dir=paths.apps.get_packages(appid, version)
     )
     
-    if sysinfo.platform.IS_WINDOWS:
-        _toast_notification(
-            'Depsland is launching "{}"'.format(manifest['name'])
-        )
+    if not manifest['launcher']['show_console']:
+        if sysinfo.platform.IS_WINDOWS:
+            _toast_notification(
+                'Depsland is launching "{}"'.format(manifest['name'])
+            )
     
     # print(':v', args, kwargs)
     lk_logger.unload()
-    subprocess.run(
-        (*command, *args_2_cargs(*args, **kwargs)),
-        cwd=manifest['start_directory']
-    )
+    try:
+        subprocess.run(
+            (*command, *args_2_cargs(*args, **kwargs)),
+            check=True,
+            cwd=manifest['start_directory'],
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        lk_logger.enable()
+        print(':v4f', '\n' + (e.stderr or '').replace('\r', ''))
+        if manifest['launcher']['show_console']:
+            # raise e
+            input('press enter to close window... ')
+        else:
+            _toast_notification(
+                'Exception occurred at "{}"!'.format(manifest['name'])
+            )
 
 
 # -----------------------------------------------------------------------------
@@ -383,6 +398,7 @@ def _run_cli() -> None:
     cli.run()
 
 
+# windows only
 def _toast_notification(text: str) -> None:
     from windows_toasts import Toast
     from windows_toasts import WindowsToaster
