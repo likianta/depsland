@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.6.0b10"
+version = "0.6.0b13"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -15,12 +15,12 @@ python = "^3.10"
 argsense = "^0.5.3"
 conflore = "^0.2.0"
 lk-logger = "^5.6.3"
-lk-utils = { url = "http://likianta.pro:2006/lk-utils/lk_utils-2.7.0a8-py3-none-any.whl" }
+lk-utils = "^2.7.0"
 oss2 = "*"
 # pyside6 = "*"
 pyyaml = "*"
-# qmlease = "^3.0.3"
-qmlease = { url = "http://likianta.pro:2006/qmlease/qmlease-3.1.0a16-py3-none-any.whl" }
+qmlease = "^3.0.3"
+# qmlease = { url = "http://likianta.pro:2006/qmlease/qmlease-3.1.0a16-py3-none-any.whl" }
 rich = "*"
 semver = "^3.0.0dev4"
 
