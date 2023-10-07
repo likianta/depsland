@@ -8,7 +8,6 @@ from lk_utils import new_thread
 from lk_utils import xpath
 from lk_utils.filesniff import filename
 from lk_utils.subproc import ThreadWorker
-
 from qmlease import AutoProp
 from qmlease import QObject
 from qmlease import app

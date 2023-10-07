@@ -1,7 +1,7 @@
 {
     "appid": "hello_world_gui",
     "name": "Hello World",
-    "version": "0.2.1",
+    "version": "0.2.3",
     "assets": {
         "src": "all"
     },
