@@ -10,6 +10,7 @@ from . import __path__
 from . import __version__
 from . import api
 from . import paths
+from . import system_info as sysinfo
 from .manifest import T
 from .manifest import get_last_installed_version
 
@@ -107,6 +108,9 @@ def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
         print('launching GUI failed. you may forget to install qt for python '
               'library (suggest `pip install pyside6` etc.)', ':v4')
         return
+    
+    if sysinfo.platform.IS_WINDOWS:
+        _toast_notification('Depsland is launching')
     
     if _app_token and os.path.isfile(_app_token):
         _app_token = fs.abspath(_app_token)
@@ -273,6 +277,11 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         pkg_dir=paths.apps.get_packages(appid, version)
     )
     
+    if sysinfo.platform.IS_WINDOWS:
+        _toast_notification(
+            'Depsland is launching "{}"'.format(manifest['name'])
+        )
+    
     # print(':v', args, kwargs)
     lk_logger.unload()
     subprocess.run(
@@ -369,9 +378,18 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     return manifest_old, manifest_new
 
 
-def _run_cli():
+def _run_cli() -> None:
     """ this function is for poetry to generate script entry point. """
     cli.run()
+
+
+def _toast_notification(text: str) -> None:
+    from windows_toasts import Toast
+    from windows_toasts import WindowsToaster
+    toaster = WindowsToaster('Depsland Launcher')
+    toast = Toast()
+    toast.text_fields = [text]
+    toaster.show_toast(toast)
 
 
 if __name__ == '__main__':

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.6.0"
+version = "0.6.1a0"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -23,6 +23,7 @@ qmlease = "^3.0.3"
 # qmlease = { url = "http://likianta.pro:2006/qmlease/qmlease-3.1.0a16-py3-none-any.whl" }
 rich = "*"
 semver = "^3.0.0dev4"
+windows-toasts = { version = "*", platform = "win32" }
 
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'

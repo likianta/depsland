@@ -8,6 +8,7 @@ __all__ = [
 
 
 class Platform:
+    IS_WINDOWS: bool
     MACHINE: t.Literal['arm', 'x64']
     SYSTEM: t.Literal['darwin', 'linux', 'windows']
     
@@ -18,6 +19,8 @@ class Platform:
             self.SYSTEM = sys
         else:
             raise Exception(f'unsupported system: {sys}')
+        
+        self.IS_WINDOWS = self.SYSTEM == 'windows'
         
         machine = _platform.machine().lower()
         if machine in ('amd64', 'x86_64'):
