@@ -229,7 +229,7 @@ def _create_debug_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     bat_2_exe(
         file_bat, file_exe,
         icon=manifest['launcher']['icon'],
-        show_console=manifest['launcher']['show_console'],
+        show_console=True,
         # uac_admin=True,
         remove_bat=True
     )
