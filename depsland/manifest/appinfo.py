@@ -26,7 +26,7 @@ class T:
         },
     )
     Launcher = T0.Launcher1
-    Manifest = t.Union[T0.Manifest2, Manifest]
+    Manifest = Manifest
     
     # extra ports for external use
     AssetInfo = T0.AssetInfo

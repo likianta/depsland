@@ -1,7 +1,6 @@
 import os
 import typing as t
 from collections import namedtuple
-from copy import deepcopy
 from os.path import exists
 from textwrap import dedent
 from time import sleep
@@ -56,27 +55,19 @@ class T:
             ),
         ),
     ]
-    Assets2 = t.Dict[AbsPath, AssetInfo]
     
     Dependencies0 = t.TypedDict(
         'Dependencies0',
         {
-            'custom_host': t.List[PackageName],
+            'custom_host'  : t.List[PackageName],
             'official_host': t.List[PackageName],
         },
     )
     Dependencies1 = t.TypedDict(
         'Dependencies1',
         {  # a flatten list
-            'root': AbsPath,
-            'custom_host': FlattenPackages,
-            'official_host': FlattenPackages,
-        },
-    )
-    Dependencies2 = t.TypedDict(
-        'Dependencies2',
-        {  # all path related items are abspaths.
-            'custom_host': FlattenPackages,
+            'root'         : AbsPath,
+            'custom_host'  : FlattenPackages,
             'official_host': FlattenPackages,
         },
     )
@@ -84,22 +75,20 @@ class T:
     Launcher0 = t.TypedDict(
         'Launcher0',
         {
-            'target': AnyPath,
-            'type': t.Literal['executable', 'module', 'package'],
-            'icon': AnyPath,
+            'target'           : AnyPath,
+            'type'             : t.Literal['executable', 'module', 'package'],
+            'icon'             : AnyPath,
             #   the origin icon could be: empty, a relpath, or an abspath.
-            'args': t.List[t.Any],
-            'kwargs': t.Dict[str, t.Any],
-            'enable_cli': bool,
-            'add_to_desktop': bool,
+            'args'             : t.List[t.Any],
+            'kwargs'           : t.Dict[str, t.Any],
+            'enable_cli'       : bool,
+            'add_to_desktop'   : bool,
             'add_to_start_menu': bool,
-            'show_console': bool,
+            'show_console'     : bool,
         },
     )
     Launcher1 = Launcher0
     #   same with Launcher0 but 'target' and 'icon' are RelPath.
-    Launcher2 = Launcher1
-    #   same with Launcher1 but 'target' and 'icon' are AbsPath.
     
     # -------------------------------------------------------------------------
     
@@ -110,12 +99,12 @@ class T:
     Manifest0 = t.TypedDict(
         'Manifest0',
         {
-            'appid': str,
-            'name': str,
-            'version': str,
-            'assets': Assets0,
-            'dependencies': Dependencies0,
-            'launcher': Launcher0,
+            'appid'           : str,
+            'name'            : str,
+            'version'         : str,
+            'assets'          : Assets0,
+            'dependencies'    : Dependencies0,
+            'launcher'        : Launcher0,
             'depsland_version': str,
         },
         total=False,
@@ -132,28 +121,13 @@ class T:
     Manifest1 = t.TypedDict(
         'Manifest1',
         {
-            'appid': str,
-            'name': str,
-            'version': str,
-            'start_directory': AbsPath,
-            'assets': Assets1,
-            'dependencies': Dependencies1,
-            'launcher': Launcher1,
-            'depsland_version': str,
-        },
-    )
-    
-    # Manifest2: finalized manifest for easy accessing path-based items.
-    Manifest2 = t.TypedDict(
-        'Manifest2',
-        {
-            'appid': str,
-            'name': str,
-            'version': str,
-            'start_directory': AbsPath,
-            'assets': Assets2,
-            'dependencies': Dependencies2,
-            'launcher': Launcher2,
+            'appid'           : str,
+            'name'            : str,
+            'version'         : str,
+            'start_directory' : AbsPath,
+            'assets'          : Assets1,
+            'dependencies'    : Dependencies1,
+            'launcher'        : Launcher1,
             'depsland_version': str,
         },
     )
@@ -188,9 +162,9 @@ class T:
     ManifestDiff = t.TypedDict(
         'ManifestDiff',
         {
-            'assets': AssetsDiff,
+            'assets'      : AssetsDiff,
             'dependencies': t.TypedDict('DependenciesDiff', {
-                'custom': DependenciesDiff,
+                'custom'  : DependenciesDiff,
                 'official': DependenciesDiff,
             }),
         },
@@ -204,10 +178,8 @@ def init_manifest(appid: str, appname: str) -> 'Manifest':
     return Manifest.init(appid, appname)
 
 
-def load_manifest(file: T.AnyPath) -> t.Union[T.Manifest2, 'Manifest']:
-    out = Manifest()
-    out.load_from_file(file)
-    return out
+def load_manifest(file: T.AnyPath) -> 'Manifest':
+    return Manifest.load_from_file(file)
 
 
 def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
@@ -217,11 +189,11 @@ def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
 
 def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
     return {
-        'assets': _diff_assets(
+        'assets'      : _diff_assets(
             new.model['assets'], old.model['assets']  # fmt:skip
         ),
         'dependencies': {
-            'custom': _diff_dependencies(
+            'custom'  : _diff_dependencies(
                 new['dependencies']['custom_host'],
                 old['dependencies']['custom_host'],
             ),
@@ -241,8 +213,7 @@ AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
 
 class Manifest:
     _file: T.AbsPath
-    _manifest1: T.Manifest1
-    _manifest2: T.Manifest2  # DELETE
+    _manifest: T.Manifest1
     _start_directory: T.AbsPath
     _venv_library_root: T.AbsPath
     
@@ -250,46 +221,48 @@ class Manifest:
     def init(cls, appid: str, appname: str) -> 'Manifest':
         from .. import __version__
         
-        out = Manifest()
+        self = Manifest()
         
-        out._file = ''
-        out._start_directory = ''
-        out._venv_library_root = ''
+        self._file = ''
+        self._start_directory = ''
+        self._venv_library_root = ''
         
-        out._manifest2 = out._manifest1 = {
-            'appid': appid,
-            'name': appname,
-            'version': '0.0.0',
-            'start_directory': '',
-            'assets': {},
-            'dependencies': {
-                'root': '',
-                'custom_host': {},
+        self._manifest = {
+            'appid'           : appid,
+            'name'            : appname,
+            'version'         : '0.0.0',
+            'start_directory' : '',
+            'assets'          : {},
+            'dependencies'    : {
+                'root'         : '',
+                'custom_host'  : {},
                 'official_host': {},
             },
-            'launcher': {
-                'target': '',
-                'type': '',
-                'icon': '',
-                'args': [],
-                'kwargs': {},
-                'enable_cli': False,
-                'add_to_desktop': True,
+            'launcher'        : {
+                'target'           : '',
+                'type'             : '',
+                'icon'             : '',
+                'args'             : [],
+                'kwargs'           : {},
+                'enable_cli'       : False,
+                'add_to_desktop'   : True,
                 'add_to_start_menu': False,
-                'show_console': True,
+                'show_console'     : True,
             },
             'depsland_version': __version__,
         }
         
-        return out
+        return self
     
-    def load_from_file(self, file: T.AnyPath) -> None:
+    @classmethod
+    def load_from_file(cls, file: T.AnyPath) -> 'Manifest':
         """
         args:
             file: a '.json' or a '.pkl' file.
         """
         from .. import __version__
         
+        self = Manifest()
         self._file = fs.abspath(file)
         self._start_directory = fs.parent_path(self._file)
         self._venv_library_root = get_library_root(self._start_directory)
@@ -307,22 +280,22 @@ class Manifest:
             
             self._precheck_manifest(data0)
             data1 = {
-                'appid': data0['appid'],
-                'name': data0['name'],
-                'version': data0['version'],
-                'start_directory': self._start_directory,
-                'assets': self._update_assets(
+                'appid'           : data0['appid'],
+                'name'            : data0['name'],
+                'version'         : data0['version'],
+                'start_directory' : self._start_directory,
+                'assets'          : self._update_assets(
                     data0.get('assets', {}),
                     self._start_directory,
                 ),
-                'dependencies': self._update_dependencies(
+                'dependencies'    : self._update_dependencies(
                     self._start_directory,
                     data0.get('dependencies', {
-                        'custom_host': [],
+                        'custom_host'  : [],
                         'official_host': [],
                     }),
                 ),
-                'launcher': self._update_launcher(
+                'launcher'        : self._update_launcher(
                     data0.get('launcher', {}),
                     self._start_directory,
                 ),
@@ -334,15 +307,15 @@ class Manifest:
             
             self._postcheck_manifest(data1)
         
-        self._manifest1 = data1
-        self._finalize_mainfest()
+        self._manifest = data1
+        return self
     
     def dump_to_file(self, file: T.AnyPath = None) -> None:
         if file is None:
             file = self._file
         
-        data1: T.Manifest1 = self._manifest1
-        data0: T.Manifest0 = self._manifest1.copy()
+        data1: T.Manifest1 = self._manifest
+        data0: T.Manifest0 = self._manifest.copy()
         
         if file.endswith('.pkl'):
             data0['start_directory'] = fs.parent_path(fs.abspath(file))  # noqa
@@ -360,11 +333,7 @@ class Manifest:
     
     @property
     def model(self) -> T.Manifest1:
-        return self._manifest1
-    
-    @property
-    def data(self) -> T.Manifest2:
-        return self._manifest2
+        return self._manifest
     
     @property
     def start_directory(self) -> T.AbsPath:
@@ -374,39 +343,17 @@ class Manifest:
     def start_directory(self, path: T.AnyPath) -> None:
         path = fs.abspath(path)
         self._start_directory = path
-        self._finalize_mainfest()
     
     def __getitem__(self, item: str) -> t.Any:
         if item == 'start_directory':
             return self._start_directory
-        return self._manifest1[item]  # noqa
+        return self._manifest[item]  # noqa
     
     def __setitem__(self, key: str, value: t.Any) -> None:
         if key == 'start_directory':
             self.start_directory = value
         else:
             raise Exception('cannot modify top field of manifest!', key, value)
-    
-    def _finalize_mainfest(self) -> None:
-        dir0 = self._start_directory
-        dir1 = self._venv_library_root
-        
-        data1: T.Manifest1 = self._manifest1
-        data2: T.Manifest2 = {
-            'appid': data1['appid'],
-            'name': data1['name'],
-            'version': data1['version'],
-            'start_directory': data1['start_directory'],
-            'assets': {f'{dir0}/{k}': v for k, v in data1['assets'].items()},
-            'dependencies': deepcopy(data1['dependencies']),
-            'launcher': data1['launcher'],
-            'depsland_version': data1['depsland_version'],
-        }
-        # postfix dependencies
-        for k, v in data2['dependencies']['custom_host'].items():
-            v['paths'] = tuple(f'{dir1}/{x}' for x in v['paths'])
-        
-        self._manifest2 = data2
     
     # -------------------------------------------------------------------------
     
@@ -461,13 +408,13 @@ class Manifest:
         try:
             if target_type == 'module':
                 assert target_path.endswith('.py')
-                assert os.path.exists(target_path)
+                assert exists(target_path)
             elif target_type == 'package':
                 assert os.path.isdir(target_path)
-                assert os.path.exists('{}/__init__.py'.format(target_path))
-                assert os.path.exists('{}/__main__.py'.format(target_path))
+                assert exists('{}/__init__.py'.format(target_path))
+                assert exists('{}/__main__.py'.format(target_path))
             else:
-                assert os.path.exists(target_path)
+                assert exists(target_path)
         except AssertionError as e:
             raise Exception(
                 'the target is not found in your file system', target_path
@@ -478,7 +425,7 @@ class Manifest:
             icon_path = '{}/{}'.format(
                 manifest['start_directory'], launcher['icon']
             )
-            assert os.path.exists(icon_path)
+            assert exists(icon_path)
             
             assert icon_path.endswith('.ico'), (
                 'make sure the icon file is ".ico" format. if you have other '
@@ -593,8 +540,8 @@ class Manifest:
             return out
         
         return {
-            'root': indexer.library_root,
-            'custom_host': expand_packages('custom_host'),
+            'root'         : indexer.library_root,
+            'custom_host'  : expand_packages('custom_host'),
             'official_host': expand_packages('official_host'),
         }
     
@@ -603,15 +550,15 @@ class Manifest:
         launcher0: T.Launcher0, start_directory: T.AbsPath
     ) -> T.Launcher1:
         out: T.Launcher1 = {
-            'target': '',
-            'type': '',  # noqa
-            'icon': '',
-            'args': [],
-            'kwargs': {},
-            'enable_cli': False,
-            'add_to_desktop': False,
+            'target'           : '',
+            'type'             : '',  # noqa
+            'icon'             : '',
+            'args'             : [],
+            'kwargs'           : {},
+            'enable_cli'       : False,
+            'add_to_desktop'   : False,
             'add_to_start_menu': False,
-            'show_console': True,
+            'show_console'     : True,
         }
         out.update(launcher0)  # noqa
         
@@ -633,9 +580,9 @@ class Manifest:
                     '{}/{}'.format(start_directory, out['target'])
                 )
             ):
-                if os.path.exists(
+                if exists(
                     '{}/__init__.py'.format(d)
-                ) and os.path.exists(
+                ) and exists(
                     '{}/__main__.py'.format(d)
                 ):  # noqa
                     out['type'] = 'package'
@@ -663,7 +610,7 @@ class Manifest:
     @staticmethod
     def _plainify_dependencies(deps: T.Dependencies1) -> T.Dependencies0:
         return {
-            'custom_host': [k for k in deps['custom_host']],
+            'custom_host'  : [k for k in deps['custom_host']],
             'official_host': [k for k in deps['official_host']],
         }
 
