@@ -34,6 +34,7 @@ dist/
 *.bak.*
 *.bak[0123456789].*
 .DS_Store
+*.bak.*
 
 !/apps/*/.gitkeep
 !/chore/custom_packages/.gitkeep

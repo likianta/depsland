@@ -172,6 +172,8 @@ py build/self_build.py link
 build.py
 
 ```sh
+python/python.exe -m pip install -r requirements.lock --no-deps --no-warn-script-location --disable-pip-version-check
+
 py build/build.py -h
 py build/build.py full-build -h
 

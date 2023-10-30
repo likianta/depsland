@@ -10,6 +10,7 @@ from . import __path__
 from . import __version__
 from . import api
 from . import paths
+from . import system_info as sysinfo
 from .manifest import T
 from .manifest import get_last_installed_version
 from .normalization import check_name_normalized
@@ -105,14 +106,21 @@ def welcome(confirm_close: bool = False) -> None:
 
 
 @cli.cmd()
-def launch_gui(_app_token: str = None) -> None:
+def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
     """
     launch depsland gui.
     
-    args:
+    kwargs:
         _app_token: an appid or a path to a manifest file.
             if given, the app will launch and instantly install it.
+        _run_at_once:
+            for `true` example, see `./api/dev_api/publish.py : main() : -
+            \\[var] command`
+            for `false` example, see `./api/dev_api/offline_build.py : -
+            _create_updator()`
     """
+    # import os
+    # os.environ['QT_API'] = 'pyside6_lite'
     try:
         pass
     except ModuleNotFoundError:
@@ -122,14 +130,17 @@ def launch_gui(_app_token: str = None) -> None:
             ':v4',
         )
         return
+    
+    if sysinfo.platform.IS_WINDOWS:
+        _toast_notification('Depsland is launching')
+    
     if _app_token and os.path.isfile(_app_token):
         _app_token = fs.abspath(_app_token)
+    # if _run_at_once is None:
+    #     _run_at_once = bool(_app_token)
     
-    # import os
-    # os.environ['QT_API'] = 'pyside6_lite'
     from .ui import launch_app
-    
-    launch_app(_app_token)
+    launch_app(_app_token, _run_at_once)
 
 
 # -----------------------------------------------------------------------------
@@ -148,15 +159,8 @@ def init(
     create a "manifest.json" file in project directory.
     
     kwargs:
-        target (-t): given the directory to the project, or a path to the -
-            manifest file.
-            if the directory doesn't exist, will create it.
-            if it is the manifest file path, we recommend you using -
-            'manifest.json' as its file name.
-            if target already exists, will stop and return. you can pass `-f` -
-            to overwrite.
-            be noticed the file extension can only be '.json'.
-        appname (-n): if not given, will use directory name as app name.
+        manifest (-m): if directory of manifest not exists, it will be created.
+        app_name (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
         force_create (-f):
     """
@@ -167,19 +171,32 @@ def init(
 
 
 @cli.cmd()
-def build(target: str = '.', gen_exe: bool = True) -> None:
+def build(
+    manifest: str = '.',
+    offline: bool = False,
+    gen_exe: bool = True
+) -> None:
     """
     build your python application based on manifest file.
     the build result is stored in "dist" directory.
     [dim i](if "dist" not exists, it will be auto created.)[/]
     
     kwargs:
-        target (-t):
-    
-    tip:
-        if you want to add a custom icon, you need to define it in manifest.
+        manifest (-m): a path to the project directory (suggested) or to a -
+            mainfest file.
+            if project directory is given, will search 'manifest.json' file -
+            under this dir.
+            [red dim]╰─ if no such file found, will raise a FileNotFound -
+            error.[/]
+            if a file is given, it must be '.json' type. depsland will treat -
+            its folder as the project directory.
+            [blue dim]╰─ if a file is given, the file name could be custom. -
+            (we suggest using 'manifest.json' as canondical.)[/]
     """
-    api.build(_get_manifest_path(target), gen_exe=gen_exe)
+    if offline:
+        api.build_offline(_fix_manifest_param(manifest))
+    else:
+        api.build(_fix_manifest_param(manifest), gen_exe)
 
 
 @cli.cmd()
@@ -297,16 +314,32 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         pkg_dir=paths.apps.get_packages(appid, version),
     )
     
+    if not manifest['launcher']['show_console']:
+        if sysinfo.platform.IS_WINDOWS:
+            _toast_notification(
+                'Depsland is launching "{}"'.format(manifest['name'])
+            )
+    
     # print(':v', args, kwargs)
     lk_logger.unload()
-    subprocess.run(
-        (
-            *command,
-            *args_2_cargs(*args0, **kwargs0),
-            *args_2_cargs(*args, **kwargs),
-        ),
-        cwd=manifest['start_directory'],
-    )
+    try:
+        subprocess.run(
+            (*command, *args_2_cargs(*args, **kwargs)),
+            check=True,
+            cwd=manifest['start_directory'],
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+    except subprocess.CalledProcessError as e:
+        lk_logger.enable()
+        print(':v4f', '\n' + (e.stderr or '').replace('\r', ''))
+        if manifest['launcher']['show_console']:
+            # raise e
+            input('press enter to close window... ')
+        else:
+            _toast_notification(
+                'Exception occurred at "{}"!'.format(manifest['name'])
+            )
 
 
 # -----------------------------------------------------------------------------
@@ -392,24 +425,19 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     return manifest_old, manifest_new
 
 
-def _get_manifest_path(target: str, ensure_exists: bool = True) -> str:
-    """return an abspath to manifest file."""
-    if target.endswith('.json'):
-        out = fs.normpath(target, True)
-    else:
-        assert not os.path.isfile(target)
-        if not os.path.exists(target):
-            os.mkdir(target)
-        out = fs.normpath(f'{target}/manifest.json', True)
-    if ensure_exists:
-        assert exists(out)
-    print(out, ':pvs')
-    return out
-
-
 def _run_cli() -> None:
-    """this function is for poetry to generate script entry point."""
+    """ this function is for poetry to generate script entry point. """
     cli.run()
+
+
+# windows only
+def _toast_notification(text: str) -> None:
+    from windows_toasts import Toast
+    from windows_toasts import WindowsToaster
+    toaster = WindowsToaster('Depsland Launcher')
+    toast = Toast()
+    toast.text_fields = [text]
+    toaster.show_toast(toast)
 
 
 if __name__ == '__main__':

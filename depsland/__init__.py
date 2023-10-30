@@ -15,6 +15,7 @@ from . import config
 from . import launcher
 from . import manifest
 from . import paths
+from . import system_info
 from . import utils
 from . import venv
 from .api import init
@@ -26,5 +27,5 @@ from .platform.windows.gen_exe import bat_2_exe
 from .pypi import pypi
 from .pypi import rebuild_index as rebuild_pypi_index
 
-__version__ = '0.6.0b12'
-__date__ = '2023-08-27'
+__version__ = '0.7.0'
+__date__ = '2023-10-30'

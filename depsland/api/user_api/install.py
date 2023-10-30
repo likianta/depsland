@@ -391,14 +391,11 @@ def _create_launcher(manifest: T.Manifest) -> None:
         dedent(r'''
         @echo off
         set PYTHONPATH=%DEPSLAND%
-        {py} -m depsland run {appid} --:version {version}
-    ''')
-        .strip()
-        .format(
-            py=r'"%DEPSLAND%\python\python.exe"',
-            appid=appid,
-            version=version,
-        )
+        {py} -m depsland run {appid} --version {version}
+    ''').strip().format(
+        py=r'"%DEPSLAND%\python\python.exe"',
+        appid=appid,
+        version=version,
     )
     
     # bat to exe

@@ -1,0 +1,19 @@
+{
+    "appid": "internal_error_case",
+    "name": "Internal Error Case",
+    "version": "0.1.1",
+    "assets": {
+        "main.py": "all"
+    },
+    "dependencies": {},
+    "pypi": [],
+    "launcher": {
+        "script": "main.py",
+        "icon": "",
+        "cli_tool": false,
+        "desktop": false,
+        "start_menu": false,
+        "show_console": false
+    },
+    "depsland_version": "0.6.1"
+}
