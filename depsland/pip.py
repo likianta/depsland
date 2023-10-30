@@ -2,9 +2,8 @@
 a wrapper for pip command.
 """
 import re
+import sys
 import typing as t
-from contextlib import contextmanager
-from multiprocessing import Pool
 
 from lk_utils.filesniff import normpath
 from lk_utils.subproc import compose_cmd
@@ -17,45 +16,25 @@ from .config import app_settings
 
 class T:
     PipExecute = t.Tuple[str, ...]  # e.g. ('python3', '-m', 'pip')
-    Pool = t.Optional[Pool]
     PopenArgs = t.Iterable[str]
 
 
 class Pip:
-    _multi_proc: T.Pool
     _pip_exec: T.PipExecute
     _template: 'CommandTemplate'
     
     def __init__(
-            self,
-            pip_exec: T.PipExecute,
-            pip_conf=app_settings['pip'],
-            local=paths.pypi.downloads,
+        self,
+        pip_exec: T.PipExecute = (sys.executable, '-m', 'pip'),
+        pip_conf: dict = app_settings['pip'],
+        local: str = paths.pypi.downloads,
     ):
-        self._multi_proc = None
         self._pip_exec = pip_exec
         self._template = CommandTemplate(pip_exec, local, **pip_conf)
     
     def update_pip_options(self, **options) -> None:
         # noinspection PyArgumentList
         self._template = CommandTemplate(self._pip_exec, **options)
-    
-    @contextmanager
-    def multi_processing(self) -> t.Iterator[None]:
-        self.enable_multi_processing()
-        yield
-        self.join_multi_processing()
-    
-    def enable_multi_processing(self) -> None:
-        assert self._multi_proc is None
-        # self._multi_proc = Pool()  # FIXME: temporarily disabled
-    
-    def join_multi_processing(self) -> None:
-        if self._multi_proc:
-            self._multi_proc.close()
-            self._multi_proc.join()
-            self._multi_proc = None
-        print(':t', 'all processes joined.')
     
     def run(self, *args: t.Union[str, t.Tuple[str, ...]]) -> str:
         args = compose_cmd(*args)
@@ -89,14 +68,6 @@ class Pip:
         no_dependency: bool = False,
         custom_args: t.Sequence[str] = (),
     ) -> str:
-        if self._multi_proc:  # FIXME
-            self._multi_proc.apply_async(
-                self._run,
-                self._template.pip_download(
-                    name, version, destination, no_dependency
-                )
-            )
-            return ''
         return self._run(
             *self._template.pip_download(
                 name, version, destination, no_dependency
@@ -108,15 +79,9 @@ class Pip:
         return self._run(*self._template.pip_download_r(file, dest))
     
     def install(
-            self, name: str, version='',
-            dest=paths.pypi.installed, no_deps=False
+        self, name: str, version='',
+        dest=paths.pypi.installed, no_deps=False
     ) -> str:
-        if self._multi_proc:
-            self._multi_proc.apply_async(
-                self._run,
-                self._template.pip_install(name, version, dest, no_deps)
-            )
-            return ''
         return self._run(
             *self._template.pip_install(name, version, dest, no_deps)
         )
@@ -184,21 +149,20 @@ class Pip:
 class CommandTemplate:
     
     def __init__(
-            self,
-            pip_cmd: T.PipExecute,
-            local_dir: str = paths.pypi.downloads,
-            cache_dir: str = paths.pypi.cache,
-            *,
-            index_url: str = 'https://pypi.python.org/simple/',
-            local_first: bool = False,  # TODO
-            offline: bool = False,
-            quiet: bool = False,
-            **_,
+        self,
+        pip_cmd: T.PipExecute,
+        local_dir: str = paths.pypi.downloads,
+        cache_dir: str = paths.pypi.cache,
+        *,
+        index_url: str = 'https://pypi.python.org/simple/',
+        # local_first: bool = False,  # TODO
+        offline: bool = False,
+        quiet: bool = False,
+        **_,
     ):
         # extend parameters
         if offline:
             host = ''
-            local_first = True
         else:
             assert index_url
             host = re.search(r'https?://([^/]+)', index_url).group(1)
@@ -237,7 +201,7 @@ class CommandTemplate:
     # -------------------------------------------------------------------------
     
     def pip_download(
-            self, name: str, version='', dest='', no_deps=False
+        self, name: str, version='', dest='', no_deps=False
     ) -> T.PopenArgs:
         return compose_cmd(
             *self._pip, 'download', f'{name}{version.replace(" ", "")}',
@@ -252,7 +216,7 @@ class CommandTemplate:
         )
     
     def pip_install(
-            self, name: str, version='', dest='', no_deps=False
+        self, name: str, version='', dest='', no_deps=False
     ) -> T.PopenArgs:
         return compose_cmd(
             *self._pip, 'install', f'{name}{version.replace(" ", "")}',

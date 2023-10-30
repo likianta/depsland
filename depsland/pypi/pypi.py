@@ -237,24 +237,23 @@ class LocalPyPI(Index):
             )
             return path, os.path.exists(path)
         
-        with self.pip.multi_processing():
-            for name, version, downloaded_path in self.download(
-                packages, include_dependencies
-            ):
-                name_id = f'{name}-{version}'
-                installed_path, exist = get_installed_path(name_id)
-                if not exist:
-                    print(':v', 'make dir', installed_path)
-                    fs.make_dir(installed_path)
-                    self.pip.run(
-                        'install',
-                        downloaded_path,
-                        '--no-deps',
-                        '--no-index',
-                        ('-t', installed_path),
-                        ('--find-links', pypi_paths.downloads),
-                    )
-                yield name_id
+        for name, version, downloaded_path in self.download(
+            packages, include_dependencies
+        ):
+            name_id = f'{name}-{version}'
+            installed_path, exist = get_installed_path(name_id)
+            if not exist:
+                print(':v', 'make dir', installed_path)
+                fs.make_dir(installed_path)
+                self.pip.run(
+                    'install',
+                    downloaded_path,
+                    '--no-deps',
+                    '--no-index',
+                    ('-t', installed_path),
+                    ('--find-links', pypi_paths.downloads),
+                )
+            yield name_id
     
     @staticmethod
     def linking(name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
@@ -269,15 +268,14 @@ class LocalPyPI(Index):
         self, *downloaded_package_files: str, download_dependencies=False
     ) -> None:
         name_ids = []
-        with self.pip.multi_processing():
-            for f in downloaded_package_files:
-                name_ids.append(
-                    self.add_to_index(
-                        f,
-                        _indexing_dependencies=False,
-                        _download_dependencies=False,
-                    )
+        for f in downloaded_package_files:
+            name_ids.append(
+                self.add_to_index(
+                    f,
+                    _indexing_dependencies=False,
+                    _download_dependencies=False,
                 )
+            )
         
         # post indexing dependencies
         for nid in name_ids:
