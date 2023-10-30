@@ -10,10 +10,10 @@ from . import __path__
 from . import __version__
 from . import api
 from . import paths
-from . import system_info as sysinfo
 from .manifest import T
 from .manifest import get_last_installed_version
 from .normalization import check_name_normalized
+from .platform import sysinfo
 
 # fix sys.argv
 if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):

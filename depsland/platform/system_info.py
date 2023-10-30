@@ -2,8 +2,8 @@ import platform as _platform
 import typing as t
 
 __all__ = [
-    'platform',
-    'python',
+    'IS_WINDOWS', 'PYVERSION', 'SYSTEM',
+    'platform', 'python'
 ]
 
 
@@ -44,3 +44,9 @@ class Python:
 
 platform = Platform()
 python = Python()
+
+# shortcuts
+IS_WINDOWS = platform.IS_WINDOWS
+SYSTEM = platform.SYSTEM
+PYVERSION = python.VERSION
+# PYVERSION_ = python.VERSION_STR

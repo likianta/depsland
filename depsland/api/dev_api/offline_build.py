@@ -20,15 +20,15 @@ from lk_utils import dumps
 from lk_utils import fs
 from lk_utils.textwrap import dedent
 
-from ... import system_info as sysinfo
 from ...manifest import T
-from ...manifest import compare_manifests
+from ...manifest import diff_manifest
 from ...manifest import dump_manifest
 from ...manifest import init_manifest
-from ...manifest import init_target_tree
 from ...manifest import load_manifest
 from ...paths import project as proj_paths
-from ...utils import bat_2_exe
+from ...platform import create_launcher
+from ...platform import sysinfo
+from ...utils import init_target_tree
 
 
 def main(manifest_file: str) -> None:
@@ -122,7 +122,7 @@ def _init_dist_tree(
 def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     # from .publish import _copy_assets
     
-    diff = compare_manifests(
+    diff = diff_manifest(
         new=manifest,
         old=init_manifest(manifest['appid'], manifest['name'])
     )
@@ -140,28 +140,29 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
         path_o = f'{root_o}/{relpath}'
         
         # ref: `.publish._copy_assets : match case`
-        match info1.scheme:
-            case 'all':
-                fs.make_link(path_i, path_o, True)
-            case 'all_dirs':
-                fs.clone_tree(path_i, path_o, True)
-            case 'root':
-                pass
-            case 'top':
-                for dn in fs.find_dir_names(path_i):
-                    fs.make_dir('{}/{}'.format(path_o, dn))
-                for f in fs.find_files(path_i):
-                    file_i = f.path
-                    file_o = '{}/{}'.format(path_o, f.name)
-                    fs.make_link(file_i, file_o)
-            case 'top_files':
-                for f in fs.find_files(path_i):
-                    file_i = f.path
-                    file_o = '{}/{}'.format(path_o, f.name)
-                    fs.make_link(file_i, file_o)
-            case 'top_dirs':
-                for dn in fs.find_dir_names(path_i):
-                    fs.make_dir('{}/{}'.format(path_o, dn))
+        if info1.scheme == 'all':
+            fs.make_link(path_i, path_o, True)
+        elif info1.scheme == 'all_dirs':
+            fs.clone_tree(path_i, path_o, True)
+        elif info1.scheme == 'root':
+            pass
+        elif info1.scheme == 'top':
+            for dn in fs.find_dir_names(path_i):
+                fs.make_dir('{}/{}'.format(path_o, dn))
+            for f in fs.find_files(path_i):
+                file_i = f.path
+                file_o = '{}/{}'.format(path_o, f.name)
+                fs.make_link(file_i, file_o)
+        elif info1.scheme == 'top_files':
+            for f in fs.find_files(path_i):
+                file_i = f.path
+                file_o = '{}/{}'.format(path_o, f.name)
+                fs.make_link(file_i, file_o)
+        elif info1.scheme == 'top_dirs':
+            for dn in fs.find_dir_names(path_i):
+                fs.make_dir('{}/{}'.format(path_o, dn))
+        else:
+            raise Exception(info1.scheme)
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
@@ -175,8 +176,8 @@ def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    assert sysinfo.platform.SYSTEM == 'windows', (
-        'not implemented yet', sysinfo.platform.SYSTEM
+    assert sysinfo.SYSTEM == 'windows', (
+        'not implemented yet', sysinfo.SYSTEM
     )
     
     file_bat = f'{dst_dir}/{manifest["name"]}.bat'
@@ -195,8 +196,9 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         file_bat
     )
     
-    bat_2_exe(
-        file_bat, file_exe,
+    create_launcher(
+        path_i=file_bat,
+        path_o=file_exe,
         icon=manifest['launcher']['icon'],
         show_console=manifest['launcher']['show_console'],
         # uac_admin=True,
@@ -206,8 +208,8 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
 
 # TEST
 def _create_debug_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    assert sysinfo.platform.SYSTEM == 'windows', (
-        'not implemented yet', sysinfo.platform.SYSTEM
+    assert sysinfo.SYSTEM == 'windows', (
+        'not implemented yet', sysinfo.SYSTEM
     )
     
     file_bat = f'{dst_dir}/{manifest["name"]} (Debug).bat'
@@ -226,8 +228,9 @@ def _create_debug_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         file_bat
     )
     
-    bat_2_exe(
-        file_bat, file_exe,
+    create_launcher(
+        path_i=file_bat,
+        path_o=file_exe,
         icon=manifest['launcher']['icon'],
         show_console=True,
         # uac_admin=True,
@@ -236,8 +239,8 @@ def _create_debug_launcher(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:
-    assert sysinfo.platform.SYSTEM == 'windows', (
-        'not implemented yet', sysinfo.platform.SYSTEM
+    assert sysinfo.SYSTEM == 'windows', (
+        'not implemented yet', sysinfo.SYSTEM
     )
     
     file_bat = f'{dst_dir}/Check Updates.bat'
@@ -256,8 +259,9 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:
         file_bat
     )
     
-    bat_2_exe(
-        file_bat, file_exe,
+    create_launcher(
+        path_i=file_bat,
+        path_o=file_exe,
         icon=manifest['launcher']['icon'],
         show_console=False,
         # uac_admin=True,

@@ -14,7 +14,7 @@ from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_server
-from ...platform import IS_WINDOWS
+from ...platform.system_info import IS_WINDOWS
 from ...platform.windows import bat_2_exe
 from ...utils import compare_version
 from ...utils import make_temp_dir

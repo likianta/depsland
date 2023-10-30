@@ -18,8 +18,8 @@ from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_client
-from ...platform import IS_WINDOWS
 from ...platform import create_launcher
+from ...platform import sysinfo
 from ...platform.windows import create_shortcut
 from ...pypi import pypi
 from ...utils import compare_version
@@ -387,8 +387,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
     launcher: T.LauncherInfo = manifest['launcher']
     
     # bat command
-    command = (
-        dedent(r'''
+    command = dedent(r'''
         @echo off
         set PYTHONPATH=%DEPSLAND%
         {py} -m depsland run {appid} --version {version}
@@ -406,7 +405,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
         ),
     )
     
-    if not IS_WINDOWS:
+    if not sysinfo.IS_WINDOWS:
         # TODO: support linux and macos
         return
     
