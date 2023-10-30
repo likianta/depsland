@@ -159,7 +159,6 @@ def init(
     create a "manifest.json" file in project directory.
     
     kwargs:
-        manifest (-m): if directory of manifest not exists, it will be created.
         app_name (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
         force_create (-f):
@@ -194,9 +193,9 @@ def build(
             (we suggest using 'manifest.json' as canondical.)[/]
     """
     if offline:
-        api.build_offline(_fix_manifest_param(manifest))
+        api.build_offline(_get_manifest_path(manifest))
     else:
-        api.build(_fix_manifest_param(manifest), gen_exe)
+        api.build(_get_manifest_path(manifest), gen_exe=gen_exe)
 
 
 @cli.cmd()
@@ -390,6 +389,21 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     return None
 
 
+def _get_manifest_path(target: str, ensure_exists: bool = True) -> str:
+    """ return an abspath to manifest file. """
+    if target.endswith('.json'):
+        out = fs.normpath(target, True)
+    else:
+        assert not os.path.isfile(target)
+        if not os.path.exists(target):
+            os.mkdir(target)
+        out = fs.normpath(f'{target}/manifest.json', True)
+    if ensure_exists:
+        assert exists(out)
+    print(out, ':pv')
+    return out
+
+
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     from .manifest import load_manifest
     from .oss import get_oss_client
@@ -432,8 +446,11 @@ def _run_cli() -> None:
 
 # windows only
 def _toast_notification(text: str) -> None:
-    from windows_toasts import Toast
-    from windows_toasts import WindowsToaster
+    try:
+        from windows_toasts import Toast
+        from windows_toasts import WindowsToaster
+    except ImportError:
+        raise ImportError('pip install windows-toasts')
     toaster = WindowsToaster('Depsland Launcher')
     toast = Toast()
     toast.text_fields = [text]
