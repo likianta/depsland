@@ -27,8 +27,7 @@ class T:
 
 
 def get_library_root(working_root: str) -> T.LibraryPath:
-    from ...platform import IS_WINDOWS
-
+    from ...platform.system_info import IS_WINDOWS
     venv_root = fs.normpath(
         run_cmd_args(
             (*_poetry, 'env', 'info'),

@@ -51,8 +51,8 @@ def get_updated_time(path: str, recursive=False) -> int:
         return max((mtime, max(map(int, map(
             os.path.getmtime, (root for root, _, _ in os.walk(path))
         )))))
-    
-    
+
+
 def init_target_tree(manifest: T.Manifest, root_dir: str = None) -> None:
     if not root_dir:
         root_dir = manifest['start_directory']
