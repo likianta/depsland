@@ -14,11 +14,11 @@ class Platform:
     
     # noinspection PyTypeChecker
     def __init__(self):
-        sys = _platform.system().lower()
-        if sys in ('darwin', 'linux', 'windows'):
-            self.SYSTEM = sys
+        sysname = _platform.system().lower()
+        if sysname in ('darwin', 'linux', 'windows'):
+            self.SYSTEM = sysname
         else:
-            raise Exception(f'unsupported system: {sys}')
+            raise Exception(f'unsupported system: {sysname}')
         
         self.IS_WINDOWS = self.SYSTEM == 'windows'
         

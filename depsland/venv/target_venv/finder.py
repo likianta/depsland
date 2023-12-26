@@ -117,6 +117,7 @@ def _get_top_names_by_poetry_3(toml_file: str) -> t.Iterator[T.PackageName]:
     with open(toml_file, 'rb') as f:
         data: dict = load(f)
     deps: dict = data['tool']['poetry']['dependencies']
+    deps.pop('python')
     for k, group in data['tool']['poetry']['group'].items():
         # TODO: skip values if its restrictions not match current version.
         if k != 'dev':

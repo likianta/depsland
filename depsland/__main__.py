@@ -159,6 +159,7 @@ def init(
     create a "manifest.json" file in project directory.
     
     kwargs:
+        target (-t): target directory.
         app_name (-n): if not given, will use directory name as app name.
         auto_find_requirements (-a):
         force_create (-f):
@@ -173,7 +174,8 @@ def init(
 def build(
     manifest: str = '.',
     offline: bool = False,
-    gen_exe: bool = True
+    gen_exe: bool = True,
+    target_system: str = sysinfo.SYSTEM,
 ) -> None:
     """
     build your python application based on manifest file.
@@ -195,7 +197,11 @@ def build(
     if offline:
         api.build_offline(_get_manifest_path(manifest))
     else:
-        api.build(_get_manifest_path(manifest), gen_exe=gen_exe)
+        api.build(
+            _get_manifest_path(manifest),
+            target_system=target_system,
+            gen_exe=gen_exe,
+        )
 
 
 @cli.cmd()

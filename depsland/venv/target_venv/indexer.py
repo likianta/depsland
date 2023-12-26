@@ -25,8 +25,8 @@ class T:
     ExactVersion = str
     PackageId = str  # str['{name}-{version}']
     PackageName = str
-    PathName = str  # union[dir_name, file_name, bin_name]  # DELETE
     Path = str  # an absolute path
+    PathName = str  # union[dir_name, file_name, bin_name]  # DELETE
     
     PackageInfo = t.TypedDict(
         'PackageInfo',
@@ -113,7 +113,7 @@ class LibraryIndexer:
         for filename in (
             'pyproject.toml',
             'requirements.txt',
-            'requirements.lock',
+            'requirements.lock',  # TODO: put lock file as first?
         ):
             if fs.exists(f := f'{self.working_root}/{filename}'):
                 top_pkg_names = finder.get_top_package_names(f)
@@ -150,11 +150,11 @@ class LibraryIndexer:
         print(top_pkgs, ':lv')
         
         before = len(top_pkgs)
-        fletten_pkgs = self._flatten_packages(top_pkgs, all_pgk_refs)
-        print(fletten_pkgs, ':lv')
-        after = len(fletten_pkgs)
+        flatten_pkgs = self._flatten_packages(top_pkgs, all_pgk_refs)
+        print(flatten_pkgs, ':lv')
+        after = len(flatten_pkgs)
         print('flatten packages done', f'count: {before} -> {after}', ':v2')
-        return fletten_pkgs
+        return flatten_pkgs
     
     @staticmethod
     def _create_package_info(dname: str, dpath: T.Path) -> T.PackageInfo:

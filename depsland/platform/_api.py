@@ -15,7 +15,7 @@ def create_launcher(
     uac_admin: bool = False,
     remove_bat: bool = False,
     **_,
-) -> t.Union[str, None]:
+) -> t.Optional[str]:
     if SYSTEM == 'darwin':
         from .darwin import create_launcher
         assert manifest

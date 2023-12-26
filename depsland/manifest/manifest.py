@@ -304,7 +304,6 @@ class Manifest:
                     __version__,
                 ),
             }
-            
             self._postcheck_manifest(data1)
         
         self._manifest = data1

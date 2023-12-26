@@ -93,8 +93,10 @@ def install(
             _install(manifest_new, manifest_old, custom_oss_root)
             # TODO: for safety consideration, below is temporarily disabled, \
             #   wait for a future version that supports complete auto-upgrade.
-            # _uninstall(appid, m0['version'],
-            #            remove_venv=False, remove_bin=False)
+            # _uninstall(
+            #     appid, m0['version'],
+            #     remove_venv=False, remove_bin=False
+            # )
         else:
             print(
                 'new version available but not installed. you can use '
@@ -104,14 +106,13 @@ def install(
     else:  # TODO
         if reinstall:
             from .uninstall import main as _uninstall
-            
             # assert m0['version'] == m1['version']
             _uninstall(appid, manifest_old['version'])
             install_by_appid(appid, upgrade=False, reinstall=False)
         else:
             print(
                 'current version is up to date. you can use `depsland '
-                'install -r {appid}` or `depsland reinstall {appid} to force '
+                'install -r {appid}` or `depsland reinstall {appid}` to force '
                 'reinstall it.'.format(appid=appid)
             )
 
@@ -274,7 +275,9 @@ def _install_packages(
             )
         )
         collection.update(
-            _install_official_packages(total_diff['dependencies']['official'])
+            _install_official_packages(
+                total_diff['dependencies']['official']
+            )
         )
         
         pypi.update_indexes(

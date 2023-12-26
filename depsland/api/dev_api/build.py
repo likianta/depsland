@@ -9,7 +9,7 @@ from ...platform import create_launcher
 from ...platform.system_info import SYSTEM
 
 
-def build(manifest_file: str, **kwargs) -> None:
+def build(manifest_file: str, target_system: str = SYSTEM, **kwargs) -> None:
     """
     what does this function do:
         - create a dist folder
@@ -23,17 +23,17 @@ def build(manifest_file: str, **kwargs) -> None:
     )
     fs.make_dirs(dir_o)
     
-    if SYSTEM == 'darwin':
+    if target_system == 'darwin':
         create_launcher(
             manifest=manifest,
             path_o=f'{dir_o}/{manifest["name"]}.app',
         )
-    elif SYSTEM == 'linux':
+    elif target_system == 'linux':
         create_launcher(
             path_i=manifest['start_directory'],
             path_o=f'{dir_o}/{manifest["name"]}.desktop',
         )
-    elif SYSTEM == 'windows':
+    elif target_system == 'windows':
         if kwargs.get('gen_exe', True):
             create_launcher(
                 path_i=f'{dir_o}/launcher.bat',
