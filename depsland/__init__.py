@@ -27,4 +27,4 @@ from .pypi import pypi
 from .pypi import rebuild_index as rebuild_pypi_index
 
 __version__ = '0.7.0'
-__date__ = '2023-10-30'
+__date__ = '2023-12-27'

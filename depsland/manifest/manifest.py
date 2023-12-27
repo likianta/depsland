@@ -56,19 +56,55 @@ class T:
         ),
     ]
     
-    Dependencies0 = t.TypedDict(
-        'Dependencies0',
-        {
-            'custom_host'  : t.List[PackageName],
-            'official_host': t.List[PackageName],
-        },
-    )
+    # Dependencies0 examples:
+    #   e.g. 1
+    #       {'source': 'pyproject.toml', 'data': './pyproject.toml'}
+    #   e.g. 2
+    #       {'source': 'requirements.txt', 'data': './requirements.txt'}
+    #       {'source': 'requirements.txt', 'data': './requirements-dev.txt'}
+    #       {'source': 'requirements.txt', 'data': './requirements.lock'}
+    #   e.g. 3
+    #       {'source': 'manual', 'data': ['requests', 'numpy>=1.26']}
+    #       {'source': 'manual', 'data': {'requests': '*', 'numpy': '^1.26'}}
+    #       {'source': 'manual', 'data': {
+    #           'requests': {'version': '*'},
+    #           'numpy': [
+    #               {'version': '1.26.2', 'platform': 'linux'},
+    #               {'version': '*', 'platform': '!=linux'},
+    #           ],
+    #       }}
+    # Dependencies0 = t.TypedDict(
+    #     'Dependencies0',
+    #     {
+    #         'source': t.Literal[
+    #             'manual', 'pyproject.toml', 'requirements.txt'
+    #         ],
+    #         'data': t.Union[
+    #             str,
+    #             t.List[str],
+    #             t.Dict[str, t.Union[str, dict, list]],
+    #         ]
+    #     }
+    # )
+    Dependencies0 = t.Union[
+        None,  # no dependency
+        str,  # a file path, usually 'pyproject.toml', 'requirements.txt', etc.
+        t.List[str],  # a list of packages. e.g. ['requests', 'numpy>=1.26']
+        t.Dict[str, t.Union[str, dict, list]],  
+        #   packages with more detailed definitions. e.g. 
+        #   {
+        #       'requests': {'version': '*'},
+        #       'numpy': [
+        #           {'version': '1.26.2', 'platform': 'linux'},
+        #           {'version': '*', 'platform': '!=linux'},
+        #       ],
+        #   }
+    ]
     Dependencies1 = t.TypedDict(
         'Dependencies1',
         {  # a flatten list
-            'root'         : AbsPath,
-            'custom_host'  : FlattenPackages,
-            'official_host': FlattenPackages,
+            'root'    : AbsPath,
+            'packages': FlattenPackages,
         },
     )
     
@@ -290,10 +326,7 @@ class Manifest:
                 ),
                 'dependencies'    : self._update_dependencies(
                     self._start_directory,
-                    data0.get('dependencies', {
-                        'custom_host'  : [],
-                        'official_host': [],
-                    }),
+                    data0.get('dependencies', 'pyproject.toml'),
                 ),
                 'launcher'        : self._update_launcher(
                     data0.get('launcher', {}),
@@ -525,11 +558,19 @@ class Manifest:
     ) -> T.Dependencies1:
         indexer = target_venv.LibraryIndexer(working_root)
         
-        def expand_packages(
-            key: t.Literal['custom_host', 'official_host']
-        ) -> T.FlattenPackages:
+        if deps0 is None:
+            return {'root': indexer.library_root, 'packages': {}}
+        else:
+            assert (
+                isinstance(deps0, str) and 
+                # deps0.endswith(('.lock', '.toml', '.txt'))
+                deps0.endswith('.toml')
+            ), 'this dependencies format is not implemented yet'  # TODO
+            source: T.AnyPath = deps0
+        
+        def expand_packages(source: T.AnyPath) -> T.FlattenPackages:
             name_relations = target_venv.expand_package_names(
-                map(norm.normalize_name, deps0[key]),
+                target_venv.get_top_package_names(file=source),
                 indexer.packages
             )
             out = {}
@@ -539,9 +580,8 @@ class Manifest:
             return out
         
         return {
-            'root'         : indexer.library_root,
-            'custom_host'  : expand_packages('custom_host'),
-            'official_host': expand_packages('official_host'),
+            'root'    : indexer.library_root,
+            'packages': expand_packages(source),
         }
     
     @staticmethod
