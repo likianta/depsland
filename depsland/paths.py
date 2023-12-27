@@ -147,7 +147,7 @@ class Apps:
         return self._venv_packages.format(appid=appid, version=version)
     
     def make_packages(
-        self, appid: str, version: str, clear_exists=False
+        self, appid: str, version: str, clear_exists: bool = False
     ) -> str:
         """
         create or clear a folder for venv packages.
