@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0a4"
+version = "0.7.0a5"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -23,6 +23,7 @@ pyyaml = "^6.0.0"
 qmlease = "^3.0.3"
 rich = "^13.7.0"
 semver = "^3.0.2"
+typing-extensions = { version = "*", python = "<3.11" }
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]

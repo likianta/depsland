@@ -18,7 +18,7 @@ from ..utils import verspec
 from ..venv import link_venv
 from ..venv.target_venv import T as T1
 
-__all__ = ['T', 'pypi']
+__all__ = ['LocalPyPI', 'T', 'pypi']
 
 # http://c.biancheng.net/view/2627.html
 _pool = ThreadPoolExecutor(max_workers=4)  # PERF: what is the proper number?
@@ -34,13 +34,14 @@ class T(T0):
 class LocalPyPI(Index):
     pip: T.Pip
     
-    def __init__(self, pip=_default_pip):
+    def __init__(self, pip: T.Pip = _default_pip) -> None:
         super().__init__()
         self.pip = pip
     
     # -------------------------------------------------------------------------
     # main methods
     
+    # TODO: rename `download_one` to `sole_download`?
     def download_one(self, name_id: T.NameId, custom_url: str = None) -> T.Path:
         if custom_url:
             assert name_id in custom_url, (name_id, custom_url)
@@ -56,45 +57,8 @@ class LocalPyPI(Index):
                 f'=={ver}',
                 no_dependency=True,
             )
-        """
-        how do we extract the downloaded file path from the raw response?
-            the raw response from `pip download` command. something like:
-                1.
-                    Collecting lk-utils==2.6.0b9
-                      Downloading <some_url> (16 kB)
-                    Saved <some_relpath_or_abspath_dir>/lk_utils-2.6.0b9-py3 \
-                    -none-any.whl
-                    Successfully downloaded lk-utils
-                2.
-                    Collecting lk-utils==2.6.0b9
-                      File was already downloaded <abspath>/lk_utils-2.6.0-py3 \
-                      -none-any.whl
-                    Successfully downloaded lk-utils
-                3.
-                    Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
-                    Collecting argsense
-                      Using cached https://pypi.tuna.tsinghua.edu.cn/packages \
-                      /5f/e4/e6eb339f09106a3fd0947cec58275bd5b00c78367db6acf39 \
-                      b49a7393fa0/argsense-0.5.2-py3-none-any.whl (26 kB)
-                    Saved <some_relpath_or_abspath_dir>/argsense-0.5.2-py3 \
-                    -none-any.whl
-                    Successfully downloaded argsense
-                    [notice] A new release of pip is available: 23.2 -> 23.2.1
-                    [notice] To update, run: pip install --upgrade pip
-            we can use regex to parse the line which starts with 'Saved ...' \
-            or 'File was already downloaded ...'.
-        """
-        pattern1 = re.compile(r'Saved (.+)')
-        pattern2 = re.compile(r'File was already downloaded (.+)')
-        if 'Saved ' in resp:
-            matches = pattern1.findall(resp)
-        elif 'File was already downloaded ' in resp:
-            matches = pattern2.findall(resp)
-        else:
-            raise Exception(resp)
-        assert len(matches) == 1, (resp, matches)
-        filepath = fs.abspath(matches[0])
-        return filepath
+        for path, _ in self._parse_pip_download_response(resp):
+            return path
     
     def install_one(self, name_id: T.NameId, path: T.Path) -> T.Path:
         src_path = path
@@ -108,6 +72,22 @@ class LocalPyPI(Index):
         )
         return dst_path
     
+    def download_all(self, file: str) -> t.Iterator[t.Tuple[T.Path, bool]]:
+        resp = self.pip.download_r(file)
+        yield from self._parse_pip_download_response(resp)
+
+    def install_all(self, file: str, _skip_existed: bool = True) \
+        -> t.Iterator[t.Tuple[T.NameId, T.Path]]:
+        for filepath, is_new in self.download_all(file):
+            filename = fs.basename(filepath)
+            name, version = norm.split_filename_of_package(filename)
+            name_id = f'{name}-{version}'
+            print(name_id, ':i2v2s')
+            if is_new or not _skip_existed:
+                yield name_id, self.install_one(name_id, filepath)
+            else:
+                yield name_id, self.get_install_path(name_id)
+
     # -------------------------------------------------------------------------
     # async methods by thread pool
     
@@ -131,7 +111,7 @@ class LocalPyPI(Index):
             return path0, path1
         
         return _pool.submit(_download_and_install, name_id, custom_url)
-    
+
     # -------------------------------------------------------------------------
     # DELETE: main methods
     
@@ -459,6 +439,47 @@ class LocalPyPI(Index):
                 self.dependencies[name_id]['unresolved'][name] = tuple(
                     norm.normalize_version_spec(name, verspecs_str)
                 )
+
+    @staticmethod
+    def _parse_pip_download_response(resp: str) \
+        -> t.Iterator[t.Tuple[T.Path, bool]]:
+        """
+        how do we extract the downloaded file path from the raw response?
+            the raw response from `pip download` command. something like:
+                1.
+                    Collecting lk-utils==2.6.0b9
+                      Downloading <some_url> (16 kB)
+                    Saved <some_relpath_or_abspath_dir>/lk_utils-2.6.0b9-py3 \
+                    -none-any.whl
+                    Successfully downloaded lk-utils
+                2.
+                    Collecting lk-utils==2.6.0b9
+                      File was already downloaded <abspath>/lk_utils-2.6.0-py3 \
+                      -none-any.whl
+                    Successfully downloaded lk-utils
+                3.
+                    Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+                    Collecting argsense
+                      Using cached https://pypi.tuna.tsinghua.edu.cn/packages \
+                      /5f/e4/e6eb339f09106a3fd0947cec58275bd5b00c78367db6acf39 \
+                      b49a7393fa0/argsense-0.5.2-py3-none-any.whl (26 kB)
+                    Saved <some_relpath_or_abspath_dir>/argsense-0.5.2-py3 \
+                    -none-any.whl
+                    Successfully downloaded argsense
+                    [notice] A new release of pip is available: 23.2 -> 23.2.1
+                    [notice] To update, run: pip install --upgrade pip
+            we can use regex to parse the line which starts with 'Saved ...' \
+            or 'File was already downloaded ...'.
+        """
+        # for pattern in (
+        #     re.compile(r'File was already downloaded (.+)'),
+        #     re.compile(r'Saved (.+)')
+        # ):
+        #     yield from map(fs.abspath, pattern.findall(resp))
+        for p in re.compile(r'File was already downloaded (.+)').findall(resp):
+            yield fs.abspath(p), False
+        for p in re.compile(r'Saved (.+)').findall(resp):
+            yield fs.abspath(p), True
 
 
 pypi = LocalPyPI()

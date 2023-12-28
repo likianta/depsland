@@ -81,7 +81,8 @@ def _divide_ownerships(
     for name, name_ids in dir_asset_2_name_ids.items():
         if len(name_ids) > 1:
             print(
-                '[yellow dim]multiple owners for a dir (will merge them)[/]',
+                '[yellow dim]multiple owners claimed for one dir '
+                '(will merge them)[/]',
                 name,
                 name_ids,
                 ':rv',

@@ -4,29 +4,44 @@ import typing as t
 from argsense import cli
 from lk_utils import run_cmd_args
 
+from depsland import pypi
+
 
 @cli.cmd()
 def preinstall(
     file: str, 
     dir: str, 
-    platform: t.Optional[t.Literal['darwin', 'linux', 'windows']] = None,
+    # platform: t.Optional[t.Literal['darwin', 'linux', 'windows']] = None,
 ) -> None:
     assert file.endswith('.lock'), 'only support lock file'  # TODO
-    run_cmd_args(
-        (sys.executable, '-m', 'pip', 'install'),
-        ('-r', file),
-        ('-t', dir),
-        ('--platform', platform and _normalize_platform(platform) or ''),
-        # ('--only-binary', ':all:'),
-        '--disable-pip-version-check',
-        '--no-warn-script-location',
-        ignore_return=True,
-        verbose=True
-    )
+    
+    # run_cmd_args(
+    #     (sys.executable, '-m', 'pip', 'install'),
+    #     ('-r', file),
+    #     ('-t', dir),
+    #     ('--platform', platform and _reformat_platform(platform) or ''),
+    #     # ('--only-binary', ':all:'),
+    #     '--disable-pip-version-check',
+    #     '--no-warn-script-location',
+    #     ignore_return=True,
+    #     verbose=True
+    # )
+
+    # if platform is None or platform == sysinfo.SYSTEM:
+    #     from depsland import pypi
+    # else:
+    #     from depsland.pip import Pip
+    #     from depsland.pypi import LocalPyPI
+    #     pypi = LocalPyPI(Pip(...))
+
+    name_ids = (x for x, _ in pypi.install_all(file))
+    # name_ids = (x for x, _ in pypi.install_all(file, False))  # TEST
+    pypi.linking(name_ids, dir)
+
     print(':t', 'done')
 
 
-def _normalize_platform(
+def _reformat_platform(
     platform: t.Literal['darwin', 'linux', 'windows']
 ) -> str:
     if platform == 'darwin':

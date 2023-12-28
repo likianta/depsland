@@ -38,7 +38,6 @@ class Pip:
     
     def run(self, *args: t.Union[str, t.Tuple[str, ...]]) -> str:
         args = compose_cmd(*args)
-        print(':pv', args)
         return self._run(*self._pip_exec, *args)
     
     @staticmethod
@@ -46,8 +45,10 @@ class Pip:
         """
         both print and return the command line output.
         """
-        print(':r', '[magenta dim]{}[/]'
-              .format(' '.join(args).replace('[', '\\[')))
+        print(
+            ':r', '[magenta dim]{}[/]'
+            .format(' '.join(args).replace('[', '\\['))
+        )
         return run_cmd_args(*args, verbose=True, ignore_error=False)
     
     # -------------------------------------------------------------------------
@@ -75,7 +76,7 @@ class Pip:
             *(custom_args and compose_cmd(*custom_args))
         )
     
-    def download_r(self, file: str, dest=paths.pypi.downloads) -> str:
+    def download_r(self, file: str, dest: str = paths.pypi.downloads) -> str:
         return self._run(*self._template.pip_download_r(file, dest))
     
     def install(
