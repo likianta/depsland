@@ -1,0 +1,19 @@
+#!source/python/bin/python3
+import os
+print(os.getcwd())
+
+# import subprocess as sp
+# import sys
+#
+# ROOT = '$DEPSLAND_DIR'
+# APPID = '$APPID'
+# VERSION = '$VERSION'
+#
+# sys.path.insert(0, f'{ROOT}')
+# sys.path.insert(0, f'{ROOT}/apps/.venv/{APPID}')
+# sys.path.insert(0, f'{ROOT}/apps/{APPID}/{VERSION}')
+#
+# sp.run(
+#     (sys.executable, '-m', 'depsland', 'run', APPID, '--:version', VERSION),
+#     stdout=sp.PIPE, stderr=sp.PIPE,
+# )

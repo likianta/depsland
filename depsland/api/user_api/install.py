@@ -20,7 +20,7 @@ from ...oss import T as T1
 from ...oss import get_oss_client
 from ...platform import create_launcher
 from ...platform import sysinfo
-from ...platform.windows import create_shortcut
+from ...platform.launcher import create_desktop_shortcut
 from ...pypi import pypi
 from ...utils import compare_version
 from ...utils import init_target_tree
@@ -423,7 +423,7 @@ def _create_launcher(manifest: T.Manifest) -> None:
     if launcher['enable_cli']:
         fs.copy_file(exe_file, '{}/{}.exe'.format(paths.apps.bin, appid))
     if launcher['add_to_desktop']:
-        create_shortcut(
+        create_desktop_shortcut(
             file_i=exe_file,
             file_o='{}/{}.lnk'.format(paths.system.desktop, appname),
         )

@@ -7,7 +7,7 @@ from lk_utils import run_cmd_args
 from ...utils import make_temp_dir
 
 
-def create_shortcut(file_i: str, file_o: str = None) -> None:
+def make_shortcut(file_i: str, file_o: str = None) -> None:
     """
     use batch script to create shortcut, no pywin32 required.
 
