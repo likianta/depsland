@@ -56,42 +56,14 @@ class T:
         ),
     ]
     
-    # Dependencies0 examples:
-    #   e.g. 1
-    #       {'source': 'pyproject.toml', 'data': './pyproject.toml'}
-    #   e.g. 2
-    #       {'source': 'requirements.txt', 'data': './requirements.txt'}
-    #       {'source': 'requirements.txt', 'data': './requirements-dev.txt'}
-    #       {'source': 'requirements.txt', 'data': './requirements.lock'}
-    #   e.g. 3
-    #       {'source': 'manual', 'data': ['requests', 'numpy>=1.26']}
-    #       {'source': 'manual', 'data': {'requests': '*', 'numpy': '^1.26'}}
-    #       {'source': 'manual', 'data': {
-    #           'requests': {'version': '*'},
-    #           'numpy': [
-    #               {'version': '1.26.2', 'platform': 'linux'},
-    #               {'version': '*', 'platform': '!=linux'},
-    #           ],
-    #       }}
-    # Dependencies0 = t.TypedDict(
-    #     'Dependencies0',
-    #     {
-    #         'source': t.Literal[
-    #             'manual', 'pyproject.toml', 'requirements.txt'
-    #         ],
-    #         'data': t.Union[
-    #             str,
-    #             t.List[str],
-    #             t.Dict[str, t.Union[str, dict, list]],
-    #         ]
-    #     }
-    # )
     Dependencies0 = t.Union[
-        None,  # no dependency
-        str,  # a file path, usually 'pyproject.toml', 'requirements.txt', etc.
-        t.List[str],  # a list of packages. e.g. ['requests', 'numpy>=1.26']
-        t.Dict[str, t.Union[str, dict, list]],  
-        #   packages with more detailed definitions. e.g. 
+        # 1. no dependency
+        None,
+        # 2. a file path, usually 'pyproject.toml', 'requirements.txt', etc.
+        str,
+        # 3. a list of packages. e.g. ['requests', 'numpy>=1.26']
+        t.List[str],
+        # 4. packages with more detailed definitions. e.g. 
         #   {
         #       'requests': {'version': '*'},
         #       'numpy': [
@@ -99,6 +71,7 @@ class T:
         #           {'version': '*', 'platform': '!=linux'},
         #       ],
         #   }
+        t.Dict[str, t.Union[str, dict, list]],  
     ]
     Dependencies1 = t.TypedDict(
         'Dependencies1',
@@ -199,10 +172,7 @@ class T:
         'ManifestDiff',
         {
             'assets'      : AssetsDiff,
-            'dependencies': t.TypedDict('DependenciesDiff', {
-                'custom'  : DependenciesDiff,
-                'official': DependenciesDiff,
-            }),
+            'dependencies': DependenciesDiff,
         },
     )
 
@@ -226,18 +196,13 @@ def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
 def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
     return {
         'assets'      : _diff_assets(
-            new.model['assets'], old.model['assets']  # fmt:skip
+            new.model['assets'], 
+            old.model['assets'],
         ),
-        'dependencies': {
-            'custom'  : _diff_dependencies(
-                new['dependencies']['custom_host'],
-                old['dependencies']['custom_host'],
-            ),
-            'official': _diff_dependencies(
-                new['dependencies']['official_host'],
-                old['dependencies']['official_host'],
-            ),
-        }
+        'dependencies': _diff_dependencies(
+            new['dependencies']['packages'],
+            old['dependencies']['packages'],
+        )
     }
 
 
@@ -270,9 +235,8 @@ class Manifest:
             'start_directory' : '',
             'assets'          : {},
             'dependencies'    : {
-                'root'         : '',
-                'custom_host'  : {},
-                'official_host': {},
+                'root'    : '',
+                'packages': {},
             },
             'launcher'        : {
                 'target'           : '',
@@ -556,21 +520,21 @@ class Manifest:
     def _update_dependencies(
         working_root: T.AbsPath, deps0: T.Dependencies0
     ) -> T.Dependencies1:
-        indexer = target_venv.LibraryIndexer(working_root)
-        
         if deps0 is None:
-            return {'root': indexer.library_root, 'packages': {}}
+            return {'root': get_library_root(working_root), 'packages': {}}
         else:
             assert (
                 isinstance(deps0, str) and 
                 # deps0.endswith(('.lock', '.toml', '.txt'))
                 deps0.endswith('.toml')
             ), 'this dependencies format is not implemented yet'  # TODO
-            source: T.AnyPath = deps0
+
+        indexer = target_venv.LibraryIndexer(working_root)
+        _source: T.AnyPath = deps0
         
-        def expand_packages(source: T.AnyPath) -> T.FlattenPackages:
+        def expand_packages() -> T.FlattenPackages:
             name_relations = target_venv.expand_package_names(
-                target_venv.get_top_package_names(file=source),
+                target_venv.get_top_package_names(file=_source),
                 indexer.packages
             )
             out = {}
@@ -581,7 +545,7 @@ class Manifest:
         
         return {
             'root'    : indexer.library_root,
-            'packages': expand_packages(source),
+            'packages': expand_packages(),
         }
     
     @staticmethod
