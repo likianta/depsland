@@ -406,7 +406,7 @@ def _get_manifest_path(target: str, ensure_exists: bool = True) -> str:
         out = fs.normpath(f'{target}/manifest.json', True)
     if ensure_exists:
         assert exists(out)
-    print(out, ':pv')
+    print(f'manifest file: {out}', ':pv')
     return out
 
 
