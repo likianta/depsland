@@ -1,21 +1,23 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0a6"
+version = "0.7.0a7"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
 homepage = "https://github.com/likianta/depsland"
 
-# po export -o requirements.lock --without-hashes
-# python/python.exe -m pip install -r requirements.lock --no-deps \
-#   --no-warn-script-location --disable-pip-version-check
+# po export -o requirements-poetry.lock --without-hashes
+# more: see ./python/README.zh.md
 
 [tool.poetry.dependencies]
 python = "^3.10"
-argsense = "^0.5.3"
+# argsense = "^0.5.5"
+argsense = { version = "^0.5.6a0", source = "likianta-hosted" }
 conflore = "^0.2.0"
-lk-logger = "^5.6.3"
-lk-utils = "^2.7.0"
+fake-typing = { version = "^0.1.1", source = "likianta-hosted" }
+lk-logger = "^5.6.4"
+# lk-utils = "^2.7.0"
+lk-utils = { version = "^2.8.1b0", source = "likianta-hosted" }
 oss2 = "^2.18.3"
 pip = "^23.0.0"
 poetry = "^1.7.0"
@@ -37,8 +39,13 @@ depsland = 'depsland.__main__:_run_cli'
 
 [[tool.poetry.source]]
 name = "tsinghua"
-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 priority = "default"
+
+[[tool.poetry.source]]
+name = "likianta-hosted"
+url = "http://likianta.pro:2006/"
+priority = "supplemental"
 
 [build-system]
 requires = ["poetry"]

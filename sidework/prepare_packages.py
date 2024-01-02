@@ -1,5 +1,7 @@
+import os
 import sys
 import typing as t
+from os.path import exists
 
 from argsense import cli
 from lk_utils import run_cmd_args
@@ -14,6 +16,9 @@ def preinstall(
     # platform: t.Optional[t.Literal['darwin', 'linux', 'windows']] = None,
 ) -> None:
     assert file.endswith('.lock'), 'only support lock file'  # TODO
+    if exists(dir) and os.listdir(dir):
+        print('make sure the target directory not exists or be empty')
+        sys.exit(0)
     
     # run_cmd_args(
     #     (sys.executable, '-m', 'pip', 'install'),
@@ -37,6 +42,7 @@ def preinstall(
     name_ids = (x for x, _ in pypi.install_all(file))
     # name_ids = (x for x, _ in pypi.install_all(file, False))  # TEST
     pypi.linking(name_ids, dir)
+    # # pypi.linking(name_ids, dir, overwrite=True)
 
     print(':t', 'done')
 
