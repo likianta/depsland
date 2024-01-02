@@ -46,7 +46,7 @@ def main(manifest_file: str) -> None:
     _init_dist_tree(manifest, dir_o)
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
-    print(':t2sr', 'creating launcher... [yellow dim](this may be slow)[/]')
+    print(':t2s', 'creating launcher...')
     _create_launcher(manifest, dir_o)
     _create_updator(manifest, dir_o)
     print(':t2', 'creating launcher done')
@@ -77,7 +77,7 @@ def _init_dist_tree(
     fs.make_dir(f'{root_o}/source/apps/{appid}/{version}')
     fs.make_dir(f'{root_o}/source/build')
     # fs.make_dir(f'{root_o}/source/build/exe')
-    fs.make_dir(f'{root_o}/source/conf')
+    fs.make_dir(f'{root_o}/source/config')
     # fs.make_dir(f'{root_o}/source/depsland')
     fs.make_dir(f'{root_o}/source/dist')
     fs.make_dir(f'{root_o}/source/docs')
@@ -102,12 +102,15 @@ def _init_dist_tree(
     )
     # TEST
     fs.copy_file(
-        f'{root_i}/tests/conf/depsland.yaml',
-        f'{root_o}/source/conf/depsland.yaml'
+        f'{root_i}/tests/config/depsland.yaml',
+        f'{root_o}/source/config/depsland.yaml'
     )
     
     if pypi == 'least':
-        fs.make_link(f'{root_i}/chore/pypi_clean', f'{root_o}/source/pypi')
+        fs.make_link(
+            f'{root_i}/chore/pypi_clean',
+            f'{root_o}/source/pypi'
+        )
     else:
         raise NotImplementedError
     

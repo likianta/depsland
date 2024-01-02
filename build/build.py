@@ -122,13 +122,19 @@ def full_build(
     
     if oss_scheme == 'aliyun':
         assert exists(custom := os.getenv('DEPSLAND_CONFIG_ROOT'))
-        assert loads(f'{custom}/depsland.yaml')['oss']['server'] == 'aliyun'
+        assert (
+            loads(f'{custom}/depsland.yaml')
+            ['oss']['server'] == 'aliyun'
+        )
         fs.copy_file(
             f'{custom}/depsland.yaml',
             f'{root_o}/config/depsland.yaml',
         )
     else:
-        assert loads(f'{root_i}/conf/depsland.yaml')['oss']['server'] == 'local'
+        assert (
+            loads(f'{root_i}/config/depsland.yaml')
+            ['oss']['server'] == 'local'
+        )
         fs.copy_file(
             f'{root_i}/config/depsland.yaml',
             f'{root_o}/config/depsland.yaml',
@@ -199,7 +205,7 @@ def full_build(
 
 
 @cli.cmd()
-def bat_2_exe(file_i: str, show_console=True, uac_admin=False):
+def bat_2_exe(file_i: str, show_console=True, uac_admin=False):  # FIXME
     """
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
@@ -217,7 +223,7 @@ def bat_2_exe(file_i: str, show_console=True, uac_admin=False):
 
 
 @cli.cmd()
-def build_all_launchers():
+def build_all_launchers():  # FIXME
     for f in fs.find_files(xpath('exe'), '.bat'):
         print(':i', f.name)
         _b2e(f.path, icon=xpath('exe/launcher.ico'))
