@@ -236,10 +236,12 @@ class LocalPyPI(Index):
             yield name_id
     
     @staticmethod
-    def linking(name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
+    def linking(
+        name_ids: t.Iterable[T.NameId], dst_dir: T.Path, **_kwargs
+    ) -> None:
         print(':d', f'linking required packages to "{dst_dir}"')
         print(':l', name_ids)
-        link_venv(name_ids, dst_dir)
+        link_venv(name_ids, dst_dir, **_kwargs)
     
     # -------------------------------------------------------------------------
     # side methods

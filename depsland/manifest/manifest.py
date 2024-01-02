@@ -216,7 +216,6 @@ class Manifest:
     _file: T.AbsPath
     _manifest: T.Manifest1
     _start_directory: T.AbsPath
-    _venv_library_root: T.AbsPath
     
     @classmethod
     def init(cls, appid: str, appname: str) -> 'Manifest':
@@ -226,7 +225,6 @@ class Manifest:
         
         self._file = ''
         self._start_directory = ''
-        self._venv_library_root = ''
         
         self._manifest = {
             'appid'           : appid,
@@ -265,7 +263,6 @@ class Manifest:
         self = Manifest()
         self._file = fs.abspath(file)
         self._start_directory = fs.parent_path(self._file)
-        self._venv_library_root = get_library_root(self._start_directory)
         
         data0: t.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
@@ -319,9 +316,6 @@ class Manifest:
         else:
             data0.pop('start_directory')
             data0['assets'] = self._plainify_assets(data1['assets'])
-            data0['dependencies'] = self._plainify_dependencies(
-                data1['dependencies']
-            )
         
         dumps(data0, file)
     
@@ -609,13 +603,6 @@ class Manifest:
         for path, info in assets1.items():
             out[path] = info.scheme
         return out
-    
-    @staticmethod
-    def _plainify_dependencies(deps: T.Dependencies1) -> T.Dependencies0:
-        return {
-            'custom_host'  : [k for k in deps['custom_host']],
-            'official_host': [k for k in deps['official_host']],
-        }
 
 
 # -----------------------------------------------------------------------------

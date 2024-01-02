@@ -72,10 +72,9 @@ def _divide_ownerships(
     for name, name_ids in file_asset_2_name_ids.items():
         if len(name_ids) > 1:
             print(
-                'multiple owners for a file (will choose the first one)',
-                name,
-                name_ids,
-                ':v3',
+                'multiple owners claimed for one file '
+                '(will choose the first one)',
+                name, name_ids, ':v3',
             )
         relpath_2_name_id[f'{relpath}/{name}'] = name_ids[0]
     
@@ -84,9 +83,7 @@ def _divide_ownerships(
             print(
                 '[yellow dim]multiple owners claimed for one dir '
                 '(will merge them)[/]',
-                name,
-                name_ids,
-                ':rv',
+                name, name_ids, ':rv',
             )
             relpath_2_name_id.update(
                 _divide_ownerships(f'{relpath}/{name}', name_ids)
