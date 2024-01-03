@@ -17,6 +17,7 @@ class T:
     # indexes
     # TODO: change `t.List[...]` to `t.Set[...]` type?
     Dependencies = t.Dict[NameId, t.List[NameId]]
+    #                             ^------------^ flatten list
     Name2Versions = t.Dict[Name, t.List[Version]]
     #   t.List[Version]: a sorted versions list, from new to old.
     #       TODO: the order may be irrelevant, so we can use `t.Set[Version]`?

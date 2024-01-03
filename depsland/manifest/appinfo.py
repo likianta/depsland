@@ -13,7 +13,7 @@ from .manifest import load_manifest
 from .. import paths
 
 
-class T:
+class T(T0):
     Appinfo = t.TypedDict(
         'Appinfo',
         {
@@ -30,10 +30,6 @@ class T:
     
     # extra ports for external use
     AssetInfo = T0.AssetInfo
-    DependenciesDiff = T0.DependenciesDiff
-    FlattenPackages = T0.FlattenPackages
-    PackageId = str
-    PackageInfo = T0.PackageInfo
     Scheme = T0.Scheme1
     UserManifest = T0.Manifest0
 

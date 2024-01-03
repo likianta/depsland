@@ -10,13 +10,14 @@ from lk_utils import fs
 from .index import Index
 from .index import T as T0
 from .. import normalization as norm
+from ..depsolver import T as T1
 from ..paths import pypi as pypi_paths
 from ..pip import Pip
 from ..pip import pip as _default_pip
 from ..utils import get_updated_time
 from ..utils import verspec
 from ..venv import link_venv
-from ..venv.target_venv import T as T1
+# from ..venv.target_venv import T as T1
 
 __all__ = ['LocalPyPI', 'T', 'pypi']
 
@@ -354,6 +355,20 @@ class LocalPyPI(Index):
         return name_id.split('-', 1)  # noqa
     
     def update_indexes(self, packages: T.FlattenPackages) -> None:
+        def compose_dependencies(package_id: T.NameId) -> t.Iterator[T.NameId]:
+            pass
+        
+        for name, info in packages.items():
+            pid = info['id']
+            if pid not in self.dependencies:
+                version = info['version']
+                self.name_2_versions[name].append(version)
+                self.updates[name] = int(time())
+                self.dependencies[pid] = ...  # TODO
+        
+        # ---------------------------------------------------------------------
+        # DELETE
+        
         def recurse_updating_dependencies(
             name: T.Name, _resolved: t.Set[T.Name]
         ) -> None:

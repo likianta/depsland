@@ -10,12 +10,11 @@ from lk_utils import fs
 from lk_utils import loads
 
 from .. import normalization as norm
+from ..depsolver import T as T0
+from ..depsolver import resolve_requirements_lock
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
-from ..venv import target_venv
-from ..venv.target_venv import T as T0
-from ..venv.target_venv import get_library_root
 
 
 # noinspection PyTypedDict
@@ -23,9 +22,7 @@ class T:
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
     
-    FlattenPackageNames = T0.PackageRelations
-    FlattenPackages = T0.FlattenPackages
-    # PackageId = T0.PackageId
+    PackageId = T0.PackageId
     PackageInfo = T0.PackageInfo
     PackageName = T0.PackageName
     PackageVersion = T0.ExactVersion
@@ -63,7 +60,7 @@ class T:
         str,
         # 3. a list of packages. e.g. ['requests', 'numpy>=1.26']
         t.List[str],
-        # 4. packages with more detailed definitions. e.g. 
+        # 4. packages with more detailed definitions. e.g.
         #   {
         #       'requests': {'version': '*'},
         #       'numpy': [
@@ -71,15 +68,9 @@ class T:
         #           {'version': '*', 'platform': '!=linux'},
         #       ],
         #   }
-        t.Dict[str, t.Union[str, dict, list]],  
+        t.Dict[str, t.Union[str, dict, list]],
     ]
-    Dependencies1 = t.TypedDict(
-        'Dependencies1',
-        {  # a flatten list
-            'root'    : AbsPath,
-            'packages': FlattenPackages,
-        },
-    )
+    Dependencies1 = Packages
     
     Launcher0 = t.TypedDict(
         'Launcher0',
@@ -196,7 +187,7 @@ def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
 def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
     return {
         'assets'      : _diff_assets(
-            new.model['assets'], 
+            new.model['assets'],
             old.model['assets'],
         ),
         'dependencies': _diff_dependencies(
@@ -232,10 +223,7 @@ class Manifest:
             'version'         : '0.0.0',
             'start_directory' : '',
             'assets'          : {},
-            'dependencies'    : {
-                'root'    : '',
-                'packages': {},
-            },
+            'dependencies'    : {},
             'launcher'        : {
                 'target'           : '',
                 'type'             : '',
@@ -286,8 +274,7 @@ class Manifest:
                     self._start_directory,
                 ),
                 'dependencies'    : self._update_dependencies(
-                    self._start_directory,
-                    data0.get('dependencies', 'pyproject.toml'),
+                    data0.get('dependencies', 'requirements.lock'),
                 ),
                 'launcher'        : self._update_launcher(
                     data0.get('launcher', {}),
@@ -511,36 +498,45 @@ class Manifest:
         return out  # noqa
     
     @staticmethod
-    def _update_dependencies(
-        working_root: T.AbsPath, deps0: T.Dependencies0
-    ) -> T.Dependencies1:
+    def _update_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
         if deps0 is None:
-            return {'root': get_library_root(working_root), 'packages': {}}
+            return {}
         else:
+            # TODO
             assert (
-                isinstance(deps0, str) and 
+                isinstance(deps0, str) and
+                # deps0 == 'requirements.lock'
                 # deps0.endswith(('.lock', '.toml', '.txt'))
-                deps0.endswith('.toml')
-            ), 'this dependencies format is not implemented yet'  # TODO
-
-        indexer = target_venv.LibraryIndexer(working_root)
-        _source: T.AnyPath = deps0
-        
-        def expand_packages() -> T.FlattenPackages:
-            name_relations = target_venv.expand_package_names(
-                target_venv.get_top_package_names(file=_source),
-                indexer.packages
+                # deps0.endswith('.toml')
+                deps0.endswith('.lock')
+            ), (
+                'currently only support "requirements.lock" format. '
+                'see also https://github.com/likianta/poetry-extensions : '
+                'poetry_extensions/requirements_lock.py'
             )
-            out = {}
-            for lead, deps in name_relations.items():
-                out[lead] = indexer.packages[lead]
-                out.update({k: indexer.packages[k] for k in deps})
-            return out
         
-        return {
-            'root'    : indexer.library_root,
-            'packages': expand_packages(),
-        }
+        file = deps0
+        packages = resolve_requirements_lock(file)
+        return packages
+        
+        # indexer = target_venv.LibraryIndexer(working_root)
+        # _source: T.AnyPath = deps0
+        #
+        # def expand_packages() -> T.FlattenPackages:
+        #     name_relations = target_venv.expand_package_names(
+        #         target_venv.get_top_package_names(file=_source),
+        #         indexer.packages
+        #     )
+        #     out = {}
+        #     for lead, deps in name_relations.items():
+        #         out[lead] = indexer.packages[lead]
+        #         out.update({k: indexer.packages[k] for k in deps})
+        #     return out
+        #
+        # return {
+        #     'root'    : indexer.library_root,
+        #     'packages': expand_packages(),
+        # }
     
     @staticmethod
     def _update_launcher(
@@ -644,9 +640,7 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             yield 'ignore', key1, (info0, info1)
 
 
-def _diff_dependencies(
-    new: T.FlattenPackages, old: T.FlattenPackages
-) -> T.DependenciesDiff:
+def _diff_dependencies(new: T.Packages, old: T.Packages) -> T.DependenciesDiff:
     info0: T.PackageInfo
     info1: T.PackageInfo
     
@@ -656,7 +650,7 @@ def _diff_dependencies(
             continue
         
         name1, info1 = name0, new[name0]
-        if info1['package_id'] != info0['package_id']:
+        if info1['version'] != info0['version']:
             yield 'update', name1, (info0, info1)
         else:
             yield 'ignore', name0, (info0, info1)

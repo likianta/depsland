@@ -1,8 +1,10 @@
---index-url https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple
+--trusted-host likianta.pro:2006
+--extra-index-url http://likianta.pro:2006
+--index-url https://pypi.tuna.tsinghua.edu.cn/simple
 
 aliyun-python-sdk-core==2.14.0 ; python_version >= "3.10" and python_version < "4.0"
 aliyun-python-sdk-kms==2.16.2 ; python_version >= "3.10" and python_version < "4.0"
-argsense==0.5.4 ; python_version >= "3.10" and python_version < "4.0"
+argsense==0.5.6a0 ; python_version >= "3.10" and python_version < "4.0"
 build==1.0.3 ; python_version >= "3.10" and python_version < "4.0"
 cachecontrol[filecache]==0.13.1 ; python_version >= "3.10" and python_version < "4.0"
 certifi==2023.11.17 ; python_version >= "3.10" and python_version < "4.0"
@@ -16,6 +18,7 @@ crcmod==1.7 ; python_version >= "3.10" and python_version < "4.0"
 cryptography==41.0.7 ; python_version >= "3.10" and python_version < "4.0"
 distlib==0.3.8 ; python_version >= "3.10" and python_version < "4.0"
 dulwich==0.21.7 ; python_version >= "3.10" and python_version < "4.0"
+fake-typing==0.1.1 ; python_version >= "3.10" and python_version < "4.0"
 fastjsonschema==2.19.1 ; python_version >= "3.10" and python_version < "4.0"
 filelock==3.13.1 ; python_version >= "3.10" and python_version < "4.0"
 idna==3.6 ; python_version >= "3.10" and python_version < "4.0"
@@ -28,7 +31,7 @@ keyring==24.3.0 ; python_version >= "3.10" and python_version < "4.0"
 lambda-ex==1.1.0 ; python_version >= "3.10" and python_version < "4.0"
 linkify-it-py==2.0.2 ; python_version >= "3.10" and python_version < "4.0"
 lk-logger==5.6.4 ; python_version >= "3.10" and python_version < "4.0"
-lk-utils==2.7.3 ; python_version >= "3.10" and python_version < "4.0"
+lk-utils==2.8.1b0 ; python_version >= "3.10" and python_version < "4.0"
 markdown-it-py==3.0.0 ; python_version >= "3.10" and python_version < "4.0"
 markdown-it-py[linkify,plugins]==3.0.0 ; python_version >= "3.10" and python_version < "4.0"
 mdit-py-plugins==0.4.0 ; python_version >= "3.10" and python_version < "4.0"

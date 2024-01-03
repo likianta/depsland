@@ -45,14 +45,14 @@ macos:
 
 ```sh
 python/bin/python3 -m pip install wheel --no-warn-script-location --disable-pip-version-check
-python/bin/python3 -m pip install -r requirements.lock --no-warn-script-location --disable-pip-version-check
+python/bin/python3 -m pip install -r requirements.lock --no-deps --no-warn-script-location --disable-pip-version-check
 ```
 
 windows:
 
 ```sh
 python/python.exe -m pip install wheel --no-warn-script-location --disable-pip-version-check
-python/python.exe -m pip install -r requirements.lock --no-warn-script-location --disable-pip-version-check
+python/python.exe -m pip install -r requirements.lock --no-deps --no-warn-script-location --disable-pip-version-check
 ```
 
 ### PySide6 Lite
