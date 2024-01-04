@@ -3,7 +3,6 @@ import typing as t
 from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
-from textwrap import dedent
 from time import time
 
 from lk_utils import dumps
@@ -135,7 +134,7 @@ def _install(
     
     _install_files(manifest_new, manifest_old, oss, dir_m)
     _install_packages(manifest_new, manifest_old, dir_m)
-    _create_launcher(manifest_new)
+    _create_launchers(manifest_new)
     
     _save_history(manifest_new['appid'], manifest_new['version'])
     _save_manifest(manifest_new)
@@ -321,55 +320,54 @@ def _install_packages(
         fast_link_venv(dist_dir)
 
 
-def _create_launcher(manifest: T.Manifest) -> None:
-    appid = manifest['appid']
-    appname = manifest['name']
-    version = manifest['version']
-    launcher: T.LauncherInfo = manifest['launcher']
-    
-    # bat command
-    command = dedent(r'''
-        @echo off
-        set PYTHONPATH=%DEPSLAND%
-        {py} -m depsland run {appid} --version {version}
-    ''').strip().format(
-        py=r'"%DEPSLAND%\python\python.exe"',
-        appid=appid,
-        version=version,
-    )
-    
-    # bat to exe
-    dumps(
-        command,
-        bat_file := '{apps}/{appid}/{version}/{appid}.bat'.format(
-            apps=paths.project.apps, appid=appid, version=version
+def _create_launchers(manifest: T.Manifest) -> None:
+    create_launcher(
+        manifest,
+        exe_file := '{apps}/{appid}/{version}/{name}'.format(
+            apps=paths.project.apps,
+            appid=manifest['appid'],
+            version=manifest['version'],
+            name=(
+                sysinfo.IS_WINDOWS and
+                manifest['name'] + '.exe' or
+                manifest['appid'] + '.sh'
+            ),
         ),
     )
     
-    if not sysinfo.IS_WINDOWS:
-        # TODO: support linux and macos
-        return
-    
-    exe_file = create_launcher(
-        path_i=bat_file,
-        icon=launcher['icon'],
-        show_console=launcher['show_console'],
-        remove_bat=True,
-    )
-    
-    # create shortcuts
-    if launcher['enable_cli']:
-        fs.copy_file(exe_file, '{}/{}.exe'.format(paths.apps.bin, appid))
-    if launcher['add_to_desktop']:
-        create_desktop_shortcut(
-            file_i=exe_file,
-            file_o='{}/{}.lnk'.format(paths.system.desktop, appname),
-        )
-    if launcher['add_to_start_menu']:
-        # WARNING: not tested
-        fs.copy_file(
-            exe_file, '{}/{}.exe'.format(paths.system.start_menu, appname)
-        )
+    if sysinfo.IS_WINDOWS:
+        launcher: T.LauncherInfo = manifest['launcher']
+        if not launcher['show_console']:
+            # since console-less application is hard to debug if failed at \
+            # startup, we provide a "debug" launcher for user.
+            create_launcher(
+                manifest,
+                path_o='{dir}/{name} (Debug).exe'.format(
+                    dir=fs.parent(exe_file),
+                    name=manifest['name'],
+                ),
+                debug=True,
+                # keep_bat=False,
+                uac_admin=True,
+            )
+        if launcher['enable_cli']:
+            fs.copy_file(exe_file, '{}/{}.exe'.format(
+                paths.apps.bin, manifest['appid']
+            ))
+        if launcher['add_to_desktop']:
+            create_desktop_shortcut(
+                file_i=exe_file,
+                file_o='{}/{}.lnk'.format(
+                    paths.system.desktop, manifest['name']
+                ),
+            )
+        if launcher['add_to_start_menu']:
+            # WARNING: not tested
+            fs.copy_file(
+                exe_file, '{}/{}.exe'.format(
+                    paths.system.start_menu, manifest['name']
+                )
+            )
 
 
 def _save_history(appid: str, version: str) -> None:

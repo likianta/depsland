@@ -203,7 +203,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
             manifest,
             path_o='{dir}/{name}.{ext}'.format(
                 dir=dst_dir,
-                name=manifest['name'] + ' Debug',
+                name=manifest['name'] + ' (Debug)',
                 ext='exe'
             ),
             debug=True,
