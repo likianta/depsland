@@ -8,7 +8,6 @@ from lk_utils import fs
 
 from ...manifest import T as T0
 from ...manifest import init_manifest
-from ...venv.target_venv import get_top_package_names
 
 
 class T(T0):
@@ -27,7 +26,6 @@ def init(
     manifest_file: str = './manifest.json',
     appname: str = '',
     force_create: bool = False,
-    auto_find_requirements: bool = False,
     **kwargs,
 ) -> None:
     # init/update parameters
@@ -51,26 +49,6 @@ def init(
     print(':v2f2', appname, appid)
     
     manifest = init_user_manifest(dir_o, appname, appid, **kwargs)
-    
-    if auto_find_requirements:
-        def finetune_name(name: str) -> str:
-            return name.replace('_', '-')
-        
-        deps: t.List[str] = manifest['dependencies']['official_host']
-        if exists(f := f'{dir_o}/requirements.txt'):
-            deps.extend(map(
-                finetune_name,
-                sorted(get_top_package_names(f, 'requirements.txt')),
-            ))
-        elif exists(f := f'{dir_o}/pyproject.toml'):
-            deps.extend(map(
-                finetune_name,
-                sorted(get_top_package_names(f, 'pyproject.toml')),
-            ))
-        else:
-            print(':v3', 'no dependency detected')
-        if deps:
-            print(':l', deps)
     
     dumps(manifest, file_o)
     print(f'see manifest file at \n\t"{file_o}"', ':tv2s')
