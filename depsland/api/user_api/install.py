@@ -1,6 +1,6 @@
 import os
 import typing as t
-from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
 from textwrap import dedent
 from time import time
@@ -26,16 +26,12 @@ from ...utils import compare_version
 from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
-from ...utils.verspec import semver_parse
 
 
 class T(T0):
     LauncherInfo = T0.Launcher  # alias
     Oss = T1.Oss
     Path = str
-
-
-# -----------------------------------------------------------------------------
 
 
 def install_by_appid(
@@ -449,29 +445,3 @@ def _save_manifest(manifest: T.Manifest) -> None:
         paths.project.apps, manifest['appid'], manifest['version']
     )
     dump_manifest(manifest, file_o)
-
-
-# -----------------------------------------------------------------------------
-
-
-def _resolve_conflicting_name_ids(name_ids: t.Iterable[str]) -> t.Iterable[str]:
-    """
-    if there are multiple versions for one name, for example 'lk_utils-2.4.1'
-    and 'lk_utils-2.5.0', remain the most latest version.
-    FIXME: this may not be a good idea, better to raise an error right once.
-    """
-    name_2_versions = defaultdict(list)
-    for nid in name_ids:
-        a, b = nid.split('-', 1)
-        name_2_versions[a].append(b)
-    if conflicts := {k: v for k, v in name_2_versions.items() if len(v) > 1}:
-        print(
-            'found {} conflicting name ids'.format(len(conflicts)),
-            conflicts,
-            ':lv3',
-        )
-        for v in conflicts.values():
-            v.sort(key=lambda x: semver_parse(x), reverse=True)
-        return (f'{k}-{v[0]}' for k, v in name_2_versions.items())
-    else:
-        return name_ids
