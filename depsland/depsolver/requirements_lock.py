@@ -1,3 +1,8 @@
+"""
+reference:
+    https://github.com/likianta/poetry-extensions : \
+    poetry_extensions/requirements_lock.py
+"""
 import re
 import typing as t
 
@@ -12,23 +17,38 @@ class T:
     PackageId = str  # str['{name}-{version}']
     PackageName = str
     
+    # DependenciesTree0 = t.Dict[PackageName, t.Iterable[PackageName]]
+    # DependenciesTree1 = t.Dict[PackageId, t.Sequence[PackageId]]
+    DependenciesTree = t.Dict[PackageId, t.Sequence[PackageId]]
+    
     # noinspection PyTypedDict
     PackageInfo = t.TypedDict('PackageInfo', {
-        'id'      : PackageId,
-        'name'    : PackageName,
-        'version' : ExactVersion,
-        'appendix': t.TypedDict('Appendix', {
+        'id'          : PackageId,
+        'name'        : PackageName,
+        'version'     : ExactVersion,
+        'dependencies': t.Sequence[PackageId],
+        'appendix'    : t.TypedDict('Appendix', {
             'custom_url': str,
             'platform'  : t.Set[str],
             'python'    : t.List[VersionSpec],
         }, total=False)
     })
     
+    PoetryLockedData = t.Dict[
+        PackageName,
+        t.TypedDict('PackageInfo', {
+            'version'     : str,
+            'source'      : dict,
+            'files'       : t.List[dict],
+            'dependencies': t.Dict[PackageName, t.Any]
+        }, total=False)
+    ]
+    
     # Packages = t.Dict[PackageId, PackageInfo]
     Packages = t.Dict[PackageName, PackageInfo]
 
 
-class Regex:
+class _Regex:
     
     @staticmethod
     def simple_extract_name_and_version(
@@ -40,21 +60,139 @@ class Regex:
         )
 
 
-_regex = Regex()
+_regex = _Regex()
 
 
-def resolve_requirements_lock(file: str) -> T.Packages:
+def resolve_requirements_lock(
+    req_lock_file: str,
+    poetry_lock_file: str,
+) -> T.Packages:
+    """
+    `req_lock_file` provides a tiled package id list.
+    `poetry_lock_file` provides tree-like relations of dependencies.
+    """
+    data0: str = loads(req_lock_file, 'plain')
+    data1: dict = loads(poetry_lock_file, 'toml')
+    deps_tree = _parse_dependencies_tree(data1, data0)
+    
     out = {}
-    for line in loads(file, 'plain').splitlines():
+    for line in data0.splitlines():
         if not line or line.startswith('# '):
             continue
-        pkg = _resolve_line(line)
+        pkg = _resolve_line(line, deps_tree)
         # pid = '{}-{}'.format(pkg['name'], pkg['version'])
         out[pkg['name']] = pkg
     return out
 
 
-def _resolve_line(line: str) -> T.PackageInfo:
+# DELETE
+def _load_poetry_lock_data(file: str) -> T.PoetryLockedData:
+    """
+    reference:
+        https://github.com/likianta/poetry-extensions : \
+        poetry_extensions/requirements_lock.py : def _reformat_locked_data
+    
+    returns:
+        {
+            name: {
+                'version': str,
+                'source': dict,
+                'files': [dict, ...],
+                'dependencies': {name: spec, ...}
+            }, ...
+        }
+    """
+    raw_data = loads(file, 'toml')
+    out = {}
+    all_declared_extras = {}  # {name: container, ...}
+    #   `container` is a dict or tuple which implements `__contains__` method.
+    
+    for item in raw_data['package']:
+        name = normalize_name(item['name'])
+        out[name] = {
+            'version'     : item['version'],
+            'source'      : item['source'],
+            'files'       : item['files'],
+            'dependencies': {
+                normalize_name(k): v
+                for k, v in item.get('dependencies', {}).items()
+            },
+        }
+        all_declared_extras[name] = item.get('extras', ())
+    
+    # make clear extras
+    for k0, v0 in out.items():
+        required_extras = all_declared_extras.get(k0, ())
+        deps = v0['dependencies']
+        for k1, v1 in tuple(deps.items()):
+            if isinstance(v1, dict) and v1.get('optional', False):
+                try:
+                    assert (m := v1['markers']).startswith('extra ==')
+                    ex_name = re.search(r'extra == "(\w+)"', m).group(1)
+                    v1.pop('markers')
+                    v1['extra'] = ex_name
+                    if ex_name not in required_extras:
+                        deps.pop(k1)
+                except (AssertionError, AttributeError) as e:
+                    print(k0, k1, v1)
+                    raise e
+    return out
+
+
+# noinspection PyPep8Naming
+def _parse_dependencies_tree(
+    poetry_data: dict, reqlock_data: str
+) -> T.DependenciesTree:
+    T0 = t.Dict[T.PackageName, t.Tuple[T.PackageName, ...]]
+    T1 = t.Dict[T.PackageName, t.Iterable[T.PackageName]]
+    T2 = T.DependenciesTree
+    
+    def get_nested_tree() -> T0:
+        out = {}
+        for item in poetry_data['package']:
+            name = normalize_name(item['name'])
+            if deps := item.get('dependencies'):
+                out[name] = tuple(map(normalize_name, deps.keys()))
+            else:
+                out[name] = ()
+        return out
+    
+    def flatten_tree(nested_tree: T0) -> T1:
+        def recurse(
+            key: str, _recorded: set = None
+        ) -> t.Iterator[T.PackageName]:
+            if _recorded is None:
+                _recorded = set()
+            for dep_name in nested_tree[key]:
+                if dep_name not in _recorded:
+                    _recorded.add(dep_name)
+                    yield dep_name
+                    yield from recurse(dep_name, _recorded)
+        
+        out = {}
+        for key in nested_tree.keys():
+            out[key] = recurse(key)
+        return out
+    
+    def reformat_tree(flatten_tree: T1) -> T2:
+        name_2_id = {}
+        for m in re.finditer(r'^([-\w]+)==([^ ]+)', reqlock_data, re.M):
+            name, ver = m.groups()
+            pkg_id = f'{name}-{ver}'
+            name_2_id[name] = pkg_id
+        
+        out = {}
+        for k, v in flatten_tree.items():
+            out[name_2_id[k]] = tuple(sorted(name_2_id[x] for x in v))
+        return out
+    
+    tree = get_nested_tree()
+    tree = flatten_tree(tree)
+    tree = reformat_tree(tree)
+    return tree
+
+
+def _resolve_line(line: str, deps_tree: T.DependenciesTree) -> T.PackageInfo:
     if ' ; ' in line:
         a, b = line.split(' ; ', 1)
         name, ver = _regex.simple_extract_name_and_version(a)
@@ -79,10 +217,11 @@ def _resolve_line(line: str) -> T.PackageInfo:
             else:
                 raise Exception(line)
         return {
-            'id'      : f'{name}-{ver}',
-            'name'    : name,
-            'version' : ver,
-            'appendix': {
+            'id'          : (id := f'{name}-{ver}'),
+            'name'        : name,
+            'version'     : ver,
+            'dependencies': deps_tree[id],
+            'appendix'    : {
                 'custom_url': b,
                 'platform'  : platforms,
                 'python'    : pyverspecs,
@@ -94,10 +233,11 @@ def _resolve_line(line: str) -> T.PackageInfo:
         name, ver = _regex.simple_extract_name_and_version(a)
         name = normalize_name(name)
         return {
-            'id'      : f'{name}-{ver}',
-            'name'    : name,
-            'version' : ver,
-            'appendix': {
+            'id'          : (id := f'{name}-{ver}'),
+            'name'        : name,
+            'version'     : ver,
+            'dependencies': deps_tree[id],
+            'appendix'    : {
                 'custom_url': b,
             }
         }
@@ -106,11 +246,9 @@ def _resolve_line(line: str) -> T.PackageInfo:
         name, ver = _regex.simple_extract_name_and_version(line)
         name = normalize_name(name)
         return {
-            'id'      : f'{name}-{ver}',
-            'name'    : name,
-            'version' : ver,
-            'appendix': {}
+            'id'          : (id := f'{name}-{ver}'),
+            'name'        : name,
+            'version'     : ver,
+            'dependencies': deps_tree[id],
+            'appendix'    : {}
         }
-
-# def _resolve_marker(marker: str):
-#     pass

@@ -250,7 +250,7 @@ class Manifest:
         
         self = Manifest()
         self._file = fs.abspath(file)
-        self._start_directory = fs.parent_path(self._file)
+        self._start_directory = fs.parent(self._file)
         
         data0: t.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
@@ -497,8 +497,7 @@ class Manifest:
             )
         return out  # noqa
     
-    @staticmethod
-    def _update_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
+    def _update_dependencies(self, deps0: T.Dependencies0) -> T.Dependencies1:
         if deps0 is None:
             return {}
         else:
@@ -515,8 +514,12 @@ class Manifest:
                 'poetry_extensions/requirements_lock.py'
             )
         
-        file = deps0
-        packages = resolve_requirements_lock(file)
+        file0 = deps0
+        file1 = f'{self._start_directory}/poetry.lock'
+        assert exists(file0) and exists(file1)
+        packages = resolve_requirements_lock(
+            req_lock_file=file0, poetry_lock_file=file1
+        )
         return packages
         
         # indexer = target_venv.LibraryIndexer(working_root)

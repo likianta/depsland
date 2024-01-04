@@ -101,8 +101,8 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
 
 
 def _rebuild_dependencies(
-        name_2_versions: T.Name2Versions,
-        recursive=True
+    name_2_versions: T.Name2Versions,
+    recursive=True
 ) -> T.Dependencies:
     dependencies: T.Dependencies = {}
     root = pypi_paths.installed
@@ -118,8 +118,9 @@ def _rebuild_dependencies(
             for d2 in fs.find_dirs(d1.path):
                 if d2.name.endswith('.dist-info'):
                     if os.path.exists(x := f'{d2.path}/METADATA'):
-                        for (a, b), is_name_id in _analyse_metadata_1(
-                                x, name_2_versions):
+                        for (a, b), is_name_id in analyze_metadata(
+                            x, name_2_versions
+                        ):
                             if is_name_id:
                                 node['resolved'].append(f'{a}-{b}')
                             else:
@@ -133,9 +134,9 @@ def _rebuild_dependencies(
     
     if recursive:
         def flatten_resolved_dependencies(
-                name_id: T.NameId,
-                collect: t.Set[T.NameId],
-                indent=0,
+            name_id: T.NameId,
+            collect: t.Set[T.NameId],
+            indent=0,
         ) -> t.Set[T.NameId]:
             print('{}{}'.format(' ' * indent, name_id), ':vs')
             for nid in dependencies[name_id]['resolved']:
@@ -145,14 +146,14 @@ def _rebuild_dependencies(
                 else:
                     print('{}{}'.format(' ' * (indent + 2), nid), ':vs')
                     if dependencies[nid]['resolved'] \
-                            or dependencies[nid]['unresolved']:
+                        or dependencies[nid]['unresolved']:
                         print('{}...'.format(' ' * (indent + 4)), ':vs')
             return collect
         
         def flatten_unresolved_dependencies(
-                name_id: T.NameId,
-                collect: t.Dict[T.Name, t.Dict[str, norm.VersionSpec]],
-                indent=0,
+            name_id: T.NameId,
+            collect: t.Dict[T.Name, t.Dict[str, norm.VersionSpec]],
+            indent=0,
         ) -> t.Dict[T.Name, T.VersionSpecs]:
             for name, specs in dependencies[name_id]['unresolved'].items():
                 if name not in collect:
@@ -191,9 +192,9 @@ def _rebuild_dependencies(
     return dependencies
 
 
-def _analyse_metadata_1(
-        file: T.Path,
-        name_2_versions: T.Name2Versions
+def analyze_metadata(
+    file: T.Path,
+    name_2_versions: T.Name2Versions
 ) -> t.Iterator[t.Tuple[t.Tuple[str, str], bool]]:
     """
     analyse 'METADATA' file.
@@ -202,8 +203,8 @@ def _analyse_metadata_1(
             if `is_resolved` is True, result is a `tuple[name, version]`.
             if `is_resolved` is False, result is a `tuple[name, raw_verspec]`.
     """
-    pattern = re.compile(r'([-\w]+)(?: \(([^)]+)\))?')  # fmt:skip
-    #                      ^~~~~~~1      ^~~~~~2        # fmt:skip
+    pattern = re.compile(r'([-\w]+)(?: \(([^)]+)\))?')
+    #                      ~~~~~~~1      ~~~~~~2
     #   e.g. 'argsense (>=0.4.2,<0.5.0)' -> ('argsense', '>=0.4.2,<0.5.0')
     
     def walk() -> t.Iterator[str]:
@@ -248,9 +249,9 @@ def _analyse_metadata_1(
 
 
 # noinspection PyUnusedLocal
-def _analyse_metadata_2(
-        file: str,
-        name_2_versions: T.Name2Versions
+def analyze_metadata_2(
+    file: str,
+    name_2_versions: T.Name2Versions
 ) -> t.Iterator[T.NameId]:
     """ analyse 'metadata.json' file. """
     raise NotImplementedError
@@ -259,9 +260,9 @@ def _analyse_metadata_2(
 # -----------------------------------------------------------------------------
 
 def measure_package_size(
-        name: str,
-        version: str = None,
-        include_dependencies=True
+    name: str,
+    version: str = None,
+    include_dependencies=True
 ) -> T.PackagesSize:
     assert name in pypi.name_2_versions
     if version is None:

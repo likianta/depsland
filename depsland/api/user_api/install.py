@@ -1,8 +1,10 @@
 import os
 import typing as t
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
 from textwrap import dedent
+from time import time
 
 from lk_utils import dumps
 from lk_utils import fs
@@ -263,37 +265,48 @@ def _install_packages(
         )
     
     total_diff = diff_manifest(manifest_new, manifest_old)
-    collection = []  # list[Future]
     package_ids = set()
-    
+    tasks_ignitor = []  # list[T.PackageInfo]
     action: T.Action
     info0: T.PackageInfo
     info1: T.PackageInfo
     pkg_id: T.PackageId
     pkg_name: T.PackageName
-    
     for action, pkg_name, (info0, info1) in total_diff['dependencies']:
         if action == 'delete':
             continue
         pkg_id = info1['id']
         if action in ('append', 'update'):
-            if not pypi.exists(pkg_id):
-                collection.append(
-                    pypi.async_download_and_install_one(
-                        pkg_id, info1['appendix'].get('custom_url')
-                    )
-                )
+            tasks_ignitor.append(info1)
         package_ids.add(pkg_id)
     
-    if package_ids:
-        # join futures
-        [x.result() for x in collection]
-        del collection
+    if tasks_ignitor:
+        print(len(tasks_ignitor))
+        # we will have IO heavy tasks, so promoting max workers is fine.
+        # http://c.biancheng.net/view/2627.html
+        # https://stackoverflow.com/questions/42541893
+        thread_pool = ThreadPoolExecutor(max_workers=len(tasks_ignitor))
         
-        # TODO: pypi updates & saves indexes
+        def download_and_install(info: T.PackageInfo) -> None:
+            path0 = pypi.download_one(
+                info['id'], info['appendix'].get('custom_url')
+            )
+            path1 = pypi.install_one(info['id'], path0)
+            # update indexes
+            pypi.add_to_index(path0, 0)
+            pypi.add_to_index(path1, 1)
+            pypi.dependencies[info['id']] = list(info['dependencies'])
+            pypi.updates[info['name']] = int(time())
         
-        pypi.linking(package_ids, dist_dir)
+        tasks = [
+            thread_pool.submit(download_and_install, info)
+            for info in tasks_ignitor
+        ]
+        [x.result() for x in tasks]
+        pypi.save_indexes()
     
+    if package_ids:
+        pypi.linking(package_ids, dist_dir)
     else:
         def fast_link_venv(dst_dir: T.Path) -> None:
             print('fast link venv from old version')
