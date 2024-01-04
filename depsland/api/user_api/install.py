@@ -316,17 +316,12 @@ def _install_packages(
 
 
 def _create_launchers(manifest: T.Manifest) -> None:
-    create_launcher(
+    exe_file = create_launcher(
         manifest,
-        exe_file := '{apps}/{appid}/{version}/{name}'.format(
+        dir_o='{apps}/{appid}/{version}'.format(
             apps=paths.project.apps,
             appid=manifest['appid'],
             version=manifest['version'],
-            name=(
-                sysinfo.IS_WINDOWS and
-                manifest['name'] + '.exe' or
-                manifest['appid'] + '.sh'
-            ),
         ),
     )
     
@@ -337,10 +332,12 @@ def _create_launchers(manifest: T.Manifest) -> None:
             # startup, we provide a "debug" launcher for user.
             create_launcher(
                 manifest,
-                path_o='{dir}/{name} (Debug).exe'.format(
-                    dir=fs.parent(exe_file),
-                    name=manifest['name'],
+                dir_o='{apps}/{appid}/{version}'.format(
+                    apps=paths.project.apps,
+                    appid=manifest['appid'],
+                    version=manifest['version'],
                 ),
+                name=manifest['name'] + ' (Debug).exe',
                 debug=True,
                 # keep_bat=False,
                 uac_admin=True,

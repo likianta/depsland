@@ -149,7 +149,6 @@ def init(
     target: str = '.',
     app_name: str = '',
     force_create: bool = False,
-    auto_find_requirements: bool = False,
     **kwargs,
 ) -> None:
     """
@@ -158,21 +157,18 @@ def init(
     kwargs:
         target (-t): target directory.
         app_name (-n): if not given, will use directory name as app name.
-        auto_find_requirements (-a):
         force_create (-f):
     """
     manifest_file = _get_manifest_path(target, ensure_exists=False)
-    api.init(
-        manifest_file, app_name, force_create, auto_find_requirements, **kwargs
-    )
+    api.init(manifest_file, app_name, force_create, **kwargs)
 
 
 @cli.cmd()
 def build(
     manifest: str = '.',
     offline: bool = False,
-    gen_exe: bool = True,
-    target_system: str = sysinfo.SYSTEM,
+    # gen_exe: bool = True,
+    # target_system: str = sysinfo.SYSTEM,
 ) -> None:
     """
     build your python application based on manifest file.
@@ -194,11 +190,7 @@ def build(
     if offline:
         api.build_offline(_get_manifest_path(manifest))
     else:
-        api.build(
-            _get_manifest_path(manifest),
-            target_system=target_system,
-            gen_exe=gen_exe,
-        )
+        api.build(_get_manifest_path(manifest))
 
 
 @cli.cmd()

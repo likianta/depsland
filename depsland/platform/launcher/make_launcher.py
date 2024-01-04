@@ -1,14 +1,15 @@
-import typing as t
-
 from ..system_info import SYSTEM
+from ..system_info import IS_WINDOWS
 from ...manifest import T
 
 
 def make_launcher(
     manifest: T.Manifest,
-    path_o: str,
+    dir_o: str,
+    name: str = None,
+    target_platform: str = SYSTEM,
     **kwargs,
-) -> t.Optional[str]:
+) -> str:
     """
     kwargs:
         for windows:
@@ -16,8 +17,13 @@ def make_launcher(
             keep_bat: bool = False
             uac_admin: bool = False
     """
+    path_o = '{dir}/{name}.{ext}'.format(
+        dir=dir_o,
+        name=name or (IS_WINDOWS and manifest['name'] or manifest['appid']),
+        ext=IS_WINDOWS and 'exe' or 'sh'
+    )
     
-    if SYSTEM == 'darwin':
+    if target_platform == 'darwin':
         # TODO
         # # from .darwin import create_launcher
         # # return create_launcher(manifest, path_o, icon)
@@ -26,13 +32,15 @@ def make_launcher(
         from .make_shell import make_shell
         make_shell(manifest, path_o)
     
-    elif SYSTEM == 'linux':
+    elif target_platform == 'linux':
         from .make_shell import make_shell
         make_shell(manifest, path_o)
     
-    elif SYSTEM == 'windows':
+    elif target_platform == 'windows':
         from .make_exe import make_exe
-        return make_exe(manifest, path_o, **kwargs)
+        make_exe(manifest, path_o, **kwargs)
     
     else:
-        raise ValueError(SYSTEM)
+        raise ValueError(target_platform)
+    
+    return path_o
