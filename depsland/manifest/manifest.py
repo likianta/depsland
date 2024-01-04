@@ -514,7 +514,7 @@ class Manifest:
                 'poetry_extensions/requirements_lock.py'
             )
         
-        file0 = deps0
+        file0 = f'{self._start_directory}/{deps0}'
         file1 = f'{self._start_directory}/poetry.lock'
         assert exists(file0) and exists(file1)
         packages = resolve_requirements_lock(

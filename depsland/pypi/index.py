@@ -4,7 +4,6 @@ from collections import defaultdict
 from lk_utils import dumps
 from lk_utils import loads
 
-from .insight import analyze_metadata
 from ..normalization import T as T0
 from ..paths import pypi as pypi_paths
 

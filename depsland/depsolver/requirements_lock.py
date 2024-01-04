@@ -58,6 +58,14 @@ class _Regex:
             t.Tuple[T.PackageName, T.ExactVersion],
             re.match(r'(.+)==(.+)', text).groups()
         )
+    
+    @staticmethod
+    def extract_version_from_url(url: str, name: str) -> str:
+        return re.search(
+            r'{}-([^-]+)-py3-none-any\.whl'
+            .format(normalize_name(name)),
+            url
+        ).group(1)
 
 
 _regex = _Regex()
@@ -77,7 +85,7 @@ def resolve_requirements_lock(
     
     out = {}
     for line in data0.splitlines():
-        if not line or line.startswith('# '):
+        if not line or line.startswith(('# ', '--')):
             continue
         pkg = _resolve_line(line, deps_tree)
         # pid = '{}-{}'.format(pkg['name'], pkg['version'])
@@ -148,6 +156,9 @@ def _parse_dependencies_tree(
     T2 = T.DependenciesTree
     
     def get_nested_tree() -> T0:
+        """
+        be noticed the result may contain redandunt packages.
+        """
         out = {}
         for item in poetry_data['package']:
             name = normalize_name(item['name'])
@@ -176,13 +187,29 @@ def _parse_dependencies_tree(
     
     def reformat_tree(flatten_tree: T1) -> T2:
         name_2_id = {}
-        for m in re.finditer(r'^([-\w]+)==([^ ]+)', reqlock_data, re.M):
-            name, ver = m.groups()
+        for line in reqlock_data.splitlines():
+            if not line or line.startswith(('# ', '--')):
+                continue
+            # print(line, ':vi2')
+            # following code is copied from `def _resolve_line`.
+            if ' @ ' in line:
+                a, b = line.split(' @ ', 1)
+                raw_name, ver = a, _regex.extract_version_from_url(b, a)
+            elif ' ; ' in line:
+                a, b = line.split(' ; ', 1)
+                raw_name, ver = _regex.simple_extract_name_and_version(a)
+            else:
+                raw_name, ver = _regex.simple_extract_name_and_version(line)
+            name = normalize_name(raw_name)
             pkg_id = f'{name}-{ver}'
             name_2_id[name] = pkg_id
+        # print(name_2_id, ':lv')
         
+        # notice: the `flatten_tree` param may contain redandunt packages, we \
+        # finally on the basis of `name_2_id` dict.
         out = {}
         for k, v in flatten_tree.items():
+            if k not in name_2_id: continue
             out[name_2_id[k]] = tuple(sorted(name_2_id[x] for x in v))
         return out
     
@@ -193,29 +220,12 @@ def _parse_dependencies_tree(
 
 
 def _resolve_line(line: str, deps_tree: T.DependenciesTree) -> T.PackageInfo:
-    if ' ; ' in line:
-        a, b = line.split(' ; ', 1)
-        name, ver = _regex.simple_extract_name_and_version(a)
-        name = normalize_name(name)
-        marker: str
-        platforms = set()
-        pyverspecs = []
-        for marker in re.split(r' and | or ', b):
-            d, e, f = marker.split(' ')
-            if d == 'python_version':
-                pyverspecs.append(
-                    VersionSpec(name=name, version=f, comparator=e)
-                )
-            elif d == 'sys_platform':
-                assert e == '=='
-                assert f in ('darwin', 'linux', 'win32')
-                platforms.add('windows' if f == 'win32' else f)
-            elif d == 'os_name':
-                assert e == '=='
-                assert f == 'nt'
-                platforms.add('windows')
-            else:
-                raise Exception(line)
+    if ' @ ' in line:
+        #   e.g. 'lk-logger @ http://likianta.pro:2006/lk-logger/lk_logger \
+        #   -5.7.0a10-py3-none-any.whl'
+        a, b = line.split(' @ ', 1)
+        raw_name, ver = a, _regex.extract_version_from_url(b, a)
+        name = normalize_name(raw_name)
         return {
             'id'          : (id := f'{name}-{ver}'),
             'name'        : name,
@@ -223,32 +233,51 @@ def _resolve_line(line: str, deps_tree: T.DependenciesTree) -> T.PackageInfo:
             'dependencies': deps_tree[id],
             'appendix'    : {
                 'custom_url': b,
-                'platform'  : platforms,
-                'python'    : pyverspecs,
             }
         }
     
-    elif ' @ ' in line:
+    elif ' ; ' in line:
         a, b = line.split(' ; ', 1)
-        name, ver = _regex.simple_extract_name_and_version(a)
-        name = normalize_name(name)
+        raw_name, ver = _regex.simple_extract_name_and_version(a)
+        name = normalize_name(raw_name)
+        # marker: str
+        # platforms = set()
+        # pyverspecs = []
+        # for marker in re.split(r' and | or ', b):
+        #     d, e, f = marker.split(' ')
+        #     if d == 'python_version':
+        #         pyverspecs.append(
+        #             VersionSpec(name=name, version=f, comparator=e)
+        #         )
+        #     elif d == 'sys_platform':
+        #         assert e == '=='
+        #         assert f in ('darwin', 'linux', 'win32')
+        #         platforms.add('windows' if f == 'win32' else f)
+        #     elif d == 'os_name':
+        #         assert e == '=='
+        #         assert f == 'nt'
+        #         platforms.add('windows')
+        #     else:
+        #         raise Exception(line)
         return {
             'id'          : (id := f'{name}-{ver}'),
             'name'        : name,
             'version'     : ver,
             'dependencies': deps_tree[id],
-            'appendix'    : {
-                'custom_url': b,
-            }
+            'appendix'    : {},
+            # 'appendix'    : {
+            #     'platform'  : platforms,
+            #     'python'    : pyverspecs,
+            # }
         }
     
     else:
-        name, ver = _regex.simple_extract_name_and_version(line)
-        name = normalize_name(name)
+        raw_name, ver = _regex.simple_extract_name_and_version(line)
+        name = normalize_name(raw_name)
         return {
             'id'          : (id := f'{name}-{ver}'),
             'name'        : name,
             'version'     : ver,
             'dependencies': deps_tree[id],
-            'appendix'    : {}
+            'appendix'    : {},
         }
