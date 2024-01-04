@@ -84,7 +84,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
     return dir_o
 
 
-def _overwrite(src: str, scheme: t.Union[True, False, None]) -> bool:
+def _overwrite(src: str, scheme: t.Optional[bool]) -> bool:
     """
     args:
         scheme:

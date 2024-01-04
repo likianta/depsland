@@ -9,7 +9,7 @@ from .. import paths
 
 class T:
     NameId = str
-    NameIds = t.Sequence[NameId]
+    NameIds = t.Iterable[NameId]
     AbsPath = str
     RelPath = str
     Ownership = t.Dict[RelPath, NameId]
@@ -18,8 +18,6 @@ class T:
 def link_venv(
     name_ids: T.NameIds, venv_dir: T.AbsPath, overwrite: bool = None
 ) -> None:
-    # if not name_ids: return
-    
     dirname_2_name_ids = defaultdict(list)
     for nid in name_ids:
         dir_ = _name_id_2_path(nid)
@@ -28,7 +26,10 @@ def link_venv(
             if dname == '__pycache__':
                 continue
             dirname_2_name_ids[dname].append(nid)
-    assert name_ids and dirname_2_name_ids
+    if not dirname_2_name_ids:
+        print('no package to link to venv', ':p')
+        fs.make_dirs(venv_dir)
+        return
     
     ownership: T.Ownership = {}
     for dname, name_ids in dirname_2_name_ids.items():
@@ -71,20 +72,18 @@ def _divide_ownerships(
     for name, name_ids in file_asset_2_name_ids.items():
         if len(name_ids) > 1:
             print(
-                'multiple owners for a file (will choose the first one)',
-                name,
-                name_ids,
-                ':v3',
+                'multiple owners claimed for one file '
+                '(will choose the first one)',
+                name, name_ids, ':v3',
             )
         relpath_2_name_id[f'{relpath}/{name}'] = name_ids[0]
     
     for name, name_ids in dir_asset_2_name_ids.items():
         if len(name_ids) > 1:
             print(
-                '[yellow dim]multiple owners for a dir (will merge them)[/]',
-                name,
-                name_ids,
-                ':rv',
+                '[yellow dim]multiple owners claimed for one dir '
+                '(will merge them)[/]',
+                name, name_ids, ':rv',
             )
             relpath_2_name_id.update(
                 _divide_ownerships(f'{relpath}/{name}', name_ids)

@@ -10,12 +10,11 @@ from lk_utils import fs
 from lk_utils import loads
 
 from .. import normalization as norm
+from ..depsolver import T as T0
+from ..depsolver import resolve_requirements_lock
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
-from ..venv import target_venv
-from ..venv.target_venv import T as T0
-from ..venv.target_venv import get_library_root
 
 
 # noinspection PyTypedDict
@@ -23,9 +22,7 @@ class T:
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
     
-    FlattenPackageNames = T0.PackageRelations
-    FlattenPackages = T0.FlattenPackages
-    # PackageId = T0.PackageId
+    PackageId = T0.PackageId
     PackageInfo = T0.PackageInfo
     PackageName = T0.PackageName
     PackageVersion = T0.ExactVersion
@@ -56,21 +53,24 @@ class T:
         ),
     ]
     
-    Dependencies0 = t.TypedDict(
-        'Dependencies0',
-        {
-            'custom_host'  : t.List[PackageName],
-            'official_host': t.List[PackageName],
-        },
-    )
-    Dependencies1 = t.TypedDict(
-        'Dependencies1',
-        {  # a flatten list
-            'root'         : AbsPath,
-            'custom_host'  : FlattenPackages,
-            'official_host': FlattenPackages,
-        },
-    )
+    Dependencies0 = t.Union[
+        # 1. no dependency
+        None,
+        # 2. a file path, usually 'pyproject.toml', 'requirements.txt', etc.
+        str,
+        # 3. a list of packages. e.g. ['requests', 'numpy>=1.26']
+        t.List[str],
+        # 4. packages with more detailed definitions. e.g.
+        #   {
+        #       'requests': {'version': '*'},
+        #       'numpy': [
+        #           {'version': '1.26.2', 'platform': 'linux'},
+        #           {'version': '*', 'platform': '!=linux'},
+        #       ],
+        #   }
+        t.Dict[str, t.Union[str, dict, list]],
+    ]
+    Dependencies1 = Packages
     
     Launcher0 = t.TypedDict(
         'Launcher0',
@@ -163,10 +163,7 @@ class T:
         'ManifestDiff',
         {
             'assets'      : AssetsDiff,
-            'dependencies': t.TypedDict('DependenciesDiff', {
-                'custom'  : DependenciesDiff,
-                'official': DependenciesDiff,
-            }),
+            'dependencies': DependenciesDiff,
         },
     )
 
@@ -190,18 +187,13 @@ def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
 def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
     return {
         'assets'      : _diff_assets(
-            new.model['assets'], old.model['assets']  # fmt:skip
+            new.model['assets'],
+            old.model['assets'],
         ),
-        'dependencies': {
-            'custom'  : _diff_dependencies(
-                new['dependencies']['custom_host'],
-                old['dependencies']['custom_host'],
-            ),
-            'official': _diff_dependencies(
-                new['dependencies']['official_host'],
-                old['dependencies']['official_host'],
-            ),
-        }
+        'dependencies': _diff_dependencies(
+            new['dependencies']['packages'],
+            old['dependencies']['packages'],
+        )
     }
 
 
@@ -215,7 +207,6 @@ class Manifest:
     _file: T.AbsPath
     _manifest: T.Manifest1
     _start_directory: T.AbsPath
-    _venv_library_root: T.AbsPath
     
     @classmethod
     def init(cls, appid: str, appname: str) -> 'Manifest':
@@ -225,7 +216,6 @@ class Manifest:
         
         self._file = ''
         self._start_directory = ''
-        self._venv_library_root = ''
         
         self._manifest = {
             'appid'           : appid,
@@ -233,11 +223,7 @@ class Manifest:
             'version'         : '0.0.0',
             'start_directory' : '',
             'assets'          : {},
-            'dependencies'    : {
-                'root'         : '',
-                'custom_host'  : {},
-                'official_host': {},
-            },
+            'dependencies'    : {},
             'launcher'        : {
                 'target'           : '',
                 'type'             : '',
@@ -264,8 +250,7 @@ class Manifest:
         
         self = Manifest()
         self._file = fs.abspath(file)
-        self._start_directory = fs.parent_path(self._file)
-        self._venv_library_root = get_library_root(self._start_directory)
+        self._start_directory = fs.parent(self._file)
         
         data0: t.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
@@ -289,11 +274,7 @@ class Manifest:
                     self._start_directory,
                 ),
                 'dependencies'    : self._update_dependencies(
-                    self._start_directory,
-                    data0.get('dependencies', {
-                        'custom_host'  : [],
-                        'official_host': [],
-                    }),
+                    data0.get('dependencies', 'requirements.lock'),
                 ),
                 'launcher'        : self._update_launcher(
                     data0.get('launcher', {}),
@@ -322,9 +303,6 @@ class Manifest:
         else:
             data0.pop('start_directory')
             data0['assets'] = self._plainify_assets(data1['assets'])
-            data0['dependencies'] = self._plainify_dependencies(
-                data1['dependencies']
-            )
         
         dumps(data0, file)
     
@@ -519,30 +497,49 @@ class Manifest:
             )
         return out  # noqa
     
-    @staticmethod
-    def _update_dependencies(
-        working_root: T.AbsPath, deps0: T.Dependencies0
-    ) -> T.Dependencies1:
-        indexer = target_venv.LibraryIndexer(working_root)
-        
-        def expand_packages(
-            key: t.Literal['custom_host', 'official_host']
-        ) -> T.FlattenPackages:
-            name_relations = target_venv.expand_package_names(
-                map(norm.normalize_name, deps0[key]),
-                indexer.packages
+    def _update_dependencies(self, deps0: T.Dependencies0) -> T.Dependencies1:
+        if deps0 is None:
+            return {}
+        else:
+            # TODO
+            assert (
+                isinstance(deps0, str) and
+                # deps0 == 'requirements.lock'
+                # deps0.endswith(('.lock', '.toml', '.txt'))
+                # deps0.endswith('.toml')
+                deps0.endswith('.lock')
+            ), (
+                'currently only support "requirements.lock" format. '
+                'see also https://github.com/likianta/poetry-extensions : '
+                'poetry_extensions/requirements_lock.py'
             )
-            out = {}
-            for lead, deps in name_relations.items():
-                out[lead] = indexer.packages[lead]
-                out.update({k: indexer.packages[k] for k in deps})
-            return out
         
-        return {
-            'root'         : indexer.library_root,
-            'custom_host'  : expand_packages('custom_host'),
-            'official_host': expand_packages('official_host'),
-        }
+        file0 = deps0
+        file1 = f'{self._start_directory}/poetry.lock'
+        assert exists(file0) and exists(file1)
+        packages = resolve_requirements_lock(
+            req_lock_file=file0, poetry_lock_file=file1
+        )
+        return packages
+        
+        # indexer = target_venv.LibraryIndexer(working_root)
+        # _source: T.AnyPath = deps0
+        #
+        # def expand_packages() -> T.FlattenPackages:
+        #     name_relations = target_venv.expand_package_names(
+        #         target_venv.get_top_package_names(file=_source),
+        #         indexer.packages
+        #     )
+        #     out = {}
+        #     for lead, deps in name_relations.items():
+        #         out[lead] = indexer.packages[lead]
+        #         out.update({k: indexer.packages[k] for k in deps})
+        #     return out
+        #
+        # return {
+        #     'root'    : indexer.library_root,
+        #     'packages': expand_packages(),
+        # }
     
     @staticmethod
     def _update_launcher(
@@ -605,13 +602,6 @@ class Manifest:
         for path, info in assets1.items():
             out[path] = info.scheme
         return out
-    
-    @staticmethod
-    def _plainify_dependencies(deps: T.Dependencies1) -> T.Dependencies0:
-        return {
-            'custom_host'  : [k for k in deps['custom_host']],
-            'official_host': [k for k in deps['official_host']],
-        }
 
 
 # -----------------------------------------------------------------------------
@@ -653,9 +643,7 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             yield 'ignore', key1, (info0, info1)
 
 
-def _diff_dependencies(
-    new: T.FlattenPackages, old: T.FlattenPackages
-) -> T.DependenciesDiff:
+def _diff_dependencies(new: T.Packages, old: T.Packages) -> T.DependenciesDiff:
     info0: T.PackageInfo
     info1: T.PackageInfo
     
@@ -665,7 +653,7 @@ def _diff_dependencies(
             continue
         
         name1, info1 = name0, new[name0]
-        if info1['package_id'] != info0['package_id']:
+        if info1['version'] != info0['version']:
             yield 'update', name1, (info0, info1)
         else:
             yield 'ignore', name0, (info0, info1)

@@ -1,8 +1,6 @@
 import os
 import re
 import typing as t
-from concurrent.futures import Future
-from concurrent.futures import ThreadPoolExecutor
 from time import time
 
 from lk_utils import fs
@@ -10,18 +8,15 @@ from lk_utils import fs
 from .index import Index
 from .index import T as T0
 from .. import normalization as norm
+from ..depsolver import T as T1
 from ..paths import pypi as pypi_paths
 from ..pip import Pip
 from ..pip import pip as _default_pip
 from ..utils import get_updated_time
 from ..utils import verspec
 from ..venv import link_venv
-from ..venv.target_venv import T as T1
 
-__all__ = ['T', 'pypi']
-
-# http://c.biancheng.net/view/2627.html
-_pool = ThreadPoolExecutor(max_workers=4)  # PERF: what is the proper number?
+__all__ = ['LocalPyPI', 'T', 'pypi']
 
 
 class T(T0):
@@ -34,13 +29,14 @@ class T(T0):
 class LocalPyPI(Index):
     pip: T.Pip
     
-    def __init__(self, pip=_default_pip):
+    def __init__(self, pip: T.Pip = _default_pip) -> None:
         super().__init__()
         self.pip = pip
     
     # -------------------------------------------------------------------------
     # main methods
     
+    # TODO: rename `download_one` to `sole_download`?
     def download_one(self, name_id: T.NameId, custom_url: str = None) -> T.Path:
         if custom_url:
             assert name_id in custom_url, (name_id, custom_url)
@@ -52,49 +48,11 @@ class LocalPyPI(Index):
         else:
             name, ver = self.split(name_id)
             resp = self.pip.download(
-                name,
-                f'=={ver}',
+                name, f'=={ver}',
                 no_dependency=True,
             )
-        """
-        how do we extract the downloaded file path from the raw response?
-            the raw response from `pip download` command. something like:
-                1.
-                    Collecting lk-utils==2.6.0b9
-                      Downloading <some_url> (16 kB)
-                    Saved <some_relpath_or_abspath_dir>/lk_utils-2.6.0b9-py3 \
-                    -none-any.whl
-                    Successfully downloaded lk-utils
-                2.
-                    Collecting lk-utils==2.6.0b9
-                      File was already downloaded <abspath>/lk_utils-2.6.0-py3 \
-                      -none-any.whl
-                    Successfully downloaded lk-utils
-                3.
-                    Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
-                    Collecting argsense
-                      Using cached https://pypi.tuna.tsinghua.edu.cn/packages \
-                      /5f/e4/e6eb339f09106a3fd0947cec58275bd5b00c78367db6acf39 \
-                      b49a7393fa0/argsense-0.5.2-py3-none-any.whl (26 kB)
-                    Saved <some_relpath_or_abspath_dir>/argsense-0.5.2-py3 \
-                    -none-any.whl
-                    Successfully downloaded argsense
-                    [notice] A new release of pip is available: 23.2 -> 23.2.1
-                    [notice] To update, run: pip install --upgrade pip
-            we can use regex to parse the line which starts with 'Saved ...' \
-            or 'File was already downloaded ...'.
-        """
-        pattern1 = re.compile(r'Saved (.+)')
-        pattern2 = re.compile(r'File was already downloaded (.+)')
-        if 'Saved ' in resp:
-            matches = pattern1.findall(resp)
-        elif 'File was already downloaded ' in resp:
-            matches = pattern2.findall(resp)
-        else:
-            raise Exception(resp)
-        assert len(matches) == 1, (resp, matches)
-        filepath = fs.abspath(matches[0])
-        return filepath
+        for path, _ in self._parse_pip_download_response(resp):
+            return path
     
     def install_one(self, name_id: T.NameId, path: T.Path) -> T.Path:
         src_path = path
@@ -108,29 +66,22 @@ class LocalPyPI(Index):
         )
         return dst_path
     
-    # -------------------------------------------------------------------------
-    # async methods by thread pool
+    def download_all(self, file: str) -> t.Iterator[t.Tuple[T.Path, bool]]:
+        resp = self.pip.download_r(file)
+        yield from self._parse_pip_download_response(resp)
     
-    # def async_download_one(
-    #     self, name_id: T.NameId, custom_url: str = None
-    # ) -> Future:
-    #     return _pool.submit(self.download_one, name_id, custom_url)
-    
-    # def async_install_one(self, name_id: T.NameId) -> Future:
-    #     return _pool.submit(self.install_one, name_id)
-    
-    def async_download_and_install_one(
-        self, name_id: T.NameId, custom_url: str = None
-    ) -> Future:
-        def _download_and_install(
-            name_id: T.NameId, custom_url: str = None
-        ) -> t.Tuple[T.Path, T.Path]:  # both abspaths
-            path0 = self.download_one(name_id, custom_url)
-            path1 = self.install_one(name_id, path0)
-            self.name_id_2_paths[name_id] = (path0, path1)
-            return path0, path1
-        
-        return _pool.submit(_download_and_install, name_id, custom_url)
+    def install_all(
+        self, file: str, _skip_existed: bool = True
+    ) -> t.Iterator[t.Tuple[T.NameId, T.Path]]:
+        for filepath, is_new in self.download_all(file):
+            filename = fs.basename(filepath)
+            name, version = norm.split_filename_of_package(filename)
+            name_id = f'{name}-{version}'
+            print(name_id, ':i2v2s')
+            if is_new or not _skip_existed:
+                yield name_id, self.install_one(name_id, filepath)
+            else:
+                yield name_id, self.get_install_path(name_id)
     
     # -------------------------------------------------------------------------
     # DELETE: main methods
@@ -256,41 +207,54 @@ class LocalPyPI(Index):
             yield name_id
     
     @staticmethod
-    def linking(name_ids: t.Iterable[T.NameId], dst_dir: T.Path) -> None:
+    def linking(
+        name_ids: t.Iterable[T.NameId], dst_dir: T.Path, **_kwargs
+    ) -> None:
         print(':d', f'linking required packages to "{dst_dir}"')
         print(':l', name_ids)
-        link_venv(name_ids, dst_dir)
+        link_venv(name_ids, dst_dir, **_kwargs)
     
     # -------------------------------------------------------------------------
     # side methods
     
-    def add_to_indexes(
-        self, *downloaded_package_files: str, download_dependencies=False
-    ) -> None:
-        name_ids = []
-        for f in downloaded_package_files:
-            name_ids.append(
-                self.add_to_index(
-                    f,
-                    _indexing_dependencies=False,
-                    _download_dependencies=False,
-                )
+    def add_to_index(self, internal_path: str, type: int) -> None:
+        """
+        params:
+            type: 0 or 1. 0 for downloaded file, 1 for installed path.
+        """
+        if type == 0:
+            assert (
+                internal_path.startswith(pypi_paths.downloads) and
+                fs.isfile(internal_path)
             )
-        
-        # post indexing dependencies
-        for nid in name_ids:
-            self._indexing_dependencies(nid)
-        
-        # post download dependencies
-        if download_dependencies:
-            for nid in name_ids:
-                if x := self.dependencies[nid]['unresolved']:
-                    print(f'predownload dependencies for {nid}')
-                    # just exhaust the generator
-                    for _ in self._download_unresolved_part(x):
-                        pass
+            name, ver = norm.split_filename_of_package(
+                fs.filename(internal_path)
+            )
+            self.name_2_versions[name].insert(0, ver)
+            name_id = f'{name}-{ver}'
+            a, b = self.name_id_2_paths.get(name_id, (None, None))
+            self.name_id_2_paths[name_id] = (
+                fs.relpath(internal_path, pypi_paths.root), b
+            )
+        else:
+            assert (
+                internal_path.startswith(pypi_paths.installed) and
+                fs.isdir(internal_path)
+            )
+            _, name, ver = internal_path.rsplit('/', 2)
+            name_id = f'{name}-{ver}'
+            a, b = self.name_id_2_paths.get(name_id, (None, None))
+            self.name_id_2_paths[name_id] = (
+                a, fs.relpath(internal_path, pypi_paths.root)
+            )
     
-    def add_to_index(
+    # def add_to_indexes(
+    #     self, internal_path_1: str, internal_path_2: str
+    # ) -> None:
+    #     self.add_to_index(internal_path_1, 0)
+    #     self.add_to_index(internal_path_2, 1)
+    
+    def add_to_index_old(  # DELETE
         self,
         downloaded_package_file: str,
         _indexing_dependencies=True,
@@ -347,6 +311,32 @@ class LocalPyPI(Index):
         
         return name_id
     
+    def add_to_indexes_old(  # DELETE
+        self, *downloaded_package_files: str, download_dependencies=False
+    ) -> None:
+        name_ids = []
+        for f in downloaded_package_files:
+            name_ids.append(
+                self.add_to_index_old(
+                    f,
+                    _indexing_dependencies=False,
+                    _download_dependencies=False,
+                )
+            )
+        
+        # post indexing dependencies
+        for nid in name_ids:
+            self._indexing_dependencies(nid)
+        
+        # post download dependencies
+        if download_dependencies:
+            for nid in name_ids:
+                if x := self.dependencies[nid]['unresolved']:
+                    print(f'predownload dependencies for {nid}')
+                    # just exhaust the generator
+                    for _ in self._download_unresolved_part(x):
+                        pass
+    
     # -------------------------------------------------------------------------
     # general
     
@@ -371,7 +361,7 @@ class LocalPyPI(Index):
     def split(name_id: T.NameId) -> t.Tuple[T.Name, T.Version]:
         return name_id.split('-', 1)  # noqa
     
-    def update_indexes(self, packages: T.FlattenPackages) -> None:
+    def update_indexes(self, packages: T.FlattenPackages) -> None:  # DELETE
         def recurse_updating_dependencies(
             name: T.Name, _resolved: t.Set[T.Name]
         ) -> None:
@@ -437,14 +427,14 @@ class LocalPyPI(Index):
             packages.clear()
     
     def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
-        from .insight import _analyse_metadata_1
+        from .insight import analyze_metadata
         
         dir0 = '{}/{}'.format(pypi_paths.root, self.name_id_2_paths[name_id][1])
         for name in os.listdir(dir0):
             if name.endswith('.dist-info'):
                 dir1 = f'{dir0}/{name}'
                 if os.path.exists(x := f'{dir1}/METADATA'):
-                    yield from _analyse_metadata_1(x, self.name_2_versions)
+                    yield from analyze_metadata(x, self.name_2_versions)
                 break
         else:
             raise Exception(f'cannot find dist-info for {name_id}')
@@ -459,6 +449,48 @@ class LocalPyPI(Index):
                 self.dependencies[name_id]['unresolved'][name] = tuple(
                     norm.normalize_version_spec(name, verspecs_str)
                 )
+    
+    @staticmethod
+    def _parse_pip_download_response(
+        resp: str
+    ) -> t.Iterator[t.Tuple[T.Path, bool]]:
+        """
+        how do we extract the downloaded file path from the raw response?
+            the raw response from `pip download` command. something like:
+                1.
+                    Collecting lk-utils==2.6.0b9
+                      Downloading <some_url> (16 kB)
+                    Saved <some_relpath_or_abspath_dir>/lk_utils-2.6.0b9-py3 \
+                    -none-any.whl
+                    Successfully downloaded lk-utils
+                2.
+                    Collecting lk-utils==2.6.0b9
+                      File was already downloaded <abspath>/lk_utils-2.6.0-py3 \
+                      -none-any.whl
+                    Successfully downloaded lk-utils
+                3.
+                    Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
+                    Collecting argsense
+                      Using cached https://pypi.tuna.tsinghua.edu.cn/packages \
+                      /5f/e4/e6eb339f09106a3fd0947cec58275bd5b00c78367db6acf39 \
+                      b49a7393fa0/argsense-0.5.2-py3-none-any.whl (26 kB)
+                    Saved <some_relpath_or_abspath_dir>/argsense-0.5.2-py3 \
+                    -none-any.whl
+                    Successfully downloaded argsense
+                    [notice] A new release of pip is available: 23.2 -> 23.2.1
+                    [notice] To update, run: pip install --upgrade pip
+            we can use regex to parse the line which starts with 'Saved ...' \
+            or 'File was already downloaded ...'.
+        """
+        # for pattern in (
+        #     re.compile(r'File was already downloaded (.+)'),
+        #     re.compile(r'Saved (.+)')
+        # ):
+        #     yield from map(fs.abspath, pattern.findall(resp))
+        for p in re.compile(r'File was already downloaded (.+)').findall(resp):
+            yield fs.abspath(p), False
+        for p in re.compile(r'Saved (.+)').findall(resp):
+            yield fs.abspath(p), True
 
 
 pypi = LocalPyPI()

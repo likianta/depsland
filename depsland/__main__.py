@@ -25,8 +25,7 @@ cli = CommandLineInterface('depsland')
 print(
     'depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
         __version__, __path__[0]
-    ),
-    ':r',
+    ), ':r'
 )
 
 
@@ -73,10 +72,8 @@ def welcome(confirm_close: bool = False) -> None:
     """
     show welcome message and exit.
     """
-    from textwrap import dedent
-    
     from rich.markdown import Markdown
-    
+    from textwrap import dedent
     from . import __date__
     from . import __version__
     
@@ -131,7 +128,7 @@ def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
         )
         return
     
-    if sysinfo.platform.IS_WINDOWS:
+    if sysinfo.IS_WINDOWS:
         _toast_notification('Depsland is launching')
     
     if _app_token and os.path.isfile(_app_token):
@@ -293,18 +290,16 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     """
     a general launcher to start an installed app.
     """
-    print(sys.argv, ':lv')
+    print('<depsland> ' + ' '.join(sys.argv[1:]), ':v')
     
     version = _version or get_last_installed_version(appid)
     if not version:
         print(':v4', f'cannot find installed version of {appid}')
         return
     
-    import subprocess
-    
     import lk_logger
+    import subprocess
     from argsense import args_2_cargs
-    
     from .manifest import load_manifest
     from .manifest import parse_script_info
     
@@ -314,13 +309,15 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     assert manifest['version'] == version
     command, args0, kwargs0 = parse_script_info(manifest)
     os.environ['DEPSLAND'] = paths.project.root
-    os.environ['PYTHONPATH'] = '.;{app_dir};{pkg_dir}'.format(
-        app_dir=manifest['start_directory'],
-        pkg_dir=paths.apps.get_packages(appid, version),
-    )
+    sep = ';' if sysinfo.IS_WINDOWS else ':'
+    os.environ['PYTHONPATH'] = sep.join((
+        '.',  # cur_dir
+        manifest['start_directory'],  # app_dir
+        paths.apps.get_packages(appid, version),  # pkg_dir
+    ))
     
     if not manifest['launcher']['show_console']:
-        if sysinfo.platform.IS_WINDOWS:
+        if sysinfo.IS_WINDOWS:
             _toast_notification(
                 'Depsland is launching "{}"'.format(manifest['name'])
             )
@@ -406,7 +403,7 @@ def _get_manifest_path(target: str, ensure_exists: bool = True) -> str:
         out = fs.normpath(f'{target}/manifest.json', True)
     if ensure_exists:
         assert exists(out)
-    print(out, ':pv')
+    print(f'manifest file: {out}', ':pv')
     return out
 
 

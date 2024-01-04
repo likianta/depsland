@@ -6,12 +6,16 @@ directory structure (example):
         |= depsland
         |= apps
             |= hello_world
-                |= src
-                    |- main.py
+                |= 0.1.0
+                    |= src
+                        |- main.py
+            |= .venv
+                |= hello_world
+                    |= 0.1.0
         |= python
             |- python.exe
 what does "Hello World.exe" do:
-    1. cd to "<curr_dir>/source"
+    1. cd to `<curr_dir>/source`
     2. set environment `PYTHONPATH=.`
     3. run "python/python.exe -m depsland run hello_world"
         depsland will find the target's location and launch it.
@@ -26,9 +30,11 @@ from ...manifest import dump_manifest
 from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...paths import project as proj_paths
-from ...platform import create_launcher
 from ...platform import sysinfo
+from ...platform.launcher import bat_2_exe
+from ...platform.launcher import create_launcher
 from ...utils import init_target_tree
+from ...venv import link_venv
 
 
 def main(manifest_file: str) -> None:
@@ -40,9 +46,8 @@ def main(manifest_file: str) -> None:
     _init_dist_tree(manifest, dir_o)
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
-    print(':t2sr', 'creating launcher... [yellow dim](this may be slow)[/]')
+    print(':t2s', 'creating launcher...')
     _create_launcher(manifest, dir_o)
-    _create_debug_launcher(manifest, dir_o)
     _create_updator(manifest, dir_o)
     print(':t2', 'creating launcher done')
     print('see result at {}'.format(fs.relpath(dir_o)))
@@ -72,7 +77,7 @@ def _init_dist_tree(
     fs.make_dir(f'{root_o}/source/apps/{appid}/{version}')
     fs.make_dir(f'{root_o}/source/build')
     # fs.make_dir(f'{root_o}/source/build/exe')
-    fs.make_dir(f'{root_o}/source/conf')
+    fs.make_dir(f'{root_o}/source/config')
     # fs.make_dir(f'{root_o}/source/depsland')
     fs.make_dir(f'{root_o}/source/dist')
     fs.make_dir(f'{root_o}/source/docs')
@@ -97,13 +102,14 @@ def _init_dist_tree(
     )
     # TEST
     fs.copy_file(
-        f'{root_i}/tests/conf/depsland.yaml',
-        f'{root_o}/source/conf/depsland.yaml'
+        f'{root_i}/tests/config/depsland.yaml',
+        f'{root_o}/source/config/depsland.yaml'
     )
     
     if pypi == 'least':
         fs.make_link(
-            f'{root_i}/chore/custom_pypi/least', f'{root_o}/source/pypi'
+            f'{root_i}/chore/pypi_clean',
+            f'{root_o}/source/pypi'
         )
     else:
         raise NotImplementedError
@@ -166,104 +172,79 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
-    if not manifest['dependencies']: return
-    from ..user_api.install import _install_dependencies  # noqa
-    _install_dependencies(
-        manifest,
-        init_manifest(manifest['appid'], manifest['name']),
-        f'{dst_dir}/source/apps/.venv/{manifest["appid"]}/{manifest["version"]}'
+    name_ids = (
+        x['package_id']
+        for x in manifest['dependencies']['packages'].values()
+    )
+    link_venv(
+        name_ids,
+        '{}/source/apps/.venv/{}/{}'.format(
+            dst_dir, manifest['appid'], manifest['version']
+        )
     )
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    assert sysinfo.SYSTEM == 'windows', (
-        'not implemented yet', sysinfo.SYSTEM
-    )
-    
-    file_bat = f'{dst_dir}/{manifest["name"]}.bat'
-    file_exe = f'{dst_dir}/{manifest["name"]}.exe'
-    
-    template = dedent(r'''
-        @echo off
-        cd /d %~dp0
-        cd source
-        set PYTHONPATH=.
-        .\python\python.exe -m depsland run {appid} --version {version}
-    ''')
-    
-    dumps(
-        template.format(appid=manifest['appid'], version=manifest['version']),
-        file_bat
-    )
-    
     create_launcher(
-        path_i=file_bat,
-        path_o=file_exe,
-        icon=manifest['launcher']['icon'],
-        show_console=manifest['launcher']['show_console'],
-        # uac_admin=True,
-        remove_bat=True
+        manifest,
+        path_o='{dir}/{name}.{ext}'.format(
+            dir=dst_dir,
+            name=manifest['name'],
+            ext={
+                # 'darwin': 'app',
+                'darwin' : 'sh',
+                'linux'  : 'sh',
+                'windows': 'exe',
+            }[sysinfo.SYSTEM]
+        )
     )
+    if sysinfo.SYSTEM == 'windows':  # TEST
+        create_launcher(
+            manifest,
+            path_o='{dir}/{name}.{ext}'.format(
+                dir=dst_dir,
+                name=manifest['name'] + ' (Debug)',
+                ext='exe'
+            ),
+            debug=True,
+            # keep_bat=False,
+            # uac_admin=True,
+        )
 
 
-# TEST
-def _create_debug_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    assert sysinfo.SYSTEM == 'windows', (
-        'not implemented yet', sysinfo.SYSTEM
-    )
+def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
+    if sysinfo.SYSTEM == 'darwin' or sysinfo.SYSTEM == 'linux':
+        file_sh = f'{dst_dir}/Check Updates.sh'
+        template = dedent('''
+            # cd to current dir
+            # https://stackoverflow.com/a/246128
+            CURR_DIR=$( cd -- "$( dirname -- "${{BASH_SOURCE[0]}}" )" &> \\
+            /dev/null && pwd )
+            cd $CURR_DIR/source
+            
+            export PYTHONPATH=.
+            python/bin/python3 -m depsland launch-gui {appid}
+        ''', join_sep='\\')
+        script = template.format(appid=manifest['appid'])
+        dumps(script, file_sh)
     
-    file_bat = f'{dst_dir}/{manifest["name"]} (Debug).bat'
-    file_exe = f'{dst_dir}/{manifest["name"]} (Debug).exe'
-    
-    template = dedent(r'''
-        cd /d %~dp0
-        cd source
-        set PYTHONPATH=.
-        .\python\python.exe -m depsland run {appid} --version {version}
-        pause
-    ''')
-    
-    dumps(
-        template.format(appid=manifest['appid'], version=manifest['version']),
-        file_bat
-    )
-    
-    create_launcher(
-        path_i=file_bat,
-        path_o=file_exe,
-        icon=manifest['launcher']['icon'],
-        show_console=True,
-        # uac_admin=True,
-        remove_bat=True
-    )
-
-
-def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:
-    assert sysinfo.SYSTEM == 'windows', (
-        'not implemented yet', sysinfo.SYSTEM
-    )
-    
-    file_bat = f'{dst_dir}/Check Updates.bat'
-    file_exe = f'{dst_dir}/Check Updates.exe'
-    
-    template = dedent(r'''
-        @echo off
-        cd /d %~dp0
-        cd source
-        set PYTHONPATH=.
-        .\python\python.exe -m depsland launch-gui {appid}
-    ''')
-    
-    dumps(
-        template.format(appid=manifest['appid']),
-        file_bat
-    )
-    
-    create_launcher(
-        path_i=file_bat,
-        path_o=file_exe,
-        icon=manifest['launcher']['icon'],
-        show_console=False,
-        # uac_admin=True,
-        remove_bat=True
-    )
+    elif sysinfo.SYSTEM == 'windows':
+        file_bat = f'{dst_dir}/Check Updates.bat'
+        file_exe = f'{dst_dir}/Check Updates.exe'
+        template = dedent(r'''
+            @echo off
+            cd /d %~dp0
+            cd source
+            set PYTHONPATH=.
+            .\python\python.exe -m depsland launch-gui {appid}
+        ''')
+        script = template.format(appid=manifest['appid'])
+        dumps(script, file_bat)
+        bat_2_exe(
+            file_bat,
+            file_exe,
+            icon=manifest['launcher']['icon'],
+            show_console=False,
+            # uac_admin=True,
+        )
+        fs.remove_file(file_bat)

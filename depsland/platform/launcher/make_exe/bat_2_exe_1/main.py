@@ -14,12 +14,11 @@ _rcedit_exe = xpath('rcedit.exe')
 
 # noinspection PyUnusedLocal
 def bat_2_exe(
-        file_i: str,
-        file_o: str = '',
-        icon: str = '',
-        show_console: bool = True,
-        uac_admin: bool = False,
-        remove_bat: bool = False,
+    file_i: str,
+    file_o: str = '',
+    icon: str = '',
+    show_console: bool = True,
+    uac_admin: bool = False,
 ) -> str:
     # validate parameters
     assert file_i.endswith('.bat')
@@ -32,8 +31,6 @@ def bat_2_exe(
         assert os.path.exists(icon)
     
     _bat_2_exe(file_i, file_o, show_console)
-    if remove_bat:
-        os.remove(file_i)
     
     if _is_windows:
         # adding icon and elevating privilege requires `rcedit.exe`, which is

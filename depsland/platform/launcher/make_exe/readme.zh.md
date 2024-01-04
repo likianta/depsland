@@ -1,10 +1,10 @@
-# gen_exe 说明
+# make_exe 说明
 
-本目录包含了两个子包: `b2e_a` 和 `b2e_b`. 这里的 a 和 b 是按照时间顺序命名的, 没有其他特殊含义.
+本目录包含了两个子包: `bat_2_exe_1` 和 `bat_2_exe_2`. 这里末尾的 1 和 2 是按照时间顺序命名的, 没有其他特殊含义.
 
-下面我会分别说明 a 和 b 包的功能和特点.
+下面我会分别说明 1 和 2 包的功能和特点.
 
-## b2e_a
+## bat_2_exe_1
 
 ### 来源
 
@@ -18,7 +18,7 @@
 用法 1:
 
 ```py
-from gen_exe.b2e_a import bat_2_exe, add_icon_to_exe, elevate_privilege
+from gen_exe.bat_2_exe_1 import bat_2_exe, add_icon_to_exe, elevate_privilege
 bat_2_exe('test.bat', 'test.exe')
 add_icon_to_exe('test.exe', 'test.ico')
 # elevate_privilege('test.exe')
@@ -28,7 +28,7 @@ add_icon_to_exe('test.exe', 'test.ico')
 
 ```py
 # 2 和 1 的功能基本相同, 但是写法更紧凑, 推荐使用 2.
-from gen_exe.b2e_a import bat_2_exe
+from gen_exe.bat_2_exe_1 import bat_2_exe
 bat_2_exe(
     file_i='test.bat',
     file_o='test.exe',
@@ -65,7 +65,7 @@ TODO: 我正在考虑通过 poetry 配置, 分开生成 windows 和 macos 的安
 - https://stackoverflow.com/questions/1022449/how-to-change-an-executables-properties-windows
 - https://www.zhihu.com/question/27895048
 
-## b2e_b
+## bat_2_exe_2
 
 ### 来源
 
@@ -85,7 +85,7 @@ downloads
    |- Important-Notice.txt
 ```
 
-我拷贝了 `bat-2-exe-converter/Portable/Bat_To_Exe_Converter_(x64).exe` 并重命名为 "b2e.exe", 放在了 `b2e_b` 目录下.
+我拷贝了 `bat-2-exe-converter/Portable/Bat_To_Exe_Converter_(x64).exe` 并重命名为 "b2e.exe", 放在了 `bat_2_exe_2` 目录下.
 
 ### 使用
 
@@ -93,7 +93,7 @@ downloads
 
 ## 二者对比
 
-- b2e_a
+- bat_2_exe_1
     - 优点
         - 速度快
         - 简单易用
@@ -101,7 +101,7 @@ downloads
         - 如果设置不显示控制台, 但是启动时会有一个窗口一闪而过, 非常影响体验
         - 无法提升执行权限
         - 需要 template.exe 和 rcedit.exe 两个工具
-- b2e_b
+- bat_2_exe_2
     - 优点
         - 稳定
         - 可设置参数丰富
@@ -110,10 +110,10 @@ downloads
         - 速度慢 (大约 2 到 5 秒)
         - 设置图标似乎有问题, 有时候会设置失败, 有时候图标仅支持中等大小, 在大缩略图视图下会看着较小
 
-目前我们的方案是, 除了 `~/build/exe/*.bat` 会用到 b2e_b 外, 其他情况 (主要指在客户端) 用的是 b2e_a.
+目前我们的方案是, 除了 `~/build/exe/*.bat` 会用到 bat_2_exe_2 外, 其他情况 (主要指在客户端) 用的是 bat_2_exe_1.
 
-用到 b2e_b 的情景, 一般是不考虑生成速度, 确保能够提权, 或不显示窗口.
+用到 bat_2_exe_2 的情景, 一般是不考虑生成速度, 确保能够提权, 或不显示窗口.
 
-用到 b2e_a 的情景, 对速度敏感, 且一般要求显示控制台窗口.
+用到 bat_2_exe_1 的情景, 对速度敏感, 且一般要求显示控制台窗口.
 
-备注: 推荐多用 b2e_b, 未来可能会移除 b2e_a!
+备注: 推荐多用 bat_2_exe_2, 未来可能会移除 bat_2_exe_1!

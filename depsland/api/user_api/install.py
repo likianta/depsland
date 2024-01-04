@@ -2,7 +2,6 @@ import os
 import typing as t
 from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
-from textwrap import dedent
 from time import time
 
 from lk_utils import dumps
@@ -20,7 +19,7 @@ from ...oss import T as T1
 from ...oss import get_oss_client
 from ...platform import create_launcher
 from ...platform import sysinfo
-from ...platform.windows import create_shortcut
+from ...platform.launcher import create_desktop_shortcut
 from ...pypi import pypi
 from ...utils import compare_version
 from ...utils import init_target_tree
@@ -129,8 +128,8 @@ def _install(
     print(oss.path)
     
     _install_files(manifest_new, manifest_old, oss, dir_m)
-    _install_packages(manifest_new, manifest_old, oss, dir_m)
-    _create_launcher(manifest_new)
+    _install_packages(manifest_new, manifest_old, dir_m)
+    _create_launchers(manifest_new)
     
     _save_history(manifest_new['appid'], manifest_new['version'])
     _save_manifest(manifest_new)
@@ -252,8 +251,6 @@ def _install_files(
 def _install_packages(
     manifest_new: T.Manifest,
     manifest_old: T.Manifest,
-    oss: T.Oss,
-    temp_dir: T.Path,
     dist_dir: T.Path = None,
 ) -> None:
     if dist_dir is None:
@@ -261,173 +258,111 @@ def _install_packages(
             manifest_new['appid'], manifest_new['version'], clear_exists=True
         )
     
-    def main() -> None:
-        total_diff = diff_manifest(manifest_new, manifest_old)
-        collection = set()
-        collection.update(
-            _install_custom_packages(
-                total_diff['dependencies']['custom'],
-                manifest_new['dependencies']['custom_host'],
-            )
-        )
-        collection.update(
-            _install_official_packages(
-                total_diff['dependencies']['official']
-            )
-        )
+    total_diff = diff_manifest(manifest_new, manifest_old)
+    package_ids = set()
+    tasks_ignitor = []  # list[T.PackageInfo]
+    action: T.Action
+    info0: T.PackageInfo
+    info1: T.PackageInfo
+    pkg_id: T.PackageId
+    pkg_name: T.PackageName
+    for action, pkg_name, (info0, info1) in total_diff['dependencies']:
+        if action == 'delete':
+            continue
+        pkg_id = info1['id']
+        if action in ('append', 'update'):
+            tasks_ignitor.append(info1)
+        package_ids.add(pkg_id)
+    
+    if tasks_ignitor:
+        print(len(tasks_ignitor))
+        # we will have IO heavy tasks, so promoting max workers is fine.
+        # http://c.biancheng.net/view/2627.html
+        # https://stackoverflow.com/questions/42541893
+        thread_pool = ThreadPoolExecutor(max_workers=len(tasks_ignitor))
         
-        pypi.update_indexes(
-            {
-                **manifest_new['dependencies']['custom_host'],
-                **manifest_new['dependencies']['official_host'],
-            }
-        )
+        def download_and_install(info: T.PackageInfo) -> None:
+            path0 = pypi.download_one(
+                info['id'], info['appendix'].get('custom_url')
+            )
+            path1 = pypi.install_one(info['id'], path0)
+            # update indexes
+            pypi.add_to_index(path0, 0)
+            pypi.add_to_index(path1, 1)
+            pypi.dependencies[info['id']] = list(info['dependencies'])
+            pypi.updates[info['name']] = int(time())
+        
+        tasks = [
+            thread_pool.submit(download_and_install, info)
+            for info in tasks_ignitor
+        ]
+        [x.result() for x in tasks]
         pypi.save_indexes()
+    
+    if package_ids:
+        pypi.linking(package_ids, dist_dir)
+    else:
+        def fast_link_venv(dst_dir: T.Path) -> None:
+            print('fast link venv from old version')
+            assert (
+                manifest_old['version'] != '0.0.0'
+            ), 'cannot do fast linking from a void version'
+            src_dir = paths.apps.get_packages(
+                manifest_old['appid'], manifest_old['version']
+            )
+            fs.make_link(src_dir, dst_dir, True)
         
-        if collection:
-            pypi.linking(collection, dist_dir)
-        else:
-            _fast_link_venv(dist_dir)
-    
-    def _install_custom_packages(
-        diff: T.DependenciesDiff,
-        custom_host: T.FlattenPackages,
-    ) -> t.Iterator[T.PackageId]:
-        info0: T.PackageInfo
-        info1: T.PackageInfo
-        for action, pkg_name, (info0, info1) in diff:
-            pkg_id = info1['package_id']
-            if action in ('append', 'update'):
-                if not pypi.exists(pkg_id):
-                    print('install custom package', pkg_id, ':i2')
-                    zip_file = _download_from_oss(pkg_id)
-                    _install_package(pkg_id, zip_file)
-                    _index_package(
-                        pkg_id,
-                        (
-                            custom_host[x]['package_id']
-                            for x in info1['dependencies']
-                        ),
-                    )
-            if action != 'delete':
-                yield pkg_id
-    
-    def _install_official_packages(
-        diff: T.DependenciesDiff,
-    ) -> t.Iterator[T.PackageId]:
-        collection = []  # list[Future]
-        info0: T.PackageInfo
-        info1: T.PackageInfo
-        for action, pkg_name, (info0, info1) in diff:
-            if action == 'delete':
-                continue
-            pkg_id = info1['package_id']
-            if action in ('append', 'update'):
-                if not pypi.exists(pkg_id):
-                    collection.append(
-                        pypi.async_download_and_install_one(
-                            pkg_id, info1['url']
-                        )
-                    )
-            yield pkg_id
-        # join futures
-        [x.result() for x in collection]
-    
-    # -------------------------------------------------------------------------
-    
-    def _download_from_oss(package_id: str) -> T.Path:
-        oss.download(
-            f'{oss.path.pypi}/{package_id}',
-            out := f'{paths.pypi.downloads}/{package_id}.zip',
-        )
-        return out
-    
-    def _fast_link_venv(dst_dir: T.Path) -> None:
-        print('fast link venv from old version')
-        assert (
-            manifest_old['version'] != '0.0.0'
-        ), 'cannot do fast linking from a void version'
-        src_dir = paths.apps.get_packages(
-            manifest_old['appid'], manifest_old['version']
-        )
-        fs.make_link(src_dir, dst_dir, True)
-    
-    def _index_package(
-        package_id: str, dependent_package_ids: t.Iterable[str]
-    ) -> None:
-        """manually update `pypi`s indexes."""
-        name, ver = pypi.split(package_id)
-        pypi.name_2_versions[name].append(ver)
-        pypi.name_id_2_paths[package_id] = (
-            f'downloads/{package_id}.zip',
-            f'installed/{name}/{ver}',
-        )
-        pypi.dependencies[package_id] = list(dependent_package_ids)
-        pypi.updates[name] = int(time())
-    
-    def _install_package(package_id: str, zip_file: T.Path) -> None:
-        """
-        TODO: this is a unformal implementation against `pypi.install`. \
-            because the custom package structure is self-made.
-        """
-        file_i = zip_file
-        dir_m = f'{temp_dir}/{package_id}'
-        dir_o = pypi.get_install_path(package_id)
-        ziptool.extract_file(file_i, dir_m, overwrite=True)
-        fs.move(dir_m, dir_o, overwrite=True)
-    
-    main()
+        fast_link_venv(dist_dir)
 
 
-def _create_launcher(manifest: T.Manifest) -> None:
-    appid = manifest['appid']
-    appname = manifest['name']
-    version = manifest['version']
-    launcher: T.LauncherInfo = manifest['launcher']
-    
-    # bat command
-    command = dedent(r'''
-        @echo off
-        set PYTHONPATH=%DEPSLAND%
-        {py} -m depsland run {appid} --version {version}
-    ''').strip().format(
-        py=r'"%DEPSLAND%\python\python.exe"',
-        appid=appid,
-        version=version,
-    )
-    
-    # bat to exe
-    dumps(
-        command,
-        bat_file := '{apps}/{appid}/{version}/{appid}.bat'.format(
-            apps=paths.project.apps, appid=appid, version=version
+def _create_launchers(manifest: T.Manifest) -> None:
+    create_launcher(
+        manifest,
+        exe_file := '{apps}/{appid}/{version}/{name}'.format(
+            apps=paths.project.apps,
+            appid=manifest['appid'],
+            version=manifest['version'],
+            name=(
+                sysinfo.IS_WINDOWS and
+                manifest['name'] + '.exe' or
+                manifest['appid'] + '.sh'
+            ),
         ),
     )
     
-    if not sysinfo.IS_WINDOWS:
-        # TODO: support linux and macos
-        return
-    
-    exe_file = create_launcher(
-        path_i=bat_file,
-        icon=launcher['icon'],
-        show_console=launcher['show_console'],
-        remove_bat=True,
-    )
-    
-    # create shortcuts
-    if launcher['enable_cli']:
-        fs.copy_file(exe_file, '{}/{}.exe'.format(paths.apps.bin, appid))
-    if launcher['add_to_desktop']:
-        create_shortcut(
-            file_i=exe_file,
-            file_o='{}/{}.lnk'.format(paths.system.desktop, appname),
-        )
-    if launcher['add_to_start_menu']:
-        # WARNING: not tested
-        fs.copy_file(
-            exe_file, '{}/{}.exe'.format(paths.system.start_menu, appname)
-        )
+    if sysinfo.IS_WINDOWS:
+        launcher: T.LauncherInfo = manifest['launcher']
+        if not launcher['show_console']:
+            # since console-less application is hard to debug if failed at \
+            # startup, we provide a "debug" launcher for user.
+            create_launcher(
+                manifest,
+                path_o='{dir}/{name} (Debug).exe'.format(
+                    dir=fs.parent(exe_file),
+                    name=manifest['name'],
+                ),
+                debug=True,
+                # keep_bat=False,
+                uac_admin=True,
+            )
+        if launcher['enable_cli']:
+            fs.copy_file(exe_file, '{}/{}.exe'.format(
+                paths.apps.bin, manifest['appid']
+            ))
+        if launcher['add_to_desktop']:
+            create_desktop_shortcut(
+                file_i=exe_file,
+                file_o='{}/{}.lnk'.format(
+                    paths.system.desktop, manifest['name']
+                ),
+            )
+        if launcher['add_to_start_menu']:
+            # WARNING: not tested
+            fs.copy_file(
+                exe_file, '{}/{}.exe'.format(
+                    paths.system.start_menu, manifest['name']
+                )
+            )
 
 
 def _save_history(appid: str, version: str) -> None:

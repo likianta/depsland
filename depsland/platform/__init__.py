@@ -1,5 +1,4 @@
-from . import darwin
-from . import linux
+from . import launcher
 from . import system_info as sysinfo
-from . import windows
-from ._api import create_launcher
+from .launcher import create_desktop_shortcut
+from .launcher import create_launcher

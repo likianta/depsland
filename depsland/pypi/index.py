@@ -4,11 +4,14 @@ from collections import defaultdict
 from lk_utils import dumps
 from lk_utils import loads
 
+from .insight import analyze_metadata
 from ..normalization import T as T0
 from ..paths import pypi as pypi_paths
 
 
 class T:
+    # TODO: sync naminng with `..depsolver.T`. e.g. rename `Name` to \
+    #   `PackageName`, `NameId` to `PackageId` etc.
     Name = T0.Name
     NameId = str  # f'{Name}-{FixedVersion}'
     Path = str
@@ -17,6 +20,7 @@ class T:
     # indexes
     # TODO: change `t.List[...]` to `t.Set[...]` type?
     Dependencies = t.Dict[NameId, t.List[NameId]]
+    #                             ^------------^ flatten list
     Name2Versions = t.Dict[Name, t.List[Version]]
     #   t.List[Version]: a sorted versions list, from new to old.
     #       TODO: the order may be irrelevant, so we can use `t.Set[Version]`?
@@ -54,3 +58,14 @@ class Index:
         dumps(self.name_id_2_paths, pypi_paths.name_id_2_paths)
         dumps(self.dependencies, pypi_paths.dependencies)
         dumps(self.updates, pypi_paths.updates)
+    
+    # -------------------------------------------------------------------------
+    
+    def indexing_new_dependencies(self, name_id: T.NameId):
+        """
+        make sure name_id related paths (downloads and installs) are already \
+        present. i.e. the following attrs should have been updated:
+            self.name_2_versions
+            self.name_id_2_paths
+        """
+        pass

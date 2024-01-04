@@ -13,12 +13,11 @@ _b2e_exe = xpath('b2e.exe')
 
 
 def bat_2_exe(
-        file_i: str,
-        file_o: str = '',
-        icon: str = '',
-        show_console: bool = True,
-        uac_admin: bool = False,
-        remove_bat: bool = False,
+    file_i: str,
+    file_o: str = '',
+    icon: str = '',
+    show_console: bool = True,
+    uac_admin: bool = False,
 ) -> str:
     # validate platform
     if not _is_windows:
@@ -34,19 +33,18 @@ def bat_2_exe(
         assert icon.endswith('.ico')
         assert os.path.exists(icon)
     
-    _bat_2_exe(file_i, file_o, icon, show_console, uac_admin, remove_bat)
+    _bat_2_exe(file_i, file_o, icon, show_console, uac_admin)
     
     return file_o
 
 
 # @new_thread(daemon=False)
 def _bat_2_exe(
-        file_bat: str,
-        file_exe: str,
-        icon: str = '',
-        show_console: bool = True,
-        uac_admin: bool = False,
-        remove_bat: bool = False,
+    file_bat: str,
+    file_exe: str,
+    icon: str = '',
+    show_console: bool = True,
+    uac_admin: bool = False,
 ) -> None:
     """
     ./b2e.exe -h
@@ -70,6 +68,3 @@ def _bat_2_exe(
             print(':v', 'waiting for converting bat to exe...')
         if exists(file_exe):
             break
-    
-    if remove_bat:
-        os.remove(file_bat)

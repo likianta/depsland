@@ -151,7 +151,7 @@ class LibraryIndexer:
         
         before = len(top_pkgs)
         flatten_pkgs = self._flatten_packages(top_pkgs, all_pgk_refs)
-        print(flatten_pkgs, ':lv')
+        # print(flatten_pkgs, ':lv')
         after = len(flatten_pkgs)
         print('flatten packages done', f'count: {before} -> {after}', ':v2')
         return flatten_pkgs

@@ -22,9 +22,10 @@ from .api import install
 from .api import publish
 from .pip import pip
 from .platform import sysinfo
-from .platform.windows.gen_exe import bat_2_exe
+from .platform.launcher import bat_2_exe
+from .platform.launcher import create_launcher
 from .pypi import pypi
 from .pypi import rebuild_index as rebuild_pypi_index
 
 __version__ = '0.7.0'
-__date__ = '2023-10-30'
+__date__ = '2023-12-29'

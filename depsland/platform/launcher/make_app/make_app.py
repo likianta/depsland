@@ -13,10 +13,10 @@ from .... import paths
 from ....manifest import T
 
 
-def gen_app(manifest: T.Manifest, path_o: str, icon: str = None) -> str:
-    dir_i = xpath('template')
-    dir_o = path_o
+# FIXME: not ready to use
+def make_app(manifest: T.Manifest, dir_o: str, icon: str = None) -> str:
     assert dir_o.endswith('.app')
+    dir_i = xpath('template')
     
     fs.copy_tree(dir_i, dir_o, overwrite=True)
     
