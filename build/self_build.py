@@ -43,13 +43,20 @@ if 2:
 
 
 @cli.cmd('init')
-def init_pypi_index(root: str = pypi_root) -> None:
-    dir_o = f'{root}/index'
-    assert exists(dir_o)
-    dumps({}, f'{dir_o}/dependencies.pkl')
-    dumps(defaultdict(list), f'{dir_o}/name_2_versions.pkl')
-    dumps({}, f'{dir_o}/name_id_2_paths.pkl')
-    dumps({}, f'{dir_o}/updates.pkl')
+def init_pypi_index(target_dir: str) -> None:
+    """
+    target_dir: `<proj>/pypi` or `<proj>/chore/pypi_clean`
+    """
+    fs.make_dir(f'{target_dir}/cache')
+    fs.make_dir(f'{target_dir}/downloads')
+    fs.make_dir(f'{target_dir}/index')
+    fs.make_dir(f'{target_dir}/installed')
+    
+    dumps({}, f'{target_dir}/index/dependencies.pkl')
+    dumps(defaultdict(list), f'{target_dir}/index/name_2_versions.pkl')
+    dumps({}, f'{target_dir}/index/name_id_2_paths.pkl')
+    dumps({}, f'{target_dir}/index/updates.pkl')
+    
     print('index initialized.')
 
 
@@ -158,4 +165,6 @@ def soft_link_to_site_packages(
 
 
 if __name__ == '__main__':
+    # pox build/self_build.py init chore/pypi_clean
+    # pox build/self_build.py init pypi
     cli.run()
