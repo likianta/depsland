@@ -198,7 +198,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
             dir_o=dst_dir,
             name=manifest['name'] + ' (Debug).exe',
             debug=True,
-            # keep_bat=False,
+            keep_bat=True,
             # uac_admin=True,
         )
 
@@ -234,7 +234,10 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
         bat_2_exe(
             file_bat,
             file_exe,
-            icon=manifest['launcher']['icon'],
+            icon=(
+                (x := manifest['launcher']['icon']) and
+                '{}/{}'.format(manifest.start_directory, x) or ''
+            ),
             show_console=False,
             # uac_admin=True,
         )

@@ -89,6 +89,7 @@ class T:
     )
     Launcher1 = Launcher0
     #   same with Launcher0 but 'target' and 'icon' are RelPath.
+    #   FIXME: why we use relpath?
     
     # -------------------------------------------------------------------------
     
@@ -191,8 +192,8 @@ def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
             old.model['assets'],
         ),
         'dependencies': _diff_dependencies(
-            new['dependencies']['packages'],
-            old['dependencies']['packages'],
+            new['dependencies'],
+            old['dependencies'],
         )
     }
 

@@ -1,5 +1,5 @@
-from ..system_info import SYSTEM
 from ..system_info import IS_WINDOWS
+from ..system_info import SYSTEM
 from ...manifest import T
 
 
@@ -17,10 +17,12 @@ def make_launcher(
             keep_bat: bool = False
             uac_admin: bool = False
     """
-    path_o = '{dir}/{name}.{ext}'.format(
+    path_o = '{dir}/{name}'.format(
         dir=dir_o,
-        name=name or (IS_WINDOWS and manifest['name'] or manifest['appid']),
-        ext=IS_WINDOWS and 'exe' or 'sh'
+        name=name or '{}.{}'.format(
+            IS_WINDOWS and manifest['name'] or manifest['appid'],
+            IS_WINDOWS and 'exe' or 'sh'
+        )
     )
     
     if target_platform == 'darwin':

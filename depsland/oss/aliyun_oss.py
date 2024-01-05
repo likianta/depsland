@@ -1,9 +1,6 @@
 from functools import partial
 from os.path import basename
 
-from oss2 import Auth
-from oss2 import Bucket
-
 from ._base import BaseOss
 from ._base import BaseOssPath
 
@@ -14,6 +11,12 @@ class AliyunOss(BaseOss):
     def __init__(self, appid: str,
                  access_key: str, access_secret: str,
                  endpoint: str, bucket_name: str, **_):
+        # TODO: we are going to remove `oss2` dependency, instead, use \
+        #   `requests`.
+        #   oss2 requires pycryptodome, which causes OSError that missing \
+        #   'Crypto.Cipher._raw_ecb' on windows.
+        from oss2 import Auth
+        from oss2 import Bucket
         self.path = AliyunOssPath(appid)
         self._auth = Auth(access_key, access_secret)
         self._bucket = Bucket(self._auth, endpoint, bucket_name)
