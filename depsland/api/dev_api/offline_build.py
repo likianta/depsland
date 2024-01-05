@@ -20,6 +20,8 @@ what does "Hello World.exe" do:
     3. run "python/python.exe -m depsland run hello_world"
         depsland will find the target's location and launch it.
 """
+import sys
+
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils.textwrap import dedent
@@ -33,6 +35,7 @@ from ...paths import project as proj_paths
 from ...platform import sysinfo
 from ...platform.launcher import bat_2_exe
 from ...platform.launcher import create_launcher
+from ...pypi import pypi
 from ...utils import init_target_tree
 from ...venv import link_venv
 
@@ -126,8 +129,6 @@ def _init_dist_tree(
 
 
 def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
-    # from .publish import _copy_assets
-    
     diff = diff_manifest(
         new=manifest,
         old=init_manifest(manifest['appid'], manifest['name'])
@@ -141,7 +142,7 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     for action, relpath, (info0, info1) in diff['assets']:
         assert action == 'append', action
         
-        print(':i2', relpath)
+        print(':i2s', relpath)
         path_i = f'{root_i}/{relpath}'
         path_o = f'{root_o}/{relpath}'
         
@@ -172,12 +173,17 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
-    name_ids = (
-        x['package_id']
-        for x in manifest['dependencies']['packages'].values()
-    )
+    pkg_ids = tuple(x['id'] for x in manifest['dependencies'].values())
+    for pid in pkg_ids:
+        if not pypi.exists(pid):
+            print('''
+                please make sure all packages have been indexed in `pypi`.
+                you can use `py <depsland_project>/sidework/prepare \\
+                _packages.py preindex <your_requirements_lock_file>` to do this.
+            ''', ':v3s')
+            sys.exit(1)
     link_venv(
-        name_ids,
+        pkg_ids,
         '{}/source/apps/.venv/{}/{}'.format(
             dst_dir, manifest['appid'], manifest['version']
         )

@@ -10,6 +10,13 @@ from depsland import pypi
 
 
 @cli.cmd()
+def preindex(reqlock_file: str) -> None:
+    for pid, _ in pypi.install_all(reqlock_file):
+        print(pid, ':i')
+    print(':t', 'done')
+
+
+@cli.cmd()
 def preinstall(
     file: str, 
     dir: str, 
@@ -61,5 +68,6 @@ def _reformat_platform(
 
 
 if __name__ == '__main__':
+    # pox sidework/prepare_packages.py preindex <file>
     # pox sidework/prepare_packages.py preinstall <file> <dir>
     cli.run()
