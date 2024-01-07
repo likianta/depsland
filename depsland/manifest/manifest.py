@@ -499,7 +499,7 @@ class Manifest:
         return out  # noqa
     
     def _update_dependencies(self, deps0: T.Dependencies0) -> T.Dependencies1:
-        if deps0 is None:
+        if not deps0:  # None, empty dict or empty string
             return {}
         else:
             # TODO
