@@ -14,8 +14,12 @@ def preindex(reqlock_file: str) -> None:
     ins_paths = tuple(x for _, x, _ in pypi.install_all(dl_paths))
     assert len(dl_paths) == len(ins_paths)
     for p0, p1 in zip(dl_paths, ins_paths):
-        pypi.add_to_index(p0, 0)
-        pypi.add_to_index(p1, 1)
+        try:
+            pypi.add_to_index(p0, 0)
+            pypi.add_to_index(p1, 1)
+        except Exception as e:
+            print(p0, p1, ':lv4')
+            raise e
     print(':t', 'done')
 
 
@@ -51,8 +55,8 @@ def preinstall(
     
     name_ids = (
         x for x, _ in pypi.install_all(
-        y for y, _, _ in pypi.download_all(file)
-    )
+            y for y, _, _ in pypi.download_all(file)
+        )
     )
     pypi.linking(name_ids, dir)
     # # pypi.linking(name_ids, dir, overwrite=True)
