@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import typing as t
 from collections import defaultdict
 
@@ -8,7 +9,7 @@ from lk_utils import fs
 from lk_utils import loads
 from lk_utils.read_and_write import ropen
 
-from .pypi import T as T0
+from .index import T as T0
 from .pypi import pypi
 from .. import normalization as norm
 from ..paths import pypi as pypi_paths
@@ -18,6 +19,13 @@ from ..utils import verspec
 
 
 class T(T0):
+    # DELETE
+    Dependencies = dict
+    Name = str
+    Name2Versions = dict
+    NameId = str
+    Path = str
+    
     PackagesSize = t.NamedTuple('PackagesSize', (
         ('downloaded', t.Dict[str, int]),
         ('installed', t.Dict[str, int]),
@@ -38,71 +46,39 @@ def overview(dir_i: str = None) -> None:
 
 
 def rebuild_index(perform_pip_install: bool = False) -> None:
-    name_2_versions: T.Name2Versions = defaultdict(list)
-    name_id_2_paths: T.NameId2Paths = {}
-    dependencies: T.Dependencies
-    updates: T.Updates = {}
+    id_2_paths: T.Index = {}
+    name_2_ids: T.Name2Ids = defaultdict(set)
     
-    def update_name_2_versions() -> None:
-        name_2_versions[ver.name].append(ver.version)
-    
-    def update_name_id_2_paths() -> None:
-        name_id = f'{ver.name}-{ver.version}'
-        downloaded_path = f.path
-        installed_path = '{}/{}/{}'.format(
-            pypi_paths.installed, ver.name, ver.version
+    for f in fs.find_files(pypi_paths.downloads):
+        if f.name.startswith('.'):  # '.gitkeep', '.DS_Store', etc.
+            continue
+        name, ver = norm.split_filename_of_package(f.name)
+        id = f'{name}-{ver}'
+        name_2_ids[name].add(id)
+        
+        dl_path = f.path
+        ins_path = '{}/{}/{}'.format(pypi_paths.installed, name, ver)
+        if not fs.exists(ins_path):
+            if perform_pip_install:
+                raise NotImplementedError
+            else:
+                print('package not installed', id, dl_path, ins_path, ':lv4')
+                sys.exit(1)
+        assert fs.exists(ins_path)
+        id_2_paths[id] = (
+            fs.relpath(dl_path, pypi_paths.root),
+            fs.relpath(ins_path, pypi_paths.root),
         )
-        name_id_2_paths[name_id] = (
-            fs.relpath(downloaded_path, pypi_paths.root),
-            fs.relpath(installed_path, pypi_paths.root),
-        )
-        if not os.path.exists(installed_path) and perform_pip_install:
-            fs.make_dirs(installed_path)
-            pip.run(
-                'install', downloaded_path,
-                '--no-deps', '--no-index',
-                ('-t', installed_path),
-                ('--find-links', pypi_paths.downloads),
-            )
+        print('id indexed', id, ':is')
     
-    def update_updates() -> None:
-        name = ver.name
-        utime = get_updated_time(f.path)
-        if name not in updates:
-            updates[name] = utime
-        elif utime > updates[name]:
-            updates[name] = utime
-    
-    # -------------------------------------------------------------------------
-    
-    with pip.multi_processing():
-        for f in fs.find_files(pypi_paths.downloads):
-            if f.name.startswith('.'):  # '.gitkeep', '.DS_Store', etc.
-                continue
-            ver = verspec.get_verspec_from_filename(f.name)
-            update_name_2_versions()
-            update_name_id_2_paths()
-            update_updates()
-    
-    # noinspection PyTypeChecker
-    for v in name_2_versions.values():
-        v.sort(key=lambda x: verspec.semver_parse(x), reverse=True)
-        #   make version list sorted in descending order.
-    # print(':l', name_2_versions)
-    
-    # rebuild `dependencies`. this should be called after complete updating
-    # `name_id_2_paths`.
-    dependencies = _rebuild_dependencies(name_2_versions)
-    
-    dumps(name_2_versions, pypi_paths.name_2_versions)
-    dumps(name_id_2_paths, pypi_paths.name_id_2_paths)
-    dumps(dependencies, pypi_paths.dependencies)
-    dumps(updates, pypi_paths.updates)
+    dumps(id_2_paths, pypi_paths.index_pkl)
+    dumps(id_2_paths, pypi_paths.index_json)
+    dumps(name_2_ids, pypi_paths.name_2_ids)
 
 
 def _rebuild_dependencies(
     name_2_versions: T.Name2Versions,
-    recursive=True
+    recursive: bool = True
 ) -> T.Dependencies:
     dependencies: T.Dependencies = {}
     root = pypi_paths.installed

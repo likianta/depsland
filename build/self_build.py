@@ -32,7 +32,7 @@ if 2:
     try:
         from depsland import normalization as norm
         from depsland import pypi
-        # from depsland import rebuild_pypi_index  # FIXME
+        from depsland import rebuild_pypi_index
         from depsland.venv import link_venv
     except AssertionError:
         print(
