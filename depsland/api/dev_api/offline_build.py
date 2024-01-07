@@ -20,8 +20,6 @@ what does "Hello World.exe" do:
     3. run "python/python.exe -m depsland run hello_world"
         depsland will find the target's location and launch it.
 """
-import sys
-
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils.textwrap import dedent
@@ -174,16 +172,30 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
     pkg_ids = tuple(x['id'] for x in manifest['dependencies'].values())
+    inexistent_packages = []
+    #   see `../../depsolver/requirements_lock.py:_parse_dependencies_tree \
+    #   :get_nested_tree`
     for pid in pkg_ids:
         if not pypi.exists(pid):
-            print('''
-                please make sure all packages have been indexed in `pypi`.
-                you can use `py <depsland_project>/sidework/prepare \\
-                _packages.py preindex <your_requirements_lock_file>` to do this.
-            ''', ':v3s')
-            sys.exit(1)
+            inexistent_packages.append(pid)
+            # print('''
+            #     please make sure all packages have been indexed in `pypi`.
+            #     you can use `py <depsland_project>/sidework/prepare \\
+            #     _packages.py preindex <your_requirements_lock_file>` to do this.
+            # ''', ':v3s')
+            # print(pid, ':v4')
+            # sys.exit(1)
+    if inexistent_packages:
+        print(
+            'there are {} packages were declared in requirements file but not '
+            'indexed in `pypi`. it may not be a problem (since the markers are '
+            'in chaos). otherwise you can use `sidework/prepare_packages.py '
+            'preindex <your_requirements_lock_file>` to fix this.'
+            .format(len(inexistent_packages))
+        )
+        print(inexistent_packages, ':lvs')
     link_venv(
-        pkg_ids,
+        (x for x in pkg_ids if x not in inexistent_packages),
         '{}/source/apps/.venv/{}/{}'.format(
             dst_dir, manifest['appid'], manifest['version']
         )

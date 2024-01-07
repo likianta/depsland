@@ -163,6 +163,8 @@ def _parse_dependencies_tree(
         for item in poetry_data['package']:
             name = normalize_name(item['name'])
             if deps := item.get('dependencies'):
+                # note: we don't take care of markers in `deps.values()`. this \
+                # means some inexistent packages may be included in the result.
                 out[name] = tuple(map(normalize_name, deps.keys()))
             else:
                 out[name] = ()
