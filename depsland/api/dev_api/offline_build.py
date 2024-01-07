@@ -192,13 +192,13 @@ def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     create_launcher(manifest, dir_o=dst_dir)
-    if sysinfo.SYSTEM == 'windows':  # TEST
+    if sysinfo.SYSTEM == 'windows':
         create_launcher(
             manifest,
             dir_o=dst_dir,
             name=manifest['name'] + ' (Debug).exe',
             debug=True,
-            keep_bat=True,
+            # keep_bat=True,  # TEST
             # uac_admin=True,
         )
 

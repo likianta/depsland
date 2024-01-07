@@ -308,6 +308,10 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         manifest['start_directory'],  # app_dir
         paths.apps.get_packages(appid, version),  # pkg_dir
     ))
+    # print(
+    #     os.environ['PYTHONPATH'].split(sep),
+    #     os.environ['PATH'].split(sep), ':lv'
+    # )
     
     if not manifest['launcher']['show_console']:
         if sysinfo.IS_WINDOWS:

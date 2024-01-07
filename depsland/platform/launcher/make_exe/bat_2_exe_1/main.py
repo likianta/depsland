@@ -65,6 +65,14 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     """
     command = ' && '.join(loads(file_bat).splitlines()).strip()
     command = command.replace('%~dp0', '{EXE_DIR}').replace('%cd%', '{EXE_DIR}')
+    #   backup note:
+    #       unc path prefix '\\?\<a_very_long_absolute_local_path>'
+    #       if you encountered an error like this:
+    #           CMD doesn't support UNC paths as current directory
+    #       it may becuase you are using an inproper terminal application \
+    #       other than "command prompt" terminal.
+    #       ref: https://stackoverflow.com/questions/21194530/what-does-mean \
+    #       -when-prepended-to-a-file-path
     if command.endswith('%*'): command = command[:-3]
     assert len(command) <= 259, 'command too long'
     command += '\0' * (259 - len(command)) + ('1' if show_console else '0')

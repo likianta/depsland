@@ -15,7 +15,8 @@ python = "^3.10"
 argsense = { version = "^0.5.6a0", source = "likianta-hosted" }
 conflore = "^0.2.0"
 fake-typing = { version = "^0.1.1", source = "likianta-hosted" }
-lk-logger = "^5.6.4"
+# lk-logger = "^5.6.4"
+lk-logger = { version = ">=5.6.5b0,<5.7.0", source = "likianta-hosted" }
 # lk-utils = "^2.7.0"
 lk-utils = { version = "^2.8.1b0", source = "likianta-hosted" }
 # micropipenv = "^1.6.0"
