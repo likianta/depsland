@@ -239,8 +239,8 @@ class PyPI:
         self.index = f'{self.root}/index'
         self.installed = f'{self.root}/installed'
         
-        self.index_json = f'{self.index}/index.json'
-        self.index_pkl = f'{self.index}/index.pkl'
+        self.id_2_paths = f'{self.index}/id_2_paths.pkl'
+        # self.id_2_paths_json = f'{self.index}/id_2_paths.json'
         self.name_2_ids = f'{self.index}/name_2_ids.pkl'
 
 

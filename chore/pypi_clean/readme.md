@@ -6,7 +6,7 @@ enter python interactive shell (or ipython):
 import os
 from lk_utils import dumps
 os.chdir('chore/pypi_clean/index')
-dumps({}, 'index.pkl')
-dumps({}, 'index.json')
+dumps({}, 'id_2_paths.pkl')
+dumps({}, 'id_2_paths.json')
 dumps({}, 'name_2_ids.pkl')
 ```

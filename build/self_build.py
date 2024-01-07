@@ -52,8 +52,8 @@ def init_pypi_index(target_dir: str = 'pypi') -> None:
     fs.make_dir(f'{target_dir}/index')
     fs.make_dir(f'{target_dir}/installed')
     
-    dumps({}, f'{target_dir}/index/index.json')
-    dumps({}, f'{target_dir}/index/index.pkl')
+    dumps({}, f'{target_dir}/index/id_2_paths.json')
+    dumps({}, f'{target_dir}/index/id_2_paths.pkl')
     dumps(defaultdict(set), f'{target_dir}/index/name_2_ids.pkl')
     
     print('index initialized.')

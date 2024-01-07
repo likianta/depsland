@@ -32,21 +32,17 @@ class T(T0):
     ))
 
 
-def overview(dir_i: str = None) -> None:
-    if dir_i:
-        print(loads(f'{dir_i}/name_2_versions.pkl'), ':ls')
-        print(loads(f'{dir_i}/name_id_2_paths.pkl'), ':ls')
-        print(loads(f'{dir_i}/dependencies.pkl'), ':ls')
-        print(loads(f'{dir_i}/updates.pkl'), ':ls')
+def overview(custom_dir: str = None) -> None:
+    if custom_dir:
+        print(loads(f'{custom_dir}/id_2_paths.pkl'), ':ls')
+        print(loads(f'{custom_dir}/name_2_ids.pkl'), ':ls')
     else:
-        print(pypi.name_2_versions, ':l')
-        print(pypi.name_id_2_paths, ':l')
-        print(pypi.dependencies, ':l')
-        print(pypi.updates, ':l')
+        print(pypi.index.id_2_paths, ':l')
+        print(pypi.index.name_2_ids, ':l')
 
 
 def rebuild_index(perform_pip_install: bool = False) -> None:
-    id_2_paths: T.Index = {}
+    id_2_paths: T.Id2Paths = {}
     name_2_ids: T.Name2Ids = defaultdict(set)
     
     for f in fs.find_files(pypi_paths.downloads):
@@ -71,8 +67,8 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
         )
         print('id indexed', id, ':is')
     
-    dumps(id_2_paths, pypi_paths.index_pkl)
-    dumps(id_2_paths, pypi_paths.index_json)
+    dumps(id_2_paths, pypi_paths.id_2_paths)
+    dumps(id_2_paths, fs.replace_ext(pypi_paths.id_2_paths, 'json'))
     dumps(name_2_ids, pypi_paths.name_2_ids)
 
 
