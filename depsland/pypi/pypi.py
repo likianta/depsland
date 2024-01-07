@@ -20,10 +20,11 @@ __all__ = ['LocalPyPI', 'T', 'pypi']
 
 
 class T(T0):
+    FlattenPackages = T1.Packages
+    IsNew = bool
     Pip = Pip
     VersionSpecs = t.Iterable[norm.VersionSpec]
     Packages = t.Dict[T0.Name, VersionSpecs]  # DELETE
-    FlattenPackages = T1.Packages
 
 
 class LocalPyPI(Index):
@@ -66,22 +67,26 @@ class LocalPyPI(Index):
         )
         return dst_path
     
-    def download_all(self, file: str) -> t.Iterator[t.Tuple[T.Path, bool]]:
-        resp = self.pip.download_r(file)
+    def download_all(
+        self, requirements_file: str
+    ) -> t.Iterator[t.Tuple[T.Path, T.IsNew]]:
+        resp = self.pip.download_r(requirements_file)
         yield from self._parse_pip_download_response(resp)
     
     def install_all(
-        self, file: str, _skip_existed: bool = True
-    ) -> t.Iterator[t.Tuple[T.NameId, T.Path]]:
-        for filepath, is_new in self.download_all(file):
+        self,
+        downloaded_files: t.Iterable[T.Path],
+        # _skip_existed: bool = True
+    ) -> t.Iterator[t.Tuple[T.NameId, T.Path, T.IsNew]]:
+        for filepath in downloaded_files:
             filename = fs.basename(filepath)
             name, version = norm.split_filename_of_package(filename)
             name_id = f'{name}-{version}'
             print(name_id, ':i2v2s')
-            if is_new or not _skip_existed:
-                yield name_id, self.install_one(name_id, filepath)
+            if fs.exists(p := self.get_install_path(name_id)):
+                yield name_id, p, False
             else:
-                yield name_id, self.get_install_path(name_id)
+                yield name_id, self.install_one(name_id, filepath), True
     
     # -------------------------------------------------------------------------
     # DELETE: main methods

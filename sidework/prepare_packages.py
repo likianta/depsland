@@ -4,22 +4,25 @@ import typing as t
 from os.path import exists
 
 from argsense import cli
-from lk_utils import run_cmd_args
 
 from depsland import pypi
 
 
 @cli.cmd()
 def preindex(reqlock_file: str) -> None:
-    for pid, _ in pypi.install_all(reqlock_file):
-        print(pid, ':i')
+    dl_paths = tuple(x for x, _ in pypi.download_all(reqlock_file))
+    ins_paths = tuple(x for _, x, _ in pypi.install_all(dl_paths))
+    assert len(dl_paths) == len(ins_paths)
+    for p0, p1 in zip(dl_paths, ins_paths):
+        pypi.add_to_index(p0, 0)
+        pypi.add_to_index(p1, 1)
     print(':t', 'done')
 
 
 @cli.cmd()
 def preinstall(
-    file: str, 
-    dir: str, 
+    file: str,
+    dir: str,
     # platform: t.Optional[t.Literal['darwin', 'linux', 'windows']] = None,
 ) -> None:
     assert file.endswith('.lock'), 'only support lock file'  # TODO
@@ -38,19 +41,22 @@ def preinstall(
     #     ignore_return=True,
     #     verbose=True
     # )
-
+    
     # if platform is None or platform == sysinfo.SYSTEM:
     #     from depsland import pypi
     # else:
     #     from depsland.pip import Pip
     #     from depsland.pypi import LocalPyPI
     #     pypi = LocalPyPI(Pip(...))
-
-    name_ids = (x for x, _ in pypi.install_all(file))
-    # name_ids = (x for x, _ in pypi.install_all(file, False))  # TEST
+    
+    name_ids = (
+        x for x, _ in pypi.install_all(
+        y for y, _, _ in pypi.download_all(file)
+    )
+    )
     pypi.linking(name_ids, dir)
     # # pypi.linking(name_ids, dir, overwrite=True)
-
+    
     print(':t', 'done')
 
 
