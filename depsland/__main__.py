@@ -300,6 +300,7 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     )
     assert manifest['version'] == version
     command, args0, kwargs0 = parse_script_info(manifest)
+    # print(command, args0, kwargs0, ':l')
     os.environ['DEPSLAND'] = paths.project.root
     sep = ';' if sysinfo.IS_WINDOWS else ':'
     os.environ['PYTHONPATH'] = sep.join((
@@ -318,7 +319,8 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     lk_logger.unload()
     try:
         subprocess.run(
-            (*command, *args_2_cargs(*args, **kwargs)),
+            # TODO: use '--' to separate different args/kwargs groups.
+            (*command, *args_2_cargs(*args, *args0, **kwargs, **kwargs0)),
             check=True,
             cwd=manifest['start_directory'],
             stderr=subprocess.PIPE,
