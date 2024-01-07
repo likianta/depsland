@@ -194,7 +194,7 @@ def _rebuild_dependencies(
 
 def analyze_metadata(
     file: T.Path,
-    name_2_versions: T.Name2Versions
+    name_2_versions: dict  # FIXME
 ) -> t.Iterator[t.Tuple[t.Tuple[str, str], bool]]:
     """
     analyse 'METADATA' file.
@@ -251,8 +251,8 @@ def analyze_metadata(
 # noinspection PyUnusedLocal
 def analyze_metadata_2(
     file: str,
-    name_2_versions: T.Name2Versions
-) -> t.Iterator[T.NameId]:
+    name_2_versions: dict  # FIXME
+) -> t.Iterator[T.PackageId]:
     """ analyse 'metadata.json' file. """
     raise NotImplementedError
 

@@ -25,14 +25,14 @@ from lk_utils import run_cmd_args
 from lk_utils import xpath
 
 if 1:
-    pypi_root = xpath('../pypi_self')
+    pypi_root = xpath('../chore/pypi_clean')
     os.environ['DEPSLAND_PYPI_ROOT'] = pypi_root
 
 if 2:
     try:
         from depsland import normalization as norm
         from depsland import pypi
-        from depsland import rebuild_pypi_index
+        # from depsland import rebuild_pypi_index  # FIXME
         from depsland.venv import link_venv
     except AssertionError:
         print(
@@ -43,7 +43,7 @@ if 2:
 
 
 @cli.cmd('init')
-def init_pypi_index(target_dir: str) -> None:
+def init_pypi_index(target_dir: str = 'pypi') -> None:
     """
     target_dir: `<proj>/pypi` or `<proj>/chore/pypi_clean`
     """
@@ -52,10 +52,9 @@ def init_pypi_index(target_dir: str) -> None:
     fs.make_dir(f'{target_dir}/index')
     fs.make_dir(f'{target_dir}/installed')
     
-    dumps({}, f'{target_dir}/index/dependencies.pkl')
-    dumps(defaultdict(list), f'{target_dir}/index/name_2_versions.pkl')
-    dumps({}, f'{target_dir}/index/name_id_2_paths.pkl')
-    dumps({}, f'{target_dir}/index/updates.pkl')
+    dumps({}, f'{target_dir}/index/index.json')
+    dumps({}, f'{target_dir}/index/index.pkl')
+    dumps(defaultdict(set), f'{target_dir}/index/name_2_ids.pkl')
     
     print('index initialized.')
 
@@ -165,6 +164,5 @@ def soft_link_to_site_packages(
 
 
 if __name__ == '__main__':
-    # pox build/self_build.py init chore/pypi_clean
-    # pox build/self_build.py init pypi
+    # pox build/self_build.py init
     cli.run()

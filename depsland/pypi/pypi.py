@@ -1,4 +1,3 @@
-import os
 import re
 import typing as t
 
@@ -7,7 +6,6 @@ from lk_utils import fs
 from .index import Index
 from .index import T as T0
 from .. import normalization as norm
-from ..depsolver import T as T1
 from ..paths import pypi as pypi_paths
 from ..pip import Pip
 from ..pip import pip as _default_pip
@@ -18,42 +16,55 @@ __all__ = ['LocalPyPI', 'T', 'pypi']
 
 class T(T0):
     IsNew = bool
-    Packages = T1.Packages
-    Pip = Pip
+    Path = str
     VersionSpecs = t.Iterable[norm.VersionSpec]
 
 
-class LocalPyPI(Index):
-    pip: T.Pip
+class LocalPyPI:
+    index: Index
+    pip: Pip
     
-    def __init__(self, pip: T.Pip = _default_pip) -> None:
-        super().__init__()
+    def __init__(self, pip: Pip = _default_pip) -> None:
+        self.index = Index()
         self.pip = pip
+        self.update_index = self.index.update_index
     
     # -------------------------------------------------------------------------
     # main methods
     
     # TODO: rename `download_one` to `sole_download`?
-    def download_one(self, name_id: T.NameId, custom_url: str = None) -> T.Path:
+    def download_one(
+        self,
+        pkg_id: T.PackageId,
+        custom_url: str = None,
+        _auto_save_index: bool = True
+    ) -> T.Path:
         if custom_url:
-            assert name_id in custom_url, (name_id, custom_url)
+            assert pkg_id in custom_url, (pkg_id, custom_url)
             resp = self.pip.run(
                 ('download', custom_url),
                 ('--no-deps', '--no-index'),
                 ('-d', pypi_paths.downloads),
             )
         else:
-            name, ver = self.split(name_id)
+            name, ver = self.split(pkg_id)
             resp = self.pip.download(
                 name, f'=={ver}',
                 no_dependency=True,
             )
         for path, _ in self._parse_pip_download_response(resp):
+            if _auto_save_index:
+                self.index.add_to_index(path, 0)
             return path
     
-    def install_one(self, name_id: T.NameId, path: T.Path) -> T.Path:
+    def install_one(
+        self,
+        pkg_id: T.PackageId,
+        path: T.Path,
+        _auto_save_index: bool = True
+    ) -> T.Path:
         src_path = path
-        dst_path = self.get_install_path(name_id)
+        dst_path = self.get_install_path(pkg_id)
         if not fs.exists(dst_path):
             fs.make_dirs(dst_path)
         self.pip.run(
@@ -61,6 +72,8 @@ class LocalPyPI(Index):
             ('--no-deps', '--no-index'),
             ('-t', dst_path),
         )
+        if _auto_save_index:
+            self.index.add_to_index(dst_path, 1)
         return dst_path
     
     def download_all(
@@ -73,102 +86,53 @@ class LocalPyPI(Index):
         self,
         downloaded_files: t.Iterable[T.Path],
         # _skip_existed: bool = True
-    ) -> t.Iterator[t.Tuple[T.NameId, T.Path, T.IsNew]]:
+    ) -> t.Iterator[t.Tuple[T.PackageId, T.Path, T.IsNew]]:
         for filepath in downloaded_files:
             filename = fs.basename(filepath)
             name, version = norm.split_filename_of_package(filename)
-            name_id = f'{name}-{version}'
-            print(name_id, ':i2v2s')
-            if fs.exists(p := self.get_install_path(name_id)):
-                yield name_id, p, False
+            pkg_id = f'{name}-{version}'
+            print(pkg_id, ':i2v2s')
+            if fs.exists(p := self.get_install_path(pkg_id)):
+                yield pkg_id, p, False
             else:
-                yield name_id, self.install_one(name_id, filepath), True
+                yield pkg_id, self.install_one(pkg_id, filepath), True
     
     @staticmethod
     def linking(
-        name_ids: t.Iterable[T.NameId], dst_dir: T.Path, **_kwargs
+        pkg_ids: t.Iterable[T.PackageId], dst_dir: T.Path, **_kwargs
     ) -> None:
         print(':d', f'linking required packages to "{dst_dir}"')
-        print(':l', name_ids)
-        link_venv(name_ids, dst_dir, **_kwargs)
-    
-    # -------------------------------------------------------------------------
-    # side methods
-    
-    def add_to_index(self, internal_path: str, type: int) -> None:
-        """
-        params:
-            type: 0 or 1. 0 for downloaded file, 1 for installed path.
-        """
-        if type == 0:
-            assert (
-                internal_path.lower().startswith(pypi_paths.downloads.lower())
-                #   why use `lower`: the `internal_path` was from pip \
-                #   downloading process. in windows its case is not stable.
-                #   for examples:
-                #       'c:\myname\projects\depsland\pypi\...'
-                #       'C:\MyName\projects\depsland\pypi\...'
-                and fs.isfile(internal_path)
-            )
-            name, ver = norm.split_filename_of_package(
-                fs.filename(internal_path)
-            )
-            self.name_2_versions[name].insert(0, ver)
-            name_id = f'{name}-{ver}'
-            a, b = self.name_id_2_paths.get(name_id, (None, None))
-            self.name_id_2_paths[name_id] = (
-                fs.relpath(internal_path, pypi_paths.root), b
-            )
-        else:
-            assert (
-                internal_path.startswith(pypi_paths.installed)
-                #   we no need to use `lower` here because the `internal_path` \
-                #   was generated by `self.get_install_path`, which is stable.
-                and fs.isdir(internal_path)
-            )
-            _, name, ver = internal_path.rsplit('/', 2)
-            name_id = f'{name}-{ver}'
-            a, b = self.name_id_2_paths.get(name_id, (None, None))
-            self.name_id_2_paths[name_id] = (
-                a, fs.relpath(internal_path, pypi_paths.root)
-            )
-    
+        print(':l', pkg_ids)
+        link_venv(pkg_ids, dst_dir, **_kwargs)
+        
     # -------------------------------------------------------------------------
     # general
     
-    def exists(self, name_or_id: t.Union[T.Name, T.NameId]) -> bool:
-        if '-' not in name_or_id or name_or_id.endswith('-'):
-            name = name_or_id.rstrip('-')
-            return name in self.name_2_versions
-        else:
-            name_id = name_or_id
-            return name_id in self.name_id_2_paths
+    def exists(self, name_or_id: t.Union[T.PackageName, T.PackageId]) -> bool:
+        return (name_or_id.rstrip('-')) in self.index
     
-    def get_download_path(self, name_id: T.NameId) -> T.Path:
+    def get_download_path(self, pkg_id: T.PackageId) -> T.Path:
         # FIXME: not a general way
-        return '{}/{}'.format(
-            pypi_paths.downloads, self.name_id_2_paths[name_id][0]
-        )
+        return self.index[pkg_id][0]
     
-    def get_install_path(self, name_id: T.NameId) -> T.Path:
-        return '{}/{}/{}'.format(pypi_paths.installed, *self.split(name_id))
+    def get_install_path(self, pkg_id: T.PackageId) -> T.Path:
+        return '{}/{}/{}'.format(pypi_paths.installed, *self.split(pkg_id))
     
     @staticmethod
-    def split(name_id: T.NameId) -> t.Tuple[T.Name, T.Version]:
-        return name_id.split('-', 1)  # noqa
+    def split(pkg_id: T.PackageId) -> t.Tuple[T.PackageName, T.ExactVersion]:
+        return pkg_id.split('-', 1)  # noqa
     
-    def _find_dependencies(self, name_id: str) -> t.Iterator[T.NameId]:
-        from .insight import analyze_metadata
-        
-        dir0 = '{}/{}'.format(pypi_paths.root, self.name_id_2_paths[name_id][1])
-        for name in os.listdir(dir0):
-            if name.endswith('.dist-info'):
-                dir1 = f'{dir0}/{name}'
-                if os.path.exists(x := f'{dir1}/METADATA'):
-                    yield from analyze_metadata(x, self.name_2_versions)
-                break
-        else:
-            raise Exception(f'cannot find dist-info for {name_id}')
+    # def _find_dependencies(self, pkg_id: str) -> t.Iterator[T.PackageId]:
+    #     from .insight import analyze_metadata
+    #     dir0 = self.index[pkg_id][1]
+    #     for name in os.listdir(dir0):
+    #         if name.endswith('.dist-info'):
+    #             dir1 = f'{dir0}/{name}'
+    #             if os.path.exists(x := f'{dir1}/METADATA'):
+    #                 yield from analyze_metadata(x, self.name_2_versions)
+    #             break
+    #     else:
+    #         raise Exception(f'cannot find dist-info for {pkg_id}')
     
     @staticmethod
     def _parse_pip_download_response(

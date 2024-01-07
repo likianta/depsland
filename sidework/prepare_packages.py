@@ -10,16 +10,12 @@ from depsland import pypi
 
 @cli.cmd()
 def preindex(reqlock_file: str) -> None:
-    dl_paths = tuple(x for x, _ in pypi.download_all(reqlock_file))
-    ins_paths = tuple(x for _, x, _ in pypi.install_all(dl_paths))
-    assert len(dl_paths) == len(ins_paths)
-    for p0, p1 in zip(dl_paths, ins_paths):
-        try:
-            pypi.add_to_index(p0, 0)
-            pypi.add_to_index(p1, 1)
-        except Exception as e:
-            print(p0, p1, ':lv4')
-            raise e
+    for id in (
+        x for x, _, _ in pypi.install_all(
+            y for y, _ in pypi.download_all(rf=reqlock_file)
+        )
+    ):
+        print(id, ':i')
     print(':t', 'done')
 
 
@@ -33,29 +29,9 @@ def preinstall(
     if exists(dir) and os.listdir(dir):
         print('make sure the target directory not exists or be empty')
         sys.exit(0)
-    
-    # run_cmd_args(
-    #     (sys.executable, '-m', 'pip', 'install'),
-    #     ('-r', file),
-    #     ('-t', dir),
-    #     ('--platform', platform and _reformat_platform(platform) or ''),
-    #     # ('--only-binary', ':all:'),
-    #     '--disable-pip-version-check',
-    #     '--no-warn-script-location',
-    #     ignore_return=True,
-    #     verbose=True
-    # )
-    
-    # if platform is None or platform == sysinfo.SYSTEM:
-    #     from depsland import pypi
-    # else:
-    #     from depsland.pip import Pip
-    #     from depsland.pypi import LocalPyPI
-    #     pypi = LocalPyPI(Pip(...))
-    
     name_ids = (
-        x for x, _ in pypi.install_all(
-            y for y, _, _ in pypi.download_all(file)
+        x for x, _, _ in pypi.install_all(
+            y for y, _ in pypi.download_all(file)
         )
     )
     pypi.linking(name_ids, dir)
