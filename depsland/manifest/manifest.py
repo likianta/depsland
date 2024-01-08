@@ -11,7 +11,7 @@ from lk_utils import loads
 
 from .. import normalization as norm
 from ..depsolver import T as T0
-from ..depsolver import resolve_requirements_lock
+from ..depsolver import resolve_poetry_lock
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
@@ -496,26 +496,22 @@ class Manifest:
         if not deps0:  # None, empty dict or empty string
             return {}
         else:
-            # TODO
             assert (
                 isinstance(deps0, str) and
                 # deps0 == 'requirements.lock'
+                deps0 == 'poetry.lock'
                 # deps0.endswith(('.lock', '.toml', '.txt'))
                 # deps0.endswith('.toml')
-                deps0.endswith('.lock')
-            ), (
-                'currently only support "requirements.lock" format. '
-                'see also https://github.com/likianta/poetry-extensions : '
-                'poetry_extensions/requirements_lock.py'
+                # deps0.endswith('.lock')
+            ), 'currently only support "poetry.lock" format'  # TODO
+            # packages = resolve_poetry_lock(
+            #     poetry_lock_file=f'{self._start_directory}/{deps0}'
+            # )
+            packages = resolve_poetry_lock(
+                pyproj_file=f'{self._start_directory}/pyproject.toml',
+                poetry_file=f'{self._start_directory}/poetry.lock'
             )
-        
-        file0 = f'{self._start_directory}/{deps0}'
-        file1 = f'{self._start_directory}/poetry.lock'
-        assert exists(file0) and exists(file1)
-        packages = resolve_requirements_lock(
-            req_lock_file=file0, poetry_lock_file=file1
-        )
-        return packages
+            return packages
     
     @staticmethod
     def _update_launcher(

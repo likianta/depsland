@@ -22,7 +22,7 @@ lk-utils = { version = "^2.8.1b0", source = "likianta-hosted" }
 # micropipenv = "^1.6.0"
 oss2 = "^2.18.3"
 pip = "^23.0.0"
-# poetry = "^1.7.0"
+poetry = "^1.7.0"
 pyyaml = "^6.0.0"
 qmlease = "^3.0.3"
 rich = "^13.7.0"

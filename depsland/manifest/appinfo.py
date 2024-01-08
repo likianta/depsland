@@ -26,7 +26,8 @@ class T(T0):
         },
     )
     Launcher = T0.Launcher1
-    Manifest = Manifest
+    Manifest = t.cast(t.Union[T0.Manifest1, Manifest], Manifest)
+    # Manifest = Manifest
     
     # extra ports for external use
     Scheme = T0.Scheme1

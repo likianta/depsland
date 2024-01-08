@@ -10,7 +10,6 @@ from lk_utils import loads
 
 from ..normalization import VersionSpec
 from ..normalization import normalize_name
-from ..pypi import pypi
 
 
 class T:
@@ -89,9 +88,9 @@ def resolve_requirements_lock(
     for line in data0.splitlines():
         if not line or line.startswith(('# ', '--')):
             continue
-        pkg = _resolve_line(line, deps_tree)
-        # pid = '{}-{}'.format(pkg['name'], pkg['version'])
-        out[pkg['name']] = pkg
+        if pkg := _resolve_line(line, deps_tree):
+            # pid = '{}-{}'.format(pkg['name'], pkg['version'])
+            out[pkg['name']] = pkg
     return out
 
 
@@ -169,22 +168,18 @@ def _parse_dependencies_tree(
     return tree
 
 
-def _resolve_line(line: str, deps_tree: T.DependenciesTree) -> T.PackageInfo:
+def _resolve_line(
+    line: str, deps_tree: T.DependenciesTree
+) -> t.Optional[T.PackageInfo]:
+    appendix = {}
+    
     if ' @ ' in line:
         #   e.g. 'lk-logger @ http://likianta.pro:2006/lk-logger/lk_logger \
         #   -5.7.0a10-py3-none-any.whl'
         a, b = line.split(' @ ', 1)
         raw_name, ver = a, _regex.extract_version_from_url(b, a)
         name = normalize_name(raw_name)
-        return {
-            'id'          : (id := f'{name}-{ver}'),
-            'name'        : name,
-            'version'     : ver,
-            'dependencies': deps_tree[id],
-            'appendix'    : {
-                'custom_url': b,
-            }
-        }
+        appendix['custom_url'] = b
     
     elif ' ; ' in line:
         a, b = line.split(' ; ', 1)
@@ -209,28 +204,33 @@ def _resolve_line(line: str, deps_tree: T.DependenciesTree) -> T.PackageInfo:
         #         platforms.add('windows')
         #     else:
         #         raise Exception(line)
-        return {
-            'id'          : (id := f'{name}-{ver}'),
-            'name'        : name,
-            'version'     : ver,
-            'dependencies': deps_tree[id],
-            'appendix'    : {},
-            # 'appendix'    : {
-            #     'platform'  : platforms,
-            #     'python'    : pyverspecs,
-            # }
-        }
+        # appendix.update({
+        #     'platform'  : platforms,
+        #     'python'    : pyverspecs,
+        # })
     
     else:
         raw_name, ver = _regex.simple_extract_name_and_version(line)
         name = normalize_name(raw_name)
+    
+    id = f'{name}-{ver}'
+    if id in deps_tree:
         return {
             'id'          : (id := f'{name}-{ver}'),
             'name'        : name,
             'version'     : ver,
             'dependencies': deps_tree[id],
-            'appendix'    : {},
+            'appendix'    : appendix
         }
+    else:
+        print(
+            ':r', 'skip inexistent package: '
+            '[red]{}[/] [bright_black]({})[/]'.format(id, line)
+        )
+        return None
+
+
+_warning_once = 1  # see its only usage.
 
 
 def _shrink_dependencies_range(
@@ -243,6 +243,8 @@ def _shrink_dependencies_range(
     take care of markers info, here we according to `pypi:index` to trim off \
     inexistent packages.
     """
+    from ..pypi import pypi
+    global _warning_once
     inexistent_packages = set()
     new_deps_tree: T.DependenciesTree = {}
     for k, v in deps_tree.items():
@@ -256,12 +258,23 @@ def _shrink_dependencies_range(
             else:
                 node.append(x)
     if inexistent_packages:
-        print(
-            'there are {} packages were declared in requirements file but not '
-            'indexed in `pypi`. it may not be a problem (since the markers are '
-            'in chaos). otherwise you can use `sidework/prepare_packages.py '
-            'preindex <your_requirements_lock_file>` to fix this.'
-            .format(len(inexistent_packages))
-        )
-        print(inexistent_packages, ':lvs')
+        # about _warning_once:
+        #   in publish stage, both new manifest and old manifest file will be \
+        #   loaded. the new one goes first, it triggers warning's print; the \
+        #   old one although has inexistent packages, too, but it should not \
+        #   bother us two times.
+        if _warning_once:
+            print(
+                'there are {} packages were declared in requirements file but '
+                'not indexed in `pypi`. it may not be a problem (since the '
+                'markers are in chaos). otherwise you can use '
+                '`sidework/prepare_packages.py preindex <your_requirements'
+                '_lock_file>` to fix this.'
+                .format(len(inexistent_packages))
+            )
+            print({i: n for i, n in enumerate(sorted(inexistent_packages), 1)},
+                  ':lvs')
+            _warning_once = 0
+        else:  # uncomment this to trace who is calling the second time.
+            raise Exception
     return new_deps_tree
