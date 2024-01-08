@@ -10,7 +10,7 @@ or in python package mode.
 2. The `depsland/paths.py : class Project : def __init__` will check if this
    file exists.
 
-   - If true, depsland knows it is in project mode, all related folders are
+   - If exists, depsland knows itself in project mode, all related folders are
      already created.
    - If not (for users who use `pip install depsland`), depsland will first
      create a "virtual" project root.

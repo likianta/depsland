@@ -9,7 +9,7 @@ class FakeOss(LocalOss):
     type = 'fake'
     
     # noinspection PyMissingConstructor
-    def __init__(self, appid: str, symlinks=False, **_):
+    def __init__(self, appid: str, symlinks: bool = False, **_):
         self.path = FakeOssPath(appid)
         self._symlinks = symlinks
 

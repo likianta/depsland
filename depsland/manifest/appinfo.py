@@ -17,8 +17,8 @@ class T(T0):
     Appinfo = t.TypedDict(
         'Appinfo',
         {
-            'appid': str,
-            'name': str,
+            'appid'  : str,
+            'name'   : str,
             'version': str,
             'src_dir': str,  # abspath
             'dst_dir': str,  # abspath
@@ -29,7 +29,6 @@ class T(T0):
     Manifest = Manifest
     
     # extra ports for external use
-    AssetInfo = T0.AssetInfo
     Scheme = T0.Scheme1
     UserManifest = T0.Manifest0
 
@@ -37,8 +36,8 @@ class T(T0):
 def get_app_info(manifest_file: str) -> T.Appinfo:
     data_i: T.Manifest = load_manifest(manifest_file)
     data_o: T.Appinfo = {
-        'appid': data_i['appid'],
-        'name': data_i['name'],
+        'appid'  : data_i['appid'],
+        'name'   : data_i['name'],
         'version': data_i['version'],
         'src_dir': fs.dirpath(manifest_file),
         'dst_dir': '{}/{}/{}'.format(

@@ -63,29 +63,30 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
         # fs.make_dirs(dir_o)
         fs.make_link(oss.path.root, dir_o, True)
         
-        print('generate setup script to dist dir')
-        bat_file = f'{dist_dir}/setup.bat'
-        command = dedent(r'''
-            cd /d %~dp0
-            "%DEPSLAND%\depsland-sui.exe" launch-gui manifest.pkl :true
-        ''').strip()
-        dumps(command, bat_file)
-        
+        # TODO: need to refactor this part.
         if IS_WINDOWS:
-            # noinspection PyTypeChecker
+            print('generate setup script to dist dir')
+            bat_file = f'{dist_dir}/setup.bat'
+            command = dedent(r'''
+                cd /d %~dp0
+                "%DEPSLAND%\depsland-sui.exe" launch-gui manifest.pkl :true
+            ''').strip()
+            dumps(command, bat_file)
+            
             bat_2_exe(
                 bat_file,
+                fs.replace_ext(bat_file, 'exe'),
                 # icon=paths.build.launcher_ico,
-                icon=manifest['launcher']['icon'] or paths.build.launcher_icon,
+                icon=(
+                    (x := manifest['launcher']['icon']) and
+                    '{}/{}'.format(manifest.start_directory, x) or
+                    paths.build.launcher_ico
+                ),
                 show_console=False,
-                remove_bat=True,
             )
+            fs.remove_file(bat_file)
         else:
-            print(
-                '(TODO): "setup.exe" is not available on'
-                ' other platforms',
-                ':v3',
-            )
+            print('"setup.exe" is not available on other platforms', ':v3')
     
     app_info['history'].insert(0, app_info['version'])
     dumps(
@@ -101,10 +102,9 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
     #   /{version}/manifest.pkl`.
     
     print(
-        'publish done. see result at "dist/{}-{}"'.format(
+        ':t', 'publish done. see result at "dist/{}-{}"'.format(
             manifest['appid'], manifest['version']
-        ),
-        ':t',
+        )
     )
 
 
@@ -123,7 +123,7 @@ def _upload(
     # -------------------------------------------------------------------------
     
     root_new = manifest_new['start_directory']
-    root_old = manifest_old['start_directory']  # noqa
+    root_old = manifest_old['start_directory']  # (not used variable)  # noqa
     temp_dir = make_temp_dir()
     
     oss = get_oss_server(manifest_new['appid'])
@@ -134,8 +134,10 @@ def _upload(
     # -------------------------------------------------------------------------
     
     def upload_assets() -> None:
-        info0: T.AssetInfo
-        info1: T.AssetInfo
+        action: T.Scheme
+        info0: t.Optional[T.AssetInfo]
+        info1: t.Optional[T.AssetInfo]
+        
         for action, relpath, (info0, info1) in diff['assets']:
             if action == 'ignore':
                 continue
@@ -160,11 +162,17 @@ def _upload(
             else:  # action == 'delete'
                 oss.delete(f'{oss.path.assets}/{info0.uid}')
     
+    # noinspection PyUnusedLocal
     def upload_dependencies() -> None:
-        # `depsland.manifest.manifest._compare_dependencies`
-        info0: T.PackageInfo
-        info1: T.PackageInfo
-        for action, pkg_name, (info0, info1) in diff['dependencies']['custom']:
+        # FIXME or DELETE: since depsland v0.7, all deps are hosted in pypi or \
+        #   private website. so this function is not needed.
+        
+        # `depsland.manifest.manifest._diff_dependencies`
+        action: T.Scheme
+        info0: t.Optional[T.PackageInfo]
+        info1: t.Optional[T.PackageInfo]
+        
+        for action, pkg_name, (info0, info1) in diff['dependencies']:
             if action == 'ignore':
                 continue
             
@@ -177,23 +185,21 @@ def _upload(
             
             if action in ('append', 'update'):
                 # print(info1['paths'], ':v')
-                zipped_file = _compress_dependency(
-                    info1['package_id'], info1['paths']
-                )
+                zipped_file = _compress_dependency(info1['id'], info1['paths'])
             else:
                 zipped_file = None
             
             if action == 'append':
                 oss.upload(
-                    zipped_file, f'{oss.path.pypi}/{info1["package_id"]}'
+                    zipped_file, f'{oss.path.pypi}/{info1["id"]}'
                 )
             elif action == 'update':
-                oss.delete(f'{oss.path.pypi}/{info0["package_id"]}')
+                oss.delete(f'{oss.path.pypi}/{info0["id"]}')
                 oss.upload(
-                    zipped_file, f'{oss.path.pypi}/{info1["package_id"]}'
+                    zipped_file, f'{oss.path.pypi}/{info1["id"]}'
                 )
             else:  # action == 'delete'
-                oss.delete(f'{oss.path.pypi}/{info0["package_id"]}')
+                oss.delete(f'{oss.path.pypi}/{info0["id"]}')
     
     # -------------------------------------------------------------------------
     
@@ -224,7 +230,7 @@ def _upload(
                 fs.copy_tree(abspath_i, abspath_m, True)
             else:
                 fs.copy_file(abspath_i, abspath_m, True)
-        # print(os.listdir(root_m), ':v')  # TEST
+        # print(os.listdir(root_m), ':v')
         
         abspath_o = f'{root_o}/{package_id}.zip'
         ziptool.compress_dir(root_m, abspath_o)
@@ -233,7 +239,7 @@ def _upload(
     # -------------------------------------------------------------------------
     
     upload_assets()
-    upload_dependencies()
+    # upload_dependencies()
     
     dump_manifest(manifest_new, x := f'{dist_dir}/manifest.pkl')
     oss.upload(x, oss.path.manifest)
@@ -307,7 +313,8 @@ def _copy_assets(
 def _print_change(
     title: str, old: t.AnyStr, new: t.AnyStr, show_index: bool = False
 ) -> None:
+    """ a print info with form of '<title>: <old> -> <new>'. """
     print(
-        ':psr{}'.format('i' if show_index else ''),
+        ':psr{}'.format('i2' if show_index else ''),
         '{}: [dim]([red]{}[/] -> [green]{}[/])[/]'.format(title, old, new),
     )

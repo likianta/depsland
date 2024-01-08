@@ -10,7 +10,7 @@ from .. import paths
 class LocalOss(BaseOss):
     type = 'local'
     
-    def __init__(self, appid: str, symlinks=False, **_):
+    def __init__(self, appid: str, symlinks: bool = False, **_):
         self.path = LocalOssPath(appid)
         self._symlinks = symlinks  # warning: this is experimental feature.
         # self._copy = fs.make_link if symlinks else fs.copy_file
