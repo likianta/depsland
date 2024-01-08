@@ -36,7 +36,7 @@ class Index:
     #     return item in self.name_2_ids or item in self.id_2_paths
     
     def __contains__(self, item: T.PackageId) -> bool:
-        return item in self.name_2_ids
+        return item in self.id_2_paths
     
     def __getitem__(self, id: T.PackageId) -> t.Tuple[T.AbsPath, T.AbsPath]:
         a, b = self.id_2_paths[id]
