@@ -33,6 +33,7 @@ from ...paths import project as proj_paths
 from ...platform import sysinfo
 from ...platform.launcher import bat_2_exe
 from ...platform.launcher import create_launcher
+from ...pypi import pypi
 from ...utils import init_target_tree
 from ...venv import link_venv
 
@@ -46,6 +47,7 @@ def main(manifest_file: str) -> None:
     _init_dist_tree(manifest, dir_o)
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
+    _relink_pypi(manifest, dir_o)
     print(':t2s', 'creating launcher...')
     _create_launcher(manifest, dir_o)
     _create_updator(manifest, dir_o)
@@ -176,6 +178,31 @@ def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
             dst_dir, manifest['appid'], manifest['version']
         )
     )
+    
+
+def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
+    info: T.PackageInfo
+    for name, info in manifest['dependencies'].items():
+        fs.make_dir(
+            '{}/source/pypi/installed/{}'.format(dst_dir, name)
+        )
+        fs.make_link(
+            pypi.index[id][1],
+            '{}/source/pypi/installed/{}/{}'.format(
+                dst_dir, name, info['version']
+            )
+        )
+    # save index
+    name_2_ids = {
+        k: pypi.index.name_2_ids[k]
+        for k in manifest['dependencies'].keys()
+    }
+    id_2_paths = {
+        v['id']: pypi.index.id_2_paths[v['id']]
+        for v in manifest['dependencies'].values()
+    }
+    dumps(name_2_ids, f'{dst_dir}/source/pypi/index/name_2_ids.pkl')
+    dumps(id_2_paths, f'{dst_dir}/source/pypi/index/id_2_paths.pkl')
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:

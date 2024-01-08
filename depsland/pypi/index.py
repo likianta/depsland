@@ -15,10 +15,6 @@ _root = pypi_paths.root
 class T(T0):
     AbsPath = RelPath = str
     #   relative to `paths.pypi.root`
-    # Id2Paths = t.Dict[
-    #     T0.PackageId,
-    #     t.Tuple[t.Optional[RelPath], t.Optional[RelPath]]
-    # ]
     Id2Paths = t.Dict[T0.PackageId, t.Tuple[RelPath, RelPath]]
     #   {package_id: (download_path, install_path), ...}
     Name2Ids = t.Dict[T0.PackageName, t.Set[T0.PackageId]]
