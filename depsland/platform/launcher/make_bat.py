@@ -14,7 +14,7 @@ def make_bat(manifest: T.Manifest, file_o: str, *, debug: bool = False) -> str:
             cd /d %~dp0
             cd source
             set PYTHONPATH=.
-            .\python\python.exe -m depsland run {appid} --version {version}
+            .\python\python.exe -m depsland run {appid}
             pause
         ''')
     else:
@@ -23,7 +23,7 @@ def make_bat(manifest: T.Manifest, file_o: str, *, debug: bool = False) -> str:
             cd /d %~dp0
             cd source
             set PYTHONPATH=.
-            .\python\python.exe -m depsland run {appid} --version {version}
+            .\python\python.exe -m depsland run {appid}
         ''')
     script = template.format(
         appid=manifest['appid'],

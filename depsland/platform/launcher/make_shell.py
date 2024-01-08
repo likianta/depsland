@@ -33,7 +33,7 @@ def make_shell(manifest: T.Manifest, file_o: str) -> str:
         os.environ['PYTHONPATH'] = '.'
         sp.run((
             sys.executable, '-m', 'depsland',
-            'run', '{appid}', '--version', '{version}',
+            'run', '{appid}',
             *sys.argv[1:]
         ))
     ''')
