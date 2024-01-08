@@ -109,7 +109,9 @@ def _init_dist_tree(
     )
     
     if pypi == 'least':
-        fs.make_link(
+        # notice: do not use `fs.make_link` here. we will inflate files in it \
+        # later. see `_relink_pypi`.
+        fs.copy_tree(
             f'{root_i}/chore/pypi_clean',
             f'{root_o}/source/pypi'
         )
@@ -172,13 +174,17 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
+    # TODO: make sure all required packages have been installed and indexed \
+    #   pypi. see also `sidework/prepare_packages.py : preindex`.
+    assert all(pypi.exists(x['id']) for x in manifest['dependencies'].values())
+    # pkg_ids = tuple(x['id'] for x in manifest['dependencies'].values())
     link_venv(
         (x['id'] for x in manifest['dependencies'].values()),
         '{}/source/apps/.venv/{}/{}'.format(
             dst_dir, manifest['appid'], manifest['version']
         )
     )
-    
+
 
 def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
     info: T.PackageInfo
@@ -187,7 +193,7 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
             '{}/source/pypi/installed/{}'.format(dst_dir, name)
         )
         fs.make_link(
-            pypi.index[id][1],
+            pypi.index[info['id']][1],
             '{}/source/pypi/installed/{}/{}'.format(
                 dst_dir, name, info['version']
             )

@@ -2,7 +2,6 @@ import os
 import typing as t
 from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
-from time import time
 
 from lk_utils import dumps
 from lk_utils import fs
@@ -267,13 +266,14 @@ def _install_packages(
     pkg_id: T.PackageId
     pkg_name: T.PackageName
     for action, pkg_name, (info0, info1) in total_diff['dependencies']:
-        if action == 'delete':
+        if action == 'delete':  # this is handled by oss util.
             continue
         pkg_id = info1['id']
         if action in ('append', 'update'):
             tasks_ignitor.append(info1)
         package_ids.add(pkg_id)
     
+    has_new_packages = bool(tasks_ignitor)
     if tasks_ignitor:
         print(len(tasks_ignitor))
         # we will have IO heavy tasks, so promoting max workers is fine.
@@ -282,24 +282,18 @@ def _install_packages(
         thread_pool = ThreadPoolExecutor(max_workers=len(tasks_ignitor))
         
         def download_and_install(info: T.PackageInfo) -> None:
-            path0 = pypi.download_one(
+            dl_path = pypi.download_one(
                 info['id'], info['appendix'].get('custom_url')
             )
-            path1 = pypi.install_one(info['id'], path0)
-            # update indexes
-            pypi.add_to_index(path0, 0)
-            pypi.add_to_index(path1, 1)
-            pypi.dependencies[info['id']] = list(info['dependencies'])
-            pypi.updates[info['name']] = int(time())
+            pypi.install_one(info['id'], dl_path)
         
         tasks = [
             thread_pool.submit(download_and_install, info)
             for info in tasks_ignitor
         ]
         [x.result() for x in tasks]
-        pypi.save_indexes()
     
-    if package_ids:
+    if has_new_packages:
         pypi.linking(package_ids, dist_dir)
     else:
         def fast_link_venv(dst_dir: T.Path) -> None:
