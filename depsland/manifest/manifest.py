@@ -18,15 +18,9 @@ from ..utils import get_updated_time
 
 
 # noinspection PyTypedDict
-class T:
+class T(T0):
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
-    
-    PackageId = T0.PackageId
-    PackageInfo = T0.PackageInfo
-    PackageName = T0.PackageName
-    PackageVersion = T0.ExactVersion
-    Packages = T0.Packages
     
     Scheme0 = t.Literal[
         'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs',  # fmt:skip
@@ -70,7 +64,7 @@ class T:
         #   }
         t.Dict[str, t.Union[str, dict, list]],
     ]
-    Dependencies1 = Packages
+    Dependencies1 = T0.Packages
     
     Launcher0 = t.TypedDict(
         'Launcher0',
@@ -151,10 +145,10 @@ class T:
     DependenciesDiff = t.Iterator[
         t.Tuple[
             Action,
-            PackageName,
+            T0.PackageName,
             t.Tuple[
-                t.Optional[PackageInfo],
-                t.Optional[PackageInfo],
+                t.Optional[T0.PackageInfo],
+                t.Optional[T0.PackageInfo],
             ],
         ]
     ]
@@ -522,25 +516,6 @@ class Manifest:
             req_lock_file=file0, poetry_lock_file=file1
         )
         return packages
-        
-        # indexer = target_venv.LibraryIndexer(working_root)
-        # _source: T.AnyPath = deps0
-        #
-        # def expand_packages() -> T.FlattenPackages:
-        #     name_relations = target_venv.expand_package_names(
-        #         target_venv.get_top_package_names(file=_source),
-        #         indexer.packages
-        #     )
-        #     out = {}
-        #     for lead, deps in name_relations.items():
-        #         out[lead] = indexer.packages[lead]
-        #         out.update({k: indexer.packages[k] for k in deps})
-        #     return out
-        #
-        # return {
-        #     'root'    : indexer.library_root,
-        #     'packages': expand_packages(),
-        # }
     
     @staticmethod
     def _update_launcher(

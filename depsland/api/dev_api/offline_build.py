@@ -33,7 +33,6 @@ from ...paths import project as proj_paths
 from ...platform import sysinfo
 from ...platform.launcher import bat_2_exe
 from ...platform.launcher import create_launcher
-from ...pypi import pypi
 from ...utils import init_target_tree
 from ...venv import link_venv
 
@@ -171,31 +170,8 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
-    pkg_ids = tuple(x['id'] for x in manifest['dependencies'].values())
-    inexistent_packages = []
-    #   see `../../depsolver/requirements_lock.py:_parse_dependencies_tree \
-    #   :get_nested_tree`
-    for pid in pkg_ids:
-        if not pypi.exists(pid):
-            inexistent_packages.append(pid)
-            # print('''
-            #     please make sure all packages have been indexed in `pypi`.
-            #     you can use `py <depsland_project>/sidework/prepare \\
-            #     _packages.py preindex <your_requirements_lock_file>` to do this.
-            # ''', ':v3s')
-            # print(pid, ':v4')
-            # sys.exit(1)
-    if inexistent_packages:
-        print(
-            'there are {} packages were declared in requirements file but not '
-            'indexed in `pypi`. it may not be a problem (since the markers are '
-            'in chaos). otherwise you can use `sidework/prepare_packages.py '
-            'preindex <your_requirements_lock_file>` to fix this.'
-            .format(len(inexistent_packages))
-        )
-        print(inexistent_packages, ':lvs')
     link_venv(
-        (x for x in pkg_ids if x not in inexistent_packages),
+        (x['id'] for x in manifest['dependencies'].values()),
         '{}/source/apps/.venv/{}/{}'.format(
             dst_dir, manifest['appid'], manifest['version']
         )
@@ -250,7 +226,8 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
                 (x := manifest['launcher']['icon']) and
                 '{}/{}'.format(manifest.start_directory, x) or ''
             ),
-            show_console=False,
-            # uac_admin=True,
+            show_console=True,
+            # show_console=False,
+            uac_admin=True,
         )
         fs.remove_file(file_bat)

@@ -10,6 +10,7 @@ from lk_utils import loads
 
 from ..normalization import VersionSpec
 from ..normalization import normalize_name
+from ..pypi import pypi
 
 
 class T:
@@ -82,6 +83,7 @@ def resolve_requirements_lock(
     data0: str = loads(req_lock_file, 'plain')
     data1: dict = loads(poetry_lock_file, 'toml')
     deps_tree = _parse_dependencies_tree(data1, data0)
+    deps_tree = _shrink_dependencies_range(deps_tree)
     
     out = {}
     for line in data0.splitlines():
@@ -90,60 +92,6 @@ def resolve_requirements_lock(
         pkg = _resolve_line(line, deps_tree)
         # pid = '{}-{}'.format(pkg['name'], pkg['version'])
         out[pkg['name']] = pkg
-    return out
-
-
-# DELETE
-def _load_poetry_lock_data(file: str) -> T.PoetryLockedData:
-    """
-    reference:
-        https://github.com/likianta/poetry-extensions : \
-        poetry_extensions/requirements_lock.py : def _reformat_locked_data
-    
-    returns:
-        {
-            name: {
-                'version': str,
-                'source': dict,
-                'files': [dict, ...],
-                'dependencies': {name: spec, ...}
-            }, ...
-        }
-    """
-    raw_data = loads(file, 'toml')
-    out = {}
-    all_declared_extras = {}  # {name: container, ...}
-    #   `container` is a dict or tuple which implements `__contains__` method.
-    
-    for item in raw_data['package']:
-        name = normalize_name(item['name'])
-        out[name] = {
-            'version'     : item['version'],
-            'source'      : item['source'],
-            'files'       : item['files'],
-            'dependencies': {
-                normalize_name(k): v
-                for k, v in item.get('dependencies', {}).items()
-            },
-        }
-        all_declared_extras[name] = item.get('extras', ())
-    
-    # make clear extras
-    for k0, v0 in out.items():
-        required_extras = all_declared_extras.get(k0, ())
-        deps = v0['dependencies']
-        for k1, v1 in tuple(deps.items()):
-            if isinstance(v1, dict) and v1.get('optional', False):
-                try:
-                    assert (m := v1['markers']).startswith('extra ==')
-                    ex_name = re.search(r'extra == "(\w+)"', m).group(1)
-                    v1.pop('markers')
-                    v1['extra'] = ex_name
-                    if ex_name not in required_extras:
-                        deps.pop(k1)
-                except (AssertionError, AttributeError) as e:
-                    print(k0, k1, v1)
-                    raise e
     return out
 
 
@@ -283,3 +231,37 @@ def _resolve_line(line: str, deps_tree: T.DependenciesTree) -> T.PackageInfo:
             'dependencies': deps_tree[id],
             'appendix'    : {},
         }
+
+
+def _shrink_dependencies_range(
+    deps_tree: T.DependenciesTree
+) -> T.DependenciesTree:
+    """
+    make sure `pypi` has indexed all packages from `req_lock_file` - this can \
+    be done by `sidework/prepare_packages.py:preindex`.
+    since `[func] _parse_dependencies_tree : [func] get_nested_tree` doesn't \
+    take care of markers info, here we according to `pypi:index` to trim off \
+    inexistent packages.
+    """
+    inexistent_packages = set()
+    new_deps_tree: T.DependenciesTree = {}
+    for k, v in deps_tree.items():
+        if not pypi.exists(k):
+            inexistent_packages.add(k)
+            continue
+        node = new_deps_tree[k] = []
+        for x in v:
+            if not pypi.exists(x):
+                inexistent_packages.add(x)
+            else:
+                node.append(x)
+    if inexistent_packages:
+        print(
+            'there are {} packages were declared in requirements file but not '
+            'indexed in `pypi`. it may not be a problem (since the markers are '
+            'in chaos). otherwise you can use `sidework/prepare_packages.py '
+            'preindex <your_requirements_lock_file>` to fix this.'
+            .format(len(inexistent_packages))
+        )
+        print(inexistent_packages, ':lvs')
+    return new_deps_tree
