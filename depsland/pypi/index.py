@@ -32,8 +32,11 @@ class Index:
         self._stash_downloads = {}
         atexit.register(self.save_index)
     
-    def __contains__(self, item: t.Union[T.PackageName, T.PackageId]) -> bool:
-        return item in self.name_2_ids or item in self.id_2_paths
+    # def __contains__(self, item: t.Union[T.PackageName, T.PackageId]) -> bool:
+    #     return item in self.name_2_ids or item in self.id_2_paths
+    
+    def __contains__(self, item: T.PackageId) -> bool:
+        return item in self.name_2_ids
     
     def __getitem__(self, id: T.PackageId) -> t.Tuple[T.AbsPath, T.AbsPath]:
         a, b = self.id_2_paths[id]

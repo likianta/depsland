@@ -108,8 +108,11 @@ class LocalPyPI:
     # -------------------------------------------------------------------------
     # general
     
-    def exists(self, name_or_id: t.Union[T.PackageName, T.PackageId]) -> bool:
-        return (name_or_id.rstrip('-')) in self.index
+    # def exists(self, name_or_id: t.Union[T.PackageName, T.PackageId]) -> bool:
+    #     return (name_or_id.rstrip('-')) in self.index
+    
+    def exists(self, package_id: T.PackageId) -> bool:
+        return package_id in self.index
     
     def get_download_path(self, pkg_id: T.PackageId) -> T.Path:
         # FIXME: not a general way
