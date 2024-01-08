@@ -56,7 +56,7 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
         ins_path = '{}/{}/{}'.format(pypi_paths.installed, name, ver)
         if not fs.exists(ins_path):
             if perform_pip_install:
-                raise NotImplementedError
+                pypi.install_one(id, dl_path, False)
             else:
                 print('package not installed', id, dl_path, ins_path, ':lv4')
                 sys.exit(1)

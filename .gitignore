@@ -6,11 +6,9 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
-/chore/custom_packages/*
 /config/.redirect
 /config/auto_saved.pkl
 /deleted/
-/deps/*
 /depsland/webui/assets/
 /depsland/webui/static/
 /dist/*
@@ -18,7 +16,6 @@
 /lib/
 /oss/*/*
 /pypi/*/[^.]*
-/pypi_self/*/[^.]*
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/ui_prototype/
@@ -36,8 +33,6 @@ dist/
 *.bak.*
 
 !/apps/*/.gitkeep
-!/chore/custom_packages/.gitkeep
-!/deps/.gitkeep
 !/dist/.gitkeep
 !/oss/apps/.gitkeep
 !/oss/test/.gitkeep

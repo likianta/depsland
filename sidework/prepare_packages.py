@@ -10,12 +10,13 @@ from depsland import pypi
 
 @cli.cmd()
 def preindex(reqlock_file: str) -> None:
-    for id in (
+    for _ in (
         x for x, _, _ in pypi.install_all(
-            y for y, _ in pypi.download_all(rf=reqlock_file)
+            y for y, _ in pypi.download_all(reqlock_file)
         )
     ):
-        print(id, ':i')
+        # print(id, ':i')
+        pass
     print(':t', 'done')
 
 

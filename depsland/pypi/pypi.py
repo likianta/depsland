@@ -32,7 +32,6 @@ class LocalPyPI:
     # -------------------------------------------------------------------------
     # main methods
     
-    # TODO: rename `download_one` to `sole_download`?
     def download_one(
         self,
         pkg_id: T.PackageId,
@@ -63,6 +62,7 @@ class LocalPyPI:
         path: T.Path,
         _auto_save_index: bool = True
     ) -> T.Path:
+        assert path.endswith(('.tar.gz', '.whl', '.zip')), path
         src_path = path
         dst_path = self.get_install_path(pkg_id)
         if not fs.exists(dst_path):
@@ -77,25 +77,32 @@ class LocalPyPI:
         return dst_path
     
     def download_all(
-        self, requirements_file: str
+        self, requirements_file: str, _auto_save_index: bool = True
     ) -> t.Iterator[t.Tuple[T.Path, T.IsNew]]:
         resp = self.pip.download_r(requirements_file)
-        yield from self._parse_pip_download_response(resp)
+        for path, isnew in self._parse_pip_download_response(resp):
+            if _auto_save_index:
+                self.index.add_to_index(path, 0)
+                yield path, isnew
     
     def install_all(
         self,
         downloaded_files: t.Iterable[T.Path],
+        _auto_save_index: bool = True,
         # _skip_existed: bool = True
     ) -> t.Iterator[t.Tuple[T.PackageId, T.Path, T.IsNew]]:
-        for filepath in downloaded_files:
-            filename = fs.basename(filepath)
-            name, version = norm.split_filename_of_package(filename)
+        for src_path in downloaded_files:
+            src_name = fs.basename(src_path)
+            name, version = norm.split_filename_of_package(src_name)
             pkg_id = f'{name}-{version}'
             print(pkg_id, ':i2v2s')
-            if fs.exists(p := self.get_install_path(pkg_id)):
-                yield pkg_id, p, False
+            dst_path = self.get_install_path(pkg_id)
+            if fs.exists(dst_path):
+                yield pkg_id, dst_path, False
             else:
-                yield pkg_id, self.install_one(pkg_id, filepath), True
+                yield pkg_id, self.install_one(pkg_id, src_path), True
+            if _auto_save_index:
+                self.index.add_to_index(dst_path, 1)
     
     @staticmethod
     def linking(
