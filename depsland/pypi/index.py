@@ -52,10 +52,16 @@ class Index:
     def add_to_index(self, path: T.AbsPath, type: int) -> None:
         if type == 0:
             name, ver = split_filename_of_package(fs.basename(path))
+            # print('stash download', f'{name}-{ver}', ':vp')
             self._stash_downloads[f'{name}-{ver}'] = path
         else:
             _, name, ver = path.rsplit('/', 2)
-            dl_path = self._stash_downloads.pop(f'{name}-{ver}')
+            try:
+                # print('retrieve download', f'{name}-{ver}', ':vp')
+                dl_path = self._stash_downloads.pop(f'{name}-{ver}')
+            except KeyError:
+                print(f'{name}-{ver}', self._stash_downloads, ':lv4')
+                exit(1)
             self.update_index(f'{name}-{ver}', dl_path, path)
     
     def update_index(

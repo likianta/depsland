@@ -100,7 +100,7 @@ class LocalPyPI:
             if fs.exists(dst_path):
                 yield pkg_id, dst_path, False
             else:
-                yield pkg_id, self.install_one(pkg_id, src_path), True
+                yield pkg_id, self.install_one(pkg_id, src_path, False), True
             if _auto_save_index:
                 self.index.add_to_index(dst_path, 1)
     
