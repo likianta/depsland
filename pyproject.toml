@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0a7"
+version = "0.7.0a8"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -23,6 +23,11 @@ lk-utils = { version = "^2.8.1b0", source = "likianta-hosted" }
 oss2 = "^2.18.3"
 pip = "^23.0.0"
 poetry = "^1.7.0"
+pyside6 = { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" }
+# pyside6 = [
+#     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
+#     { version = "^6.6.1", python = "==3.12" },
+# ]
 pyyaml = "^6.0.0"
 qmlease = "^3.0.3"
 rich = "^13.7.0"
@@ -33,10 +38,7 @@ typing-extensions = { version = "*", python = "<3.11" }
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]
-pyside6 = [
-    { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
-    { version = "^6.6.1", python = "==3.12" },
-]
+ipython = "*"
 
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'

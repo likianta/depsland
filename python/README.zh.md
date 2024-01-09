@@ -8,15 +8,17 @@
 
 - macos (intel): `cpython-<version>-x86_64-apple-darwin-install_only.tar.gz`
 
-    示例: "cpython-3.12.1+20240107-x86_64-apple-darwin-install_only.tar.gz"
+    示例: "cpython-3.11.7+20240107-x86_64-apple-darwin-install_only.tar.gz"
 
 - windows: `cpython-<version>-x86_64-pc-windows-msvc-shared-install_only.tar.gz`
 
-    示例: "cpython-3.12.1+20240107-x86_64-pc-windows-msvc-shared-install_only.tar.gz"
+    示例: "cpython-3.11.7+20240107-x86_64-pc-windows-msvc-shared-install_only.tar.gz"
 
     注意: 选择带有 "shared" 的文件, 不要 "static" 的. 因为后者无法安装 requests, numpy 等依赖了 dll 文件的第三方库.
 
 你也可以使用 `build/self_build.py help-me-choose-pyversion` 来获取最新链接.
+
+> 备忘 (2024-01-09): 当前最佳版本是 3.11, 不建议使用 3.12, 因为 3.12 无法安装 pyside6 6.4.3; 而 6.5+ 版本与 qmlease 不兼容 (问题过于复杂, 无法解决), 也无法使用 pyside6_lite.
 
 ## 安装
 
@@ -27,11 +29,11 @@
 ```
 current_dir
 |= bin
-    |- python3.12
+    |- python3.11
     |- pip
     |- ...
 |= lib
-    |= python3.12
+    |= python3.11
         |= site-packages
             |= pip
             |= ...
@@ -44,7 +46,7 @@ current_dir
 
 ```sh
 pox sidework/prepare_packages.py preindex requirements.lock
-pox sidework/prepare_packages.py link-venv requirements.lock python/lib/python3.12/site-packages
+pox sidework/prepare_packages.py link-venv requirements.lock python/lib/python3.11/site-packages
 ```
 
 此外, 还建议安装 wheel:

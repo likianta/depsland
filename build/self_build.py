@@ -53,6 +53,11 @@ def init_pypi_index(target_dir: str = 'pypi') -> None:
     fs.make_dir(f'{target_dir}/index')
     fs.make_dir(f'{target_dir}/installed')
     
+    dumps('', f'{target_dir}/cache/.gitkeep', 'plain')
+    dumps('', f'{target_dir}/downloads/.gitkeep', 'plain')
+    dumps('', f'{target_dir}/index/.gitkeep', 'plain')
+    dumps('', f'{target_dir}/installed/.gitkeep', 'plain')
+    
     dumps({}, f'{target_dir}/index/id_2_paths.json')
     dumps({}, f'{target_dir}/index/id_2_paths.pkl')
     dumps(defaultdict(set), f'{target_dir}/index/name_2_ids.pkl')
@@ -88,19 +93,19 @@ def help_me_choose_pyversion() -> None:
         case 'darwin':
             link = (
                 'https://github.com/indygreg/python-build-standalone/releases/'
-                'download/20240107/cpython-3.12.1+20240107-x86_64-apple-darwin-'
+                'download/20240107/cpython-3.11.7+20240107-x86_64-apple-darwin-'
                 'install_only.tar.gz'
             )
         case 'linux':
             link = (
                 'https://github.com/indygreg/python-build-standalone/releases/'
-                'download/20240107/cpython-3.12.1+20240107-x86_64-unknown-'
+                'download/20240107/cpython-3.11.7+20240107-x86_64-unknown-'
                 'linux-gnu-install_only.tar.gz'
             )
         case 'win32':
             link = (
                 'https://github.com/indygreg/python-build-standalone/releases/'
-                'download/20240107/cpython-3.12.1+20240107-x86_64-pc-windows-'
+                'download/20240107/cpython-3.11.7+20240107-x86_64-pc-windows-'
                 'msvc-shared-install_only.tar.gz'
             )
         case _:
