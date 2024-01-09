@@ -109,7 +109,7 @@ class LocalPyPI:
         pkg_ids: t.Iterable[T.PackageId], dst_dir: T.Path, **_kwargs
     ) -> None:
         print(':d', f'linking required packages to "{dst_dir}"')
-        print(':l', pkg_ids)
+        # print(':l', pkg_ids)
         link_venv(pkg_ids, dst_dir, **_kwargs)
         
     # -------------------------------------------------------------------------

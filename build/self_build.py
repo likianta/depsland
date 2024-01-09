@@ -14,6 +14,7 @@ init `[prj]:/pypi` or `[prj]:/pypi_self` folder.
     pox build/self_build.py init pypi_self
 """
 import os
+import sys
 from collections import defaultdict
 from os.path import exists
 from sys import executable
@@ -79,6 +80,33 @@ def build_depsland_dependencies(
             f'{pypi_root}/installed',
         )
     rebuild_pypi_index()
+
+
+@cli.cmd()
+def help_me_choose_pyversion() -> None:
+    match sys.platform:
+        case 'darwin':
+            link = (
+                'https://github.com/indygreg/python-build-standalone/releases/'
+                'download/20240107/cpython-3.12.1+20240107-x86_64-apple-darwin-'
+                'install_only.tar.gz'
+            )
+        case 'linux':
+            link = (
+                'https://github.com/indygreg/python-build-standalone/releases/'
+                'download/20240107/cpython-3.12.1+20240107-x86_64-unknown-'
+                'linux-gnu-install_only.tar.gz'
+            )
+        case 'win32':
+            link = (
+                'https://github.com/indygreg/python-build-standalone/releases/'
+                'download/20240107/cpython-3.12.1+20240107-x86_64-pc-windows-'
+                'msvc-shared-install_only.tar.gz'
+            )
+        case _:
+            return
+    print('please manually download python standalone from:')
+    print('    ' + link)
 
 
 def _download(dir_o: str) -> None:
@@ -165,4 +193,5 @@ def soft_link_to_site_packages(
 
 if __name__ == '__main__':
     # pox build/self_build.py init
+    # pox build/self_build.py help-me-choose-pyversion
     cli.run()

@@ -174,7 +174,7 @@ def _get_valid_package_names(
     return set(pkgs)
 
 
-def _resolve_line(line: str) -> t.Optional[T.PackageInfo]:
+def _resolve_line(line: str) -> T.PackageInfo:
     appendix = {}
     if ' @ ' in line:
         #   e.g. 'lk-logger @ http://likianta.pro:2006/lk-logger/lk_logger \

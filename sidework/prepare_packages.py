@@ -4,6 +4,7 @@ import typing as t
 from os.path import exists
 
 from argsense import cli
+from lk_utils import loads
 
 from depsland import pypi
 
@@ -21,7 +22,21 @@ def preindex(reqlock_file: str) -> None:
 
 
 @cli.cmd()
-def preinstall(
+def link_venv(req_file: str, target_dir: str):
+    def get_ids_from_file() -> t.Iterator[str]:
+        from depsland.depsolver.requirements_lock import _resolve_line  # noqa
+        for line in loads(req_file, 'plain').splitlines():
+            if line and not line.startswith(('# ', '--')):
+                pkg = _resolve_line(line)
+                if pypi.exists(pkg['id']):
+                    yield pkg['id']
+                else:
+                    print('skip', pkg['id'], line)
+    pypi.linking(get_ids_from_file(), target_dir)
+
+
+@cli.cmd()
+def preinstall(  # DELETE
     file: str,
     dir: str,
     # platform: t.Optional[t.Literal['darwin', 'linux', 'windows']] = None,
