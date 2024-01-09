@@ -176,8 +176,16 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
     # TODO: make sure all required packages have been installed and indexed \
     #   pypi. see also `sidework/prepare_packages.py : preindex`.
-    assert all(pypi.exists(x['id']) for x in manifest['dependencies'].values())
-    # pkg_ids = tuple(x['id'] for x in manifest['dependencies'].values())
+    info: T.PackageInfo
+    for info in manifest['dependencies'].values():
+        if not pypi.exists(id := info['id']):
+            print('add missing package', id, ':v3s')
+            pypi.install_one(
+                id, pypi.download_one(
+                    id, info['appendix'].get('custom_url')
+                )
+            )
+    # assert all(pypi.exists(x['id']) for x in manifest['dependencies'].values())
     link_venv(
         (x['id'] for x in manifest['dependencies'].values()),
         '{}/source/apps/.venv/{}/{}'.format(
