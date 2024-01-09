@@ -11,7 +11,7 @@ from lk_utils import loads
 
 from .. import normalization as norm
 from ..depsolver import T as T0
-from ..depsolver import resolve_poetry_lock
+from ..depsolver import resolve_requirements_lock
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
@@ -499,18 +499,18 @@ class Manifest:
             assert (
                 isinstance(deps0, str) and
                 # deps0 == 'requirements.lock'
-                deps0 == 'poetry.lock'
+                # deps0 == 'poetry.lock'
                 # deps0.endswith(('.lock', '.toml', '.txt'))
                 # deps0.endswith('.toml')
                 # deps0.endswith('.lock')
-            ), 'currently only support "poetry.lock" format'  # TODO
-            # packages = resolve_poetry_lock(
-            #     poetry_lock_file=f'{self._start_directory}/{deps0}'
-            # )
-            packages = resolve_poetry_lock(
+                deps0.endswith('.lock') and deps0 != 'poetry.lock'
+            ), 'currently only support "requirements.lock" format'  # TODO
+            packages = resolve_requirements_lock(
                 pyproj_file=f'{self._start_directory}/pyproject.toml',
-                poetry_file=f'{self._start_directory}/poetry.lock'
+                poetry_file=f'{self._start_directory}/poetry.lock',
+                requirements_file=f'{self._start_directory}/{deps0}',
             )
+            # exit()  # TEST
             return packages
     
     @staticmethod
