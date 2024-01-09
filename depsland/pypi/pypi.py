@@ -67,11 +67,15 @@ class LocalPyPI:
         dst_path = self.get_install_path(pkg_id)
         if not fs.exists(dst_path):
             fs.make_dirs(dst_path)
-        self.pip.run(
-            ('install', src_path),
-            ('--no-deps', '--no-index'),
-            ('-t', dst_path),
-        )
+        try:
+            self.pip.run(
+                ('install', src_path),
+                ('--no-deps', '--no-index'),
+                ('-t', dst_path),
+            )
+        except Exception as e:
+            fs.remove_tree(dst_path)
+            raise e
         if _auto_save_index:
             self.index.add_to_index(dst_path, 1)
         return dst_path
