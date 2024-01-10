@@ -127,7 +127,7 @@ def _install(
     print(oss.path)
     
     _install_files(manifest_new, manifest_old, oss, dir_m)
-    _install_packages(manifest_new, manifest_old, dir_m)
+    _install_packages(manifest_new, manifest_old)
     _create_launchers(manifest_new)
     
     _save_history(manifest_new['appid'], manifest_new['version'])
@@ -205,13 +205,15 @@ def _install_files(
 ) -> None:
     root0 = manifest_old['start_directory']
     root1 = manifest_new['start_directory']
+    _root00 = fs.parent(root0)
+    _root10 = fs.parent(root1)
     
     diff = diff_manifest(manifest_new, manifest_old)
     
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.
         assert not o.startswith(i + '/')
-        print('{} -> {}'.format(i, fs.relpath(o, root1)))
+        print('{} -> {}'.format(fs.relpath(i, _root00), fs.relpath(o, _root10)))
         # TODO: shall we use `fs.move` to make it faster?
         if t == 'file':
             fs.copy_file(i, o, True)
@@ -219,7 +221,7 @@ def _install_files(
             fs.copy_tree(i, o, True)
     
     def download_from_oss(i: str, m: str, o: str) -> None:
-        print(fs.relpath(o, root1))
+        print(fs.relpath(o, _root10))
         oss.download(i, m)
         ziptool.extract_file(m, o, overwrite=True)
     
@@ -250,13 +252,7 @@ def _install_files(
 def _install_packages(
     manifest_new: T.Manifest,
     manifest_old: T.Manifest,
-    dist_dir: T.Path = None,
 ) -> None:
-    if dist_dir is None:
-        dist_dir = paths.apps.make_packages(
-            manifest_new['appid'], manifest_new['version'], clear_exists=True
-        )
-    
     total_diff = diff_manifest(manifest_new, manifest_old)
     package_ids = set()
     tasks_ignitor = []  # list[T.PackageInfo]
@@ -293,8 +289,11 @@ def _install_packages(
         ]
         [x.result() for x in tasks]
     
+    venv_dir = paths.apps.make_packages(
+        manifest_new['appid'], manifest_new['version'], clear_exists=True
+    )
     if has_new_packages:
-        pypi.linking(package_ids, dist_dir)
+        pypi.linking(package_ids, venv_dir)
     else:
         def fast_link_venv(dst_dir: T.Path) -> None:
             print('fast link venv from old version')
@@ -306,10 +305,11 @@ def _install_packages(
             )
             fs.make_link(src_dir, dst_dir, True)
         
-        fast_link_venv(dist_dir)
+        fast_link_venv(venv_dir)
 
 
 def _create_launchers(manifest: T.Manifest) -> None:
+    print('creating launcher... (this may be slow)')
     exe_file = create_launcher(
         manifest,
         dir_o='{apps}/{appid}/{version}'.format(
@@ -364,6 +364,7 @@ def _save_history(appid: str, version: str) -> None:
         data = []
     data.insert(0, version)
     dumps(data, file)
+    print('new installation is recorded')
 
 
 def _save_manifest(manifest: T.Manifest) -> None:

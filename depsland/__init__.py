@@ -28,4 +28,4 @@ from .pypi import pypi
 from .pypi import rebuild_index as rebuild_pypi_index
 
 __version__ = '0.7.0'
-__date__ = '2024-01-07'
+__date__ = '2024-01-10'
