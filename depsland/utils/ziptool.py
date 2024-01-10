@@ -3,6 +3,8 @@ import shutil
 import typing as t
 from zipfile import ZipFile
 
+_IS_WINDOWS = os.name == 'nt'
+
 
 def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> str:
     """
@@ -53,7 +55,12 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
     
     dirname_o = os.path.basename(os.path.abspath(dir_o))
     with ZipFile(file_i, 'r') as z:
-        z.extractall(dir_o)
+        if _IS_WINDOWS:
+            # avoid path limit error in windows.
+            # ref: docs/devnote/issues-summary-202401.zh.md
+            z.extractall('\\\\?\\' + dir_o.replace('/', '\\'))
+        else:
+            z.extractall(dir_o)
     
     dlist = tuple(
         x for x in os.listdir(dir_o) if x not in ('.DS_Store', '__MACOSX')
