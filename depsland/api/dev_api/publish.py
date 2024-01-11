@@ -54,7 +54,6 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
             if not full_upload and app_info['history']
             else init_manifest(app_info['appid'], app_info['name'])
         ),
-        dist_dir=app_info['dst_dir'],
     )
     
     if oss.type in ('local', 'fake'):
@@ -95,22 +94,14 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
         ftype='plain',
     )
     
-    # dump_manifest(manifest, f'{dist_dir}/manifest.pkl')
-    #   note: this is dumped to `dist_dir`, it is different from another \
-    #   usage in `_upload : [code] the bottom lines`. the latter is dumped to \
-    #   `appinfo['dst_dir']`, which is `paths.apps/{appid}/{version} \
-    #   /manifest.pkl`.
-    
     print(
-        ':t', 'publish done. see result at "<depsland>/apps/{}/{}"'.format(
+        ':t', 'publish done. see snapshot at "<depsland>/apps/{}/{}"'.format(
             manifest['appid'], manifest['version']
         )
     )
 
 
-def _upload(
-    manifest_new: T.Manifest, manifest_old: T.Manifest, dist_dir: str
-) -> T.Oss:
+def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
     # print(':lv', manifest_new, manifest_old)
     
     _check_manifest(manifest_new, manifest_old)
@@ -241,8 +232,8 @@ def _upload(
     upload_assets()
     # upload_dependencies()
     
-    dump_manifest(manifest_new, x := f'{dist_dir}/manifest.pkl')
-    oss.upload(x, oss.path.manifest)
+    pkl_file = _save_manifest(manifest_new)
+    oss.upload(pkl_file, oss.path.manifest)
     
     return oss
 
@@ -254,6 +245,18 @@ def _check_manifest(
     assert manifest_new['appid'] == manifest_old['appid']
     v_new, v_old = manifest_new['version'], manifest_old['version']
     assert compare_version(v_new, '>', v_old), (v_new, v_old)
+
+
+def _save_manifest(manifest_new: T.Manifest) -> str:
+    dump_manifest(
+        manifest_new,
+        out := '{}/{}/{}/manifest.pkl'.format(
+            paths.project.apps,
+            manifest_new['appid'],
+            manifest_new['version'],
+        )
+    )
+    return out
 
 
 # -----------------------------------------------------------------------------
