@@ -19,5 +19,7 @@ def main(appid: str, version: str, **kwargs) -> None:
                 paths.apps.bin, appid
             ))
     except PermissionError:  # TODO
-        print('failed to remove old version, '
-              'we will try to delete it again next time', ':v4')
+        print(
+            'failed to remove old version, '
+            'we will try to delete it again next time', ':v4'
+        )

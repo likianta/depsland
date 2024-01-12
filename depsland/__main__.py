@@ -356,7 +356,6 @@ def rebuild_pypi_index(full: bool = False) -> None:
             a `pip install` action.
     """
     from .doctor import rebuild_pypi_index
-    
     rebuild_pypi_index(perform_pip_install=full)
 
 
