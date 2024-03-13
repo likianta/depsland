@@ -102,18 +102,23 @@ def _get_valid_package_names(
     reqlock_data: str,
     working_root: str,
 ) -> t.Set[T.PackageName]:
-    T0 = t.Iterator[t.Tuple[T.PackageName, t.Iterator[T.PackageName]]]
-    T1 = t.Dict[T.PackageName, t.Tuple[T.PackageName, ...]]
-    T2 = t.Iterator[T.PackageName]
+    class T1:
+        # ((str pkg, iter direct_deps), ...)
+        A = t.Iterator[t.Tuple[T.PackageName, t.Iterator[T.PackageName]]]
+        # {str pkg: tuple direct_deps, ...}
+        B = t.Dict[T.PackageName, t.Tuple[T.PackageName, ...]]
+        # ((str pkg, iter expanded_deps), ...)
+        C = A
+        D = t.Iterator[T.PackageName]
     
-    def get_all_package_names() -> T0:
+    def get_all_package_names() -> T1.A:
         for item in poetry_data['package']:
             yield (
                 normalize_name(item['name']),
                 map(normalize_name, item.get('dependencies', {}).keys())
             )
     
-    def expand_dependencies(all_pkgs: T1) -> T0:
+    def expand_dependencies(all_pkgs: T1.B) -> T1.C:
         def recurse(
             key: str, _recorded: set = None
         ) -> t.Iterator[T.PackageName]:
@@ -128,7 +133,7 @@ def _get_valid_package_names(
         for key in all_pkgs:
             yield key, recurse(key)
     
-    def filter_packages_1(all_pkgs: T0) -> T0:
+    def filter_packages_1(all_pkgs: T1.C) -> T1.C:
         required_names = tuple(map(
             normalize_name,
             re.findall(r'^(\w[-\w]+)', reqlock_data, re.M)
@@ -138,7 +143,7 @@ def _get_valid_package_names(
             if name in required_names:
                 yield name, deps
     
-    def filter_packages_2(pkgs: T0) -> T2:
+    def filter_packages_2(pkgs: T1.C) -> T1.D:
         """ filter invalid markers, i.e. inexistent packages. """
         existent_names = tuple(_get_existent_names())
         # print(existent_names, ':vl')
@@ -149,7 +154,7 @@ def _get_valid_package_names(
                     if dep_name in existent_names:
                         yield dep_name
     
-    def _get_existent_names() -> t.Iterator[T.PackageName]:
+    def _get_existent_names() -> T1.D:
         # dev_group_names = tuple(
         #     normalize_name(x)
         #     for x in pyproj_data
