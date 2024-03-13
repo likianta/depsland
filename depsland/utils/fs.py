@@ -4,16 +4,14 @@ import os
 import shutil
 from uuid import uuid1
 
-from fake_typing import register_fake_type
 from lk_utils import fs
 
 from .. import paths
 
-if register_fake_type:
-    T = register_fake_type('T')
+if __name__ == '__main__':  # unreachable. just for typing
+    from ..manifest.manifest import Manifest
 else:
-    class T:
-        from depsland.manifest.manifest import Manifest
+    Manifest = ...
 
 
 def get_content_hash(content: str) -> str:
@@ -53,7 +51,7 @@ def get_updated_time(path: str, recursive=False) -> int:
         )))))
 
 
-def init_target_tree(manifest: T.Manifest, root_dir: str = None) -> None:
+def init_target_tree(manifest: Manifest, root_dir: str = None) -> None:
     if not root_dir:
         root_dir = manifest['start_directory']
     print('init making tree', root_dir)
