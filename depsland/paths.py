@@ -112,7 +112,7 @@ class Project:
         # init files
         dumps(defaultdict(list), f'{root}/pypi/index/dependencies.pkl')
         dumps(defaultdict(list), f'{root}/pypi/index/name_2_versions.pkl')
-        dumps({}, f'{root}/pypi/index/name_id_2_paths.pkl')
+        dumps({}, f'{root}/pypi/index/id_2_paths.pkl')
         dumps({}, f'{root}/pypi/index/updates.pkl')
 
 

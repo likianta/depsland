@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0b0"
+version = "0.7.0b1"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -46,7 +46,7 @@ depsland = 'depsland.__main__:_run_cli'
 [[tool.poetry.source]]
 name = "tsinghua"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
-priority = "default"
+priority = "primary"
 
 [[tool.poetry.source]]
 name = "likianta-hosted"
