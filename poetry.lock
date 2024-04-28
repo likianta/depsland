@@ -191,7 +191,6 @@ description = "A simple, correct Python build frontend"
 optional = false
 python-versions = ">= 3.8"
 files = [
-
     {file = "build-1.2.1-py3-none-any.whl", hash = "sha256:75e10f767a433d9a86e50d83f418e83efc18ede923ee5ff7df93b6cb0306c5d4"},
     {file = "build-1.2.1.tar.gz", hash = "sha256:526263f4870c26f26c433545579475377b2b7588b6f1eac76a001e873ae3e19d"},
 ]
@@ -199,7 +198,6 @@ files = [
 [package.dependencies]
 colorama = {version = "*", markers = "os_name == \"nt\""}
 importlib-metadata = {version = ">=4.6", markers = "python_full_version < \"3.10.2\""}
-
 packaging = ">=19.1"
 pyproject_hooks = "*"
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
@@ -814,13 +812,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "gitpython"
-
 version = "3.1.43"
 description = "GitPython is a Python library used to interact with Git repositories"
 optional = false
 python-versions = ">=3.7"
 files = [
-
     {file = "GitPython-3.1.43-py3-none-any.whl", hash = "sha256:eec7ec56b92aad751f9912a73404bc02ba212a23adb2c7098ee668417051a1ff"},
     {file = "GitPython-3.1.43.tar.gz", hash = "sha256:35f314a9f878467f5453cc1fee295c3e18e52f1b99f10f6cf5b1682e968a9e7c"},
 ]
@@ -829,7 +825,6 @@ files = [
 gitdb = ">=4.0.1,<5"
 
 [package.extras]
-
 doc = ["sphinx (==4.3.2)", "sphinx-autodoc-typehints", "sphinx-rtd-theme", "sphinxcontrib-applehelp (>=1.0.2,<=1.0.4)", "sphinxcontrib-devhelp (==1.0.2)", "sphinxcontrib-htmlhelp (>=2.0.0,<=2.0.1)", "sphinxcontrib-qthelp (==1.0.3)", "sphinxcontrib-serializinghtml (==1.1.5)"]
 test = ["coverage[toml]", "ddt (>=1.1.1,!=1.4.3)", "mock", "mypy", "pre-commit", "pytest (>=7.3.1)", "pytest-cov", "pytest-instafail", "pytest-mock", "pytest-sugar", "typing-extensions"]
 
@@ -919,13 +914,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "ipython"
-
 version = "8.12.3"
 description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "ipython-8.12.3-py3-none-any.whl", hash = "sha256:b0340d46a933d27c657b211a329d0be23793c36595acf9e6ef4164bc01a1804c"},
     {file = "ipython-8.12.3.tar.gz", hash = "sha256:3910c4b54543c2ad73d06579aa771041b7d5707b033bd488669b4cf544e3b363"},
 ]
@@ -937,7 +930,6 @@ colorama = {version = "*", markers = "sys_platform == \"win32\""}
 decorator = "*"
 jedi = ">=0.16"
 matplotlib-inline = "*"
-
 pexpect = {version = ">4.3", markers = "sys_platform != \"win32\""}
 pickleshare = "*"
 prompt-toolkit = ">=3.0.30,<3.0.37 || >3.0.37,<3.1.0"
@@ -956,7 +948,6 @@ nbformat = ["nbformat"]
 notebook = ["ipywidgets", "notebook"]
 parallel = ["ipyparallel"]
 qtconsole = ["qtconsole"]
-
 test = ["pytest (<7.1)", "pytest-asyncio", "testpath"]
 test-extra = ["curio", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.21)", "pandas", "pytest (<7.1)", "pytest-asyncio", "testpath", "trio"]
 
@@ -967,13 +958,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "jaraco-classes"
-
 version = "3.4.0"
 description = "Utility functions for Python class constructs"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "jaraco.classes-3.4.0-py3-none-any.whl", hash = "sha256:f662826b6bed8cace05e7ff873ce0f9283b5c924470fe664fff1c2f00f581790"},
     {file = "jaraco.classes-3.4.0.tar.gz", hash = "sha256:47a024b51d0239c0dd8c8540c6c7f484be3b8fcf0b2d85c13825780d3b3f3acd"},
 ]
@@ -982,7 +971,6 @@ files = [
 more-itertools = "*"
 
 [package.extras]
-
 docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
 testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
@@ -1086,7 +1074,6 @@ files = [
 
 [package.dependencies]
 attrs = ">=22.2.0"
-
 importlib-resources = {version = ">=1.4.0", markers = "python_version < \"3.9\""}
 jsonschema-specifications = ">=2023.03.6"
 pkgutil-resolve-name = {version = ">=1.3.10", markers = "python_version < \"3.9\""}
@@ -1114,7 +1101,6 @@ files = [
 ]
 
 [package.dependencies]
-
 importlib-resources = {version = ">=1.4.0", markers = "python_version < \"3.9\""}
 referencing = ">=0.31.0"
 
@@ -1172,13 +1158,11 @@ reference = "likianta-host"
 
 [[package]]
 name = "lk-utils"
-
 version = "2.10.0a0"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-
     {file = "lk_utils-2.10.0a0-py3-none-any.whl", hash = "sha256:d569d2cdf9e0524a6d57cf3b8473aa6c8adb1dbc0d3fd98920294a338ee9f8ef"},
 ]
 
@@ -1191,7 +1175,6 @@ typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.source]
 type = "legacy"
-
 url = "http://likianta.pro:2006"
 reference = "likianta-host"
 
@@ -1228,7 +1211,6 @@ reference = "tsinghua"
 name = "markupsafe"
 version = "2.1.5"
 description = "Safely add untrusted strings to HTML/XML markup."
-
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1300,7 +1282,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-
 name = "matplotlib-inline"
 version = "0.1.7"
 description = "Inline Matplotlib backend for Jupyter"
@@ -1423,7 +1404,6 @@ reference = "tsinghua"
 
 [[package]]
 name = "numpy"
-
 version = "1.24.4"
 description = "Fundamental package for array computing in Python"
 optional = false
@@ -1505,7 +1485,6 @@ reference = "tsinghua"
 
 [[package]]
 name = "pandas"
-
 version = "2.0.3"
 description = "Powerful data structures for data analysis, time series, and statistics"
 optional = false
@@ -1540,7 +1519,6 @@ files = [
 
 [package.dependencies]
 numpy = [
-
     {version = ">=1.20.3", markers = "python_version < \"3.10\""},
     {version = ">=1.21.0", markers = "python_version >= \"3.10\" and python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version >= \"3.11\""},
@@ -1617,7 +1595,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-
 name = "pickleshare"
 version = "0.7.5"
 description = "Tiny 'shelve'-like database with concurrency support"
@@ -1640,7 +1617,6 @@ description = "Python Imaging Library (Fork)"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "pillow-10.3.0-cp310-cp310-macosx_10_10_x86_64.whl", hash = "sha256:90b9e29824800e90c84e4022dd5cc16eb2d9605ee13f05d47641eb183cd73d45"},
     {file = "pillow-10.3.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:a2c405445c79c3f5a124573a051062300936b0281fee57637e706453e452746c"},
     {file = "pillow-10.3.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:78618cdbccaa74d3f88d0ad6cb8ac3007f1a6fa5c6f19af64b55ca170bfa1edf"},
@@ -1755,7 +1731,6 @@ files = [
 [package.extras]
 testing = ["pytest", "pytest-cov", "wheel"]
 
-
 [package.source]
 type = "legacy"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
@@ -1779,7 +1754,6 @@ reference = "tsinghua"
 
 [[package]]
 name = "platformdirs"
-
 version = "4.2.1"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
@@ -1792,7 +1766,6 @@ files = [
 [package.extras]
 docs = ["furo (>=2023.9.10)", "proselint (>=0.13)", "sphinx (>=7.2.6)", "sphinx-autodoc-typehints (>=1.25.2)"]
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.4.3)", "pytest-cov (>=4.1)", "pytest-mock (>=3.12)"]
-
 type = ["mypy (>=1.8)"]
 
 [package.source]
@@ -1958,7 +1931,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-
 name = "pyapp-window"
 version = "0.5.0a4"
 description = ""
@@ -1986,7 +1958,6 @@ description = "Python library for Apache Arrow"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "pyarrow-16.0.0-cp310-cp310-macosx_10_15_x86_64.whl", hash = "sha256:22a1fdb1254e5095d629e29cd1ea98ed04b4bbfd8e42cc670a6b639ccc208b60"},
     {file = "pyarrow-16.0.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:574a00260a4ed9d118a14770edbd440b848fcae5a3024128be9d0274dbcaf858"},
     {file = "pyarrow-16.0.0-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:c0815d0ddb733b8c1b53a05827a91f1b8bde6240f3b20bf9ba5d650eb9b89cdf"},
@@ -2325,13 +2296,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "rapidfuzz"
-
 version = "3.8.1"
 description = "rapid fuzzy string matching"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "rapidfuzz-3.8.1-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:1b176f01490b48337183da5b4223005bc0c2354a4faee5118917d2fba0bedc1c"},
     {file = "rapidfuzz-3.8.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0798e32304b8009d215026bf7e1c448f1831da0a03987b7de30059a41bee92f3"},
     {file = "rapidfuzz-3.8.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:ad4dbd06c1f579eb043b2dcfc635bc6c9fb858240a70f0abd3bed84d8ac79994"},
@@ -2434,13 +2403,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "referencing"
-
 version = "0.35.0"
 description = "JSON Referencing + Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "referencing-0.35.0-py3-none-any.whl", hash = "sha256:8080727b30e364e5783152903672df9b6b091c926a146a759080b62ca3126cd6"},
     {file = "referencing-0.35.0.tar.gz", hash = "sha256:191e936b0c696d0af17ad7430a3dc68e88bc11be6514f4757dc890f04ab05889"},
 ]
@@ -2746,13 +2713,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "streamlit"
-
 version = "1.33.0"
 description = "A faster way to build and share data apps"
 optional = false
 python-versions = ">=3.8, !=3.9.7"
 files = [
-
     {file = "streamlit-1.33.0-py2.py3-none-any.whl", hash = "sha256:bfacb5d1edefcf803c2040b051a21b4c81317a9865448e6767d0a0c6aae7edae"},
     {file = "streamlit-1.33.0.tar.gz", hash = "sha256:a8da8ff46f5b948c56d2dc7aca7a61cf8d995f4f21744cf82258ae75e63004ba"},
 ]
@@ -2764,7 +2729,6 @@ cachetools = ">=4.0,<6"
 click = ">=7.0,<9"
 gitpython = ">=3.0.7,<3.1.19 || >3.1.19,<4"
 numpy = ">=1.19.3,<2"
-
 packaging = ">=16.8,<25"
 pandas = ">=1.3.0,<3"
 pillow = ">=7.1.0,<11"
@@ -2926,20 +2890,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "traitlets"
-
 version = "5.14.3"
 description = "Traitlets Python configuration system"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "traitlets-5.14.3-py3-none-any.whl", hash = "sha256:b74e89e397b1ed28cc831db7aea759ba6640cb3de13090ca145426688ff1ac4f"},
     {file = "traitlets-5.14.3.tar.gz", hash = "sha256:9ed0579d3502c94b4b3732ac120375cda96f923114522847de4b3bb98b96b6b7"},
 ]
 
 [package.extras]
 docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
-
 test = ["argcomplete (>=3.0.3)", "mypy (>=1.7.0)", "pre-commit", "pytest (>=7.0,<8.2)", "pytest-mock", "pytest-mypy-testing"]
 
 [package.source]
@@ -2949,13 +2910,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "trove-classifiers"
-
 version = "2024.4.10"
 description = "Canonical source for classifiers on PyPI (pypi.org)."
 optional = false
 python-versions = "*"
 files = [
-
     {file = "trove-classifiers-2024.4.10.tar.gz", hash = "sha256:49f40bb6a746b72a1cba4f8d55ee8252169cda0f70802e3fd24f04b7fb25a492"},
     {file = "trove_classifiers-2024.4.10-py3-none-any.whl", hash = "sha256:678bd6fcc5218d72e3304e27a608acc9b91e17bd00c3f3d8c968497c843ad98b"},
 ]
@@ -2967,13 +2926,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "typing-extensions"
-
 version = "4.11.0"
 description = "Backported and Experimental Type Hints for Python 3.8+"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "typing_extensions-4.11.0-py3-none-any.whl", hash = "sha256:c1f94d72897edaf4ce775bb7558d5b79d8126906a14ea5ed1635921406c0387a"},
     {file = "typing_extensions-4.11.0.tar.gz", hash = "sha256:83f085bd5ca59c80295fc2a82ab5dac679cbe02b9f33f7d83af68e241bea51b0"},
 ]
@@ -3023,13 +2980,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "virtualenv"
-
 version = "20.26.0"
 description = "Virtual Python Environment builder"
 optional = false
 python-versions = ">=3.7"
 files = [
-
     {file = "virtualenv-20.26.0-py3-none-any.whl", hash = "sha256:0846377ea76e818daaa3e00a4365c018bc3ac9760cbb3544de542885aad61fb3"},
     {file = "virtualenv-20.26.0.tar.gz", hash = "sha256:ec25a9671a5102c8d2657f62792a27b48f016664c6873f6beed3800008577210"},
 ]
@@ -3207,13 +3162,11 @@ reference = "tsinghua"
 
 [[package]]
 name = "zipp"
-
 version = "3.18.1"
 description = "Backport of pathlib-compatible object wrapper for zip files"
 optional = false
 python-versions = ">=3.8"
 files = [
-
     {file = "zipp-3.18.1-py3-none-any.whl", hash = "sha256:206f5a15f2af3dbaee80769fb7dc6f249695e940acca08dfb2a4769fe61e538b"},
     {file = "zipp-3.18.1.tar.gz", hash = "sha256:2884ed22e7d8961de1c9a05142eb69a247f120291bc0206a00a7642f09b5b715"},
 ]
@@ -3229,6 +3182,5 @@ reference = "tsinghua"
 
 [metadata]
 lock-version = "2.0"
-
 python-versions = "^3.8"
 content-hash = "b13a40e48db7b0e70675eee9ad47b6d405ee9c667870f6d08683685ac321db76"

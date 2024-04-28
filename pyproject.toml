@@ -22,7 +22,6 @@ poetry = "^1.8.0"
 pyyaml = "^6.0.0"
 rich = "^13.7.0"
 semver = "^3.0.2"
-streamlit = "^1.32.0"
 # toml = { version = "*", python = "<3.11" }
 toml = "*"
 # typing-extensions = { version = "*", python = "<3.11" }
