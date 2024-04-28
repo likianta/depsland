@@ -1,34 +1,25 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0b1"
+version = "0.7.0b3"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
 homepage = "https://github.com/likianta/depsland"
 
-# po export -o requirements-poetry.lock --without-hashes
-# more: see ./python/README.zh.md
-
 [tool.poetry.dependencies]
-python = "^3.10"
-# argsense = "^0.5.5"
-argsense = { version = "^0.5.7b0", source = "likianta-hosted" }
+python = "^3.8"
+argsense = "^0.5.7"
+# argsense = { version = "^0.5.7b0", source = "likianta-host" }
 conflore = "^0.2.0"
 # lk-logger = "^5.6.4"
-lk-logger = { version = ">=5.6.5b0,<5.7.0", source = "likianta-hosted" }
-lk-utils = "^2.9.3"
-# lk-utils = { version = "^2.8.1b0", source = "likianta-hosted" }
+lk-logger = { version = "^5.6.5b3", source = "likianta-host" }
+# lk-utils = "^2.9.5"
+lk-utils = { version = "^2.10.0a0", source = "likianta-host" }
 # micropipenv = "^1.6.0"
 oss2 = "^2.18.3"  # DELETE
 pip = "^24.0.0"
 poetry = "^1.8.0"
-# pyside6 = { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" }
-# pyside6 = [
-#     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
-#     { version = "^6.6.1", python = "==3.12" },
-# ]
 pyyaml = "^6.0.0"
-qmlease = "^3.0.4"
 rich = "^13.7.0"
 semver = "^3.0.2"
 streamlit = "^1.32.0"
@@ -36,6 +27,16 @@ streamlit = "^1.32.0"
 toml = "*"
 # typing-extensions = { version = "*", python = "<3.11" }
 windows-toasts = { version = "^1.0.0", platform = "win32" }  # DELETE
+
+# --- ui
+pyapp-window = { version = "^0.5.0a4", source = "likianta-host" }
+# pyside6 = { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" }
+# pyside6 = [
+#     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
+#     { version = "^6.6.1", python = "==3.12" },
+# ]
+qmlease = "^3.0.4"
+streamlit = { version = "^1.33.0", python = "!=3.9.7" }
 
 [tool.poetry.group.dev.dependencies]
 ipython = "*"
@@ -49,7 +50,7 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 priority = "primary"
 
 [[tool.poetry.source]]
-name = "likianta-hosted"
+name = "likianta-host"
 url = "http://likianta.pro:2006/"
 priority = "supplemental"
 
