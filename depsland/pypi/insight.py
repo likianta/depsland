@@ -7,7 +7,6 @@ from collections import defaultdict
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
-from lk_utils.read_and_write import ropen
 
 from .index import T as T0
 from .pypi import pypi
@@ -52,18 +51,19 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
         id = f'{name}-{ver}'
         name_2_ids[name].add(id)
         
-        dl_path = f.path
-        ins_path = '{}/{}/{}'.format(pypi_paths.installed, name, ver)
-        if not fs.exists(ins_path):
+        # download path and install path
+        down_path = f.path
+        inst_path = '{}/{}/{}'.format(pypi_paths.installed, name, ver)
+        if not fs.exists(inst_path):
             if perform_pip_install:
-                pypi.install_one(id, dl_path, False)
+                pypi.install_one(id, down_path, False)
             else:
-                print('package not installed', id, dl_path, ins_path, ':lv4')
+                print('package not installed', id, down_path, inst_path, ':lv4')
                 sys.exit(1)
-        assert fs.exists(ins_path)
+        assert fs.exists(inst_path)
         id_2_paths[id] = (
-            fs.relpath(dl_path, pypi_paths.root),
-            fs.relpath(ins_path, pypi_paths.root),
+            fs.relpath(down_path, pypi_paths.root),
+            fs.relpath(inst_path, pypi_paths.root),
         )
         print('id indexed', id, ':is')
     
@@ -180,7 +180,7 @@ def analyze_metadata(
     #   e.g. 'argsense (>=0.4.2,<0.5.0)' -> ('argsense', '>=0.4.2,<0.5.0')
     
     def walk() -> t.Iterator[str]:
-        with ropen(file) as f:
+        with open(file, 'r', encoding='utf-8') as f:
             flag = 0
             head = 'Requires-Dist: '
             for line in f:

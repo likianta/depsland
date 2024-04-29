@@ -1,6 +1,6 @@
 if 1:
     import lk_logger
-    lk_logger.setup(quiet=True, show_varnames=True)
+    lk_logger.setup(quiet=True, show_funcname=False, show_varnames=True)
     
 # if 2:
 #     # check python version, if lower than 3.11, import typing_extensions
@@ -25,7 +25,6 @@ from .platform import sysinfo
 from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pypi
-from .pypi import rebuild_index as rebuild_pypi_index
 
-__version__ = '0.7.0'
-__date__ = '2024-03-13'
+__version__ = '0.7.0b4'
+__date__ = '2024-04-28'
