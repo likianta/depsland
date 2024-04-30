@@ -1,8 +1,8 @@
 """
 see DEVNOTE.md
 """
-
 import os
+import sys
 
 from argsense import cli
 from lk_utils import run_cmd_args, xpath
@@ -12,6 +12,57 @@ os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
 
 from depsland import paths
 from depsland.pypi.insight import rebuild_index
+
+
+@cli.cmd()
+def help_me_choose_python(
+    platform: str = sys.platform,
+    arch: str = 'x86_64',  # 'aarch64', 'x86_64'
+) -> None:
+    """
+    homepage: https://github.com/indygreg/python-build-standalone/releases
+    note: do not choose "msvc-static" or "linux-musl" version.
+    """
+    match platform:
+        case 'darwin':
+            if arch == 'aarch64':
+                link = (
+                    'https://github.com/indygreg/python-build-standalone/'
+                    'releases/download/20240415/cpython-3.12.3+20240415-'
+                    'aarch64-apple-darwin-install_only.tar.gz'
+                )
+            else:
+                link = (
+                    'https://github.com/indygreg/python-build-standalone/'
+                    'releases/download/20240415/cpython-3.12.3+20240415-'
+                    'x86_64-apple-darwin-install_only.tar.gz'
+                )
+        case 'linux':
+            if arch == 'aarch64':
+                link = (
+                    'https://github.com/indygreg/python-build-standalone/'
+                    'releases/download/20240415/cpython-3.12.3+20240415-'
+                    'aarch64-unknown-linux-gnu-install_only.tar.gz'
+                )
+            else:
+                link = (
+                    'https://github.com/indygreg/python-build-standalone/'
+                    'releases/download/20240415/cpython-3.12.3+20240415-'
+                    'x86_64-unknown-linux-gnu-install_only.tar.gz'
+                )
+        case 'win32':
+            if arch == 'aarch64':
+                raise Exception(platform, arch)
+            else:
+                link = (
+                    'https://github.com/indygreg/python-build-standalone/'
+                    'releases/download/20240415/cpython-3.12.3+20240415-'
+                    'x86_64-pc-windows-msvc-install_only.tar.gz'
+                )
+        case _:
+            raise Exception(platform, arch)
+    print('please manually download python standalone from:')
+    print('    ' + link)
 
 
 @cli.cmd()
@@ -43,12 +94,14 @@ def make_site_packages(target_dir: str = 'chore/site_packages') -> None:
         '-r', 'requirements.lock',
         '-t', target_dir,
         '--find-links', 'chore/pypi_self/downloads',
-        '--no-deps', '--no-index', '--disable-pip-version-check',
+        '--no-deps', '--no-index',
+        '--no-warn-script-location', '--disable-pip-version-check',
         verbose=True
     )
 
 
 if __name__ == '__main__':
+    # pox build/init.py help-me-choose-python
     # pox build/init.py download-requirements
     # pox build/init.py self-build-pypi-index
     # pox build/init.py make-site-packages

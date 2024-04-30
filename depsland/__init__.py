@@ -1,7 +1,6 @@
 if 1:
     import os.path
     import sys
-    
     _parent_dir = os.path.abspath(f'{__file__}/../..')
     if sys.base_prefix.startswith(_parent_dir):
         # we are using an exclusive python interpreter vendored by depsland.
