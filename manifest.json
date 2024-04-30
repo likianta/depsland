@@ -1,13 +1,12 @@
 {
     "appid": "depsland_appstore",
     "name": "Depsland Store",
-    "version": "0.7.0b4",
+    "version": "0.7.0b5",
     "assets": {
         "apps/.bin": "root",
         "apps/.venv": "root",
         "build/icon/launcher.ico": "all",
         "config/depsland.yaml": "all",
-        "deps": "root",
         "depsland": "all",
         "dist": "root",
         "oss/apps": "root",
@@ -16,8 +15,7 @@
         "pypi/downloads": "root",
         "pypi/index": "root",
         "pypi/installed": "root",
-        "temp/.self_upgrade": "root",
-        "temp/.unittests": "root",
+        "temp": "root",
         "CHANGELOG.zh.md": "all",
         "manifest.json": "all",
         "README.md": "all",
@@ -25,23 +23,7 @@
         "poetry.lock": "all",
         "requirements.lock": "all"
     },
-    "dependencies": {
-        "custom_host": [
-            "argsense",
-            "conflore",
-            "lk-logger",
-            "lk-utils",
-            "qmlease"
-        ],
-        "official_host": [
-            "oss2",
-            "poetry",
-            "pyyaml",
-            "rich",
-            "semver",
-            "typing_extensions"
-        ]
-    },
+    "dependencies": "requirements.lock",
     "launcher": {
         "target": "depsland",
         "type": "package",

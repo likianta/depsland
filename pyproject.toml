@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0b4"
+version = "0.7.0b5"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -14,7 +14,7 @@ conflore = "^0.2.0"
 # lk-logger = "^5.6.4"
 lk-logger = { version = "^5.6.5b3", source = "likianta-host" }
 # lk-utils = "^2.9.5"
-lk-utils = { version = "^2.10.0a1", source = "likianta-host" }
+lk-utils = { version = "^2.10.0a5", source = "likianta-host" }
 # micropipenv = "^1.6.0"
 oss2 = "^2.18.3"  # DELETE
 pip = "^24.0.0"

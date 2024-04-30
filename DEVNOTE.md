@@ -19,7 +19,11 @@
 
 2. python standalone version
 
-    see `python/README.zh.md`.
+    download from python standalone releases: https://github.com/indygreg/python-build-standalone/releases
+
+    currently we choose 3.12 version.
+
+    more details to see `python/README.zh.md`.
 
 3. a self pypi folder
 
@@ -29,6 +33,12 @@
 
     # build pypi index
     pox build/init.py self-build-pypi-index
+    ```
+
+3. make site-packages folder
+
+    ```sh
+    pox build/init.py make-site-packages
     ```
 
 ## Lock Requirements

@@ -36,7 +36,20 @@ def self_build_pypi_index() -> None:
     rebuild_index(perform_pip_install=True)
 
 
+@cli.cmd()
+def make_site_packages(target_dir: str = 'chore/site_packages') -> None:
+    run_cmd_args(
+        paths.python.python, '-m', 'pip', 'install',
+        '-r', 'requirements.lock',
+        '-t', target_dir,
+        '--find-links', 'chore/pypi_self/downloads',
+        '--no-deps', '--no-index', '--disable-pip-version-check',
+        verbose=True
+    )
+
+
 if __name__ == '__main__':
     # pox build/init.py download-requirements
     # pox build/init.py self-build-pypi-index
+    # pox build/init.py make-site-packages
     cli.run()
