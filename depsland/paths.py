@@ -73,9 +73,9 @@ class Project:
         self.temp = f'{self.root}/temp'
     
     @staticmethod
-    def _init_project_root(root: str):
+    def _init_project_root(root: str) -> None:
         """
-        related: build/backup_project_resources.py
+        see: `build/build.py:backup_project_resources`
         """
         os.mkdir(f'{root}')
         os.mkdir(f'{root}/apps')
@@ -97,7 +97,7 @@ class Project:
         os.mkdir(f'{root}/temp')
         os.mkdir(f'{root}/temp/.self_upgrade')
         os.mkdir(f'{root}/temp/.unittests')
-        os.mkdir(f'{root}/unittests')
+        # os.mkdir(f'{root}/unittests')
         
         # make link
         fs.make_link(sys.base_exec_prefix, f'{root}/python')

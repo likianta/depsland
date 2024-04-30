@@ -2,31 +2,103 @@
 py build/build.py full-build aliyun
 py build/build.py full-build local
 """
-if 1:
-    import sys
-    from lk_utils import xpath
-    sys.path.insert(0, xpath('..', True))
-
 import os
 from os.path import exists
 
 from argsense import cli
 from lk_utils import fs
 from lk_utils import loads
+from lk_utils import xpath
+
+os.chdir(xpath('..'))
+os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
 
 from depsland import __version__
 from depsland import bat_2_exe as _b2e
 from depsland import paths
 from depsland.manifest import dump_manifest
 from depsland.manifest import load_manifest
+from depsland.utils import make_temp_dir
 from depsland.utils import ziptool
 
 print(':v2', f'depsland version: {__version__}')
 
 
 @cli.cmd()
+def self_check() -> bool:
+    ver0 = __version__
+    ver1 = loads('manifest.json')['version']
+    ver2 = loads('pyproject.toml')['tool']['poetry']['version']
+    if not (ver0 == ver1 == ver2):
+        print('version is not consistent', (ver0, ver1, ver2), ':v4')
+        return False
+    return True
+
+
+@cli.cmd()
+def backup_project_resources() -> None:
+    """
+    generate/refresh `depsland/chore/*.zip`.
+    if you find the following folders have been changed, you need to call this -
+    function:
+        - build
+        - config
+        - sidework
+    """
+    compress_dir = ziptool.compress_dir
+    
+    dir_i = paths.project.root
+    dir_m = make_temp_dir()
+    dir_o = paths.project.depsland + '/chore'
+    assert exists(dir_o)
+    
+    def copy_build_dir() -> None:
+        fs.make_dir(f'{dir_m}/build')
+        
+        fs.copy_tree(f'{dir_i}/build/.assets',
+                     f'{dir_m}/build/.assets')
+        fs.copy_tree(f'{dir_i}/build/exe',
+                     f'{dir_m}/build/exe')
+        fs.copy_tree(f'{dir_i}/build/setup_wizard',
+                     f'{dir_m}/build/setup_wizard')
+        
+        fs.copy_file(f'{dir_i}/build/backup_project_resources.py',
+                     f'{dir_m}/build/backup_project_resources.py')
+        fs.copy_file(f'{dir_i}/build/build.py',
+                     f'{dir_m}/build/build.py')
+        fs.copy_file(f'{dir_i}/build/depsland_setup.py',
+                     f'{dir_m}/build/depsland_setup.py')
+        fs.copy_file(f'{dir_i}/build/init.py',
+                     f'{dir_m}/build/init.py')
+        # DELETE: about to remove
+        fs.copy_file(f'{dir_i}/build/readme.zh.md',
+                     f'{dir_m}/build/readme.zh.md')
+        fs.copy_file(f'{dir_i}/build/self_build.py',
+                     f'{dir_m}/build/self_build.py')
+        compress_dir(f'{dir_m}/build', f'{dir_o}/build.zip', True)
+    
+    def copy_config_dir() -> None:
+        # make sure config/depsland.yaml has configured local oss.
+        assert loads(f'{dir_i}/config/depsland.yaml')['oss']['server'] == 'local'
+        fs.copy_file(f'{dir_i}/config/depsland.yaml', f'{dir_m}/depsland.yaml')
+        compress_dir(f'{dir_m}/depsland.yaml', f'{dir_o}/config.zip', True)
+    
+    def copy_sidework_dir() -> None:
+        fs.make_dir(f'{dir_m}/sidework')
+        for f in fs.find_files(f'{dir_i}/sidework'):
+            i = f.path
+            o = f'{dir_m}/sidework/{f.name}'
+            fs.copy_file(i, o)
+        compress_dir(f'{dir_m}/sidework', f'{dir_o}/sidework.zip', True)
+    
+    copy_build_dir()
+    copy_config_dir()
+    copy_sidework_dir()
+
+
+@cli.cmd()
 def full_build(
-    oss_scheme: str, pypi_scheme='full', _add_python_path=True
+    oss_scheme: str, pypi_scheme: str = 'full', _add_python_path: bool = True
 ) -> None:
     """
     generate `dist/depsland-setup-<version>` folder.
@@ -37,12 +109,18 @@ def full_build(
             'config/depsland_for_dev.yaml', which contains aliyun oss access -
             & secret keys.
     kwargs:
-        pypi_scheme (-p): 'full', 'least', 'none'
-            full: link `<proj>/pypi_self` to `<dist>/pypi`.
-            least: init `<dist>/pypi`, and link `<proj>/pypi_self/downloads` -
-                to `<dist>/pypi/downloads`.
-            none: just init `<dist>/pypi`.
+        pypi_scheme (-p): 'full', 'least', 'blank'
+            full: link `<proj>/pypi` to `<dist>/pypi`.
+                this is used for local test.
+            least: link `<proj>/chore/pypi_self` to `<dist>/pypi`.
+                this should be used only when you want to publish a version. -
+                be careful do not update any content of `<dist>/pypi`.
+            blank: copy `<proj>/chore/pypi_blank` to `<dist>/pypi`.
     """
+    if not self_check():
+        print(':v4s', 'please resolve self-check problems first')
+        exit()
+    
     root_i = paths.project.root
     root_o = '{dist}/depsland-setup-{version}'.format(
         dist=paths.project.dist, version=__version__
@@ -140,43 +218,16 @@ def full_build(
             f'{root_o}/config/depsland.yaml',
         )
     
-    if _add_python_path:
-        if pypi_scheme == 'full':
-            fs.make_link(
-                f'{root_i}/python',
-                f'{root_o}/python',
-            )
-        else:
-            assert exists(f'{root_i}/tests/pure_python_standalone')
-            fs.make_link(
-                f'{root_i}/tests/pure_python_standalone',
-                f'{root_o}/python',
-            )
-    
     if pypi_scheme == 'full':
-        fs.make_link(f'{root_i}/pypi_self', f'{root_o}/pypi')
+        fs.make_link(f'{root_i}/pypi', f'{root_o}/pypi')
     elif pypi_scheme == 'least':
-        assert exists(f'{root_i}/tests/pure_pypi_index')
-        fs.copy_tree(
-            f'{root_i}/tests/pure_pypi_index',
-            f'{root_o}/pypi',
-        )
-        fs.remove_tree(f'{root_o}/pypi/downloads')
-        fs.make_link(
-            f'{root_i}/pypi_self/downloads',
-            f'{root_o}/pypi/downloads',
-        )
-        fs.remove_tree(f'{root_o}/pypi/installed')
-        fs.make_link(
-            f'{root_i}/pypi_self/installed',
-            f'{root_o}/pypi/installed',
-        )
-    else:
-        assert exists(f'{root_i}/tests/pure_pypi_index')
-        fs.copy_tree(
-            f'{root_i}/tests/pure_pypi_index',
-            f'{root_o}/pypi',
-        )
+        print(':v3s', 'do not edit "pypi" folder in the dist')
+        fs.make_link(f'{root_i}/chore/pypi_self', f'{root_o}/pypi')
+    else:  # 'blank'
+        fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
+    
+    if _add_python_path:
+        fs.make_link(f'{root_i}/python', f'{root_o}/python')
     
     # -------------------------------------------------------------------------
     
@@ -185,21 +236,6 @@ def full_build(
         load_manifest(f'{root_i}/manifest.json'),
         f'{root_o}/manifest.pkl',
     )
-    
-    # post check
-    if pypi_scheme == 'least':
-        print('overwrite setup.exe')
-        fs.copy_file(
-            f'{root_i}/build/exe/setup2.exe',
-            f'{root_o}/setup.exe',
-            overwrite=True,
-        )
-    if pypi_scheme in ('least', 'none'):
-        print(
-            'note: you need to manually remove `python/lib/site-packages/'
-            '<symlinked_names>` before publishing this dist',
-            ':v3',
-        )
     
     print(':t', 'see result at ' + fs.relpath(root_o))
 
@@ -238,4 +274,5 @@ def compress_to_zip():
 
 
 if __name__ == '__main__':
+    # pox build/build.py backup-project-resources
     cli.run()
