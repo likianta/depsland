@@ -1,4 +1,4 @@
-# Devnote
+# Development Guide
 
 ## Init Project
 
@@ -30,3 +30,18 @@
     # build pypi index
     pox build/init.py self-build-pypi-index
     ```
+
+## Lock Requirements
+
+first make sure poetry has synced `poetry.lock` file.
+
+use script from https://github.com/likianta/poetry-extensions to lock requirements:
+
+```sh
+git clone <poetry_extensions_repo>
+cd <poetry_extensions_repo>
+# po install --no-root
+pox poxtry_extensions/poetry_export.py <depsland_project>
+```
+
+it generates/updates `<depsland_project>/requirements.lock` file, which is used for `build/init.py:download_requirements`.

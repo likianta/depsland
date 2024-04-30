@@ -22,7 +22,7 @@ def download_requirements() -> None:
           `python/README.zh.md`.
     """
     run_cmd_args(
-        'python/python.exe', '-m', 'pip', 'wheel',
+        paths.python.python, '-m', 'pip', 'wheel',
         '-r', 'requirements.lock',
         '--wheel-dir', 'chore/pypi_self/downloads',
         '--no-deps', '--disable-pip-version-check',
