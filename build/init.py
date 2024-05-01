@@ -10,7 +10,8 @@ from lk_utils import run_cmd_args
 from lk_utils import xpath
 
 os.chdir(xpath('..'))
-os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
+if not os.getenv('DEPSLAND_PYPI_ROOT'):
+    os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
 
 from depsland import paths
 from depsland.pypi.insight import rebuild_index
@@ -84,8 +85,13 @@ def download_requirements() -> None:
 
 
 @cli.cmd()
-def self_build_pypi_index(perform_pip_install: bool = True) -> None:
-    assert paths.pypi.root.endswith('chore/pypi_self')
+def rebuild_pypi_index(perform_pip_install: bool = True) -> None:
+    """
+    trick: if you want to rebuild `pypi` instead of `chore/pypi_self`, set -
+    environment variable `DEPSLAND_PYPI_ROOT` to `pypi` before running this -
+    command. (remember to unset it after running)
+    """
+    assert paths.pypi.root.endswith(('/chore/pypi_self', '/pypi'))
     rebuild_index(perform_pip_install=perform_pip_install)
 
 
@@ -120,7 +126,7 @@ def make_site_packages(target_dir: str = 'chore/site_packages') -> None:
 if __name__ == '__main__':
     # pox build/init.py help-me-choose-python
     # pox build/init.py download-requirements
-    # pox build/init.py self-build-pypi-index
-    # pox build/init.py self-build-pypi-index :false
+    # pox build/init.py rebuild-pypi-index
+    # pox build/init.py rebuild-pypi-index :false
     # pox build/init.py make-site-packages
     cli.run()
