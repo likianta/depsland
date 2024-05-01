@@ -5,7 +5,9 @@ import os
 import sys
 
 from argsense import cli
-from lk_utils import run_cmd_args, xpath
+from lk_utils import dumps
+from lk_utils import run_cmd_args
+from lk_utils import xpath
 
 os.chdir(xpath('..'))
 os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
@@ -82,9 +84,24 @@ def download_requirements() -> None:
 
 
 @cli.cmd()
-def self_build_pypi_index() -> None:
+def self_build_pypi_index(perform_pip_install: bool = True) -> None:
     assert paths.pypi.root.endswith('chore/pypi_self')
-    rebuild_index(perform_pip_install=True)
+    rebuild_index(perform_pip_install=perform_pip_install)
+
+
+@cli.cmd()
+def init_pypi_blank() -> None:
+    """
+    if you want to repair `chore/pypi_blank/index`, run this command.
+    """
+    # fs.make_dir('chore/pypi_blank')
+    # fs.make_dir('chore/pypi_blank/cache')
+    # fs.make_dir('chore/pypi_blank/downloads')
+    # fs.make_dir('chore/pypi_blank/index')
+    # fs.make_dir('chore/pypi_blank/installed')
+    dir = 'chore/pypi_blank/index'
+    dumps({}, f'{dir}/id_2_paths.json')
+    dumps({}, f'{dir}/name_2_vers.json')
 
 
 @cli.cmd()
@@ -104,5 +121,6 @@ if __name__ == '__main__':
     # pox build/init.py help-me-choose-python
     # pox build/init.py download-requirements
     # pox build/init.py self-build-pypi-index
+    # pox build/init.py self-build-pypi-index :false
     # pox build/init.py make-site-packages
     cli.run()

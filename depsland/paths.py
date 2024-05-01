@@ -223,11 +223,10 @@ class Oss:  # note: this is a local dir that mimics OSS structure.
 class PyPI:
     """
     to redirect pypi root, use environment variable 'DEPSLAND_PYPI_ROOT'.
-    see also:
-        `build/self_build.py:init_pypi_index`
-        `sidework/pypi_index.py:rebuild_pypi_index`
+    see also: `build/init.py`
     """
-    def __init__(self):
+    
+    def __init__(self) -> None:
         if x := _Env.PYPI_ROOT:
             print(':r', f'[yellow dim]relocate pypi root to "{x}"[/]')
             self.root = fs.abspath(x)
@@ -239,9 +238,8 @@ class PyPI:
         self.index = f'{self.root}/index'
         self.installed = f'{self.root}/installed'
         
-        self.id_2_paths = f'{self.index}/id_2_paths.pkl'
-        # self.id_2_paths_json = f'{self.index}/id_2_paths.json'
-        self.name_2_ids = f'{self.index}/name_2_ids.pkl'
+        self.id_2_paths = f'{self.index}/id_2_paths.json'
+        self.name_2_vers = f'{self.index}/name_2_vers.json'
 
 
 class Python:

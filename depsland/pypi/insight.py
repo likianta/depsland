@@ -21,7 +21,6 @@ class T(T0):
     # DELETE
     Dependencies = dict
     Name = str
-    Name2Versions = dict
     NameId = str
     Path = str
     
@@ -42,14 +41,14 @@ def overview(custom_dir: str = None) -> None:
 
 def rebuild_index(perform_pip_install: bool = False) -> None:
     id_2_paths: T.Id2Paths = {}
-    name_2_ids: T.Name2Ids = defaultdict(set)
+    name_2_vers: T.Name2Versions = defaultdict(list)
     
     for f in fs.find_files(pypi_paths.downloads):
         if f.name.startswith('.'):  # '.gitkeep', '.DS_Store', etc.
             continue
         name, ver = norm.split_filename_of_package(f.name)
+        name_2_vers[name].append(ver)
         id = f'{name}-{ver}'
-        name_2_ids[name].add(id)
         
         # download path and install path
         down_path = f.path
@@ -67,9 +66,11 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
         )
         print('id indexed', id, ':is')
     
+    for vers in name_2_vers.values():
+        verspec.sort_versions(vers, reverse=True)
+    
     dumps(id_2_paths, pypi_paths.id_2_paths)
-    dumps(id_2_paths, fs.replace_ext(pypi_paths.id_2_paths, 'json'))
-    dumps(name_2_ids, pypi_paths.name_2_ids)
+    dumps(name_2_vers, pypi_paths.name_2_vers)
 
 
 def _rebuild_dependencies(

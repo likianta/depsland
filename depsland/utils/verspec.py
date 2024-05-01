@@ -66,15 +66,9 @@ def semver_parse(ver: str) -> semver.Version:
     return semver.Version.parse(ver)
 
 
-# DELETE: seldomly used.
-def sort_versions(
-        versions: t.List[str],
-        reverse: bool,
-) -> None:
-    versions.sort(
-        key=lambda x: semver_parse(x),
-        reverse=reverse
-    )
+def sort_versions(versions: t.List[str], reverse: bool = True) -> None:
+    if versions and len(versions) > 1:
+        versions.sort(key=semver_parse, reverse=reverse)
 
 
 def _minor_fix_version_form(raw_verspec: str) -> str:
