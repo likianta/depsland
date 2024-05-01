@@ -287,12 +287,14 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
     """
     a general launcher to start an installed app.
     """
-    print('<depsland> ' + ' '.join(sys.argv[1:]), ':v')
-    
     version = _version or get_last_installed_version(appid)
     if not version:
         print(':v4', f'cannot find installed version of {appid}')
         return
+    else:
+        print(':r', '[magenta dim]depsland {} [green]v{}[/][/]'.format(
+            ' '.join(sys.argv[1:]), version
+        ))
     
     import lk_logger
     import subprocess
@@ -340,7 +342,7 @@ def run(appid: str, *args, _version: str = None, **kwargs) -> None:
         print(':v4f', '\n' + (e.stderr or '').replace('\r', ''))
         if manifest['launcher']['show_console']:
             # raise e
-            input('press enter to close window... ')
+            input('press ENTER to exit... ')
         else:
             _toast_notification(
                 'Exception occurred at "{}"!'.format(manifest['name'])

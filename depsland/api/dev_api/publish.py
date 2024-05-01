@@ -75,11 +75,11 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
             bat_2_exe(
                 bat_file,
                 fs.replace_ext(bat_file, 'exe'),
-                # icon=paths.build.launcher_ico,
+                # icon=paths.build.launcher_icon,
                 icon=(
                     (x := manifest['launcher']['icon']) and
                     '{}/{}'.format(manifest.start_directory, x) or
-                    paths.build.launcher_ico
+                    paths.build.launcher_icon
                 ),
                 show_console=False,
             )
