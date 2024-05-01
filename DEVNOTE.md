@@ -41,6 +41,21 @@
     pox build/init.py make-site-packages
     ```
 
+## Run Depsland GUI
+
+```sh
+pox -m depsland launch-gui
+```
+
+if app crashed on windows, should manually kill the process:
+
+```sh
+# find the process id
+netstat -ano | find '2028'
+# kill the process
+taskkill /F /PID <pid>
+```
+
 ## Lock Requirements
 
 first make sure poetry has synced `poetry.lock` file.

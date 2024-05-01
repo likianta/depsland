@@ -33,6 +33,10 @@ qmlease = "^3.0.4"
 rich = "^13.7.0"
 semver = "^3.0.2"
 streamlit = { version = "^1.33.0", python = "!=3.9.7" }
+toga = [
+    { version = "^0.4.0", platform = "darwin", python = ">=3.8,<3.13" },
+    { version = "^0.4.0", platform = "win32", python = ">=3.8,<3.13" },
+]
 # toml = { version = "*", python = "<3.11" }
 toml = "*"
 # typing-extensions = { version = "*", python = "<3.11" }

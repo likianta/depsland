@@ -1,10 +1,15 @@
+if __name__ == '__main__':
+    __package__ = 'depsland'
+
 import os
 import sys
 import typing as t
 from os.path import exists
 
+import pyapp_window
 from argsense import CommandLineInterface
 from lk_utils import fs
+from lk_utils import run_cmd_args
 
 from . import __path__
 from . import __version__
@@ -103,7 +108,13 @@ def welcome(confirm_close: bool = False) -> None:
 
 
 @cli.cmd()
-def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
+def launch_gui(
+    port: int = 2028,
+    _app_token: str = None,
+    _run_at_once: t.Optional[bool] = False,
+    _native_window: bool = True,
+    _user_call: bool = True,
+) -> None:
     """
     launch depsland gui.
     
@@ -116,33 +127,72 @@ def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
             for `false` example, see `./api/dev_api/offline_build.py : -
             _create_updator()`
     """
-    # import os
-    # os.environ['QT_API'] = 'pyside6_lite'
-    try:
-        pass
-    except ModuleNotFoundError:
-        print(
-            'launching GUI failed. you may forget to install qt for python '
-            'library (suggest `pip install pyside6` etc.)',
-            ':v4',
+    # print(_user_call, sys.argv, ':lv')
+    if _user_call:
+        proc = run_cmd_args(
+            (
+                sys.executable, '-m', 'streamlit', 'run',
+                'depsland/__main__.py',
+            ),
+            (
+                '--browser.gatherUsageStats', 'false',
+                '--global.developmentMode', 'false',
+                '--server.headless', 'true',
+                '--server.port', port,
+            ),
+            (
+                '--',
+                'launch-gui',
+                port,
+                _app_token or ':empty',
+                ':true' if _run_at_once else ':false',
+                '--not-user-call',
+            ),
+            blocking=not _native_window,
+            ignore_return=True,
+            verbose=True,
         )
-        return
+        if _native_window:
+            pyapp_window.launch(
+                'Depsland User Interface',
+                url=f'http://localhost:{port}',
+                copilot_backend=proc,
+                size=(600, 900),
+                icon=paths.build.launcher_icon,
+            )
+    else:
+        if _app_token == '""':  # FIXME: should be resolved in argsense library.
+            _app_token = ''
+        if _app_token and os.path.isfile(_app_token):
+            _app_token = fs.abspath(_app_token)
+            if _run_at_once is None:
+                _run_at_once = True
+        from .webui import setup_ui
+        setup_ui(_app_token, _run_at_once)
     
-    if sysinfo.IS_WINDOWS:
-        _toast_notification('Depsland is launching')
+    # -------------------------------------------------------------------------
     
-    if _app_token and os.path.isfile(_app_token):
-        _app_token = fs.abspath(_app_token)
-    # if _run_at_once is None:
-    #     _run_at_once = bool(_app_token)
-    
-    from .ui import launch_app
-    launch_app(_app_token, _run_at_once)
-    
-    # from .webui import run
-    # run(host='localhost', port=3000, debug=True)
-    # from .webui import setup_ui
-    # setup_ui()
+    # try:
+    #     os.environ['QT_API'] = 'pyside6_lite'
+    #     import pyside6_lite  # noqa
+    # except ModuleNotFoundError:
+    #     print(
+    #         'launching GUI failed. you may forget to install qt for python '
+    #         'library (suggest `pip install pyside6` etc.)',
+    #         ':v4',
+    #     )
+    #     return
+    #
+    # if sysinfo.IS_WINDOWS:
+    #     _toast_notification('Depsland is launching')
+    #
+    # if _app_token and os.path.isfile(_app_token):
+    #     _app_token = fs.abspath(_app_token)
+    # # if _run_at_once is None:
+    # #     _run_at_once = bool(_app_token)
+    #
+    # from .ui import launch_app
+    # launch_app(_app_token, _run_at_once)
 
 
 # -----------------------------------------------------------------------------
@@ -464,4 +514,5 @@ def _toast_notification(text: str) -> None:
 
 
 if __name__ == '__main__':
+    # pox -m depsland launch-gui
     cli.run()

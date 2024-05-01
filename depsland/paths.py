@@ -167,7 +167,7 @@ class Apps:
 class Build:
     def __init__(self) -> None:
         self.root = f'{project.root}/build'
-        self.icon = f'{self.root}/icon'
+        self.icon = f'{self.root}/icon'  # the folder
         if sys.platform == 'darwin':
             self.launcher_icon = f'{self.root}/icon/launcher.icns'
         elif sys.platform == 'linux':
