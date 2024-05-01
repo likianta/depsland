@@ -69,7 +69,7 @@ def init_target_tree(manifest: Manifest, root_dir: str = None) -> None:
 
 class _TempDirs:
     
-    def __init__(self):
+    def __init__(self) -> None:
         self._root = paths.project.temp
         self._dirs = set()
         atexit.register(self.clean_up)

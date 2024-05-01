@@ -1,4 +1,4 @@
-from depsland.utils.verspec import _minor_fix_version_form  # noqa
+from depsland.verspec import _minor_fix_version_form  # noqa
 
 for raw in (
         '335',  # pywin32

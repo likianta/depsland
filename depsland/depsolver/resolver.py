@@ -53,7 +53,7 @@ def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
         print(f'snapdep/{hash}.lock')
         lock_file = f'{paths.pypi.snapdep}/{hash}.lock'
         if not fs.exists(lock_file):
-            print('building dependencies tree, this may take a while', ':t2s')
+            print('building dependencies tree, this may take a while', ':t2v3s')
             dir_m = utils.make_temp_dir()
             fs.dump(raw_requirements, f'{dir_m}/requirements.txt')
             json_data = run_cmd_args(

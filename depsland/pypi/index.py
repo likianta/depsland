@@ -120,6 +120,7 @@ class Index:
             )
         if self._changed:
             for name in self._changed:
+                print('refresh versions stack', name, ':i2vs')
                 vers = self.name_2_vers[name]
                 sort_versions(vers, reverse=True)
             self._changed.clear()

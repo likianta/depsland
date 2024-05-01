@@ -3,8 +3,7 @@ import typing as t
 from os.path import exists
 
 from lk_utils import fs
-from lk_utils import loads
-from lk_utils.read_and_write import ropen
+from lk_utils import load
 
 from .manifest import Manifest
 from .manifest import T as T0
@@ -54,7 +53,7 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
     # update history
     history_file = paths.apps.get_distribution_history(data_o['appid'])
     if exists(history_file):
-        data_o['history'] = loads(history_file, ftype='plain').splitlines()
+        data_o['history'] = load(history_file, 'plain').splitlines()
     else:
         print(
             'no history found, it would be the first release',
@@ -62,7 +61,7 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
             data_o['version'],
             ':v2',
         )
-        # dumps('', history_file, ftype='plain')
+        # dumps('', history_file, type='plain')
     
     return data_o
 
@@ -106,6 +105,6 @@ def parse_script_info(
 
 
 def _quick_read_line(text_file: str) -> str:
-    with ropen(text_file) as f:
+    with open(text_file, 'r', encoding='utf-8') as f:
         for line in f:  # just read the first line
             return line.strip()
