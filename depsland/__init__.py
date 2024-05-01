@@ -21,6 +21,8 @@ from . import manifest
 from . import paths
 from . import utils
 from . import venv
+from . import verspec
+# from . import webui
 from .api import init
 from .api import install
 from .api import publish
@@ -30,5 +32,5 @@ from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pypi
 
-__version__ = '0.7.0b5'
-__date__ = '2024-04-30'
+__version__ = '0.7.0b8'
+__date__ = '2024-05-01'

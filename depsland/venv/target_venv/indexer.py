@@ -13,11 +13,10 @@ import typing as t
 from lk_utils import fs
 from lk_utils import loads
 from lk_utils import run_cmd_args
-from lk_utils.read_and_write import ropen
 
 from . import finder
 from ... import normalization as norm
-from ...utils import verspec
+from ... import verspec
 
 
 # noinspection PyTypedDict
@@ -298,7 +297,7 @@ def analyze_metadata(
     #                       ^1------^      ^2----^   ^3----^
     
     def walk() -> t.Iterator[str]:
-        with ropen(metadata_file) as f:
+        with open(metadata_file, 'r', encoding='utf-8') as f:
             flag = 0
             head = 'Requires-Dist: '
             for line in f:
@@ -329,7 +328,7 @@ def analyze_metadata(
             print(':lv4', metadata_file, line, e)
             raise e
         name = norm.normalize_name(raw_name)
-        verspecs = norm.normalize_version_spec(name, raw_verspec)
+        verspecs = norm.normalize_verspecs(name, raw_verspec)
         yield name, verspecs
 
 

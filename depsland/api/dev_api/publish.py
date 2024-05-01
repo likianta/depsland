@@ -16,10 +16,10 @@ from ...oss import T as T1
 from ...oss import get_oss_server
 from ...platform.launcher import bat_2_exe
 from ...platform.system_info import IS_WINDOWS
-from ...utils import compare_version
 from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...venv.target_venv import get_library_root
+from ...verspec import compare_version
 
 
 class T:
@@ -91,7 +91,7 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
     dumps(
         app_info['history'],
         paths.apps.get_distribution_history(app_info['appid']),
-        ftype='plain',
+        type='plain',
     )
     
     print(

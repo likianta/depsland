@@ -20,10 +20,10 @@ from ...platform import create_launcher
 from ...platform import sysinfo
 from ...platform.launcher import create_desktop_shortcut
 from ...pypi import pypi
-from ...utils import compare_version
 from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
+from ...verspec import compare_version
 
 
 class T(T0):

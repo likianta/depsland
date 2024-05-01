@@ -3,10 +3,10 @@ import typing as t
 
 import semver  # https://github.com/python-semver/python-semver
 
-from ..normalization import T
-from ..normalization import VersionSpec
-from ..normalization import split_filename_of_package
-from ..normalization import normalize_version_spec
+from .normalization import T
+from .normalization import VersionSpec
+from .normalization import split_filename_of_package
+from .normalization import normalize_verspecs
 
 
 def compare_version(v0: str, comp: str, v1: str, _patch=True) -> bool:
@@ -21,26 +21,25 @@ def compare_version(v0: str, comp: str, v1: str, _patch=True) -> bool:
 
 
 def find_proper_version(
-        *verspecs: VersionSpec,
-        candidates: t.Sequence[T.Version]
+    verspecs: t.Sequence[VersionSpec],
+    candidates: t.Sequence[T.Version],
 ) -> t.Optional[str]:
     """
-    args:
-        request: ('1.2.3', '>=')
+    params:
         candidates: a sorted list of version strings, from new to old.
+            see also `depsland.pypi.index.T.Name2Versions`
+    note: if `verspecs` is empty, return the latest version of candidates.
     """
-    assert len(verspecs)
-    if not candidates:
-        return None
+    if not candidates: return None
+    if not verspecs: return candidates[0]
     
-    is_only_one_spec = len(verspecs) == 1
-    
+    has_only_one_spec = len(verspecs) == 1
     filtered_candidates = []
     for spec in verspecs:
         for candidate in candidates:
             if spec.version == '' or compare_version(
                     candidate, spec.comparator, spec.version):
-                if is_only_one_spec:
+                if has_only_one_spec:
                     return candidate
                 filtered_candidates.append(candidate)
         if filtered_candidates:
@@ -54,9 +53,9 @@ def find_proper_version(
 
 def get_verspec_from_filename(filename: str) -> VersionSpec:
     name, ver = split_filename_of_package(filename)
-    verspec_ = tuple(normalize_version_spec(name, ver))
-    assert len(verspec_) == 1
-    verspec = verspec_[0]
+    verspecs = tuple(normalize_verspecs(name, ver))
+    assert len(verspecs) == 1
+    verspec = verspecs[0]
     # -> VersionSpec<'pyside6==6.0.0'>
     return verspec
 

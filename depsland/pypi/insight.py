@@ -11,10 +11,10 @@ from lk_utils import loads
 from .index import T as T0
 from .pypi import pypi
 from .. import normalization as norm
+from .. import verspec
 from ..paths import pypi as pypi_paths
 from ..pip import pip
 from ..utils import get_updated_time
-from ..utils import verspec
 
 
 class T(T0):
@@ -98,7 +98,7 @@ def _rebuild_dependencies(
                                 node['resolved'].append(f'{a}-{b}')
                             else:
                                 node['unresolved'][a] = tuple(
-                                    norm.normalize_version_spec(a, b)
+                                    norm.normalize_verspecs(a, b)
                                 )
                     else:
                         raise FileNotFoundError(d2.path)  # TODO: for debug
@@ -208,10 +208,9 @@ def analyze_metadata(
             print(':lv4', file, line, e)
             raise e
         name = norm.normalize_name(raw_name)
-        verspecs = norm.normalize_version_spec(name, raw_verspec or '')
+        verspecs = norm.normalize_verspecs(name, raw_verspec or '')
         proper_version = verspec.find_proper_version(
-            *verspecs,
-            candidates=name_2_versions[name]
+            tuple(verspecs), candidates=name_2_versions[name]
         )
         if proper_version:
             yield (name, proper_version), True

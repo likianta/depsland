@@ -6,8 +6,8 @@ from lk_utils import fs
 from lk_utils import loads
 
 from ..normalization import normalize_name
-from ..normalization import normalize_version_spec
-from ..utils.verspec import semver_parse
+from ..normalization import normalize_verspecs
+from ..verspec import semver_parse
 
 
 def create_from_file(dst_dir: str, requirements_file: str) -> None:
@@ -35,7 +35,7 @@ def create_venv(
     packages = {}
     for raw_name, raw_vspec in requirements:
         name = normalize_name(raw_name)
-        vspecs = tuple(normalize_version_spec(name, raw_vspec))
+        vspecs = tuple(normalize_verspecs(name, raw_vspec))
         packages[name] = vspecs
     print(':vl', packages)
     

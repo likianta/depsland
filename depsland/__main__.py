@@ -138,6 +138,11 @@ def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
     
     from .ui import launch_app
     launch_app(_app_token, _run_at_once)
+    
+    # from .webui import run
+    # run(host='localhost', port=3000, debug=True)
+    # from .webui import setup_ui
+    # setup_ui()
 
 
 # -----------------------------------------------------------------------------
@@ -376,8 +381,7 @@ def get_package_size(
 
 
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
-    from .utils import compare_version
-    
+    from .verspec import compare_version
     return compare_version(new['version'], '>', old['version'])
 
 
