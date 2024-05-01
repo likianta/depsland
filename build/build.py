@@ -62,20 +62,19 @@ def backup_project_resources() -> None:
         fs.copy_tree(f'{dir_i}/build/setup_wizard',
                      f'{dir_m}/build/setup_wizard')
         
-        fs.copy_file(f'{dir_i}/build/backup_project_resources.py',
-                     f'{dir_m}/build/backup_project_resources.py')
         fs.copy_file(f'{dir_i}/build/build.py',
                      f'{dir_m}/build/build.py')
-        fs.copy_file(f'{dir_i}/build/depsland_setup.py',
-                     f'{dir_m}/build/depsland_setup.py')
         fs.copy_file(f'{dir_i}/build/init.py',
                      f'{dir_m}/build/init.py')
         # DELETE: about to remove
+        fs.copy_file(f'{dir_i}/build/depsland_setup.py',
+                     f'{dir_m}/build/depsland_setup.py')
         fs.copy_file(f'{dir_i}/build/readme.zh.md',
                      f'{dir_m}/build/readme.zh.md')
         fs.copy_file(f'{dir_i}/build/self_build.py',
                      f'{dir_m}/build/self_build.py')
-        compress_dir(f'{dir_m}/build', f'{dir_o}/build.zip', True)
+        compress_dir(f'{dir_m}/build',
+                     f'{dir_o}/build.zip', True)
     
     def copy_config_dir() -> None:
         # make sure config/depsland.yaml has configured local oss.
@@ -139,7 +138,7 @@ def full_build(
     os.mkdir(f'{root_o}/apps/.bin')
     os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
-    os.mkdir(f'{root_o}/build/exe')
+    # os.mkdir(f'{root_o}/build/exe')
     os.mkdir(f'{root_o}/chore')
     os.mkdir(f'{root_o}/config')
     # os.mkdir(f'{root_o}/depsland')
@@ -158,38 +157,26 @@ def full_build(
     # -------------------------------------------------------------------------
     
     # copy files and folders
-    fs.copy_file(
-        f'{root_i}/build/exe/depsland.exe',
-        f'{root_o}/build/exe/depsland.exe',
+    fs.make_link(
+        f'{root_i}/build/exe',
+        f'{root_o}/build/exe',
     )
     fs.copy_file(
-        f'{root_i}/build/exe/depsland-sui.exe',
-        f'{root_o}/build/exe/depsland-sui.exe',
+        f'{root_i}/build/exe/depsland-cli.exe',
+        f'{root_o}/apps/.bin/depsland.exe',
     )
     fs.copy_file(
-        f'{root_i}/build/exe/depsland-suw.exe',
-        f'{root_o}/build/exe/depsland-suw.exe',
+        f'{root_i}/build/exe/depsland-gui.exe',
+        f'{root_o}/Depsland.exe',
     )
     fs.copy_file(
-        f'{root_i}/build/exe/desktop.exe',
-        f'{root_o}/build/exe/desktop.exe',
+        f'{root_i}/build/exe/depsland-gui-debug.exe',
+        f'{root_o}/Depsland (Debug).exe',
     )
-    fs.copy_file(
-        f'{root_i}/build/exe/launcher.ico',
-        f'{root_o}/build/exe/launcher.ico',
-    )
-    fs.copy_file(
-        f'{root_i}/build/exe/setup.exe',
-        f'{root_o}/setup.exe',
-    )
-    fs.copy_tree(
-        f'{root_i}/build/setup_wizard',
-        f'{root_o}/build/setup_wizard',
-    )
-    fs.copy_file(
-        f'{root_i}/build/depsland_setup.py',
-        f'{root_o}/build/depsland_setup.py',
-    )
+    # fs.copy_tree(
+    #     f'{root_i}/build/setup_wizard',
+    #     f'{root_o}/build/setup_wizard',
+    # )
     fs.make_link(
         f'{root_i}/chore/site_packages',
         f'{root_o}/chore/site_packages',
@@ -255,7 +242,7 @@ def bat_2_exe(
     file_i: str,
     show_console: bool = True,
     uac_admin: bool = False
-) -> None:  # FIXME
+) -> None:
     """
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
@@ -293,5 +280,8 @@ if __name__ == '__main__':
     # pox build/build.py full-build aliyun
     #   before running this command, you need to set environment variable -
     #   'DEPSLAND_CONFIG_ROOT' to the path to your custom config folder.
+    # pox build/build.py bat-2-exe build/exe/depsland-cli.bat
+    # pox build/build.py bat-2-exe build/exe/depsland-gui.bat -C -u
+    # pox build/build.py bat-2-exe build/exe/depsland-gui-debug.bat -u
     # pox build/build.py bat-2-exe build/exe/setup.bat -u
     cli.run()
