@@ -104,10 +104,10 @@ def init_pypi_blank() -> None:
     # fs.make_dir('chore/pypi_blank/cache')
     # fs.make_dir('chore/pypi_blank/downloads')
     # fs.make_dir('chore/pypi_blank/index')
+    # fs.make_dir('chore/pypi_blank/index/snapdep')
     # fs.make_dir('chore/pypi_blank/installed')
-    dir = 'chore/pypi_blank/index'
-    dumps({}, f'{dir}/id_2_paths.json')
-    dumps({}, f'{dir}/name_2_vers.json')
+    dumps({}, f'chore/pypi_blank/index/id_2_paths.json')
+    dumps({}, f'chore/pypi_blank/index/name_2_vers.json')
 
 
 @cli.cmd()

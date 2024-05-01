@@ -3,7 +3,6 @@ ref: ~/docs/project-structure.md
 """
 import os
 import sys
-from collections import defaultdict
 from os.path import exists
 
 from lk_utils import dumps
@@ -29,7 +28,7 @@ class _Env:
 
 
 class System:
-    def __init__(self):
+    def __init__(self) -> None:
         self.is_windows = os.name == 'nt'
         if self.is_windows:
             self.depsland = os.getenv('DEPSLAND')  # note this may be None
@@ -45,7 +44,7 @@ class System:
 
 
 class Project:
-    def __init__(self):
+    def __init__(self) -> None:
         if exists(fs.xpath('../.depsland_project')):
             self.root = fs.xpath('..', force_abspath=True)
             self.is_project_mode = True
@@ -91,6 +90,7 @@ class Project:
         os.mkdir(f'{root}/pypi/cache')
         os.mkdir(f'{root}/pypi/downloads')
         os.mkdir(f'{root}/pypi/index')
+        os.mkdir(f'{root}/pypi/index/snapdep')
         os.mkdir(f'{root}/pypi/installed')
         # os.mkdir(f'{root}/python')  # later
         # os.mkdir(f'{root}/sidework')  # later
@@ -110,17 +110,15 @@ class Project:
         extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
         
         # init files
-        dumps(defaultdict(list), f'{root}/pypi/index/dependencies.pkl')
-        dumps(defaultdict(list), f'{root}/pypi/index/name_2_versions.pkl')
-        dumps({}, f'{root}/pypi/index/name_id_2_paths.pkl')
-        dumps({}, f'{root}/pypi/index/updates.pkl')
+        dumps({}, f'{root}/pypi/index/id_2_paths.json')
+        dumps({}, f'{root}/pypi/index/name_2_vers.json')
 
 
 # -----------------------------------------------------------------------------
 
 
 class Apps:
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = f'{project.root}/apps'
         self.bin = f'{self.root}/.bin'
         self.venv = f'{self.root}/.venv'
@@ -167,7 +165,7 @@ class Apps:
 
 
 class Build:
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = f'{project.root}/build'
         self.icon = f'{self.root}/icon'
         if sys.platform == 'darwin':
@@ -192,7 +190,7 @@ class Config:
         the dynamic is prior to the static.
     """
     
-    def __init__(self):
+    def __init__(self) -> None:
         if x := _Env.CONFIG_ROOT:
             self.root = fs.abspath(x)
             print(':r', f'[yellow dim]relocate config root to {self.root}[/]')
@@ -214,7 +212,7 @@ class Config:
 
 
 class Oss:  # note: this is a local dir that mimics OSS structure.
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = f'{project.root}/oss'
         self.apps = f'{self.root}/apps'
         self.test = f'{self.root}/test'
@@ -240,10 +238,11 @@ class PyPI:
         
         self.id_2_paths = f'{self.index}/id_2_paths.json'
         self.name_2_vers = f'{self.index}/name_2_vers.json'
+        self.snapdep = f'{self.index}/snapdep'
 
 
 class Python:
-    def __init__(self):
+    def __init__(self) -> None:
         if project.is_project_mode and _Env.PYTHON_STANDALONE == '1':
             self.root = f'{project.root}/python'
             assert len(os.listdir(self.root)) > 3, (
@@ -273,7 +272,7 @@ class Python:
 
 
 class Temp:
-    def __init__(self):
+    def __init__(self) -> None:
         self.root = f'{project.root}/temp'
         self.self_upgrade = f'{self.root}/.self_upgrade'
         self.unittests = f'{self.root}/.unittests'

@@ -20,6 +20,7 @@
 - `build/init.py : def init_pypi_blank`
 - `chore/pypi_blank/index`
 - `chore/pypi_self/index`
+- `depsland/paths.py : class Project : _init_project_root`
 - `depsland/paths.py : class PyPI`
 - `depsland/pypi/index.py`
 - `depsland/pypi/insight.py : def rebuild_index`
