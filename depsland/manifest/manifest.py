@@ -11,7 +11,7 @@ from lk_utils import loads
 
 from .. import normalization as norm
 from ..depsolver import T as T0
-from ..depsolver import resolve_requirements_lock
+from ..depsolver import resolve_dependencies
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
@@ -52,15 +52,14 @@ class T(T0):
         None,
         # 2. a file path, usually 'pyproject.toml', 'requirements.txt', etc.
         str,
-        # 3. a list of packages. e.g. ['requests', 'numpy>=1.26']
+        # 3. a list of packages. e.g. ['requests', 'numpy>=1.26', ...]
         t.List[str],
         # 4. packages with more detailed definitions. e.g.
         #   {
-        #       'requests': {'version': '*'},
         #       'numpy': [
         #           {'version': '1.26.2', 'platform': 'linux'},
         #           {'version': '*', 'platform': '!=linux'},
-        #       ],
+        #       ], ...
         #   }
         t.Dict[str, t.Union[str, dict, list]],
     ]
@@ -218,7 +217,7 @@ class Manifest:
             'version'         : '0.0.0',
             'start_directory' : '',
             'assets'          : {},
-            'dependencies'    : {},
+            'dependencies'    : "requirements.lock",
             'launcher'        : {
                 'target'           : '',
                 'type'             : '',
@@ -265,19 +264,16 @@ class Manifest:
                 'version'         : data0['version'],
                 'start_directory' : self._start_directory,
                 'assets'          : self._update_assets(
-                    data0.get('assets', {}),
-                    self._start_directory,
+                    data0.get('assets', {}), self._start_directory
                 ),
                 'dependencies'    : self._update_dependencies(
                     data0.get('dependencies', 'requirements.lock'),
                 ),
                 'launcher'        : self._update_launcher(
-                    data0.get('launcher', {}),
-                    self._start_directory,
+                    data0.get('launcher', {}), self._start_directory
                 ),
                 'depsland_version': data0.get(
-                    'depsland_version',
-                    __version__,
+                    'depsland_version', __version__
                 ),
             }
             self._postcheck_manifest(data1)
@@ -493,25 +489,26 @@ class Manifest:
         return out  # noqa
     
     def _update_dependencies(self, deps0: T.Dependencies0) -> T.Dependencies1:
-        if not deps0:  # None, empty dict or empty string
-            return {}
-        else:
-            assert (
-                isinstance(deps0, str) and
-                # deps0 == 'requirements.lock'
-                # deps0 == 'poetry.lock'
-                # deps0.endswith(('.lock', '.toml', '.txt'))
-                # deps0.endswith('.toml')
-                # deps0.endswith('.lock')
-                deps0.endswith('.lock') and deps0 != 'poetry.lock'
-            ), 'currently only support "requirements.lock" format'  # TODO
-            packages = resolve_requirements_lock(
-                pyproj_file=f'{self._start_directory}/pyproject.toml',
-                poetry_file=f'{self._start_directory}/poetry.lock',
-                requirements_file=f'{self._start_directory}/{deps0}',
-            )
-            # exit()  # TEST
-            return packages
+        return resolve_dependencies(deps0)
+        # if not deps0:  # None, empty dict/list/string
+        #     return {}
+        # else:
+        #     assert (
+        #         isinstance(deps0, str) and
+        #         # deps0 == 'requirements.lock'
+        #         # deps0 == 'poetry.lock'
+        #         # deps0.endswith(('.lock', '.toml', '.txt'))
+        #         # deps0.endswith('.toml')
+        #         # deps0.endswith('.lock')
+        #         deps0.endswith('.lock') and deps0 != 'poetry.lock'
+        #     ), 'currently only support "requirements.lock" format'  # TODO
+        #     packages = resolve_requirements_lock(
+        #         pyproj_file=f'{self._start_directory}/pyproject.toml',
+        #         poetry_file=f'{self._start_directory}/poetry.lock',
+        #         requirements_file=f'{self._start_directory}/{deps0}',
+        #     )
+        #     # exit()  # TEST
+        #     return packages
     
     @staticmethod
     def _update_launcher(

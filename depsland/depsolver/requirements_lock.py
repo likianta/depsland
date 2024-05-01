@@ -29,9 +29,9 @@ class T:
         'name'    : PackageName,
         'version' : ExactVersion,
         # 'dependencies': t.Sequence[PackageId],
-        'appendix': t.TypedDict('Appendix', {
-            'custom_url': str,
-        }, total=False)
+        'appendix': t.Optional[
+            t.TypedDict('Appendix', {'custom_url': str}, total=False)
+        ]
     })
     
     # Packages = t.Dict[PackageId, PackageInfo]
