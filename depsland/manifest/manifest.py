@@ -217,7 +217,7 @@ class Manifest:
             'version'         : '0.0.0',
             'start_directory' : '',
             'assets'          : {},
-            'dependencies'    : "requirements.lock",
+            'dependencies'    : {},
             'launcher'        : {
                 'target'           : '',
                 'type'             : '',

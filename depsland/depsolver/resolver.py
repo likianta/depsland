@@ -1,17 +1,20 @@
+import json
 import typing as t
-import re
 
-from . import version_crawler
-from .requirements_lock import T as T0
-from .. import normalization as norm
-from .. import verspec
-from ..normalization import normalize_anyname
+from lk_utils import fs
+from lk_utils import run_cmd_args
+
+# from .requirements_lock import T as T0
+from .. import paths
+from .. import utils
+from ..normalization import normalize_name
 from ..pypi import pypi
 
 index = pypi.index
 
 
 class T:
+    # fmt:off
     Dependencies0 = t.Union[
         # 1. no dependency
         None,
@@ -28,9 +31,13 @@ class T:
         #   }
         t.Dict[str, t.Union[str, dict, list]],
     ]
-    Dependencies1 = T0.Packages
+    # fmt:on
+    # Dependencies1 = t.Iterator[t.Tuple[str, str]]  # ((name, version), ...)
+    # Dependencies1 = t.Dict[str, str]
+    Dependencies1 = t.Dict[str, dict]  # see T0.Packages
 
 
+# TODO
 def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
     if not deps0:  # None, empty dict/list/string/etc.
         return {}
@@ -41,24 +48,37 @@ def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
         pass
     
     elif isinstance(deps0, list):
-        for x in deps0:
-            name, verspecs = normalize_anyname(x)
-            if name in index.name_2_vers:
-                proper_ver = verspec.find_proper_version(
-                    verspecs, candidates=index.name_2_vers[name]
-                )
-                if not proper_ver:
-                    pass  # raise error or refresh index from internet
-            else:  # request from internet
-                if verspecs:
-                    pass
-                else:
-                    proper_ver = version_crawler.get_latest_version(name)
+        raw_requirements = '\n'.join(deps0)
+        hash = utils.get_content_hash(raw_requirements)[::4]  # 8 chars
+        print(f'snapdep/{hash}.lock')
+        lock_file = f'{paths.pypi.snapdep}/{hash}.lock'
+        if not fs.exists(lock_file):
+            print('building dependencies tree, this may take a while', ':t2s')
+            dir_m = utils.make_temp_dir()
+            fs.dump(raw_requirements, f'{dir_m}/requirements.txt')
+            json_data = run_cmd_args(
+                'pipgrip', '--json', '--sort',
+                ('-r', 'requirements.txt'),
+                ('--cache-dir', paths.pypi.cache),
+                ('--index-url', 'https://pypi.tuna.tsinghua.edu.cn/simple'),
+                cwd=dir_m,
+                verbose=False,
+            )
+            requirements = []
+            for k, v in json.loads(json_data).items():
+                requirements.append('{}=={}'.format(
+                    normalize_name(k), v
+                ))
+            fs.dump(requirements, lock_file)
+            print('requirements get locked', hash, ':t2')
+        for line in fs.load(lock_file).splitlines():
+            name, ver = line.split('==', 1)
+            # out[name] = ver
             out[name] = {
-                'id': f'{name}-{proper_ver}',
-                'name': name,
-                'version': proper_ver,
-                'appendix': None
+                'id'      : f'{name}-{ver}',
+                'name'    : name,
+                'version' : ver,
+                'appendix': None,
             }
     
     elif isinstance(deps0, dict):

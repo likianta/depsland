@@ -20,6 +20,38 @@ def compare_version(v0: str, comp: str, v1: str, _patch=True) -> bool:
     return eval(f'r {comp} 0', {'r': r})
 
 
+def findone_eligible_version(
+    verspecs: t.Sequence[VersionSpec],
+    candidates: t.Sequence[T.Version],
+) -> t.Optional[T.Version]:
+    for one in findall_eligible_versions(verspecs, candidates):
+        return one
+    return None
+
+
+def findall_eligible_versions(
+    verspecs: t.Sequence[VersionSpec],
+    candidates: t.Sequence[T.Version],
+) -> t.Iterator[T.Version]:
+    """
+    params:
+        candidates: a sorted list of version strings, from new to old.
+            see also `depsland.pypi.index.T.Name2Versions`
+    """
+    if not candidates:
+        return
+    if not verspecs:
+        yield from candidates
+        return
+    for candidate in candidates:
+        for spec in verspecs:
+            if spec.version == '' or compare_version(
+                candidate, spec.comparator, spec.version
+            ):
+                yield candidate
+
+
+# DELETE
 def find_proper_version(
     verspecs: t.Sequence[VersionSpec],
     candidates: t.Sequence[T.Version],

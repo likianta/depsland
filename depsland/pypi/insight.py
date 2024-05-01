@@ -13,8 +13,6 @@ from .pypi import pypi
 from .. import normalization as norm
 from .. import verspec
 from ..paths import pypi as pypi_paths
-from ..pip import pip
-from ..utils import get_updated_time
 
 
 class T(T0):
@@ -118,16 +116,18 @@ def _rebuild_dependencies(
                     flatten_resolved_dependencies(nid, collect, indent + 2)
                 else:
                     print('{}{}'.format(' ' * (indent + 2), nid), ':vs')
-                    if dependencies[nid]['resolved'] \
-                        or dependencies[nid]['unresolved']:
+                    if (
+                        dependencies[nid]['resolved'] or
+                        dependencies[nid]['unresolved']
+                    ):
                         print('{}...'.format(' ' * (indent + 4)), ':vs')
             return collect
         
         def flatten_unresolved_dependencies(
             name_id: T.NameId,
             collect: t.Dict[T.Name, t.Dict[str, norm.VersionSpec]],
-            indent=0,
-        ) -> t.Dict[T.Name, T.VersionSpecs]:
+            indent: int = 0,
+        ) -> t.Dict[T.Name, t.Tuple[norm.VersionSpec, ...]]:
             for name, specs in dependencies[name_id]['unresolved'].items():
                 if name not in collect:
                     print('{}<{}>'.format(' ' * indent, name), ':vs')
@@ -138,7 +138,7 @@ def _rebuild_dependencies(
                             collect[name][str(s)] = s
             for nid in dependencies[name_id]['resolved']:
                 flatten_unresolved_dependencies(nid, collect, indent + 2)
-            return {k: tuple(v.values()) for k, v in collect.items()}
+            return {k: tuple(v.values()) for k, v in collect.items()}  # noqa
         
         old_dependencies: T.Dependencies = dependencies
         new_dependencies: T.Dependencies = {}
@@ -166,8 +166,7 @@ def _rebuild_dependencies(
 
 
 def analyze_metadata(
-    file: T.Path,
-    name_2_versions: dict  # FIXME
+    file: T.Path, name_2_versions: dict  # FIXME
 ) -> t.Iterator[t.Tuple[t.Tuple[str, str], bool]]:
     """
     analyse 'METADATA' file.

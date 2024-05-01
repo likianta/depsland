@@ -113,8 +113,8 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
     
     # -------------------------------------------------------------------------
     
-    root_new = manifest_new['start_directory']
-    root_old = manifest_old['start_directory']  # (not used variable)  # noqa
+    root_new = manifest_new['start_directory']  # noqa
+    root_old = manifest_old['start_directory']  # noqa
     temp_dir = make_temp_dir()
     
     oss = get_oss_server(manifest_new['appid'])
@@ -134,7 +134,7 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
                 continue
             
             _print_change(
-                f'{action = }, {relpath = }',
+                f'{action=}, {relpath=}',
                 info0 and info0.uid,
                 info1 and info1.uid,
                 True,
@@ -168,7 +168,7 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
                 continue
             
             _print_change(
-                f'{action = }, {pkg_name = }',
+                f'{action=}, {pkg_name=}',
                 info0 and info0['version'],
                 info1 and info1['version'],
                 True,
