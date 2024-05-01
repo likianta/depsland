@@ -70,3 +70,33 @@ pox poxtry_extensions/poetry_export.py <depsland_project>
 ```
 
 it generates/updates `<depsland_project>/requirements.lock` file, which is used for `build/init.py:download_requirements`.
+
+## Build Depsland As Standalone Application
+
+### Build An Offline Version
+
+...
+
+### Build An Intenet Version
+
+first create a config file at `tests/config/depsland.yaml`:
+
+```yaml
+oss:
+    server: aliyun
+    config:
+        access_key: <your_access_key>
+        secret_key: <your_secret_key>
+        endpoint: oss-cn-shanghai.aliyuncs.com
+        bucket: <your_bucket>
+```
+
+you need to purchase an aliyun oss service to fill the config.
+
+then run the following command:
+
+```nushell
+# tell depsland to redirect config to custom path
+$env.DEPSLAND_CONFIG_ROOT = 'tests/config'
+pox build/build.py full-build ailyun
+```

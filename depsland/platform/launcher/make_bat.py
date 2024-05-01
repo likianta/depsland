@@ -13,7 +13,7 @@ def make_bat(manifest: T.Manifest, file_o: str, *, debug: bool = False) -> str:
         template = dedent(r'''
             cd /d %~dp0
             cd source
-            set PYTHONPATH=.
+            set PYTHONPATH=.;chore/site_packages
             .\python\python.exe -m depsland run {appid}
             pause
         ''')
@@ -22,7 +22,7 @@ def make_bat(manifest: T.Manifest, file_o: str, *, debug: bool = False) -> str:
             @echo off
             cd /d %~dp0
             cd source
-            set PYTHONPATH=.
+            set PYTHONPATH=.;chore/site_packages
             .\python\python.exe -m depsland run {appid}
         ''')
     script = template.format(

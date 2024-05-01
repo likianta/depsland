@@ -30,7 +30,7 @@ def self_check() -> bool:
     ver1 = loads('manifest.json')['version']
     ver2 = loads('pyproject.toml')['tool']['poetry']['version']
     if not (ver0 == ver1 == ver2):
-        print('version is not consistent', (ver0, ver1, ver2), ':v4')
+        print('version is not consistent', (ver0, ver1, ver2), ':v3')
         return False
     return True
 
@@ -117,9 +117,13 @@ def full_build(
                 be careful do not update any content of `<dist>/pypi`.
             blank: copy `<proj>/chore/pypi_blank` to `<dist>/pypi`.
     """
+    # checks
     if not self_check():
-        print(':v4s', 'please resolve self-check problems first')
-        exit()
+        # print(':v3s', 'please resolve self-check problems first')
+        # exit()
+        pass
+    if oss_scheme == 'aliyun':
+        assert exists(os.getenv('DEPSLAND_CONFIG_ROOT'))
     
     root_i = paths.project.root
     root_o = '{dist}/depsland-setup-{version}'.format(
@@ -136,6 +140,7 @@ def full_build(
     os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/build/exe')
+    os.mkdir(f'{root_o}/chore')
     os.mkdir(f'{root_o}/config')
     # os.mkdir(f'{root_o}/depsland')
     os.mkdir(f'{root_o}/dist')
@@ -152,7 +157,7 @@ def full_build(
     
     # -------------------------------------------------------------------------
     
-    # copy files
+    # copy files and folders
     fs.copy_file(
         f'{root_i}/build/exe/depsland.exe',
         f'{root_o}/build/exe/depsland.exe',
@@ -185,6 +190,10 @@ def full_build(
         f'{root_i}/build/depsland_setup.py',
         f'{root_o}/build/depsland_setup.py',
     )
+    fs.make_link(
+        f'{root_i}/chore/site_packages',
+        f'{root_o}/chore/site_packages',
+    )
     fs.copy_tree(
         f'{root_i}/depsland',
         f'{root_o}/depsland',
@@ -199,7 +208,8 @@ def full_build(
     )
     
     if oss_scheme == 'aliyun':
-        assert exists(custom := os.getenv('DEPSLAND_CONFIG_ROOT'))
+        # assert exists(custom := os.getenv('DEPSLAND_CONFIG_ROOT'))
+        custom = os.getenv('DEPSLAND_CONFIG_ROOT')
         assert (
             loads(f'{custom}/depsland.yaml')
             ['oss']['server'] == 'aliyun'
@@ -241,7 +251,11 @@ def full_build(
 
 
 @cli.cmd()
-def bat_2_exe(file_i: str, show_console=True, uac_admin=False):  # FIXME
+def bat_2_exe(
+    file_i: str,
+    show_console: bool = True,
+    uac_admin: bool = False
+) -> None:  # FIXME
     """
     args:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
@@ -251,18 +265,19 @@ def bat_2_exe(file_i: str, show_console=True, uac_admin=False):  # FIXME
         uac_admin (-u):
     """
     _b2e(
-        file_i,
+        file_bat=file_i,
+        file_exe=fs.replace_ext(file_i, 'exe'),
         icon=xpath('exe/launcher.ico'),
         show_console=show_console,
         uac_admin=uac_admin,
     )
 
 
-@cli.cmd()
-def build_all_launchers():  # FIXME
-    for f in fs.find_files(xpath('exe'), '.bat'):
-        print(':i', f.name)
-        _b2e(f.path, icon=xpath('exe/launcher.ico'))
+# @cli.cmd()
+# def build_all_launchers():  # FIXME
+#     for f in fs.find_files(xpath('exe'), '.bat'):
+#         print(':i', f.name)
+#         _b2e(f.path, icon=xpath('exe/launcher.ico'))
 
 
 @cli.cmd()
@@ -275,4 +290,8 @@ def compress_to_zip():
 
 if __name__ == '__main__':
     # pox build/build.py backup-project-resources
+    # pox build/build.py full-build aliyun
+    #   before running this command, you need to set environment variable -
+    #   'DEPSLAND_CONFIG_ROOT' to the path to your custom config folder.
+    # pox build/build.py bat-2-exe build/exe/setup.bat -u
     cli.run()

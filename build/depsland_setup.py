@@ -214,7 +214,7 @@ def _create_desktop_shortcut(file_i: str, file_o: str) -> None:
         file_i=file_i.replace('/', '\\'),
         file_o=file_o.replace('/', '\\'),
     )
-    dumps(command, vbs, ftype='plain')
+    dumps(command, vbs, type='plain')
     run_cmd_args('cscript', '/nologo', vbs)
     fs.remove_file(vbs)
 

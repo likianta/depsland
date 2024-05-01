@@ -11,16 +11,16 @@ from argsense import cli
 
 
 @cli.cmd()
-def main(test_path: bool = False, hot_reload: bool = False):
-    from build.setup_wizard.page1 import Page1
-    from build.setup_wizard.page2 import Page2
-    from build.setup_wizard.page3 import Page3
-    from build.setup_wizard.wizard import wizard
+def main(test_path: bool = False, hot_reload: bool = False) -> None:
     from depsland import __version__ as depsland_version
     from lk_utils import xpath
     from os.path import exists
     from qmlease import app
     from qmlease import pystyle
+    from .page1 import Page1
+    from .page2 import Page2
+    from .page3 import Page3
+    from .wizard import wizard
     
     if test_path:
         dir_i = xpath(f'../../dist/depsland-setup-{depsland_version}', True)

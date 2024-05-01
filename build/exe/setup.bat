@@ -1,4 +1,4 @@
 @echo off
 cd /d %~dp0
-set PYTHONPATH=.
-.\python\python.exe build/setup_wizard/run.py
+set PYTHONPATH=.;build;chore/site_packages
+.\python\python.exe -m setup_wizard
