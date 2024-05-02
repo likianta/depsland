@@ -47,11 +47,11 @@ def run_app(
     #     os.environ['PATH'].split(sep), ':lv'
     # )
     
-    if not manifest['launcher']['show_console']:
-        if sysinfo.IS_WINDOWS:
-            _toast_notification(
-                'Depsland is launching "{}"'.format(manifest['name'])
-            )
+    # if not manifest['launcher']['show_console']:
+    #     if sysinfo.IS_WINDOWS:
+    #         _toast_notification(
+    #             'Depsland is launching "{}"'.format(manifest['name'])
+    #         )
     
     # print(':v', args, kwargs)
     lk_logger.unload()
@@ -79,9 +79,19 @@ def run_app(
             # raise e
             input('press ENTER to exit... ')
         else:
-            _toast_notification(
+            _popup_error(
                 'Exception occurred at "{}"!'.format(manifest['name'])
             )
+
+
+def _popup_error(msg: str) -> None:
+    """ use tkinter popup to show error message. """
+    import tkinter
+    from tkinter import messagebox
+    root = tkinter.Tk()
+    root.withdraw()
+    messagebox.showerror('Error', msg)
+    root.destroy()
 
 
 # windows only  # DELETE: the toast sound is annoying for user.
