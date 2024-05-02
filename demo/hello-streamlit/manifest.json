@@ -1,7 +1,7 @@
 {
     "appid": "hello_streamlit",
     "name": "Hello Streamlit",
-    "version": "0.1.4",
+    "version": "0.1.6",
     "assets": {
         "main.py": "all"
     },

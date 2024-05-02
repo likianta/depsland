@@ -1,9 +1,11 @@
 import os
 import subprocess
 import sys
+import typing as t
 
 import lk_logger
 from argsense import args_2_cargs
+from lk_utils import run_cmd_args
 
 from ... import paths
 from ...manifest import get_last_installed_version
@@ -12,7 +14,9 @@ from ...manifest import parse_script_info
 from ...platform import sysinfo
 
 
-def run_app(appid: str, *args, _version: str = None, **kwargs) -> None:
+def run_app(
+    appid: str, *args, _version: str = None, **kwargs
+) -> t.Optional[subprocess.Popen]:
     """
     a general launcher to start an installed app.
     """
@@ -52,14 +56,22 @@ def run_app(appid: str, *args, _version: str = None, **kwargs) -> None:
     # print(':v', args, kwargs)
     lk_logger.unload()
     try:
-        subprocess.run(
-            # TODO: use '--' to separate different args/kwargs groups.
-            (*command, *args_2_cargs(*args, *args0, **kwargs, **kwargs0)),
-            check=True,
+        # TODO: use '--' to separate different args/kwargs groups.
+        return run_cmd_args(
+            command, args_2_cargs(*args, *args0, **kwargs, **kwargs0),
             cwd=manifest['start_directory'],
-            stderr=subprocess.PIPE,
-            text=True,
+            blocking=False,
+            shell=True,
+            verbose=True,
+            # verbose=False,
         )
+        # subprocess.run(
+        #     (*command, *args_2_cargs(*args, *args0, **kwargs, **kwargs0)),
+        #     check=True,
+        #     cwd=manifest['start_directory'],
+        #     stderr=subprocess.PIPE,
+        #     text=True,
+        # )
     except subprocess.CalledProcessError as e:
         lk_logger.enable()
         print(':v4f', '\n' + (e.stderr or '').replace('\r', ''))
@@ -72,7 +84,7 @@ def run_app(appid: str, *args, _version: str = None, **kwargs) -> None:
             )
 
 
-# windows only
+# windows only  # DELETE: the toast sound is annoying for user.
 def _toast_notification(text: str) -> None:
     try:
         from windows_toasts import Toast
