@@ -123,7 +123,7 @@ class Index:
                 print('refresh versions stack', name, ':i2vs')
                 vers = self.name_2_vers[name]
                 sort_versions(vers, reverse=True)
-            self._changed.clear()
             dumps(self.id_2_paths, pypi_paths.id_2_paths)
             dumps(self.name_2_vers, pypi_paths.name_2_vers)
+            self._changed.clear()
             print('saved pypi indexes')

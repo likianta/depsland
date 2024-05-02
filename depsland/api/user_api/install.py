@@ -74,9 +74,9 @@ def install(
     custom_oss_root: T.Path = None,
 ) -> None:
     """
-    download and install assets from oss & pypi to the target directory of \
+    download and install assets from oss & pypi to the target directory of -
     `manifest_new`.
-    this is an incremental operation. we download only the different parts and \
+    this is an incremental operation. we download only the different parts and -
     try to reuse existed stuff as much as possible.
     usually the target directory is `<depsland.paths.apps>/<appid>/<version>`.
     """
@@ -85,7 +85,7 @@ def install(
         if upgrade:
             # install first, then uninstall old.
             _install(manifest_new, manifest_old, custom_oss_root)
-            # TODO: for safety consideration, below is temporarily disabled, \
+            # TODO: for safety consideration, below is temporarily disabled, -
             #   wait for a future version that supports complete auto-upgrade.
             # _uninstall(
             #     appid, m0['version'],
@@ -318,6 +318,8 @@ def _install_packages(
             fs.make_link(src_dir, dst_dir, True)
         
         fast_link_venv(venv_dir)
+    
+    pypi.index.save_index()
 
 
 def _create_launchers(manifest: T.Manifest) -> None:
@@ -334,7 +336,7 @@ def _create_launchers(manifest: T.Manifest) -> None:
     if sysinfo.IS_WINDOWS:
         launcher: T.LauncherInfo = manifest['launcher']
         if not launcher['show_console']:
-            # since console-less application is hard to debug if failed at \
+            # since console-less application is hard to debug if failed at -
             # startup, we provide a "debug" launcher for user.
             create_launcher(
                 manifest,
