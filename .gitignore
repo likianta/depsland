@@ -6,6 +6,8 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
+/chore/pypi_self/*/*
+/chore/site_packages/*
 /config/.redirect
 /config/auto_saved.pkl
 /deleted/
@@ -15,7 +17,7 @@
 /docs/*/*.html
 /lib/
 /oss/*/*
-/pypi/*/[^.]*
+/pypi/*/*
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/ui_prototype/
@@ -32,12 +34,7 @@ dist/
 .DS_Store
 *.bak.*
 
-!/apps/*/.gitkeep
-!/dist/.gitkeep
-!/oss/apps/.gitkeep
-!/oss/test/.gitkeep
+!/chore/pypi_self/index/snapdep/.gitkeep
 !/python/README.md
 !/python/README.zh.md
-!/temp/.self_upgrade/.gitkeep
-!/temp/.unittests/.gitkeep
-!/temp/.gitkeep
+!**/.gitkeep

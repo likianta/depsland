@@ -2,9 +2,9 @@ import os
 from os.path import exists
 from subprocess import call
 
+from lk_utils import wait
 from lk_utils import xpath
 from lk_utils.subproc import compose_cmd
-from lk_utils.time_utils import timeout_gen
 
 from .....utils.compat_py38 import substitute_suffix
 
@@ -63,7 +63,7 @@ def _bat_2_exe(
     ))
     
     # wait exe generated
-    for i in timeout_gen(5, 0.1):
+    for i in wait(5, 0.1):
         if i > 10 and i % 10 == 0:
             print(':v', 'waiting for converting bat to exe...')
         if exists(file_exe):

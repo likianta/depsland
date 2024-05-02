@@ -1,5 +1,4 @@
 from . import compat_py38
-from . import verspec
 from . import ziptool
 from .compat_py38 import remove_suffix
 from .compat_py38 import substitute_suffix
@@ -12,4 +11,3 @@ from .mklink import mergelink
 from .mklink import mergelinks
 from .mklink import mklink
 from .mklink import mklinks
-from .verspec import compare_version

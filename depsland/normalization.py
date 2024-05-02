@@ -50,6 +50,24 @@ def check_name_normalized(name: str) -> bool:
     return name == normalize_name(name)
 
 
+def normalize_anyname(raw: str) -> t.Tuple[T.Name, t.Tuple[T.VersionSpec, ...]]:
+    """
+    examples:
+        'PySide6' -> ('pyside6', ())
+        'PySide6 >=6.0.4, <6.1' -> (
+            'pyside6',
+            (<spec of '>=6.0.4'>, <spec of '<6.1.0'>)
+        )
+    """
+    a, b = re.search(r'([^ <>=!~]+)(.*)', raw.replace(' ', '')).groups()
+    name = normalize_name(a)
+    if b:
+        return name, tuple(normalize_verspecs(name, b))
+    else:
+        # return name, (VersionSpec(name, '', ''),)
+        return name, ()
+
+
 def normalize_name(raw_name: T.RawName) -> T.Name:
     """
     examples:
@@ -59,10 +77,26 @@ def normalize_name(raw_name: T.RawName) -> T.Name:
         'jaraco.classes'    -> 'jaraco_classes'
             https://pypi.tuna.tsinghua.edu.cn/simple/jaraco-classes/
     """
-    return raw_name.strip().lower().replace('-', '_').replace('.', '_')
+    return raw_name.lower().replace('-', '_').replace('.', '_')
 
 
-def normalize_version_spec(
+# def normalize_name_and_verspecs(raw_name: str) -> t.Tuple[
+#     T.Name, t.Iterator[T.VersionSpec]
+# ]:
+#     """
+#     examples:
+#         'PySide6 >=6.0.4, <6.1' -> (
+#             'pyside6',
+#             (<spec of '>=6.0.4'>, <spec of '<6.1.0'>)
+#         )
+#     """
+#     a, b = re.search(r'([^ <>=!~]+)(.+)', raw_name.replace(' ', '')).groups()
+#     name = normalize_name(a)
+#     verspecs = normalize_verspecs(name, b)
+#     return name, verspecs
+
+
+def normalize_verspecs(
     name: T.Name, raw_verspec: T.RawVersionSpec
 ) -> t.Iterator[T.VersionSpec]:
     """
@@ -80,7 +114,7 @@ def normalize_version_spec(
         yield VersionSpec(name, '', '')
         return
     
-    from .utils.verspec import semver_parse
+    from .verspec import semver_parse
     
     pattern_to_split_comp_and_ver = re.compile(r'([<>=!~]*)(.+)')
     

@@ -78,7 +78,7 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     command += '\0' * (259 - len(command)) + ('1' if show_console else '0')
     encoded_command = command.encode('ascii')
     
-    template: bytes = loads(_template_exe, ftype='binary')
+    template: bytes = loads(_template_exe, type='binary')
     output = template.replace(b'X' * 259 + b'1', encoded_command)
     print('add command to exe', command)
-    dumps(output, file_exe, ftype='binary')
+    dumps(output, file_exe, type='binary')

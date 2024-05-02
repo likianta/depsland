@@ -6,14 +6,14 @@ from lk_utils import fs
 from lk_utils import new_thread
 from lk_utils import run_new_thread
 
-from build.setup_wizard.page1 import Page1
-from build.setup_wizard.wizard import wizard
 from qmlease import AutoProp
 from qmlease import Model
 from qmlease import QObject
 from qmlease import bind_signal
 from qmlease import signal
 from qmlease import slot
+from .page1 import Page1
+from .wizard import wizard
 
 
 class Page2(QObject):  # InProgress
@@ -93,7 +93,7 @@ class Page2(QObject):  # InProgress
         
         for index, item in enumerate(self._model):
             self.index_changed.emit(index)
-            name = item['name']
+            name = item['name']  # noqa
             print(':ir', f'[green]{name}[/]')
             
             if name == 'python':
@@ -101,8 +101,9 @@ class Page2(QObject):  # InProgress
                     pass  # dev mode
                 else:
                     self._model.update(index, {
-                        'processing': f'Extracting {name}. '
-                                      f'This may take a while, please wait...'
+                        'processing':
+                            f'Extracting {name}. '
+                            f'This may take a while, please wait...'
                     })
             else:
                 self._model.update(index, {'processing': f'Extracting {name}'})

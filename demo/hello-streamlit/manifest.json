@@ -1,0 +1,25 @@
+{
+    "appid": "hello_streamlit",
+    "name": "Hello Streamlit",
+    "version": "0.1.4",
+    "assets": {
+        "main.py": "all"
+    },
+    "dependencies": [
+        "argsense",
+        "lk-utils",
+        "streamlit>=1.33.0"
+    ],
+    "launcher": {
+        "target": "main.py",
+        "type": "module",
+        "icon": "",
+        "args": [],
+        "kwargs": {},
+        "enable_cli": false,
+        "add_to_desktop": true,
+        "add_to_start_menu": false,
+        "show_console": true
+    },
+    "depsland_version": "0.7.0b13"
+}

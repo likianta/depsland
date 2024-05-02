@@ -87,7 +87,7 @@ class SetupWizard(QObject):
             file_i=file_i.replace('/', '\\'),
             file_o=file_o.replace('/', '\\'),
         )
-        dumps(command, vbs, ftype='plain')
+        dumps(command, vbs, type='plain')
         run_cmd_args('cscript', '/nologo', vbs)
         fs.remove_file(vbs)
     

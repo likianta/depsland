@@ -7,22 +7,18 @@ from collections import defaultdict
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
-from lk_utils.read_and_write import ropen
 
 from .index import T as T0
 from .pypi import pypi
 from .. import normalization as norm
+from .. import verspec
 from ..paths import pypi as pypi_paths
-from ..pip import pip
-from ..utils import get_updated_time
-from ..utils import verspec
 
 
 class T(T0):
     # DELETE
     Dependencies = dict
     Name = str
-    Name2Versions = dict
     NameId = str
     Path = str
     
@@ -43,33 +39,36 @@ def overview(custom_dir: str = None) -> None:
 
 def rebuild_index(perform_pip_install: bool = False) -> None:
     id_2_paths: T.Id2Paths = {}
-    name_2_ids: T.Name2Ids = defaultdict(set)
+    name_2_vers: T.Name2Versions = defaultdict(list)
     
     for f in fs.find_files(pypi_paths.downloads):
         if f.name.startswith('.'):  # '.gitkeep', '.DS_Store', etc.
             continue
         name, ver = norm.split_filename_of_package(f.name)
+        name_2_vers[name].append(ver)
         id = f'{name}-{ver}'
-        name_2_ids[name].add(id)
         
-        dl_path = f.path
-        ins_path = '{}/{}/{}'.format(pypi_paths.installed, name, ver)
-        if not fs.exists(ins_path):
+        # download path and install path
+        down_path = f.path
+        inst_path = '{}/{}/{}'.format(pypi_paths.installed, name, ver)
+        if not fs.exists(inst_path):
             if perform_pip_install:
-                pypi.install_one(id, dl_path, False)
+                pypi.install_one(id, down_path, False)
             else:
-                print('package not installed', id, dl_path, ins_path, ':lv4')
+                print('package not installed', id, down_path, inst_path, ':lv4')
                 sys.exit(1)
-        assert fs.exists(ins_path)
+        assert fs.exists(inst_path)
         id_2_paths[id] = (
-            fs.relpath(dl_path, pypi_paths.root),
-            fs.relpath(ins_path, pypi_paths.root),
+            fs.relpath(down_path, pypi_paths.root),
+            fs.relpath(inst_path, pypi_paths.root),
         )
         print('id indexed', id, ':is')
     
+    for vers in name_2_vers.values():
+        verspec.sort_versions(vers, reverse=True)
+    
     dumps(id_2_paths, pypi_paths.id_2_paths)
-    dumps(id_2_paths, fs.replace_ext(pypi_paths.id_2_paths, 'json'))
-    dumps(name_2_ids, pypi_paths.name_2_ids)
+    dumps(name_2_vers, pypi_paths.name_2_vers)
 
 
 def _rebuild_dependencies(
@@ -97,7 +96,7 @@ def _rebuild_dependencies(
                                 node['resolved'].append(f'{a}-{b}')
                             else:
                                 node['unresolved'][a] = tuple(
-                                    norm.normalize_version_spec(a, b)
+                                    norm.normalize_verspecs(a, b)
                                 )
                     else:
                         raise FileNotFoundError(d2.path)  # TODO: for debug
@@ -117,16 +116,18 @@ def _rebuild_dependencies(
                     flatten_resolved_dependencies(nid, collect, indent + 2)
                 else:
                     print('{}{}'.format(' ' * (indent + 2), nid), ':vs')
-                    if dependencies[nid]['resolved'] \
-                        or dependencies[nid]['unresolved']:
+                    if (
+                        dependencies[nid]['resolved'] or
+                        dependencies[nid]['unresolved']
+                    ):
                         print('{}...'.format(' ' * (indent + 4)), ':vs')
             return collect
         
         def flatten_unresolved_dependencies(
             name_id: T.NameId,
             collect: t.Dict[T.Name, t.Dict[str, norm.VersionSpec]],
-            indent=0,
-        ) -> t.Dict[T.Name, T.VersionSpecs]:
+            indent: int = 0,
+        ) -> t.Dict[T.Name, t.Tuple[norm.VersionSpec, ...]]:
             for name, specs in dependencies[name_id]['unresolved'].items():
                 if name not in collect:
                     print('{}<{}>'.format(' ' * indent, name), ':vs')
@@ -137,7 +138,7 @@ def _rebuild_dependencies(
                             collect[name][str(s)] = s
             for nid in dependencies[name_id]['resolved']:
                 flatten_unresolved_dependencies(nid, collect, indent + 2)
-            return {k: tuple(v.values()) for k, v in collect.items()}
+            return {k: tuple(v.values()) for k, v in collect.items()}  # noqa
         
         old_dependencies: T.Dependencies = dependencies
         new_dependencies: T.Dependencies = {}
@@ -165,8 +166,7 @@ def _rebuild_dependencies(
 
 
 def analyze_metadata(
-    file: T.Path,
-    name_2_versions: dict  # FIXME
+    file: T.Path, name_2_versions: dict  # FIXME
 ) -> t.Iterator[t.Tuple[t.Tuple[str, str], bool]]:
     """
     analyse 'METADATA' file.
@@ -180,7 +180,7 @@ def analyze_metadata(
     #   e.g. 'argsense (>=0.4.2,<0.5.0)' -> ('argsense', '>=0.4.2,<0.5.0')
     
     def walk() -> t.Iterator[str]:
-        with ropen(file) as f:
+        with open(file, 'r', encoding='utf-8') as f:
             flag = 0
             head = 'Requires-Dist: '
             for line in f:
@@ -207,10 +207,9 @@ def analyze_metadata(
             print(':lv4', file, line, e)
             raise e
         name = norm.normalize_name(raw_name)
-        verspecs = norm.normalize_version_spec(name, raw_verspec or '')
+        verspecs = norm.normalize_verspecs(name, raw_verspec or '')
         proper_version = verspec.find_proper_version(
-            *verspecs,
-            candidates=name_2_versions[name]
+            tuple(verspecs), candidates=name_2_versions[name]
         )
         if proper_version:
             yield (name, proper_version), True

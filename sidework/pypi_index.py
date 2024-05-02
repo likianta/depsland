@@ -4,8 +4,8 @@ from argsense import cli
 from lk_utils import dumps
 from lk_utils import fs
 
-from depsland import rebuild_pypi_index
 from depsland.paths import pypi as pypi_paths
+from depsland.pypi import rebuild_index as rebuild_pypi_index
 from depsland.pypi.insight import overview
 
 cli.add_cmd(overview)

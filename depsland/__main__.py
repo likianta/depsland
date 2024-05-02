@@ -1,10 +1,15 @@
+if __name__ == '__main__':
+    __package__ = 'depsland'
+
 import os
 import sys
 import typing as t
 from os.path import exists
 
+import pyapp_window
 from argsense import CommandLineInterface
 from lk_utils import fs
+from lk_utils import run_cmd_args
 
 from . import __path__
 from . import __version__
@@ -13,7 +18,6 @@ from . import paths
 from .manifest import T
 from .manifest import get_last_installed_version
 from .normalization import check_name_normalized
-from .platform import sysinfo
 
 # fix sys.argv
 if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
@@ -103,7 +107,13 @@ def welcome(confirm_close: bool = False) -> None:
 
 
 @cli.cmd()
-def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
+def launch_gui(
+    port: int = 2028,
+    _app_token: str = None,
+    _run_at_once: t.Optional[bool] = False,
+    _native_window: bool = True,
+    _user_call: bool = True,
+) -> None:
     """
     launch depsland gui.
     
@@ -116,28 +126,72 @@ def launch_gui(_app_token: str = None, _run_at_once: bool = False) -> None:
             for `false` example, see `./api/dev_api/offline_build.py : -
             _create_updator()`
     """
-    # import os
-    # os.environ['QT_API'] = 'pyside6_lite'
-    try:
-        pass
-    except ModuleNotFoundError:
-        print(
-            'launching GUI failed. you may forget to install qt for python '
-            'library (suggest `pip install pyside6` etc.)',
-            ':v4',
+    # print(_user_call, sys.argv, ':lv')
+    if _user_call:
+        proc = run_cmd_args(
+            (
+                sys.executable, '-m', 'streamlit', 'run',
+                'depsland/__main__.py',
+            ),
+            (
+                '--browser.gatherUsageStats', 'false',
+                '--global.developmentMode', 'false',
+                '--server.headless', 'true',
+                '--server.port', port,
+            ),
+            (
+                '--',
+                'launch-gui',
+                port,
+                _app_token or ':empty',
+                ':true' if _run_at_once else ':false',
+                '--not-user-call',
+            ),
+            blocking=not _native_window,
+            ignore_return=True,
+            verbose=True,
         )
-        return
+        if _native_window:
+            pyapp_window.launch(
+                'Depsland User Interface',
+                url=f'http://localhost:{port}',
+                copilot_backend=proc,
+                size=(600, 900),
+                icon=paths.build.launcher_icon,
+            )
+    else:
+        if _app_token == '""':  # FIXME: should be resolved in argsense library.
+            _app_token = ''
+        if _app_token and os.path.isfile(_app_token):
+            _app_token = fs.abspath(_app_token)
+            if _run_at_once is None:
+                _run_at_once = True
+        from .webui import setup_ui
+        setup_ui(_app_token, _run_at_once)
     
-    if sysinfo.IS_WINDOWS:
-        _toast_notification('Depsland is launching')
+    # -------------------------------------------------------------------------
     
-    if _app_token and os.path.isfile(_app_token):
-        _app_token = fs.abspath(_app_token)
-    # if _run_at_once is None:
-    #     _run_at_once = bool(_app_token)
-    
-    from .ui import launch_app
-    launch_app(_app_token, _run_at_once)
+    # try:
+    #     os.environ['QT_API'] = 'pyside6_lite'
+    #     import pyside6_lite  # noqa
+    # except ModuleNotFoundError:
+    #     print(
+    #         'launching GUI failed. you may forget to install qt for python '
+    #         'library (suggest `pip install pyside6` etc.)',
+    #         ':v4',
+    #     )
+    #     return
+    #
+    # if sysinfo.IS_WINDOWS:
+    #     _toast_notification('Depsland is launching')
+    #
+    # if _app_token and os.path.isfile(_app_token):
+    #     _app_token = fs.abspath(_app_token)
+    # # if _run_at_once is None:
+    # #     _run_at_once = bool(_app_token)
+    #
+    # from .ui import launch_app
+    # launch_app(_app_token, _run_at_once)
 
 
 # -----------------------------------------------------------------------------
@@ -277,70 +331,7 @@ def view_manifest(manifest: str = '.') -> None:
     print(manifest, ':l')
 
 
-@cli.cmd(transport_help=True)
-def run(appid: str, *args, _version: str = None, **kwargs) -> None:
-    """
-    a general launcher to start an installed app.
-    """
-    print('<depsland> ' + ' '.join(sys.argv[1:]), ':v')
-    
-    version = _version or get_last_installed_version(appid)
-    if not version:
-        print(':v4', f'cannot find installed version of {appid}')
-        return
-    
-    import lk_logger
-    import subprocess
-    from argsense import args_2_cargs
-    from .manifest import load_manifest
-    from .manifest import parse_script_info
-    
-    manifest = load_manifest(
-        '{}/{}/{}/manifest.pkl'.format(paths.project.apps, appid, version)
-    )
-    assert manifest['version'] == version
-    command, args0, kwargs0 = parse_script_info(manifest)
-    # print(command, args0, kwargs0, ':l')
-    os.environ['DEPSLAND'] = paths.project.root
-    sep = ';' if sysinfo.IS_WINDOWS else ':'
-    os.environ['PYTHONPATH'] = sep.join((
-        '.',  # cur_dir
-        manifest['start_directory'],  # app_dir
-        paths.apps.get_packages(appid, version),  # pkg_dir
-    ))
-    # print(
-    #     os.environ['PYTHONPATH'].split(sep),
-    #     os.environ['PATH'].split(sep), ':lv'
-    # )
-    
-    if not manifest['launcher']['show_console']:
-        if sysinfo.IS_WINDOWS:
-            _toast_notification(
-                'Depsland is launching "{}"'.format(manifest['name'])
-            )
-    
-    # print(':v', args, kwargs)
-    lk_logger.unload()
-    try:
-        subprocess.run(
-            # TODO: use '--' to separate different args/kwargs groups.
-            (*command, *args_2_cargs(*args, *args0, **kwargs, **kwargs0)),
-            check=True,
-            cwd=manifest['start_directory'],
-            stderr=subprocess.PIPE,
-            text=True,
-        )
-    except subprocess.CalledProcessError as e:
-        lk_logger.enable()
-        print(':v4f', '\n' + (e.stderr or '').replace('\r', ''))
-        if manifest['launcher']['show_console']:
-            # raise e
-            input('press enter to close window... ')
-        else:
-            _toast_notification(
-                'Exception occurred at "{}"!'.format(manifest['name'])
-            )
-
+cli.add_cmd(api.user_api.run_app, 'run', transport_help=True)
 
 # -----------------------------------------------------------------------------
 
@@ -376,8 +367,7 @@ def get_package_size(
 
 
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
-    from .utils import compare_version
-    
+    from .verspec import compare_version
     return compare_version(new['version'], '>', old['version'])
 
 
@@ -444,18 +434,6 @@ def _run_cli() -> None:
     cli.run()
 
 
-# windows only
-def _toast_notification(text: str) -> None:
-    try:
-        from windows_toasts import Toast
-        from windows_toasts import WindowsToaster
-    except ImportError:
-        raise ImportError('pip install windows-toasts')
-    toaster = WindowsToaster('Depsland Launcher')
-    toast = Toast()
-    toast.text_fields = [text]
-    toaster.show_toast(toast)
-
-
 if __name__ == '__main__':
+    # pox -m depsland launch-gui
     cli.run()

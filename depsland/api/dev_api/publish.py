@@ -16,10 +16,10 @@ from ...oss import T as T1
 from ...oss import get_oss_server
 from ...platform.launcher import bat_2_exe
 from ...platform.system_info import IS_WINDOWS
-from ...utils import compare_version
 from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...venv.target_venv import get_library_root
+from ...verspec import compare_version
 
 
 class T:
@@ -75,11 +75,11 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
             bat_2_exe(
                 bat_file,
                 fs.replace_ext(bat_file, 'exe'),
-                # icon=paths.build.launcher_ico,
+                # icon=paths.build.launcher_icon,
                 icon=(
                     (x := manifest['launcher']['icon']) and
                     '{}/{}'.format(manifest.start_directory, x) or
-                    paths.build.launcher_ico
+                    paths.build.launcher_icon
                 ),
                 show_console=False,
             )
@@ -91,7 +91,7 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
     dumps(
         app_info['history'],
         paths.apps.get_distribution_history(app_info['appid']),
-        ftype='plain',
+        type='plain',
     )
     
     print(
@@ -113,8 +113,8 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
     
     # -------------------------------------------------------------------------
     
-    root_new = manifest_new['start_directory']
-    root_old = manifest_old['start_directory']  # (not used variable)  # noqa
+    root_new = manifest_new['start_directory']  # noqa
+    root_old = manifest_old['start_directory']  # noqa
     temp_dir = make_temp_dir()
     
     oss = get_oss_server(manifest_new['appid'])
@@ -134,7 +134,7 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
                 continue
             
             _print_change(
-                f'{action = }, {relpath = }',
+                f'{action=}, {relpath=}',
                 info0 and info0.uid,
                 info1 and info1.uid,
                 True,
@@ -168,7 +168,7 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
                 continue
             
             _print_change(
-                f'{action = }, {pkg_name = }',
+                f'{action=}, {pkg_name=}',
                 info0 and info0['version'],
                 info1 and info1['version'],
                 True,

@@ -1,6 +1,6 @@
 import os
 import typing as t
-from concurrent.futures import ThreadPoolExecutor
+# from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
 
 from lk_utils import dumps
@@ -20,10 +20,10 @@ from ...platform import create_launcher
 from ...platform import sysinfo
 from ...platform.launcher import create_desktop_shortcut
 from ...pypi import pypi
-from ...utils import compare_version
 from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
+from ...verspec import compare_version
 
 
 class T(T0):
@@ -256,11 +256,13 @@ def _install_packages(
     total_diff = diff_manifest(manifest_new, manifest_old)
     package_ids = set()
     tasks_ignitor = []  # list[T.PackageInfo]
+    
     action: T.Action
     info0: T.PackageInfo
     info1: T.PackageInfo
     pkg_id: T.PackageId
     pkg_name: T.PackageName
+    
     for action, pkg_name, (info0, info1) in total_diff['dependencies']:
         if action == 'delete':  # this is handled by oss util.
             continue
@@ -272,22 +274,32 @@ def _install_packages(
     has_new_packages = bool(tasks_ignitor)
     if tasks_ignitor:
         print(len(tasks_ignitor))
-        # we will have IO heavy tasks, so promoting max workers is fine.
-        # http://c.biancheng.net/view/2627.html
-        # https://stackoverflow.com/questions/42541893
-        thread_pool = ThreadPoolExecutor(max_workers=len(tasks_ignitor))
         
         def download_and_install(info: T.PackageInfo) -> None:
+            if info['id'] in pypi.index.id_2_paths:
+                # this case should always be False in production environment. -
+                # but may be True in development environment.
+                return
             dl_path = pypi.download_one(
-                info['id'], info['appendix'].get('custom_url')
+                info['id'],
+                info['appendix'] and info['appendix'].get('custom_url')
             )
             pypi.install_one(info['id'], dl_path)
         
-        tasks = [
-            thread_pool.submit(download_and_install, info)
-            for info in tasks_ignitor
-        ]
-        [x.result() for x in tasks]
+        for info in tasks_ignitor:
+            download_and_install(info)
+        
+        # FIXME: thread_pool makes pip install stucked, and ctrl+c cannot -
+        #   terminate the process.
+        # we will have IO heavy tasks, so promoting max workers is fine.
+        # http://c.biancheng.net/view/2627.html
+        # https://stackoverflow.com/questions/42541893
+        # thread_pool = ThreadPoolExecutor(max_workers=len(tasks_ignitor))
+        # tasks = [
+        #     thread_pool.submit(download_and_install, info)
+        #     for info in tasks_ignitor
+        # ]
+        # for x in tasks: x.result()
     
     venv_dir = paths.apps.make_packages(
         manifest_new['appid'], manifest_new['version'], clear_exists=True

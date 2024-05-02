@@ -45,10 +45,6 @@ class Pip:
         """
         both print and return the command line output.
         """
-        print(
-            ':r', '[magenta dim]{}[/]'
-            .format(' '.join(args).replace('[', '\\['))
-        )
         return run_cmd_args(*args, verbose=True, ignore_error=False)
     
     # -------------------------------------------------------------------------

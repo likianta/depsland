@@ -8,9 +8,9 @@ from ...manifest import T as T0
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_client
-from ...utils import compare_version
 from ...utils import init_target_tree
 from ...utils import make_temp_dir
+from ...verspec import compare_version
 
 
 class T:

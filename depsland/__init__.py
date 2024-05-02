@@ -1,14 +1,18 @@
 if 1:
-    import lk_logger
-    lk_logger.setup(quiet=True, show_varnames=True)
-    
-if 2:
-    # check python version, if lower than 3.11, import typing_extensions
+    import os.path
     import sys
-    if sys.version_info < (3, 11):
-        import typing
-        from typing_extensions import Self
-        setattr(typing, 'Self', Self)
+    _parent_dir = os.path.abspath(f'{__file__}/../..')
+    if sys.base_prefix.startswith(_parent_dir):
+        # we are using an exclusive python interpreter vendored by depsland.
+        # since the interpreter is clean and no third party packages -
+        # installed, we need to locate another place to find the site-packages.
+        assert os.path.exists(x := f'{_parent_dir}/chore/site_packages'), \
+            'see `DEVNOTE.md : search "make site-packages"` for help.'
+        sys.path.append(x)
+
+if 2:
+    import lk_logger
+    lk_logger.setup(quiet=True, show_funcname=False, show_varnames=True)
 
 from . import api
 from . import config
@@ -17,6 +21,8 @@ from . import manifest
 from . import paths
 from . import utils
 from . import venv
+from . import verspec
+# from . import webui
 from .api import init
 from .api import install
 from .api import publish
@@ -25,7 +31,6 @@ from .platform import sysinfo
 from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pypi
-from .pypi import rebuild_index as rebuild_pypi_index
 
-__version__ = '0.7.0'
-__date__ = '2024-01-10'
+__version__ = '0.7.0b13'
+__date__ = '2024-05-01'

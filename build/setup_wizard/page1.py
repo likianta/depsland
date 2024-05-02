@@ -2,14 +2,15 @@ import os
 
 from lk_utils import fs
 
-from build.setup_wizard.wizard import wizard
-from depsland import paths
 from qmlease import QObject
 from qmlease import pystyle
 from qmlease import bind_signal
 from qmlease import signal
 from qmlease import slot
 from qmlease import util
+
+from depsland import paths
+from .wizard import wizard
 
 
 class Page1(QObject):
@@ -51,7 +52,7 @@ class Page1(QObject):
             if self.selected_path:
                 try:
                     parent_path = fs.parent_path(self.selected_path)
-                except:
+                except Exception:
                     parent_path = ''
             else:
                 parent_path = ''

@@ -1,16 +1,13 @@
 {
     "appid": "hello_world",
     "name": "Hello World",
-    "version": "0.3.0",
+    "version": "0.4.8",
     "assets": {
         "src": "all"
     },
-    "dependencies": {
-        "custom_host": [
-            "argsense"
-        ],
-        "official_host": []
-    },
+    "dependencies": [
+        "argsense"
+    ],
     "launcher": {
         "target": "src/main.py",
         "type": "module",
