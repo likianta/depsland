@@ -38,9 +38,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         placeholder='e.g. "hello_world"'
     )
     row = st_row((7, 3), vertical_align='center')
-    if appid and (
-        _run_at_once or row.button('Install', type='primary')
-    ):
+    if appid and (_run_at_once or row.button('Install', type='primary')):
         with row.container():
             with st.spinner(f'Installing "{appid}"...'):
                 # from time import sleep  # TEST
@@ -50,25 +48,26 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
 
 
 def command_panel() -> None:
-    session = get_session()
     with st_bottom_bar():
-        containers = (st.container(), st.container())
-        with containers[1]:
-            if st.checkbox('Remember last input', True):
-                value = session['last_command'] or None
-            else:
-                value = None
-        with containers[0]:
-            code = st.text_area(
-                'Command here',
-                value=value,
-                placeholder=
-                session['last_command'] or
-                'The command will be executed in the background.',
-            )
-            if code:
-                exec(code, globals())
-                session['last_command'] = code
+        with st.expander('Command panel', False):
+            session = get_session()
+            containers = (st.container(), st.container())
+            with containers[1]:
+                if st.checkbox('Remember last input', True):
+                    value = session['last_command'] or None
+                else:
+                    value = None
+            with containers[0]:
+                code = st.text_area(
+                    'Command here',
+                    value=value,
+                    placeholder=
+                    session['last_command'] or
+                    'The command will be executed in the background.',
+                )
+                if code:
+                    exec(code, globals())
+                    session['last_command'] = code
 
 
 if __name__ == '__main__':

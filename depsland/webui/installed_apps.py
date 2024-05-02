@@ -3,6 +3,7 @@ import typing as t
 import psutil
 import streamlit as st
 from lk_utils import fs
+from streamlit_extras.row import row as st_row
 
 from ..api.user_api import run_app
 from ..paths import apps as app_paths
@@ -32,37 +33,49 @@ def main() -> None:
                 target_ver = st.selectbox(
                     'Version ({})'.format(len(vers)),
                     vers,
-                    key=f'{app_name}_version',
+                    key=f'{app_name}:version',
                 )
                 
-                if is_running:
-                    if st.button(
-                        ':red[Stop]',
-                        key=f'stop_{app_name}',
-                        use_container_width=True,
-                    ):
-                        pid = session['progresses'].pop(app_name)
-                        kill_process_tree(pid)
-                        # # popen_obj.kill()
-                        # # popen_obj.terminate()
-                        # os.kill(popen_obj.pid, SIGTERM)
-                        # is_killed = popen_obj.poll() is not None
-                        # print(
-                        #     ':v2' if is_killed else ':v4',
-                        #     'popen is {}'.format(
-                        #         'killed' if is_killed else 'still alive!'
-                        #     )
-                        # )
-                        st.rerun()
-                else:
-                    if st.button(
-                        ':green[Run]',
-                        key=f'run_{app_name}',
-                        use_container_width=True,
-                    ):
-                        popen_obj = run_app(app_name, _version=target_ver)
-                        session['progresses'][app_name] = popen_obj.pid
-                        st.rerun()
+                button_row = st_row((9, 2))
+                with button_row.container():
+                    if is_running:
+                        if st.button(
+                            ':red[Stop]',
+                            key=f'{app_name}:stop',
+                            use_container_width=True,
+                        ):
+                            pid = session['progresses'].pop(app_name)
+                            kill_process_tree(pid)
+                            # # popen_obj.kill()
+                            # # popen_obj.terminate()
+                            # os.kill(popen_obj.pid, SIGTERM)
+                            # is_killed = popen_obj.poll() is not None
+                            # print(
+                            #     ':v2' if is_killed else ':v4',
+                            #     'popen is {}'.format(
+                            #         'killed' if is_killed else 'still alive!'
+                            #     )
+                            # )
+                            st.rerun()
+                    else:
+                        if st.button(
+                            ':green[Run]',
+                            key=f'{app_name}:run',
+                            use_container_width=True,
+                        ):
+                            popen_obj = run_app(app_name, _version=target_ver)
+                            session['progresses'][app_name] = popen_obj.pid
+                            st.rerun()
+                if button_row.button(
+                    '⚙️',  # icon from https://getemoji.com/
+                    key=f'{app_name}:setting'
+                ):
+                    with st.container(border=True):
+                        st.button(
+                            'Add to desktop',
+                            key=f'{app_name}:add_to_desktop',
+                            use_container_width=True,
+                        )
 
 
 def list_installed_apps() -> t.Iterator[t.Tuple[str, t.List[str]]]:
@@ -82,7 +95,7 @@ def kill_process_tree(pid: int) -> None:
     proc = psutil.Process(pid)
     print('kill [{}] {}'.format(pid, proc.name()), ':iv4s')
     for child in proc.children(recursive=True):
-        print('kill [{}:{}] {}'.format(pid, child.pid, child.name()), ':iv4s')
+        print('    |- kill [{}] {}'.format(child.pid, child.name()), ':iv4s')
         child.kill()
     proc.kill()
     print(':i0s')
