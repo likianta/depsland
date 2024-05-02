@@ -2710,19 +2710,18 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "0.5.0a4"
+version = "0.5.0a8"
 description = ""
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-0.5.0a4-py3-none-any.whl", hash = "sha256:682477006f593030bdc6cc8b811bda06ed611b85a7491509a5881b993a71d107"},
+    {file = "pyapp_window-0.5.0a8-py3-none-any.whl", hash = "sha256:658549199da5e9d4d6ffab34ee808c4a09c7a3c75aef7d18045f0b4d3ff0b02e"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.6,<0.6.0"
-
-[package.extras]
-toga = ["pythonnet (>=3.0.0,<4.0.0)", "toga (>=0.4.0,<0.5.0)", "toga (>=0.4.0,<0.5.0)"]
+psutil = "*"
+toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and (sys_platform == \"darwin\" or sys_platform == \"win32\")"}
 
 [package.source]
 type = "legacy"
@@ -3078,55 +3077,6 @@ files = [
     {file = "PyYAML-6.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:510c9deebc5c0225e8c96813043e62b680ba2f9c50a08d3724c7f28a747d1486"},
     {file = "PyYAML-6.0.1.tar.gz", hash = "sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
-name = "qmlease"
-version = "3.0.4"
-description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
-optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "qmlease-3.0.4-py3-none-any.whl", hash = "sha256:45e3545db640c021cf12a838a4ee829352ce7b6e57f143e9d74eba03bc9e1617"},
-]
-
-[package.dependencies]
-argsense = ">=0.5.6,<0.6.0"
-lk-logger = ">=5.6.4,<6.0.0"
-lk-utils = ">=2.9.0,<3.0.0"
-qtpy = ">=2.3.0,<3.0.0"
-typing-extensions = "*"
-watchdog = {version = ">=3.0.0,<4.0.0", markers = "python_version >= \"3.8\" and python_version < \"3.12\""}
-
-[package.extras]
-qt5 = ["pyside2 (>=5.15,<6.0)"]
-qt6 = ["pyside6 (>=6.4.3,<6.5.0)", "pyside6 (>=6.6.1,<7.0.0)"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
-name = "qtpy"
-version = "2.4.1"
-description = "Provides an abstraction layer on top of the various Qt bindings (PyQt5/6 and PySide2/6)."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "QtPy-2.4.1-py3-none-any.whl", hash = "sha256:1c1d8c4fa2c884ae742b069151b0abe15b3f70491f3972698c683b8e38de839b"},
-    {file = "QtPy-2.4.1.tar.gz", hash = "sha256:a5a15ffd519550a1361bdc56ffc07fda56a6af7292f17c7b395d4083af632987"},
-]
-
-[package.dependencies]
-packaging = "*"
-
-[package.extras]
-test = ["pytest (>=6,!=7.0.0,!=7.0.1)", "pytest-cov (>=3.0.0)", "pytest-qt"]
 
 [package.source]
 type = "legacy"
@@ -3878,35 +3828,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-name = "toasts-winrt"
-version = "1.0.0"
-description = "Python WinRT bindings for Windows-Toasts"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "toasts-winrt-1.0.0.tar.gz", hash = "sha256:bf71ce565a4d5b5ae83e5e4061ea2148138b3c64adaaea0881c5cce8a94a394a"},
-    {file = "toasts_winrt-1.0.0-cp310-cp310-win32.whl", hash = "sha256:5e276a240a0f707ec2aba1c39c060f85529723723ce0180c2b4c2176bc41fb5c"},
-    {file = "toasts_winrt-1.0.0-cp310-cp310-win_amd64.whl", hash = "sha256:adfd274e36973f9841e815a5affaa9b7448c34530b66a54b65a9ffc32035f388"},
-    {file = "toasts_winrt-1.0.0-cp310-cp310-win_arm64.whl", hash = "sha256:d7289a2b654b21320b67f8384010b6c2fc09781a3cf02b54736cdea99b03db19"},
-    {file = "toasts_winrt-1.0.0-cp311-cp311-win32.whl", hash = "sha256:aec4568def3e83cc6784ebea7c8770be29018aa8ff9b12e7da5b9d6c8b2e8dcf"},
-    {file = "toasts_winrt-1.0.0-cp311-cp311-win_amd64.whl", hash = "sha256:f8459e6d2bd8bb2006d3f6543871f05d11673e0c5391ed1c3d66915509c9e5f3"},
-    {file = "toasts_winrt-1.0.0-cp311-cp311-win_arm64.whl", hash = "sha256:e6b49b964192947d44089ff9332da584384d6746f4a440cf588e0fd05048f697"},
-    {file = "toasts_winrt-1.0.0-cp312-cp312-win32.whl", hash = "sha256:4afd92ecb403e6c79dd1aa2b1e4aede302de00392b8df252813c1107b3ec53ef"},
-    {file = "toasts_winrt-1.0.0-cp312-cp312-win_amd64.whl", hash = "sha256:1e2e91d2710019b2eeb8066ece9b4619c6fb1b45792cb8c26c25b0b1a5a07cab"},
-    {file = "toasts_winrt-1.0.0-cp312-cp312-win_arm64.whl", hash = "sha256:acb2edc54e707a624d42b16caa28f1008572c0d4c2d8d1407218c4ea3cfce234"},
-    {file = "toasts_winrt-1.0.0-cp38-cp38-win32.whl", hash = "sha256:924118b81de9fb81b04ae9b06b1adf8891cdc35b01554a2024c5d8f0520adfa3"},
-    {file = "toasts_winrt-1.0.0-cp38-cp38-win_amd64.whl", hash = "sha256:3c027a49bd157938068449c603f02a315fd7cfcd52d9af83275bcdb156e399c8"},
-    {file = "toasts_winrt-1.0.0-cp39-cp39-win32.whl", hash = "sha256:0ab28913c3649fa9f0d539fdc580df7c807f095225fc8b16bb701567cec679c7"},
-    {file = "toasts_winrt-1.0.0-cp39-cp39-win_amd64.whl", hash = "sha256:f7d13a1da03a69f5b6c3a4143bd5d2199199e0ff7f307321241c5bc7ccc8d6cb"},
-    {file = "toasts_winrt-1.0.0-cp39-cp39-win_arm64.whl", hash = "sha256:f7d80addf22b53e63ca9cc0659fb8ae26330a2be649c8ceee5d6694a6d68c191"},
-]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
 name = "toga"
 version = "0.4.2"
 description = "A Python native, OS native GUI toolkit."
@@ -4310,25 +4231,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-name = "windows-toasts"
-version = "1.0.2"
-description = "Python library used to send toast notifications on Windows machines"
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "Windows-Toasts-1.0.2.tar.gz", hash = "sha256:79aab12d4a2e5baa45832ace25adb5c62748decb6bd70354f8f4f0f30fd1b2d4"},
-    {file = "Windows_Toasts-1.0.2-py3-none-any.whl", hash = "sha256:e7f783324be23130b4fff3fa0cfce8f57ad4826906c688e3904d7d534e604bec"},
-]
-
-[package.dependencies]
-toasts-winrt = "1.0.0"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
 name = "xattr"
 version = "1.1.0"
 description = "Python wrapper for extended filesystem attributes"
@@ -4429,4 +4331,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "d0b8745c1c1ca95c5c35b7153eb0d279e11699a8ae444f503806f91a3842aa55"
+content-hash = "2fde77e3a44ce0af021d2f37b5d1d4f16244d09d214f0db20bc22df4e0f608a2"

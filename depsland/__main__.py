@@ -148,7 +148,6 @@ def launch_gui(
                 '--not-user-call',
             ),
             blocking=not _native_window,
-            ignore_return=True,
             verbose=True,
         )
         if _native_window:
@@ -156,7 +155,7 @@ def launch_gui(
                 'Depsland User Interface',
                 url=f'http://localhost:{port}',
                 copilot_backend=proc,
-                size=(600, 900),
+                size=(1200, 2000),
                 icon=paths.build.launcher_icon,
             )
     else:
