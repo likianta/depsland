@@ -2,6 +2,8 @@ import QtQuick
 import LKWidgets
 
 LKWindow {
+    title: 'Hello World'
+
     LKRectangle {
         anchors {
             fill: parent
