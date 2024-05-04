@@ -23,7 +23,6 @@ def get_session() -> dict:
             'portion_offset': 0.0,
             'portion_weight': 0.0,
             'progress'      : 0.0,
-            'stage'         : 0,
             'total_count'   : 0,
         }
     return st.session_state[__name__]
@@ -55,6 +54,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
     
     if appid and (_run_at_once or row0.button('Install', type='primary')):
         with row1:
+            _prog_ctrl.reset()
             prog_ui = st.progress(0.0, f'Installing "{appid}"')
             
             @_prog_ctrl.updated
@@ -64,7 +64,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         with row0.container():
             with st.spinner(f'Installing "{appid}"...'):
                 install_by_appid(appid)
-                # _test_install()  # TEST
+                # _test_install_progress()  # TEST
                 prog_ui.progress(1.0, 'Installation done')
                 # run_new_thread(_prog_ctrl.reset, args=(3,))
 
@@ -93,7 +93,7 @@ def command_panel() -> None:  # the bottom bar
                     session['last_command'] = code
 
 
-def _test_install() -> None:
+def _test_install_progress() -> None:
     from random import randint
     _prog_ctrl.reset()
     _prog_ctrl.session.update({
@@ -101,7 +101,7 @@ def _test_install() -> None:
         'total_count'   : 10,
     })
     for i in range(10):
-        _prog_ctrl.update_progress(i + 1, f'Test installing item {i}')
+        _prog_ctrl.update_progress(i + 1, target=f'item {i}')
         sleep(randint(1, 5) / 10)  # 100ms ~ 500ms
 
 
@@ -122,7 +122,6 @@ class ProgressControl:
             'portion_offset': 0.0,
             'portion_weight': 0.0,
             'progress'      : 0.0,
-            'stage'         : 0,
             'total_count'   : 0,
         })
         self.updated.emit(0.0, 'Progress reset')
@@ -134,18 +133,18 @@ class ProgressControl:
             session['portion_weight'] * (counter / session['total_count'])
         )
         self.updated.emit(session['progress'], f'Updating {target}')
+        # sleep(0.5)  # TEST: slow down the motion to see the progress bar
     
-    def _change_stage(self, title: str, total_count: int) -> None:
+    def _change_stage(self, stage: str, total_count: int) -> None:
         session = self.session
-        session['stage'] += 1
-        if session['stage'] == 1:
+        if stage == 'assets':
             session.update({
                 'portion_offset': 0.0,
                 'portion_weight': 0.4,
                 'progress'      : 0.0,
                 'total_count'   : total_count,
             })
-        elif session['stage'] == 2:
+        elif stage == 'dependencies':
             session.update({
                 'portion_offset': 0.4,
                 'portion_weight': 0.6,
@@ -155,8 +154,9 @@ class ProgressControl:
         else:
             raise Exception
         self.updated.emit(
-            session['portion_weight'], f'Stage "{title}" completed'
+            session['portion_offset'], f'Stage "{stage}" get started'
         )
+        # sleep(3)  # TEST: slow down the motion to see the progress bar
 
 
 _prog_ctrl = ProgressControl()

@@ -2,6 +2,7 @@ import os
 import typing as t
 # from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
+# from time import sleep
 
 from lk_utils import Signal
 from lk_utils import dumps
@@ -34,7 +35,7 @@ class T(T0):
     
 
 class _Progress:
-    step_updated = Signal(str, int)  # Signal[title, total_count]
+    step_updated = Signal(str, int)  # Signal[stage, total_count]
     prog_updated = Signal(int, str)
     #   Signal[current_count, filename]
     #       current_count: 1-based
@@ -239,12 +240,12 @@ def _install_files(
     
     total_diff = diff_manifest(manifest_new, manifest_old)
     assets_diff = tuple(total_diff['assets'])
-    progress.step_updated.emit('Downloading files', len(assets_diff))
+    progress.step_updated.emit('assets', len(assets_diff))
     curr_cnt = 0  # 1-based
     
     for action, relpath, (info0, info1) in assets_diff:
         curr_cnt += 1
-        progress.prog_updated.emit(curr_cnt, '{} ({})'.format(relpath, action))
+        progress.prog_updated.emit(curr_cnt, relpath)
         
         if action == 'ignore':
             path0 = fs.normpath(f'{root0}/{relpath}')
@@ -275,7 +276,7 @@ def _install_packages(
 ) -> None:
     total_diff = diff_manifest(manifest_new, manifest_old)
     deps_diff = tuple(total_diff['dependencies'])
-    progress.step_updated.emit('Installing packages', len(deps_diff))
+    progress.step_updated.emit('dependencies', len(deps_diff))
     
     curr_cnt = 0
     package_ids = set()
@@ -292,7 +293,7 @@ def _install_packages(
         # prog.prog_updated.emit(curr_cnt, '{} ({})'.format(
         #     pkg_name if action == 'delete' else info1['id'], action
         # ))
-        progress.prog_updated.emit(curr_cnt, '{} ({})'.format(pkg_name, action))
+        progress.prog_updated.emit(curr_cnt, pkg_name)
         
         if action == 'delete':  # this is handled by oss util.
             continue
