@@ -2949,6 +2949,72 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "pyside6"
+version = "6.7.0"
+description = "Python bindings for the Qt cross-platform application and UI framework"
+optional = false
+python-versions = "<3.13,>=3.9"
+files = [
+    {file = "PySide6-6.7.0-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:4e2f4ddb1d342ffd12558101c30095338da0db34c203e0d17de03e45c7762286"},
+    {file = "PySide6-6.7.0-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:64d6b5751f8d04aedc5e8ea53ddc6613b392919056511a988b790fd3a00f7d01"},
+    {file = "PySide6-6.7.0-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:edc541e37dcf41626a30e82bcdb061592a45424c0558f26523ac5140ec34b448"},
+    {file = "PySide6-6.7.0-cp39-abi3-win_amd64.whl", hash = "sha256:190fb017b7f144b375f1a06b518b1241a78c15e7a073708a255d229687bc905a"},
+]
+
+[package.dependencies]
+PySide6-Addons = "6.7.0"
+PySide6-Essentials = "6.7.0"
+shiboken6 = "6.7.0"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "pyside6-addons"
+version = "6.7.0"
+description = "Python bindings for the Qt cross-platform application and UI framework (Addons)"
+optional = false
+python-versions = "<3.13,>=3.9"
+files = [
+    {file = "PySide6_Addons-6.7.0-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:a87645f0f2dcb2ebe4035ae53ccf329fe503ed394c9f0830de3bfc7205c14f63"},
+    {file = "PySide6_Addons-6.7.0-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:888df2a916f1d59984e2f351e7d5850da0a04103e39501eb7d6a9b150e7431e6"},
+    {file = "PySide6_Addons-6.7.0-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:0716410d3591c144be2fda3a6443fe13a7a88b4d91b45b05fd955782ac19613d"},
+    {file = "PySide6_Addons-6.7.0-cp39-abi3-win_amd64.whl", hash = "sha256:d1712336b33b5a5784bbce4c9b1af984057ff1dc4fafbaf241c090ee9bc3788d"},
+]
+
+[package.dependencies]
+PySide6-Essentials = "6.7.0"
+shiboken6 = "6.7.0"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "pyside6-essentials"
+version = "6.7.0"
+description = "Python bindings for the Qt cross-platform application and UI framework (Essentials)"
+optional = false
+python-versions = "<3.13,>=3.9"
+files = [
+    {file = "PySide6_Essentials-6.7.0-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:d229dae03b1825cc93deac785898b71576957d9fb97b1007897f30604ca5ecd1"},
+    {file = "PySide6_Essentials-6.7.0-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:e013238fe40596b804068e34ac173514943a41bf8e5fbb4edfc7c30b00431bd5"},
+    {file = "PySide6_Essentials-6.7.0-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:412db37d56982c1ad1e6536daaefe760177a9ab897ae147b926a7d6c8befcdd4"},
+    {file = "PySide6_Essentials-6.7.0-cp39-abi3-win_amd64.whl", hash = "sha256:8489bd692380f79455955101194bfcf0cd6444825a1ef198907b4de1f976d8b4"},
+]
+
+[package.dependencies]
+shiboken6 = "6.7.0"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "python-dateutil"
 version = "2.9.0.post0"
 description = "Extensions to the standard Python datetime module"
@@ -3077,6 +3143,55 @@ files = [
     {file = "PyYAML-6.0.1-cp39-cp39-win_amd64.whl", hash = "sha256:510c9deebc5c0225e8c96813043e62b680ba2f9c50a08d3724c7f28a747d1486"},
     {file = "PyYAML-6.0.1.tar.gz", hash = "sha256:bfdf460b1736c775f2ba9f6a92bca30bc2095067b8a9d77876d1fad6cc3b4a43"},
 ]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "qmlease"
+version = "3.0.4"
+description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "qmlease-3.0.4-py3-none-any.whl", hash = "sha256:45e3545db640c021cf12a838a4ee829352ce7b6e57f143e9d74eba03bc9e1617"},
+]
+
+[package.dependencies]
+argsense = ">=0.5.6,<0.6.0"
+lk-logger = ">=5.6.4,<6.0.0"
+lk-utils = ">=2.9.0,<3.0.0"
+qtpy = ">=2.3.0,<3.0.0"
+typing-extensions = "*"
+watchdog = {version = ">=3.0.0,<4.0.0", markers = "python_version >= \"3.8\" and python_version < \"3.12\""}
+
+[package.extras]
+qt5 = ["pyside2 (>=5.15,<6.0)"]
+qt6 = ["pyside6 (>=6.4.3,<6.5.0)", "pyside6 (>=6.6.1,<7.0.0)"]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "qtpy"
+version = "2.4.1"
+description = "Provides an abstraction layer on top of the various Qt bindings (PyQt5/6 and PySide2/6)."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "QtPy-2.4.1-py3-none-any.whl", hash = "sha256:1c1d8c4fa2c884ae742b069151b0abe15b3f70491f3972698c683b8e38de839b"},
+    {file = "QtPy-2.4.1.tar.gz", hash = "sha256:a5a15ffd519550a1361bdc56ffc07fda56a6af7292f17c7b395d4083af632987"},
+]
+
+[package.dependencies]
+packaging = "*"
+
+[package.extras]
+test = ["pytest (>=6,!=7.0.0,!=7.0.1)", "pytest-cov (>=3.0.0)", "pytest-qt"]
 
 [package.source]
 type = "legacy"
@@ -3478,6 +3593,24 @@ python-versions = ">=3.7"
 files = [
     {file = "shellingham-1.5.4-py2.py3-none-any.whl", hash = "sha256:7ecfff8f2fd72616f7481040475a65b2bf8af90a56c89140852d1120324e8686"},
     {file = "shellingham-1.5.4.tar.gz", hash = "sha256:8dbca0739d487e5bd35ab3ca4b36e11c4078f3a234bfce294b0a0291363404de"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "shiboken6"
+version = "6.7.0"
+description = "Python/C++ bindings helper module"
+optional = false
+python-versions = "<3.13,>=3.9"
+files = [
+    {file = "shiboken6-6.7.0-cp39-abi3-macosx_11_0_universal2.whl", hash = "sha256:32c53afea91a3c9f85b1908e50a1f96974e4d78bc63ee8dafa346fc0707a9786"},
+    {file = "shiboken6-6.7.0-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:7887ba7ecfddb09ee9966325c1e229a17f3f444b0257b77cb7838792287d3e05"},
+    {file = "shiboken6-6.7.0-cp39-abi3-manylinux_2_31_aarch64.whl", hash = "sha256:5ac384f4f4c0bc5bdd7e6b9b1d36798c063107943a122ea6d123947321bcf315"},
+    {file = "shiboken6-6.7.0-cp39-abi3-win_amd64.whl", hash = "sha256:1a65d4c046454ee78a2ce4d6c7268846a3bdff31f59d88638b9383f62938f4b8"},
 ]
 
 [package.source]
@@ -4331,4 +4464,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "2fde77e3a44ce0af021d2f37b5d1d4f16244d09d214f0db20bc22df4e0f608a2"
+content-hash = "df9578cd2dbd55de5a9d82dfcbc49117f07472ef264597c4d88cd41cac4b84f8"

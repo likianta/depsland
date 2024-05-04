@@ -1,18 +1,30 @@
 if __name__ == '__main__':
     __package__ = 'depsland.webui'
 
+from time import sleep
+
 import streamlit as st
+from lk_utils import Signal
+# from lk_utils import run_new_thread
 from streamlit_extras.bottom_container import bottom as st_bottom_bar
 from streamlit_extras.row import row as st_row
 
 from . import installed_apps
 from . import settings
+from ..api.user_api.install import install_by_appid
+from ..api.user_api.install import progress
 
 
 def get_session() -> dict:
     if __name__ not in st.session_state:
         st.session_state[__name__] = {
-            'last_command': '',
+            'last_command'  : '',
+            # progress indicator
+            'portion_offset': 0.0,
+            'portion_weight': 0.0,
+            'progress'      : 0.0,
+            'stage'         : 0,
+            'total_count'   : 0,
         }
     return st.session_state[__name__]
 
@@ -37,17 +49,27 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         default_appid,
         placeholder='e.g. "hello_world"'
     )
-    row = st_row((7, 3), vertical_align='center')
-    if appid and (_run_at_once or row.button('Install', type='primary')):
-        with row.container():
+    
+    row0 = st_row((5, 5), vertical_align='center')
+    row1 = st.container()
+    
+    if appid and (_run_at_once or row0.button('Install', type='primary')):
+        with row1:
+            prog_ui = st.progress(0.0, f'Installing "{appid}"')
+            
+            @_prog_ctrl.updated
+            def _(prog: float, msg: str) -> None:
+                prog_ui.progress(prog, msg)
+        
+        with row0.container():
             with st.spinner(f'Installing "{appid}"...'):
-                # from time import sleep  # TEST
-                # sleep(3)
-                from ..api.user_api import install_by_appid
                 install_by_appid(appid)
+                # _test_install()  # TEST
+                prog_ui.progress(1.0, 'Installation done')
+                # run_new_thread(_prog_ctrl.reset, args=(3,))
 
 
-def command_panel() -> None:
+def command_panel() -> None:  # the bottom bar
     with st_bottom_bar():
         with st.expander('Command panel', False):
             session = get_session()
@@ -61,14 +83,83 @@ def command_panel() -> None:
                 code = st.text_area(
                     'Command here',
                     value=value,
-                    placeholder=
-                    session['last_command'] or
-                    'The command will be executed in the background.',
+                    placeholder=(
+                        session['last_command'] or
+                        'The command will be executed in the background.'
+                    ),
                 )
                 if code:
                     exec(code, globals())
                     session['last_command'] = code
 
+
+def _test_install() -> None:
+    from random import randint
+    _prog_ctrl.reset()
+    _prog_ctrl.session.update({
+        'portion_weight': 1.0,
+        'total_count'   : 10,
+    })
+    for i in range(10):
+        _prog_ctrl.update_progress(i + 1, f'Test installing item {i}')
+        sleep(randint(1, 5) / 10)  # 100ms ~ 500ms
+
+
+class ProgressControl:
+    
+    def __init__(self) -> None:
+        self.updated = Signal(float, str)
+        progress.step_updated.bind(self._change_stage)
+        progress.prog_updated.bind(self.update_progress)
+    
+    @property
+    def session(self) -> dict:
+        return get_session()
+    
+    def reset(self, delay: int = 0) -> None:
+        if delay: sleep(delay)
+        self.session.update({
+            'portion_offset': 0.0,
+            'portion_weight': 0.0,
+            'progress'      : 0.0,
+            'stage'         : 0,
+            'total_count'   : 0,
+        })
+        self.updated.emit(0.0, 'Progress reset')
+    
+    def update_progress(self, counter: int, target: str) -> None:
+        session = self.session
+        session['progress'] = (
+            session['portion_offset'] +
+            session['portion_weight'] * (counter / session['total_count'])
+        )
+        self.updated.emit(session['progress'], f'Updating {target}')
+    
+    def _change_stage(self, title: str, total_count: int) -> None:
+        session = self.session
+        session['stage'] += 1
+        if session['stage'] == 1:
+            session.update({
+                'portion_offset': 0.0,
+                'portion_weight': 0.4,
+                'progress'      : 0.0,
+                'total_count'   : total_count,
+            })
+        elif session['stage'] == 2:
+            session.update({
+                'portion_offset': 0.4,
+                'portion_weight': 0.6,
+                'progress'      : 0.0,
+                'total_count'   : total_count,
+            })
+        else:
+            raise Exception
+        self.updated.emit(
+            session['portion_weight'], f'Stage "{title}" completed'
+        )
+
+
+_prog_ctrl = ProgressControl()
 
 if __name__ == '__main__':
     # strun 3001 depsland/webui/app_st.py

@@ -1,3 +1,0 @@
-lk-utils
-pyside6
-qmlease

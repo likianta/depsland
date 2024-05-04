@@ -3,6 +3,7 @@ import typing as t
 # from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
 
+from lk_utils import Signal
 from lk_utils import dumps
 from lk_utils import fs
 from lk_utils import loads
@@ -30,6 +31,19 @@ class T(T0):
     LauncherInfo = T0.Launcher  # alias
     Oss = T1.Oss
     Path = str
+    
+
+class _Progress:
+    step_updated = Signal(str, int)  # Signal[title, total_count]
+    prog_updated = Signal(int, str)
+    #   Signal[current_count, filename]
+    #       current_count: 1-based
+    # step_updated = Signal(str)  # Signal[title]
+    # prog_updated = Signal(float, str)
+    # #   Signal[progress_0.0_to_1.0, description]
+
+
+progress = _Progress()
 
 
 def install_by_appid(
@@ -208,8 +222,6 @@ def _install_files(
     _root00 = fs.parent(root0)
     _root10 = fs.parent(root1)
     
-    diff = diff_manifest(manifest_new, manifest_old)
-    
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.
         assert not o.startswith(i + '/')
@@ -225,7 +237,15 @@ def _install_files(
         oss.download(i, m)
         ziptool.extract_file(m, o, overwrite=True)
     
-    for action, relpath, (info0, info1) in diff['assets']:
+    total_diff = diff_manifest(manifest_new, manifest_old)
+    assets_diff = tuple(total_diff['assets'])
+    progress.step_updated.emit('Downloading files', len(assets_diff))
+    curr_cnt = 0  # 1-based
+    
+    for action, relpath, (info0, info1) in assets_diff:
+        curr_cnt += 1
+        progress.prog_updated.emit(curr_cnt, '{} ({})'.format(relpath, action))
+        
         if action == 'ignore':
             path0 = fs.normpath(f'{root0}/{relpath}')
             path1 = fs.normpath(f'{root1}/{relpath}')
@@ -254,6 +274,10 @@ def _install_packages(
     manifest_old: T.Manifest,
 ) -> None:
     total_diff = diff_manifest(manifest_new, manifest_old)
+    deps_diff = tuple(total_diff['dependencies'])
+    progress.step_updated.emit('Installing packages', len(deps_diff))
+    
+    curr_cnt = 0
     package_ids = set()
     tasks_ignitor = []  # list[T.PackageInfo]
     
@@ -263,7 +287,13 @@ def _install_packages(
     pkg_id: T.PackageId
     pkg_name: T.PackageName
     
-    for action, pkg_name, (info0, info1) in total_diff['dependencies']:
+    for action, pkg_name, (info0, info1) in deps_diff:
+        curr_cnt += 1
+        # prog.prog_updated.emit(curr_cnt, '{} ({})'.format(
+        #     pkg_name if action == 'delete' else info1['id'], action
+        # ))
+        progress.prog_updated.emit(curr_cnt, '{} ({})'.format(pkg_name, action))
+        
         if action == 'delete':  # this is handled by oss util.
             continue
         pkg_id = info1['id']
