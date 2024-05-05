@@ -31,8 +31,20 @@ def get_session() -> dict:
 
 
 def main() -> None:
-    if st.button('Refresh app states/list'):
-        st.rerun()
+    cols = st.columns(2)
+    with cols[0]:
+        if st.button(
+            'Refresh app list',
+            use_container_width=True,
+            help='''
+                Refresh app list. If you find some apps are closed by external
+                operations, but the in-app button state still shows "stop",
+                this function may also help.
+            '''
+        ):
+            st.rerun()
+    with cols[1]:
+        st.empty()
     
     def check_if_running(app_name: str) -> bool:
         if app_name in session['processes']:
@@ -43,8 +55,8 @@ def main() -> None:
                 session['processes'].pop(app_name)
         return False
     
-    session = get_session()
     cols = st.columns(2)
+    session = get_session()
     colx = -1  # column index
     for app_name, vers in list_installed_apps():
         colx += 1

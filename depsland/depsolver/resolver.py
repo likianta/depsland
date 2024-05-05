@@ -45,7 +45,7 @@ def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
     out = {}
     
     if isinstance(deps0, str):
-        pass
+        raise NotImplementedError
     
     elif isinstance(deps0, list):
         raw_requirements = '\n'.join(deps0)
@@ -54,7 +54,7 @@ def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
         lock_file = f'{paths.pypi.snapdep}/{hash}.lock'
         if not fs.exists(lock_file):
             print('the first time building dependencies tree, '
-                  'this may take a while', ':t2v3s')
+                  'this may take a while...', ':t2v3s')
             dir_m = utils.make_temp_dir()
             fs.dump(raw_requirements, f'{dir_m}/requirements.txt')
             json_data = run_cmd_args(
@@ -83,6 +83,6 @@ def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
             }
     
     elif isinstance(deps0, dict):
-        pass
+        raise NotImplementedError
     
     return out

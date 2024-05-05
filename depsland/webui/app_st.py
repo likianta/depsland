@@ -7,7 +7,6 @@ import streamlit as st
 from lk_utils import Signal
 # from lk_utils import run_new_thread
 from streamlit_extras.bottom_container import bottom as st_bottom_bar
-from streamlit_extras.row import row as st_row
 
 from . import installed_apps
 from . import settings
@@ -49,10 +48,16 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         placeholder='e.g. "hello_world"'
     )
     
-    row0 = st_row((5, 5), vertical_align='center')
+    row0 = st.columns(2)
     row1 = st.container()
     
-    if appid and (_run_at_once or row0.button('Install', type='primary')):
+    # with row0[0]:
+    #     do_install = st.button(
+    #         'Install', type='primary', use_container_width=True)
+    
+    if appid and (_run_at_once or row0[0].button(
+        'Install', type='primary', use_container_width=True
+    )):
         with row1:
             _prog_ctrl.reset()
             prog_ui = st.progress(0.0, f'Installing "{appid}"')
@@ -61,7 +66,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
             def _(prog: float, msg: str) -> None:
                 prog_ui.progress(prog, msg)
         
-        with row0.container():
+        with row0[1]:
             with st.spinner(f'Installing "{appid}"...'):
                 install_by_appid(appid)
                 # _test_install_progress()  # TEST

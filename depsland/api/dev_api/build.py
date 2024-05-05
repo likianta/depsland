@@ -18,6 +18,7 @@ def build(manifest_file: str) -> None:
     )
     fs.make_dirs(dir_o)
     
+    # FIXME
     create_launcher(manifest, dir_o=dir_o)
     
     print(
