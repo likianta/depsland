@@ -1551,12 +1551,12 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "5.6.5b3"
-description = "Python advanced print with varnames."
+version = "5.7.0a0"
+description = "Python print with source and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-5.6.5b3-py3-none-any.whl", hash = "sha256:4ef6a45140dd50ac49330deba4dc0c3cd69dd9d6b3cf9c0444e996bc10b0b6b6"},
+    {file = "lk_logger-5.7.0a0-py3-none-any.whl", hash = "sha256:e7cd97566fbcabd70f62ed202e0ba2684209cd5343bd49d397e5e7473e79553e"},
 ]
 
 [package.dependencies]
@@ -4464,4 +4464,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "e079ddfc89caeeefece81bf86d6517bab570db579dc9d2c914b766c1495efd36"
+content-hash = "73c61b9ac516fc01345b3c651b6b0897085596a3a5c17ac0168e1b3fa6514a35"

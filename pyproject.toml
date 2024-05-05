@@ -14,7 +14,7 @@ conflore = "^0.2.0"
 # dash = "*"
 # dash-antd = "*"
 # lk-logger = "^5.6.4"
-lk-logger = { version = "^5.6.5b3", source = "likianta-host" }
+lk-logger = { version = "^5.7.0a0", source = "likianta-host" }
 # lk-utils = "^2.9.5"
 lk-utils = { version = "^2.10.0a5", source = "likianta-host" }
 # micropipenv = "^1.6.0"
