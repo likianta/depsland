@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0b14"
+version = "0.7.0b15"
 description = ""
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -35,7 +35,7 @@ rich = "^13.7.0"
 semver = "^3.0.2"
 streamlit = { version = "^1.33.0", python = "!=3.9.7" }
 streamlit-extras = "*"
-streamlit-scrollable-textbox = "*"
+# streamlit-scrollable-textbox = "*"
 toga = [
     { version = "^0.4.0", platform = "darwin", python = ">=3.8,<3.13" },
     { version = "^0.4.0", platform = "win32", python = ">=3.8,<3.13" },

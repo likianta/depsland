@@ -32,5 +32,5 @@ from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pypi
 
-__version__ = '0.7.0b15'
+__version__ = '0.7.0b17'
 __date__ = '2024-05-05'
