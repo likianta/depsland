@@ -1,14 +1,9 @@
 import typing as t
-from threading import Thread
 from time import sleep
 
 import psutil
 import streamlit as st
 from lk_utils import fs
-from streamlit.runtime.scriptrunner import RerunData
-from streamlit.runtime.scriptrunner import RerunException
-from streamlit.runtime.scriptrunner import add_script_run_ctx
-from streamlit.runtime.scriptrunner import get_script_run_ctx
 from streamlit_extras.row import row as st_row
 
 from ..api.user_api import run_app
@@ -22,25 +17,32 @@ def get_session() -> dict:
             'processes': {},  # {appid: pid, ...}
         }
         
-        thread = Thread(
-            target=_poll_processes_states,
-            args=(st.session_state[__name__]['processes'],),
-            daemon=True
-        )
-        # FIXME: `add_script_run_ctx` resolves error of accessing -
-        #   `st.session_state` in subthread. but cannot reflect `st.rerun` -
-        #   request to the main thread.
-        #   https://discuss.streamlit.io/t/changing-session-state-not-
-        #   reflecting-in-active-python-thread/37683/2
-        #   it seems that there is NO WAY could change main thread's ui states -
-        #   from subthread...
-        add_script_run_ctx(thread)
-        thread.start()
+        # thread = Thread(
+        #     target=_poll_app_states,
+        #     args=(st.session_state[__name__]['processes'],),
+        #     daemon=True
+        # )
+        # # `add_script_run_ctx` resolves error of accessing `st.session_state` -
+        # # in subthread.
+        # # add_script_run_ctx(thread)
+        # thread.start()
     
     return st.session_state[__name__]
 
 
 def main() -> None:
+    if st.button('Refresh app states/list'):
+        st.rerun()
+    
+    def check_if_running(app_name: str) -> bool:
+        if app_name in session['processes']:
+            pid = session['processes'][app_name]
+            if psutil.pid_exists(pid):
+                return True
+            else:
+                session['processes'].pop(app_name)
+        return False
+    
     session = get_session()
     cols = st.columns(2)
     colx = -1  # column index
@@ -48,7 +50,7 @@ def main() -> None:
         colx += 1
         with cols[colx % 2]:
             with st.container(border=True):
-                is_running = app_name in session['processes']
+                is_running = check_if_running(app_name)
                 st.write(':blue[**{}**] {}'.format(
                     app_name, '(running)' if is_running else ''
                 ))
@@ -99,9 +101,22 @@ def list_installed_apps() -> t.Iterator[t.Tuple[str, t.List[str]]]:
             yield d.name, history
 
 
-def _poll_processes_states(processes: dict) -> None:
+def _poll_app_states(processes: dict) -> None:
+    """
+    FIXME or DELETE: 
+        this function is not recommended to use. since it cannot reflect -
+        `st.rerun` request to the main thread. it means that the frontend ui - 
+        won't refresh although the thread has called `st.rerun`.
+        related issues:
+            https://discuss.streamlit.io/t/changing-session-state-not-
+            reflecting-in-active-python-thread/37683/2
+            https://discuss.streamlit.io/t/callback-hook-on-a-state-change/29529
+        it seems that there is NO WAY could change main thread's ui states -
+        from subthread...
+    we made an alternative that shows a button for user to manually refresh -
+    app states, see `main : st.button('Refresh app list')`.
+    """
     print('start polling', ':dv')
-    # session = get_session()
     temp = 0
     while True:
         temp += 1
@@ -113,21 +128,18 @@ def _poll_processes_states(processes: dict) -> None:
                     processes.pop(app_name)
                     dirty = True
             if dirty:
-                # st.rerun()
+                st.rerun()
                 # raise Exception('rerun required')
-                ctx = get_script_run_ctx()
-                # ctx.script_requests.request_rerun(
+                # if st.button('Refresh apps states'):
+                #     st.rerun()
+                # ctx = get_script_run_ctx()
+                # main_context.script_requests.request_rerun(
                 #     RerunData(
-                #         query_string=ctx.query_string,
-                #         page_script_hash=ctx.page_script_hash,
+                #         query_string=main_context.query_string,
+                #         page_script_hash=main_context.page_script_hash,
                 #     )
                 # )
-                raise RerunException(
-                    RerunData(
-                        query_string=ctx.query_string,
-                        page_script_hash=ctx.page_script_hash,
-                    )
-                )
+                # st.empty()
         print(f'am i alive ({temp})?', ':v')
         sleep(1)
 
