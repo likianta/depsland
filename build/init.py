@@ -5,11 +5,10 @@ import os
 import sys
 
 from argsense import cli
-from lk_utils import dumps
+from lk_utils import fs
 from lk_utils import run_cmd_args
-from lk_utils import xpath
 
-os.chdir(xpath('..'))
+os.chdir(fs.xpath('..'))
 if not os.getenv('DEPSLAND_PYPI_ROOT'):
     os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
 
@@ -106,21 +105,58 @@ def init_pypi_blank() -> None:
     # fs.make_dir('chore/pypi_blank/index')
     # fs.make_dir('chore/pypi_blank/index/snapdep')
     # fs.make_dir('chore/pypi_blank/installed')
-    dumps({}, f'chore/pypi_blank/index/id_2_paths.json')
-    dumps({}, f'chore/pypi_blank/index/name_2_vers.json')
+    fs.dump({}, f'chore/pypi_blank/index/id_2_paths.json')
+    fs.dump({}, f'chore/pypi_blank/index/name_2_vers.json')
 
 
 @cli.cmd()
-def make_site_packages(target_dir: str = 'chore/site_packages') -> None:
-    run_cmd_args(
-        paths.python.python, '-m', 'pip', 'install',
-        '-r', 'requirements.lock',
-        '-t', target_dir,
-        '--find-links', 'chore/pypi_self/downloads',
-        '--no-deps', '--no-index',
-        '--no-warn-script-location', '--disable-pip-version-check',
-        verbose=True
-    )
+def make_site_packages(
+    target_dir: str = 'chore/site_packages',
+    remove_exists: bool = False
+) -> None:
+    # run_cmd_args(
+    #     paths.python.python, '-m', 'pip', 'install',
+    #     '-r', 'requirements.lock',
+    #     '-t', target_dir,
+    #     '--find-links', 'chore/pypi_self/downloads',
+    #     '--no-deps', '--no-index',
+    #     '--no-warn-script-location', '--disable-pip-version-check',
+    #     verbose=True
+    # )
+    
+    import re
+    from depsland import pypi
+    from depsland.normalization import normalize_name
+    from depsland.normalization import split_filename_of_package
+    
+    if remove_exists and fs.exists(target_dir):
+        fs.remove_tree(target_dir)
+    if not fs.exists(target_dir):
+        fs.make_dir(target_dir)
+        fs.copy_file('chore/.gitkeep', f'{target_dir}/.gitkeep')
+    
+    downloaded_packages = set()
+    for f in fs.find_files('chore/pypi_self/downloads'):
+        name, ver = split_filename_of_package(f.name)
+        downloaded_packages.add(f'{name}-{ver}')
+    
+    valid_packages = []
+    pattern = re.compile(r'([-\w]+)(?:\[.*?])?==([^ ]+)')
+    for i, line in enumerate(fs.load('requirements.lock').splitlines(), 1):
+        print(i, line, ':v')
+        if not line or line.startswith(('#', '--')):
+            continue
+        if '@' in line:
+            name, ver, _ = line.rsplit('/', 1)[1].split('-', 2)
+        else:
+            name, ver = pattern.search(line).groups()
+        name = normalize_name(name)
+        if (x := f'{name}-{ver}') in downloaded_packages:
+            valid_packages.append(x)
+        else:
+            print(f'drop line {i}', line)
+    
+    pypi.linking(valid_packages, target_dir)
 
 
 if __name__ == '__main__':
@@ -129,4 +165,5 @@ if __name__ == '__main__':
     # pox build/init.py rebuild-pypi-index
     # pox build/init.py rebuild-pypi-index :false
     # pox build/init.py make-site-packages
+    # pox build/init.py make-site-packages --remove-exists
     cli.run()
