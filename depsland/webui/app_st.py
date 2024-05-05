@@ -44,9 +44,11 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         
         with row0[1]:
             with st.spinner(f'Installing "{appid}"...'):
-                with parallel_printing(bottom_bar.get_logger()):
-                    # progress_bar.play_demo()  # TEST
-                    install_by_appid(appid)
+                logger = bottom_bar.get_logger()
+                logger.clear()
+                with parallel_printing(logger):
+                    progress_bar.play_demo()  # TEST
+                    # install_by_appid(appid)
                     prog_callback()
 
 

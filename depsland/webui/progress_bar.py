@@ -34,7 +34,7 @@ def make_progress_bar() -> t.Callable[[], None]:
 
 
 def play_demo() -> None:
-    callback = make_progress_bar()
+    # callback = make_progress_bar()
     
     _prog_ctrl.reset()
     _prog_ctrl.session.update({
@@ -42,10 +42,11 @@ def play_demo() -> None:
         'total_count'   : 10,
     })
     for i in range(10):
+        print(f'Updating item {i}')
         _prog_ctrl.update_progress(i + 1, target=f'item {i}')
         sleep(randint(1, 5) / 10)  # 100ms ~ 500ms
     
-    callback()
+    # callback()
 
 
 class ProgressControl:

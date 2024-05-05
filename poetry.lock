@@ -3904,6 +3904,25 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "streamlit-scrollable-textbox"
+version = "0.0.3"
+description = "Scrollable textbox for Streamlit."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "streamlit_scrollable_textbox-0.0.3-py3-none-any.whl", hash = "sha256:e48d57f5477491b58afde2cd6a81d6c98bdb8063570fc2467958ae286d883b5c"},
+    {file = "streamlit_scrollable_textbox-0.0.3.tar.gz", hash = "sha256:f32c22fb28a16caa4f952f4ce6bc8ab8dc79c5adf36b188ac8938bc458905fbc"},
+]
+
+[package.dependencies]
+streamlit = ">=0.63"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "streamlit-toggle-switch"
 version = "1.0.2"
 description = "Creates a customizable toggle"
@@ -4464,4 +4483,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "73c61b9ac516fc01345b3c651b6b0897085596a3a5c17ac0168e1b3fa6514a35"
+content-hash = "30e0208b4c6d68e71b32a5e7d2c219d115665b8c22774b5c806ebe9da8dfa30c"
