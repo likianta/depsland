@@ -77,7 +77,6 @@ class ProgressControl:
             session['portion_weight'] * (counter / session['total_count'])
         )
         self.updated.emit(session['progress'], f'Updating {target}')
-        # sleep(0.5)  # TEST: slow down the motion to see the progress bar
     
     def _change_stage(self, stage: str, total_count: int) -> None:
         session = self.session
@@ -100,7 +99,6 @@ class ProgressControl:
         self.updated.emit(
             session['portion_offset'], f'Stage "{stage}" get started'
         )
-        # sleep(3)  # TEST: slow down the motion to see the progress bar
 
 
 _prog_ctrl = ProgressControl()

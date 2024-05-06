@@ -276,9 +276,9 @@ def _install_packages(
 ) -> None:
     total_diff = diff_manifest(manifest_new, manifest_old)
     deps_diff = tuple(total_diff['dependencies'])
-    progress.step_updated.emit('dependencies', len(deps_diff))
+    # progress.step_updated.emit('dependencies', len(deps_diff))
     
-    curr_cnt = 0
+    # curr_cnt = 0
     package_ids = set()
     tasks_ignitor = []  # list[T.PackageInfo]
     
@@ -289,11 +289,8 @@ def _install_packages(
     pkg_name: T.PackageName
     
     for action, pkg_name, (info0, info1) in deps_diff:
-        curr_cnt += 1
-        # prog.prog_updated.emit(curr_cnt, '{} ({})'.format(
-        #     pkg_name if action == 'delete' else info1['id'], action
-        # ))
-        progress.prog_updated.emit(curr_cnt, pkg_name)
+        # curr_cnt += 1
+        # progress.prog_updated.emit(curr_cnt, pkg_name)
         
         if action == 'delete':  # this is handled by oss util.
             continue
@@ -305,6 +302,7 @@ def _install_packages(
     has_new_packages = bool(tasks_ignitor)
     if tasks_ignitor:
         print(len(tasks_ignitor))
+        progress.step_updated.emit('dependencies', len(tasks_ignitor))
         
         def download_and_install(info: T.PackageInfo) -> None:
             if info['id'] in pypi.index.id_2_paths:
@@ -317,7 +315,8 @@ def _install_packages(
             )
             pypi.install_one(info['id'], dl_path)
         
-        for info in tasks_ignitor:
+        for i, info in enumerate(tasks_ignitor, 1):
+            progress.prog_updated.emit(i, info['id'])
             download_and_install(info)
         
         # FIXME: thread_pool makes pip install stucked, and ctrl+c cannot -
