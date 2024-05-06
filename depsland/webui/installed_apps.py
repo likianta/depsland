@@ -10,7 +10,7 @@ from ..api.user_api import run_app
 from ..paths import apps as app_paths
 
 
-def get_session() -> dict:
+def _get_session() -> dict:
     if __name__ not in st.session_state:
         st.session_state[__name__] = {
             # 'installed_apps': {},
@@ -30,21 +30,16 @@ def get_session() -> dict:
     return st.session_state[__name__]
 
 
-def main() -> None:
-    cols = st.columns(2)
-    with cols[0]:
-        if st.button(
-            'Refresh app list',
-            use_container_width=True,
-            help='''
-                Refresh app list. If you find some apps are closed by external
-                operations, but the in-app button state still shows "stop",
-                this function may also help.
-            '''
-        ):
-            st.rerun()
-    with cols[1]:
-        st.empty()
+def main(_reusable_placeholder: st.empty = None) -> None:
+    if _reusable_placeholder:
+        with _reusable_placeholder:
+            temp_container = st.container()
+    else:
+        cols = st.columns(2)
+        with cols[0]:
+            temp_container = st.container()
+        with cols[1]:
+            st.empty()
     
     def check_if_running(app_name: str) -> bool:
         if app_name in session['processes']:
@@ -56,7 +51,7 @@ def main() -> None:
         return False
     
     cols = st.columns(2)
-    session = get_session()
+    session = _get_session()
     colx = -1  # column index
     for app_name, vers in list_installed_apps():
         colx += 1
@@ -102,6 +97,18 @@ def main() -> None:
                             key=f'{app_name}:add_to_desktop',
                             use_container_width=True,
                         )
+    if colx >= 0:
+        with temp_container:
+            if st.button(
+                'Refresh app list',
+                use_container_width=True,
+                help='''
+                    Refresh app list. If you find some apps are closed by
+                    external operations, but the in-app button state still
+                    shows "stop", this function may also help.
+                '''
+            ):
+                st.rerun()
 
 
 def list_installed_apps() -> t.Iterator[t.Tuple[str, t.List[str]]]:

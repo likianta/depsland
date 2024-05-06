@@ -11,12 +11,20 @@ from . import settings
 from ..api.user_api.install import install_by_appid
 
 
+def _get_session() -> dict:
+    if __name__ not in st.session_state:
+        st.session_state[__name__] = {
+            'placeholder': None,
+        }
+    return st.session_state[__name__]
+
+
 def main(default_appid: str = '', _run_at_once: bool = False) -> None:
     st.title('Depsland Appinstall')
     tabs = st.tabs(('Search & Install', 'Settings'))
     with tabs[0]:
         search_bar(default_appid, _run_at_once)
-        installed_apps.main()
+        installed_apps.main(_get_session()['placeholder'])
         bottom_bar.main()
     with tabs[1]:
         settings.main()
@@ -29,20 +37,20 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         placeholder='e.g. "hello_world"'
     )
     
-    row0 = st.columns(2)
-    row1 = st.container()
+    cols = st.columns(2)  # main button and a placeholder
+    prog_bar_container = st.container()  # progress bar
+    with cols[0]:
+        do_install = st.button(
+            'Install', type='primary', disabled=appid == '',
+            use_container_width=True
+        )
+    with cols[1]:
+        placeholder = _get_session()['placeholder'] = st.empty()
     
-    # with row0[0]:
-    #     do_install = st.button(
-    #         'Install', type='primary', use_container_width=True)
-    
-    if appid and (_run_at_once or row0[0].button(
-        'Install', type='primary', use_container_width=True
-    )):
-        with row1:
+    if appid and (_run_at_once or do_install):
+        with prog_bar_container:
             prog_callback = progress_bar.make_progress_bar()
-        
-        with row0[1]:
+        with placeholder:
             with st.spinner(f'Installing "{appid}"...'):
                 logger = bottom_bar.get_logger()
                 logger.clear()
