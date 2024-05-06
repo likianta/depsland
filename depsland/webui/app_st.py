@@ -47,8 +47,8 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
                 logger = bottom_bar.get_logger()
                 logger.clear()
                 with parallel_printing(logger):
-                    progress_bar.play_demo()  # TEST
-                    # install_by_appid(appid)
+                    # progress_bar.play_demo()  # TEST
+                    install_by_appid(appid)
                     prog_callback()
 
 

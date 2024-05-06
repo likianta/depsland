@@ -59,20 +59,21 @@ def backup_project_resources() -> None:
                      f'{dir_m}/build/.assets')
         fs.copy_tree(f'{dir_i}/build/exe',
                      f'{dir_m}/build/exe')
-        fs.copy_tree(f'{dir_i}/build/setup_wizard',
-                     f'{dir_m}/build/setup_wizard')
+        fs.copy_tree(f'{dir_i}/build/icon',
+                     f'{dir_m}/build/icon')
+        # fs.copy_tree(f'{dir_i}/build/setup_wizard',  # DELETE
+        #              f'{dir_m}/build/setup_wizard')
         
         fs.copy_file(f'{dir_i}/build/build.py',
                      f'{dir_m}/build/build.py')
         fs.copy_file(f'{dir_i}/build/init.py',
                      f'{dir_m}/build/init.py')
-        # DELETE: about to remove
-        fs.copy_file(f'{dir_i}/build/depsland_setup.py',
-                     f'{dir_m}/build/depsland_setup.py')
-        fs.copy_file(f'{dir_i}/build/readme.zh.md',
-                     f'{dir_m}/build/readme.zh.md')
-        fs.copy_file(f'{dir_i}/build/self_build.py',
-                     f'{dir_m}/build/self_build.py')
+        # fs.copy_file(f'{dir_i}/build/depsland_setup.py',  # DELETE
+        #              f'{dir_m}/build/depsland_setup.py')
+        # fs.copy_file(f'{dir_i}/build/readme.zh.md',
+        #              f'{dir_m}/build/readme.zh.md')
+        # fs.copy_file(f'{dir_i}/build/self_build.py',
+        #              f'{dir_m}/build/self_build.py')
         compress_dir(f'{dir_m}/build',
                      f'{dir_o}/build.zip', True)
     
@@ -125,7 +126,7 @@ def full_build(
         assert exists(os.getenv('DEPSLAND_CONFIG_ROOT'))
     
     root_i = paths.project.root
-    root_o = '{dist}/depsland-setup-{version}'.format(
+    root_o = '{dist}/depsland-{version}-windows'.format(
         dist=paths.project.dist, version=__version__
     )
     assert not exists(root_o)
@@ -138,7 +139,6 @@ def full_build(
     os.mkdir(f'{root_o}/apps/.bin')
     os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
-    # os.mkdir(f'{root_o}/build/exe')
     os.mkdir(f'{root_o}/chore')
     os.mkdir(f'{root_o}/config')
     # os.mkdir(f'{root_o}/depsland')
@@ -172,6 +172,10 @@ def full_build(
     fs.copy_file(
         f'{root_i}/build/exe/depsland-gui-debug.exe',
         f'{root_o}/Depsland (Debug).exe',
+    )
+    fs.make_link(
+        f'{root_i}/build/icon',
+        f'{root_o}/build/icon',
     )
     # fs.copy_tree(
     #     f'{root_i}/build/setup_wizard',
@@ -276,12 +280,13 @@ def compress_to_zip():
 
 
 if __name__ == '__main__':
-    # pox build/build.py backup-project-resources
-    # pox build/build.py full-build aliyun
-    #   before running this command, you need to set environment variable -
-    #   'DEPSLAND_CONFIG_ROOT' to the path to your custom config folder.
     # pox build/build.py bat-2-exe build/exe/depsland-cli.bat
     # pox build/build.py bat-2-exe build/exe/depsland-gui.bat -C -u
     # pox build/build.py bat-2-exe build/exe/depsland-gui-debug.bat -u
-    # pox build/build.py bat-2-exe build/exe/setup.bat -u
+    
+    # pox build/build.py backup-project-resources
+    
+    # pox build/build.py full-build aliyun
+    #   before running this command, you need to set environment variable -
+    #   'DEPSLAND_CONFIG_ROOT' to the path to your custom config folder.
     cli.run()
