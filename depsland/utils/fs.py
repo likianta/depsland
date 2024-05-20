@@ -6,8 +6,6 @@ from uuid import uuid1
 
 from lk_utils import fs
 
-from .. import paths
-
 if __name__ == '__main__':  # unreachable. just for typing
     from ..manifest.manifest import Manifest
 else:
@@ -70,12 +68,16 @@ def init_target_tree(manifest: Manifest, root_dir: str = None) -> None:
 class _TempDirs:
     
     def __init__(self) -> None:
-        self._root = paths.project.temp
+        # FIXME: cannot import `paths` here, because it may cause circular -
+        #   import error. (related: `..paths.Project._init_project_root`)
+        # from .. import paths
+        # self._root = paths.project.temp
         self._dirs = set()
         atexit.register(self.clean_up)
     
     def make_dir(self, root: str = None) -> str:
-        root = root or self._root
+        from .. import paths
+        root = root or paths.project.temp
         # assert os.path.exists(root)
         random_name = uuid1().hex
         temp_dir = f'{root}/{random_name}'
