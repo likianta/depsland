@@ -98,7 +98,7 @@ def backup_project_resources() -> None:
 
 @cli.cmd()
 def full_build(
-    oss_scheme: str, pypi_scheme: str = 'full', _add_python_path: bool = True
+    oss_scheme: str, pypi_scheme: str = 'full', _add_python_sdk: bool = True
 ) -> None:
     """
     generate `dist/depsland-setup-<version>` folder.
@@ -109,10 +109,10 @@ def full_build(
             'config/depsland_for_dev.yaml', which contains aliyun oss access -
             & secret keys.
     kwargs:
-        pypi_scheme (-p): 'full', 'least', 'blank'
+        pypi_scheme (-p): 'full', 'self', 'blank'
             full: link `<proj>/pypi` to `<dist>/pypi`.
                 this is used for local test.
-            least: link `<proj>/chore/pypi_self` to `<dist>/pypi`.
+            self: link `<proj>/chore/pypi_self` to `<dist>/pypi`.
                 this should be used only when you want to publish a version. -
                 be careful do not update any content of `<dist>/pypi`.
             blank: copy `<proj>/chore/pypi_blank` to `<dist>/pypi`.
@@ -181,11 +181,11 @@ def full_build(
     #     f'{root_i}/build/setup_wizard',
     #     f'{root_o}/build/setup_wizard',
     # )
+    # fs.copy_tree(
+    #     f'{root_i}/depsland',
+    #     f'{root_o}/depsland',
+    # )
     fs.make_link(
-        f'{root_i}/chore/site_packages',
-        f'{root_o}/chore/site_packages',
-    )
-    fs.copy_tree(
         f'{root_i}/depsland',
         f'{root_o}/depsland',
     )
@@ -221,14 +221,21 @@ def full_build(
     
     if pypi_scheme == 'full':
         fs.make_link(f'{root_i}/pypi', f'{root_o}/pypi')
-    elif pypi_scheme == 'least':
+    elif pypi_scheme == 'self':
         print(':v3s', 'do not edit "pypi" folder in the dist')
         fs.make_link(f'{root_i}/chore/pypi_self', f'{root_o}/pypi')
     else:  # 'blank'
         fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
     
-    if _add_python_path:
-        fs.make_link(f'{root_i}/python', f'{root_o}/python')
+    if _add_python_sdk:
+        fs.make_link(
+            f'{root_i}/chore/site_packages',
+            f'{root_o}/chore/site_packages',
+        )
+        fs.make_link(
+            f'{root_i}/python',
+            f'{root_o}/python',
+        )
     
     # -------------------------------------------------------------------------
     
@@ -287,6 +294,8 @@ if __name__ == '__main__':
     # pox build/build.py backup-project-resources
     
     # pox build/build.py full-build aliyun
+    # pox build/build.py full-build aliyun -p blank
     #   before running this command, you need to set environment variable -
     #   'DEPSLAND_CONFIG_ROOT' to the path to your custom config folder.
+    # pox build/build.py full-build aliyun -p blank --not-add-python-sdk
     cli.run()

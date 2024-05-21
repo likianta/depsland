@@ -163,7 +163,6 @@ if __name__ == '__main__':
     # pox build/init.py help-me-choose-python
     # pox build/init.py download-requirements
     # pox build/init.py rebuild-pypi-index
-    # pox build/init.py rebuild-pypi-index :false
     # pox build/init.py make-site-packages
     # pox build/init.py make-site-packages --remove-exists
     cli.run()
