@@ -52,6 +52,16 @@ class LocalPyPI:
                 no_dependency=True,
             )
         for path, _ in self._parse_pip_download_response(resp):
+            if pypi_paths.is_symlink:  # workaround
+                print(pkg_id, path, ':v')
+                if not path.lower().startswith(pypi_paths.downloads.lower()):
+                    print('fix downloaded path (redirect to symlink)',
+                          pkg_id, ':v3')
+                    assert path.lower().startswith(
+                        pypi_paths.real_root.lower() + '/downloads')
+                    path = '{}/{}'.format(
+                        pypi_paths.downloads, fs.basename(path))
+                    assert fs.exists(path), path
             if _auto_save_index:
                 self.index.add_to_index(path, 0)
             return path
@@ -153,41 +163,42 @@ class LocalPyPI:
         resp: str
     ) -> t.Iterator[t.Tuple[T.Path, bool]]:
         """
+        yields: ((abspath, is_newly_downloaded), ...)
+            abspath: normalized with regular slashes ('/').
+                warning:
+                    the letter case maybe varied in windows.
+                    if target directory is symlinked, the response will be -
+                    redirected to real source.
+            is_newly_downloaded: false means got from cache which is alraedy -
+            downloaded.
+        
         how do we extract the downloaded file path from the raw response?
             the raw response from `pip download` command. something like:
                 1.
                     Collecting lk-utils==2.6.0b9
                       Downloading <some_url> (16 kB)
-                    Saved <some_relpath_or_abspath_dir>/lk_utils-2.6.0b9-py3 \
-                    -none-any.whl
+                    Saved <some_relpath_or_abspath_dir>/lk_utils-2.6.0b9-py3-
+                    none-any.whl
                     Successfully downloaded lk-utils
                 2.
                     Collecting lk-utils==2.6.0b9
-                      File was already downloaded <abspath>/lk_utils-2.6.0-py3 \
-                      -none-any.whl
+                      File was already downloaded <abspath>/lk_utils-2.6.0-py3-
+                      none-any.whl
                     Successfully downloaded lk-utils
                 3.
                     Looking in indexes: https://pypi.tuna.tsinghua.edu.cn/simple
                     Collecting argsense
-                      Using cached https://pypi.tuna.tsinghua.edu.cn/packages \
-                      /5f/e4/e6eb339f09106a3fd0947cec58275bd5b00c78367db6acf39 \
+                      Using cached https://pypi.tuna.tsinghua.edu.cn/packages -
+                      /5f/e4/e6eb339f09106a3fd0947cec58275bd5b00c78367db6acf39 -
                       b49a7393fa0/argsense-0.5.2-py3-none-any.whl (26 kB)
-                    Saved <some_relpath_or_abspath_dir>/argsense-0.5.2-py3 \
+                    Saved <some_relpath_or_abspath_dir>/argsense-0.5.2-py3 -
                     -none-any.whl
                     Successfully downloaded argsense
                     [notice] A new release of pip is available: 23.2 -> 23.2.1
                     [notice] To update, run: pip install --upgrade pip
-            we can use regex to parse the line which starts with 'Saved ...' \
+            we can use regex to parse the line which starts with 'Saved ...' -
             or 'File was already downloaded ...'.
-        
-        note:
-            the yielt path's letter case may be un-uniform in windows.
         """
-        # for pattern in (
-        #     re.compile(r'File was already downloaded (.+)'),
-        #     re.compile(r'Saved (.+)')
-        # ):
-        #     yield from map(fs.abspath, pattern.findall(resp))
         for p in re.compile(r'File was already downloaded (.+)').findall(resp):
             yield fs.abspath(p), False
         for p in re.compile(r'Saved (.+)').findall(resp):

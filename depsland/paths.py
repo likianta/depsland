@@ -230,6 +230,11 @@ class PyPI:
             self.root = fs.abspath(x)
         else:
             self.root = f'{project.root}/pypi'
+        self.is_symlink = fs.islink(self.root)
+        self.real_root = (
+            fs.normpath(os.path.realpath(self.root))
+            if self.is_symlink else self.root
+        )
         
         self.cache = f'{self.root}/cache'
         self.downloads = f'{self.root}/downloads'
