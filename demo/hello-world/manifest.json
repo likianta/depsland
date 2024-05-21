@@ -1,7 +1,7 @@
 {
     "appid": "hello_world",
     "name": "Hello World",
-    "version": "0.4.11",
+    "version": "0.4.13",
     "assets": {
         "src": "all"
     },
