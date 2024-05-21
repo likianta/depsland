@@ -271,9 +271,12 @@ def _install_files(
 
 
 def _install_packages(
-    manifest_new: T.Manifest,
-    manifest_old: T.Manifest,
+    manifest_new: T.Manifest, manifest_old: T.Manifest,
 ) -> None:
+    if not manifest_new['dependencies']:
+        print('no dependency for this project')
+        return
+    
     total_diff = diff_manifest(manifest_new, manifest_old)
     deps_diff = tuple(total_diff['dependencies'])
     # progress.step_updated.emit('dependencies', len(deps_diff))
