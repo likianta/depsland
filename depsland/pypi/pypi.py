@@ -53,7 +53,7 @@ class LocalPyPI:
             )
         for path, _ in self._parse_pip_download_response(resp):
             if pypi_paths.is_symlink:  # workaround
-                print(pkg_id, path, ':v')
+                # print(pkg_id, path, ':v')
                 if not path.lower().startswith(pypi_paths.downloads.lower()):
                     print('fix downloaded path (redirect to symlink)',
                           pkg_id, ':v3')
@@ -78,11 +78,8 @@ class LocalPyPI:
         if not fs.exists(dst_path):
             fs.make_dirs(dst_path)
         try:
-            self.pip.run(
-                ('install', src_path),
-                ('--no-deps', '--no-index'),
-                ('-t', dst_path),
-            )
+            # https://github.com/pypa/pip/issues/12050
+            self.pip.run('install', src_path, '--no-deps', '-t', dst_path)
         except Exception as e:
             fs.remove_tree(dst_path)
             raise e
