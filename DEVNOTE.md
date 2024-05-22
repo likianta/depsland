@@ -77,7 +77,7 @@ it generates/updates `<depsland_project>/requirements.lock` file, which is used 
 
 ...
 
-### Build An Intenet Version
+### Build An Internet Version
 
 first create a config file at `tests/config/depsland.yaml`:
 
@@ -98,5 +98,5 @@ then run the following command:
 ```nushell
 # tell depsland to redirect config to custom path
 $env.DEPSLAND_CONFIG_ROOT = 'tests/config'
-pox build/build.py full-build ailyun
+pox build/build.py full-build ailyun -p blank
 ```

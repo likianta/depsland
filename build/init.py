@@ -95,18 +95,18 @@ def rebuild_pypi_index(perform_pip_install: bool = True) -> None:
 
 
 @cli.cmd()
-def init_pypi_blank() -> None:
+def init_pypi_blank(target_dir: str = 'chore/pypi_blank') -> None:
     """
     if you want to repair `chore/pypi_blank/index`, run this command.
     """
-    # fs.make_dir('chore/pypi_blank')
-    # fs.make_dir('chore/pypi_blank/cache')
-    # fs.make_dir('chore/pypi_blank/downloads')
-    # fs.make_dir('chore/pypi_blank/index')
-    # fs.make_dir('chore/pypi_blank/index/snapdep')
-    # fs.make_dir('chore/pypi_blank/installed')
-    fs.dump({}, f'chore/pypi_blank/index/id_2_paths.json')
-    fs.dump({}, f'chore/pypi_blank/index/name_2_vers.json')
+    # fs.make_dir(f'{target_dir}')
+    # fs.make_dir(f'{target_dir}/cache')
+    # fs.make_dir(f'{target_dir}/downloads')
+    # fs.make_dir(f'{target_dir}/index')
+    # fs.make_dir(f'{target_dir}/index/snapdep')
+    # fs.make_dir(f'{target_dir}/installed')
+    fs.dump({}, f'{target_dir}/index/id_2_paths.json')
+    fs.dump({}, f'{target_dir}/index/name_2_vers.json')
 
 
 @cli.cmd()

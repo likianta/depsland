@@ -111,11 +111,18 @@ def full_build(
     kwargs:
         pypi_scheme (-p): 'full', 'self', 'blank'
             full: link `<proj>/pypi` to `<dist>/pypi`.
-                this is used for local test.
             self: link `<proj>/chore/pypi_self` to `<dist>/pypi`.
                 this should be used only when you want to publish a version. -
                 be careful do not update any content of `<dist>/pypi`.
             blank: copy `<proj>/chore/pypi_blank` to `<dist>/pypi`.
+            
+            what's the difference for the schemes?
+                'full' is used for local test.
+                'self' is used for production release.
+                'blank' is also used for production release, it has a smaller -
+                size.
+                if you want to partially release, or try to package a minimal -
+                version, use 'blank' with '_add_python_sdk=False'.
     """
     # checks
     if not self_check():
