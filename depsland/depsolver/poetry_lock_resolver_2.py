@@ -158,14 +158,16 @@ def _fill_packages_info(
     poetry_data: dict
 ) -> t.Iterator[t.Tuple[T.PackageName, T.PackageInfo]]:
     def get_custom_url() -> t.Optional[str]:
-        if item['source']['type'] == 'legacy':  # TEST
-            if item['source']['reference'] == 'likianta-hosted':
+        if item['source']['type'] == 'legacy':
+            if item['source']['reference'] in (  # TODO
+                'likianta-host', 'likianta-hosted'
+            ):
                 return '{}/{}/{}'.format(
                     item['source']['url'],
-                    name,
+                    name.replace('_', '-'),
                     item['files'][0]['file']
                 )
-            
+    
     for item in poetry_data['package']:
         name = normalize_name(item['name'])
         ver = item['version']
@@ -214,7 +216,6 @@ def _filter_packages(
     for name, _ in all_pkgs:
         if name in tiled_pkgs:
             yield f'{name}-{tiled_pkgs[name]}'
-
 
 # def _flatten_packages(
 #     pkgs_dict: t.Dict[T.PackageId, t.Tuple[T.PackageId, ...]]
