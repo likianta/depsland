@@ -4,6 +4,8 @@ import typing as t
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
+from .poetry_lock_resolver_2 import resolve_poetry_lock
+from .requirements_lock import resolve_requirements_lock
 # from .requirements_lock import T as T0
 from .. import paths
 from .. import utils
@@ -37,15 +39,27 @@ class T:
     Dependencies1 = t.Dict[str, dict]  # see T0.Packages
 
 
-# TODO
-def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
+def resolve_dependencies(
+    deps0: T.Dependencies0, proj_dir: str
+) -> T.Dependencies1:
     if not deps0:  # None, empty dict/list/string/etc.
         return {}
     
     out = {}
     
-    if isinstance(deps0, str):
-        raise NotImplementedError
+    if isinstance(deps0, str):  # a file
+        assert deps0 in (
+            'poetry.lock', 'pyproject.toml', 'requirements.lock'
+        )
+        assert all(map(fs.exists, (
+            a := f'{proj_dir}/pyproject.toml',
+            b := f'{proj_dir}/poetry.lock',
+            c := f'{proj_dir}/{deps0}',
+        )))
+        if deps0 == 'requirements.lock':
+            return resolve_requirements_lock(a, b, c)
+        else:
+            return resolve_poetry_lock(a, b)
     
     elif isinstance(deps0, list):
         raw_requirements = '\n'.join(deps0)
@@ -82,7 +96,7 @@ def resolve_dependencies(deps0: T.Dependencies0) -> T.Dependencies1:
                 'appendix': None,
             }
     
-    elif isinstance(deps0, dict):
+    elif isinstance(deps0, dict):  # TODO
         raise NotImplementedError
     
     return out

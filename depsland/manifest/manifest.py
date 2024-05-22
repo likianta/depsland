@@ -489,26 +489,7 @@ class Manifest:
         return out  # noqa
     
     def _update_dependencies(self, deps0: T.Dependencies0) -> T.Dependencies1:
-        return resolve_dependencies(deps0)
-        # if not deps0:  # None, empty dict/list/string
-        #     return {}
-        # else:
-        #     assert (
-        #         isinstance(deps0, str) and
-        #         # deps0 == 'requirements.lock'
-        #         # deps0 == 'poetry.lock'
-        #         # deps0.endswith(('.lock', '.toml', '.txt'))
-        #         # deps0.endswith('.toml')
-        #         # deps0.endswith('.lock')
-        #         deps0.endswith('.lock') and deps0 != 'poetry.lock'
-        #     ), 'currently only support "requirements.lock" format'  # TODO
-        #     packages = resolve_requirements_lock(
-        #         pyproj_file=f'{self._start_directory}/pyproject.toml',
-        #         poetry_file=f'{self._start_directory}/poetry.lock',
-        #         requirements_file=f'{self._start_directory}/{deps0}',
-        #     )
-        #     # exit()  # TEST
-        #     return packages
+        return resolve_dependencies(deps0, self._start_directory)
     
     @staticmethod
     def _update_launcher(
