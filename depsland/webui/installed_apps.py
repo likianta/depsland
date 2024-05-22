@@ -84,7 +84,9 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                             key=f'{app_name}:run',
                             use_container_width=True,
                         ):
-                            popen_obj = run_app(app_name, _version=target_ver)
+                            popen_obj = run_app(
+                                app_name, _version=target_ver, _blocking=False
+                            )
                             session['processes'][app_name] = popen_obj.pid
                             st.rerun()
                 if button_row.button(

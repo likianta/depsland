@@ -13,7 +13,7 @@ argsense = "^0.5.7"
 conflore = "^0.2.0"
 # dash = "*"
 # dash-antd = "*"
-lk-logger = "^5.7.2"
+lk-logger = "^5.7.3"
 # lk-logger = { version = "^5.7.2b0", source = "likianta-host" }
 lk-utils = "^2.10.0"
 # lk-utils = { version = "^2.10.0b0", source = "likianta-host" }
@@ -23,7 +23,7 @@ pipgrip = "^0.10.13"
 poetry = "^1.8.0"
 psutil = "^5.9.8"
 # pyapp-window = "^1.0.0"
-pyapp-window = { version = "^1.0.0", source = "likianta-host" }
+pyapp-window = { version = "^1.0.1a0", source = "likianta-host" }
 # pyside6 = { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" }
 # pyside6 = [
 #     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
@@ -39,7 +39,6 @@ streamlit-extras = "*"
 # toml = { version = "*", python = "<3.11" }
 toml = "*"
 # typing-extensions = { version = "*", python = "<3.11" }
-# windows-toasts = { version = "^1.0.0", platform = "win32" }  # DELETE
 
 # --- fix indirect dependencies' verspecs ---
 numpy = { version = "^1.26.0", python = ">=3.9" }  # <- streamlit
@@ -52,8 +51,10 @@ pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
 [tool.poetry.group.dev.dependencies]
 ipython = { version = "^8.22.0", python = ">=3.10,<4.0" }
 pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.10,<3.13" }  # <- demo/hello-world-gui
+pysimplegui = "*"  # <- demo/hello-world-tkinter
 # qmlease = "^3.0.4"  # <- demo/hello-world-gui
 qmlease = { version = ">=3.0.5a4,<3.1.0", source = "likianta-host" }
+windows-toasts = { version = "^1.0.0", platform = "win32" }  # DELETE
 
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'

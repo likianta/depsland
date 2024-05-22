@@ -1551,12 +1551,12 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "5.7.2"
+version = "5.7.3"
 description = "Python print with source and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-5.7.2-py3-none-any.whl", hash = "sha256:e1f8b8a18f669aef0d0b737021b6d9ddd0c2d942e9db08ee6e7e57fb51e2ec12"},
+    {file = "lk_logger-5.7.3-py3-none-any.whl", hash = "sha256:e2e62a1c51d5f8b70889aa3255df43f419a06f2760de57da7d4cb3e432e72a13"},
 ]
 
 [package.dependencies]
@@ -2714,16 +2714,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "1.0.0"
+version = "1.0.1a0"
 description = "Launch URL with native window in WebView mode. Multiple backend implementations are supported."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-1.0.0-py3-none-any.whl", hash = "sha256:2409c6bbb6ac278be2f6c5369fa3ea0ed8bd3d4f1c9459122a0bc48b18447058"},
+    {file = "pyapp_window-1.0.1a0-py3-none-any.whl", hash = "sha256:3ac235f57fbb69f8507cddba061ed30a2dd092e01abd1b40351f3e4eeea34b1c"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.7,<0.6.0"
+lk-utils = "*"
 psutil = "*"
 toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and (sys_platform == \"darwin\" or sys_platform == \"win32\")"}
 
@@ -2779,6 +2780,22 @@ files = [
 
 [package.dependencies]
 numpy = ">=1.16.6"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "pyasn1"
+version = "0.6.0"
+description = "Pure-Python implementation of ASN.1 types and DER/BER/CER codecs (X.208)"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyasn1-0.6.0-py2.py3-none-any.whl", hash = "sha256:cca4bb0f2df5504f02f6f8a775b6e416ff9b0b3b16f7ee80b5a3153d9b804473"},
+    {file = "pyasn1-0.6.0.tar.gz", hash = "sha256:3a35ab2c4b5ef98e17dfdec8ab074046fbda76e281c5a706ccd82328cfc8f64c"},
+]
 
 [package.source]
 type = "legacy"
@@ -3012,6 +3029,25 @@ files = [
 
 [package.dependencies]
 shiboken6 = "6.6.3.1"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "pysimplegui"
+version = "5.0.4"
+description = "Python GUIs for Humans! PySimpleGUI is the top-rated Python application development environment. Launched in 2018 and actively developed, maintained, and supported in 2024. Transforms tkinter, Qt, WxPython, and Remi into a simple, intuitive, and fun experience for both hobbyists and expert users."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "PySimpleGUI-5.0.4-py3-none-any.whl", hash = "sha256:24e75f58f4fb5b876a85962dfefe023f0cc6fafb4eec1fa922d270b5ecadefb1"},
+    {file = "PySimpleGUI-5.0.4.tar.gz", hash = "sha256:a53846e81056c72f7c44451a7bdd720590ca2bc43565cd4f1e9a16ee785d980c"},
+]
+
+[package.dependencies]
+rsa = "*"
 
 [package.source]
 type = "legacy"
@@ -3507,6 +3543,25 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "rsa"
+version = "4.9"
+description = "Pure-Python RSA implementation"
+optional = false
+python-versions = ">=3.6,<4"
+files = [
+    {file = "rsa-4.9-py3-none-any.whl", hash = "sha256:90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7"},
+    {file = "rsa-4.9.tar.gz", hash = "sha256:e38464a49c6c85d7f1351b0126661487a7e0a14a50f1675ec50eb34d4f20ef21"},
+]
+
+[package.dependencies]
+pyasn1 = ">=0.1.3"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "rubicon-objc"
 version = "0.4.8"
 description = "A bridge between an Objective C runtime environment and Python."
@@ -3960,6 +4015,35 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "toasts-winrt"
+version = "1.0.0"
+description = "Python WinRT bindings for Windows-Toasts"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "toasts-winrt-1.0.0.tar.gz", hash = "sha256:bf71ce565a4d5b5ae83e5e4061ea2148138b3c64adaaea0881c5cce8a94a394a"},
+    {file = "toasts_winrt-1.0.0-cp310-cp310-win32.whl", hash = "sha256:5e276a240a0f707ec2aba1c39c060f85529723723ce0180c2b4c2176bc41fb5c"},
+    {file = "toasts_winrt-1.0.0-cp310-cp310-win_amd64.whl", hash = "sha256:adfd274e36973f9841e815a5affaa9b7448c34530b66a54b65a9ffc32035f388"},
+    {file = "toasts_winrt-1.0.0-cp310-cp310-win_arm64.whl", hash = "sha256:d7289a2b654b21320b67f8384010b6c2fc09781a3cf02b54736cdea99b03db19"},
+    {file = "toasts_winrt-1.0.0-cp311-cp311-win32.whl", hash = "sha256:aec4568def3e83cc6784ebea7c8770be29018aa8ff9b12e7da5b9d6c8b2e8dcf"},
+    {file = "toasts_winrt-1.0.0-cp311-cp311-win_amd64.whl", hash = "sha256:f8459e6d2bd8bb2006d3f6543871f05d11673e0c5391ed1c3d66915509c9e5f3"},
+    {file = "toasts_winrt-1.0.0-cp311-cp311-win_arm64.whl", hash = "sha256:e6b49b964192947d44089ff9332da584384d6746f4a440cf588e0fd05048f697"},
+    {file = "toasts_winrt-1.0.0-cp312-cp312-win32.whl", hash = "sha256:4afd92ecb403e6c79dd1aa2b1e4aede302de00392b8df252813c1107b3ec53ef"},
+    {file = "toasts_winrt-1.0.0-cp312-cp312-win_amd64.whl", hash = "sha256:1e2e91d2710019b2eeb8066ece9b4619c6fb1b45792cb8c26c25b0b1a5a07cab"},
+    {file = "toasts_winrt-1.0.0-cp312-cp312-win_arm64.whl", hash = "sha256:acb2edc54e707a624d42b16caa28f1008572c0d4c2d8d1407218c4ea3cfce234"},
+    {file = "toasts_winrt-1.0.0-cp38-cp38-win32.whl", hash = "sha256:924118b81de9fb81b04ae9b06b1adf8891cdc35b01554a2024c5d8f0520adfa3"},
+    {file = "toasts_winrt-1.0.0-cp38-cp38-win_amd64.whl", hash = "sha256:3c027a49bd157938068449c603f02a315fd7cfcd52d9af83275bcdb156e399c8"},
+    {file = "toasts_winrt-1.0.0-cp39-cp39-win32.whl", hash = "sha256:0ab28913c3649fa9f0d539fdc580df7c807f095225fc8b16bb701567cec679c7"},
+    {file = "toasts_winrt-1.0.0-cp39-cp39-win_amd64.whl", hash = "sha256:f7d13a1da03a69f5b6c3a4143bd5d2199199e0ff7f307321241c5bc7ccc8d6cb"},
+    {file = "toasts_winrt-1.0.0-cp39-cp39-win_arm64.whl", hash = "sha256:f7d80addf22b53e63ca9cc0659fb8ae26330a2be649c8ceee5d6694a6d68c191"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "toga"
 version = "0.4.2"
 description = "A Python native, OS native GUI toolkit."
@@ -4363,6 +4447,25 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "windows-toasts"
+version = "1.0.2"
+description = "Python library used to send toast notifications on Windows machines"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "Windows-Toasts-1.0.2.tar.gz", hash = "sha256:79aab12d4a2e5baa45832ace25adb5c62748decb6bd70354f8f4f0f30fd1b2d4"},
+    {file = "Windows_Toasts-1.0.2-py3-none-any.whl", hash = "sha256:e7f783324be23130b4fff3fa0cfce8f57ad4826906c688e3904d7d534e604bec"},
+]
+
+[package.dependencies]
+toasts-winrt = "1.0.0"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "xattr"
 version = "1.1.0"
 description = "Python wrapper for extended filesystem attributes"
@@ -4463,4 +4566,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "7c4c5f9df034e977dc10464a4c49d7d482a3d86d19c94f38087a34376f3d5f56"
+content-hash = "616a9d3f1748f59c83979a9bb96255fa78c85e3096995a9c6c4b31f4226515c9"

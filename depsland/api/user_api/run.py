@@ -1,6 +1,5 @@
 import os
 import subprocess
-import sys
 import typing as t
 
 import lk_logger
@@ -15,7 +14,7 @@ from ...platform import sysinfo
 
 
 def run_app(
-    appid: str, *args, _version: str = None, **kwargs
+    appid: str, *args, _version: str = None, _blocking: bool = True, **kwargs
 ) -> t.Optional[subprocess.Popen]:
     """
     a general launcher to start an installed app.
@@ -25,13 +24,14 @@ def run_app(
         print(':v4', f'cannot find installed version of {appid}')
         return
     else:
-        print(':r', '[magenta dim]depsland {} [green]v{}[/][/]'.format(
-            ' '.join(sys.argv[1:]), version
-        ))
+        print(
+            ':r', '[magenta dim]launching [cyan]{}[/] [green]v{}[/][/]'
+            .format(appid, version)
+        )
     
-    manifest = load_manifest(
-        '{}/{}/{}/manifest.pkl'.format(paths.project.apps, appid, version)
-    )
+    manifest = load_manifest('{}/{}/{}/manifest.pkl'.format(
+        paths.project.apps, appid, version
+    ))
     assert manifest['version'] == version
     command, args0, kwargs0 = parse_script_info(manifest)
     # print(command, args0, kwargs0, ':l')
@@ -47,20 +47,22 @@ def run_app(
     #     os.environ['PATH'].split(sep), ':lv'
     # )
     
-    # if not manifest['launcher']['show_console']:
-    #     if sysinfo.IS_WINDOWS:
-    #         _toast_notification(
-    #             'Depsland is launching "{}"'.format(manifest['name'])
-    #         )
+    if not manifest['launcher']['show_console']:
+        if sysinfo.IS_WINDOWS:
+            _toast_notification(
+                'Depsland is launching "{} (v{})"'.format(appid, version)
+            )
     
-    # print(':v', args, kwargs)
-    lk_logger.unload()
+    print(':vs', ' '.join(
+        (*command, *args_2_cargs(*args, *args0, **kwargs, **kwargs0))
+    ))
+    # lk_logger.unload()
     try:
         # TODO: use '--' to separate different args/kwargs groups.
         return run_cmd_args(
             command, args_2_cargs(*args, *args0, **kwargs, **kwargs0),
             cwd=manifest['start_directory'],
-            blocking=False,
+            blocking=_blocking,
             shell=True,
             verbose=True,
             # verbose=False,
@@ -100,7 +102,9 @@ def _toast_notification(text: str) -> None:
         from windows_toasts import Toast
         from windows_toasts import WindowsToaster
     except ImportError:
-        raise ImportError('pip install windows-toasts')
+        # raise ImportError('pip install windows-toasts')
+        print('module not found: windows-toasts', ':v3p')
+        return
     toaster = WindowsToaster('Depsland Launcher')
     toast = Toast()
     toast.text_fields = [text]
