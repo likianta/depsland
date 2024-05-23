@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "depsland"
-version = "0.7.0b33"
-description = ""
+version = "0.7.0"
+description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
 homepage = "https://github.com/likianta/depsland"

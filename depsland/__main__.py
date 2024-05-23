@@ -68,7 +68,7 @@ def about() -> None:
 
 @cli.cmd()
 def self_location() -> None:
-    print('[green b u]{}[/]'.format(fs.xpath('..', True)), ':s1r')
+    print('[green b u]{}[/]'.format(fs.xpath('.', True)), ':s1r')
 
 
 @cli.cmd()
