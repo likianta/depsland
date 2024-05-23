@@ -133,7 +133,7 @@ def full_build(
         assert exists(os.getenv('DEPSLAND_CONFIG_ROOT'))
     
     root_i = paths.project.root
-    root_o = '{dist}/depsland-{version}-windows'.format(
+    root_o = '{dist}/standalone/depsland-{version}-windows'.format(
         dist=paths.project.dist, version=__version__
     )
     assert not exists(root_o)

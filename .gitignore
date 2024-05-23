@@ -11,9 +11,11 @@
 /config/.redirect
 /config/auto_saved.pkl
 /deleted/
+/demo/*/dist/
 /depsland/webui/assets/
 /depsland/webui/static/
-/dist/*
+/dist/*/*
+/dist/*.*
 /docs/*/*.html
 /lib/
 /oss/*/*
@@ -28,7 +30,6 @@
 /unittests/depsland_run_test/dist/
 
 __pycache__/
-dist/
 *.bak.*
 *.bak[0123456789].*
 .DS_Store
