@@ -1551,12 +1551,12 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "5.7.3"
+version = "5.7.4"
 description = "Python print with source and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-5.7.3-py3-none-any.whl", hash = "sha256:e2e62a1c51d5f8b70889aa3255df43f419a06f2760de57da7d4cb3e432e72a13"},
+    {file = "lk_logger-5.7.4-py3-none-any.whl", hash = "sha256:47f87c11618cab877942879820174a2af6472bb2bd72fe282df6c815656db744"},
 ]
 
 [package.dependencies]
@@ -2714,24 +2714,23 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "1.0.1a0"
+version = "1.0.0"
 description = "Launch URL with native window in WebView mode. Multiple backend implementations are supported."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-1.0.1a0-py3-none-any.whl", hash = "sha256:3ac235f57fbb69f8507cddba061ed30a2dd092e01abd1b40351f3e4eeea34b1c"},
+    {file = "pyapp_window-1.0.0-py3-none-any.whl", hash = "sha256:2409c6bbb6ac278be2f6c5369fa3ea0ed8bd3d4f1c9459122a0bc48b18447058"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.7,<0.6.0"
-lk-utils = "*"
 psutil = "*"
 toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and (sys_platform == \"darwin\" or sys_platform == \"win32\")"}
 
 [package.source]
 type = "legacy"
-url = "http://likianta.pro:2006"
-reference = "likianta-host"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
 
 [[package]]
 name = "pyarrow"
@@ -4566,4 +4565,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "616a9d3f1748f59c83979a9bb96255fa78c85e3096995a9c6c4b31f4226515c9"
+content-hash = "865a40a048e31aa901ba17b07360a1b0571c0e576bf86be91f956283b10bd8b4"
