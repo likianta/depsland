@@ -20,7 +20,7 @@ def _get_session() -> dict:
 
 
 def main(default_appid: str = '', _run_at_once: bool = False) -> None:
-    st.title('Depsland Appinstall')
+    st.title('Depsland AppManager')
     tabs = st.tabs(('Search & Install', 'Settings'))
     with tabs[0]:
         search_bar(default_appid, _run_at_once)
@@ -40,6 +40,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
     cols = st.columns(2)  # main button and a placeholder
     prog_bar_container = st.container()  # progress bar
     with cols[0]:
+        # TODO: how to disable button when installing?
         do_install = st.button(
             'Install', type='primary', disabled=appid == '',
             use_container_width=True

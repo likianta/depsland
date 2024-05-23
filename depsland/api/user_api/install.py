@@ -2,7 +2,6 @@ import os
 import typing as t
 # from concurrent.futures import ThreadPoolExecutor
 from os.path import exists
-# from time import sleep
 
 from lk_utils import Signal
 from lk_utils import dumps
@@ -32,19 +31,14 @@ class T(T0):
     LauncherInfo = T0.Launcher  # alias
     Oss = T1.Oss
     Path = str
-    
-
-class _Progress:
-    step_updated = Signal(str, int)  # Signal[stage, total_count]
-    prog_updated = Signal(int, str)
-    #   Signal[current_count, filename]
-    #       current_count: 1-based
-    # step_updated = Signal(str)  # Signal[title]
-    # prog_updated = Signal(float, str)
-    # #   Signal[progress_0.0_to_1.0, description]
+    ProgressStage = t.Literal['assets', 'deps', 'venv', 'cleanup']
 
 
-progress = _Progress()
+# Signal[stage, total, current, text]
+#   `total` and `current` are 1-based.
+#   `text`: we currently use lower-case descriptive text. the ui side may need -
+#   to convert it to a more user-friendly format.
+progress_updated = Signal(str, int, int, str)  # used by ui side
 
 
 def install_by_appid(
@@ -240,12 +234,15 @@ def _install_files(
     
     total_diff = diff_manifest(manifest_new, manifest_old)
     assets_diff = tuple(total_diff['assets'])
-    progress.step_updated.emit('assets', len(assets_diff))
+    assets_diff_cnt = len(assets_diff)
     curr_cnt = 0  # 1-based
     
     for action, relpath, (info0, info1) in assets_diff:
         curr_cnt += 1
-        progress.prog_updated.emit(curr_cnt, relpath)
+        progress_updated.emit(
+            'assets', assets_diff_cnt, curr_cnt,
+            'updating "{}" ({})'.format(relpath, action)
+        )
         
         if action == 'ignore':
             path0 = fs.normpath(f'{root0}/{relpath}')
@@ -279,7 +276,7 @@ def _install_packages(
     
     total_diff = diff_manifest(manifest_new, manifest_old)
     deps_diff = tuple(total_diff['dependencies'])
-    # progress.step_updated.emit('dependencies', len(deps_diff))
+    # deps_diff_cnt = len(deps_diff)
     
     # curr_cnt = 0
     package_ids = set()
@@ -293,8 +290,10 @@ def _install_packages(
     
     for action, pkg_name, (info0, info1) in deps_diff:
         # curr_cnt += 1
-        # progress.prog_updated.emit(curr_cnt, pkg_name)
-        
+        # progress_updated.emit(
+        #     'deps', deps_diff_cnt, curr_cnt,
+        #     'updating "{}" ({})'.format(pkg_name, action)
+        # )
         if action == 'delete':  # this is handled by oss util.
             continue
         pkg_id = info1['id']
@@ -305,7 +304,6 @@ def _install_packages(
     has_new_packages = bool(tasks_ignitor)
     if tasks_ignitor:
         print(len(tasks_ignitor))
-        progress.step_updated.emit('dependencies', len(tasks_ignitor))
         
         def download_and_install(info: T.PackageInfo) -> None:
             if info['id'] in pypi.index.id_2_paths:
@@ -319,7 +317,10 @@ def _install_packages(
             pypi.install_one(info['id'], dl_path)
         
         for i, info in enumerate(tasks_ignitor, 1):
-            progress.prog_updated.emit(i, info['id'])
+            progress_updated.emit(
+                'deps', len(tasks_ignitor), i,
+                'updating "{}"'.format(info['id'])
+            )
             download_and_install(info)
         
         # FIXME: thread_pool makes pip install stucked, and ctrl+c cannot -
@@ -334,6 +335,7 @@ def _install_packages(
         # ]
         # for x in tasks: x.result()
     
+    progress_updated.emit('cleanup', 2, 1, 'linking venv')
     venv_dir = paths.apps.make_packages(
         manifest_new['appid'], manifest_new['version'], clear_exists=True
     )
@@ -357,6 +359,7 @@ def _install_packages(
 
 def _create_launchers(manifest: T.Manifest) -> None:
     print('creating launcher... (this may be slow)')
+    progress_updated.emit('cleanup', 2, 2, 'creating launcher')
     exe_file = create_launcher(
         manifest,
         dir_o='{apps}/{appid}/{version}'.format(
