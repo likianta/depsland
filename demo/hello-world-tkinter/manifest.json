@@ -1,0 +1,24 @@
+{
+    "appid": "hello_world_tkinter",
+    "name": "Hello World (Tkinter)",
+    "version": "0.1.4",
+    "assets": {
+        "main.py": "all"
+    },
+    "dependencies": [
+        "argsense>=0.5.7",
+        "pysimplegui"
+    ],
+    "launcher": {
+        "target": "main.py",
+        "type": "module",
+        "icon": "",
+        "args": ["listbox"],
+        "kwargs": {},
+        "enable_cli": false,
+        "add_to_desktop": true,
+        "add_to_start_menu": false,
+        "show_console": false
+    },
+    "depsland_version": "0.7.0"
+}

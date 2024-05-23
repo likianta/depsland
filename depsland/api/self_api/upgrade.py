@@ -5,17 +5,17 @@ from lk_utils import fs
 
 from ... import paths
 from ...manifest import T as T0
-from ...manifest import init_target_tree
 from ...manifest import load_manifest
-from ...oss import Oss
+from ...oss import T as T1
 from ...oss import get_oss_client
-from ...utils import compare_version
+from ...utils import init_target_tree
 from ...utils import make_temp_dir
+from ...verspec import compare_version
 
 
 class T:
     Manifest = T0.Manifest
-    Oss = Oss
+    Oss = T1.Oss
     CheckUpdatesResult = t.Optional[t.Tuple[Manifest, Manifest]]
 
 
@@ -45,7 +45,7 @@ def main() -> None:
     
     # overwrite files from dir1 to dir0
     for name in os.listdir(dir1):
-        if name in ('apps', 'apps_launcher', 'pypi', 'python', 'temp'):
+        if name in ('apps', 'pypi', 'python', 'temp'):
             continue
         print(':i', name)
         fs.move(f'{dir1}/{name}', f'{dir0}/{name}', overwrite=True)

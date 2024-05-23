@@ -1,6 +1,5 @@
 import os
 import typing as t
-
 from os.path import exists
 from pathlib import Path
 
@@ -12,25 +11,28 @@ def mklink(src: str, dst: str, force=False) -> str:
             https://csatlas.com/python-create-symlink/
     """
     assert exists(src), f'source path does not exist: {src}'
-    if force is True and exists(dst):
-        return dst
+    if force is True and exists(dst): return dst
     if force is False and exists(dst):
         raise FileExistsError(f'destination path already exists: {dst}')
     Path(dst).symlink_to(src)
     return dst
 
 
-def mklinks(src_dir: str, dst_dir: str,
-            names: t.Optional[t.List[str]] = None,
-            force=False) -> t.List[str]:
+def mklinks(
+    src_dir: str,
+    dst_dir: str,
+    names: t.Optional[t.List[str]] = None,
+    force=False,
+) -> t.List[str]:
     out = []
-    for n in (names or os.listdir(src_dir)):
+    for n in names or os.listdir(src_dir):
         out.append(mklink(f'{src_dir}/{n}', f'{dst_dir}/{n}', force=force))
     return out
 
 
-def mergelink(src_dir: str, dst_dir: str, new_dir: str,
-              overwrite: bool = None) -> str:
+def mergelink(
+    src_dir: str, dst_dir: str, new_dir: str, overwrite: bool = None
+) -> str:
     src_names = os.listdir(src_dir)
     dst_names = os.listdir(dst_dir)
     
@@ -41,18 +43,14 @@ def mergelink(src_dir: str, dst_dir: str, new_dir: str,
         if sn in dst_names:
             if os.path.isdir(sub_src_path):
                 os.mkdir(sub_new_path)
-                mergelink(
-                    sub_src_path, sub_dst_path, sub_new_path,
-                    overwrite
-                )
+                mergelink(sub_src_path, sub_dst_path, sub_new_path, overwrite)
             else:
-                match overwrite:
-                    case None:
-                        mklink(sub_dst_path, sub_new_path)
-                    case True:
-                        mklink(sub_src_path, sub_new_path)
-                    case False:
-                        raise FileExistsError(sub_dst_path)
+                if overwrite is None:
+                    mklink(sub_dst_path, sub_new_path)
+                elif overwrite is True:
+                    mklink(sub_src_path, sub_new_path)
+                else:  # False
+                    raise FileExistsError(sub_dst_path)
         else:
             mklink(sub_src_path, sub_new_path)
     
@@ -60,19 +58,16 @@ def mergelink(src_dir: str, dst_dir: str, new_dir: str,
     for n in dst_names:
         sub_dst_path = f'{dst_dir}/{n}'
         sub_new_path = f'{new_dir}/{n}'
-        assert exists(sub_dst_path), (
-            n,
-            n in os.listdir(dst_dir),
-            sub_dst_path
-        )
+        assert exists(sub_dst_path), (n, n in os.listdir(dst_dir), sub_dst_path)
         if n not in new_names:
             mklink(sub_dst_path, sub_new_path)
     
     return new_dir
 
 
-def mergelinks(src_dir: str, dst_dir: str,
-               overwrite: bool = None) -> t.List[str]:
+def mergelinks(
+    src_dir: str, dst_dir: str, overwrite: bool = None
+) -> t.List[str]:
     out = []
     dst_names = os.listdir(dst_dir)
     
@@ -97,14 +92,13 @@ def mergelinks(src_dir: str, dst_dir: str,
                 
                 mergelink(src_path, dst_path, new_path, overwrite)
             else:
-                match overwrite:
-                    case None:
-                        pass
-                    case True:
-                        os.remove(dst_path)
-                        mklink(src_path, dst_path)
-                    case False:
-                        raise FileExistsError(dst_path)
+                if overwrite is None:
+                    pass
+                elif overwrite is True:
+                    os.remove(dst_path)
+                    mklink(src_path, dst_path)
+                else:  # False
+                    raise FileExistsError(dst_path)
         else:
             mklink(src_path, dst_path, force=False)
         

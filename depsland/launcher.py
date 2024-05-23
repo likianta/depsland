@@ -1,3 +1,8 @@
+"""
+TODO: rethink which situation to use this launcher, is it be used like as
+    pyportable-installer's pylauncher?
+    related: ./__main__.py > def run()
+"""
 import os
 import subprocess
 import sys
@@ -12,7 +17,7 @@ def run(appid: str, version: str, command: str, error_output='terminal'):
     assert os.path.exists(app_dir)
     
     os.chdir(app_dir)
-    sys.path.insert(0, paths.apps.get_packages(appid))
+    sys.path.insert(0, paths.apps.get_packages(appid, version))
     sys.path.insert(0, app_dir)
     
     try:
@@ -52,14 +57,12 @@ def _show_error(
             root.withdraw()
             messagebox.showerror(title=title, message=msg)
         else:
-            if sys.platform == 'win32':
+            if os.name == 'nt':
                 subprocess.call(['msg', '*', title + ': ' + msg])
-            elif sys.platform == 'darwin':
+            else:
                 subprocess.call([
                     'osascript',
                     '-e',
                     'Tell application "System Events" to display dialog "{{}}" '
                     'with title "{{}}"'.format(msg, title)
                 ])
-            else:
-                raise NotImplementedError

@@ -1,0 +1,12 @@
+oss:
+    # `depsland.oss.get_oss`
+    server: local
+    config:
+        symlinks: false
+pip:
+    # see `depsland.pip.CommandTemplate.__init__`
+    index_url: 'https://pypi.tuna.tsinghua.edu.cn/simple'
+    local_first: false
+    quiet: false
+pypi:
+    update_interval: 2592000  # about one month

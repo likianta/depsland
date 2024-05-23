@@ -1,46 +1,49 @@
-# 下载便携版 Python
+# 使用独立版 Python
 
-下载地址: https://github.com/indygreg/python-build-standalone/releases/tag/20221002
+> 注: 以下命令行示例中, 使用 `pox` 表示 `poetry run python`. 请参考 `DEVNOTE.md` 了解在此文之前应做的事情.
+
+## 下载
+
+下载地址: https://github.com/indygreg/python-build-standalone/releases
 
 如何选择我要的版本:
 
-- macos (intel): `cpython-<version>-x86_64-apple-darwin-install_only.tar.gz`
+使用 `build/init.py : help_me_choose_python` 来获取合适的版本的下载链接.
 
-    示例: "cpython-3.10.7+20221002-x86_64-apple-darwin-install_only.tar.gz"
-
-- windows: `cpython-<version>-x86_64-pc-windows-msvc-shared-install_only.tar.gz`
-
-    示例: "cpython-3.10.7+20221002-x86_64-pc-windows-msvc-shared-install_only.tar.gz"
-
-# 安装 python
+## 安装
 
 > 以下示例基于 macos.
 
-解压缩到本目录, 如下结构:
+解压缩到本项目根目录下, 如下结构:
 
 ```
-current_dir
-|= bin
-    |- python3.10
-    |- pip
+<depsland_project>
+|= python
+    |= bin
+        |- python3.12
+        |- pip
+        |- ...
+    |= lib
+        |= python3.12
+            |= site-packages
+                |= pip
+                |- ...
+        |- ...
     |- ...
-|= include
-    |= python3.10
-        |= site-packages
-            |= pip
-            |= ...
-    |= ...
-|= lib
-|= share
-|- README.md  # 这是本文档
+    |- README.zh.md  # 这是本文档
 ```
 
-# 设置为本项目默认解释器
-
-以 pycharm 为例, 在 settings - project - project interpreter 中选择 `<depsland_proj>/python/bin/python3.10` 为解释器.
-
-# 安装依赖
+## 安装 Depsland 所需的依赖
 
 ```sh
-python/bin/python3.10 -m pip install --no-warn-script-location --disable-pip-version-check -r requirements.txt
+pox build/init.py download-requirements
+pox build/init.py make-site-packages
 ```
+
+---
+
+## PySide6 Lite
+
+> 注意: 目前仅支持 windows.
+
+使用 qmlease 项目下的 `sidework/pyside_package_tailor` 生成一个 "pyside6_lite" (文件夹), 将它复制到 site-packages 下.

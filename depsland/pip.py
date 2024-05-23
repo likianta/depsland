@@ -2,6 +2,7 @@
 a wrapper for pip command.
 """
 import re
+import sys
 import typing as t
 
 from lk_utils.filesniff import normpath
@@ -14,24 +15,24 @@ from .config import app_settings
 
 
 class T:
-    PipCommand = t.Tuple[str, ...]  # e.g. ('python3', '-m', 'pip')
+    PipExecute = t.Tuple[str, ...]  # e.g. ('python3', '-m', 'pip')
     PopenArgs = t.Iterable[str]
 
 
 class Pip:
-    _pip_exec: T.PipCommand
+    _pip_exec: T.PipExecute
     _template: 'CommandTemplate'
     
     def __init__(
-            self,
-            pip_cmd: T.PipCommand,
-            pip_conf=app_settings['pip'],
-            local=paths.pypi.downloads,
+        self,
+        pip_exec: T.PipExecute = (sys.executable, '-m', 'pip'),
+        pip_conf: dict = app_settings['pip'],
+        local: str = paths.pypi.downloads,
     ):
-        self._pip_exec = pip_cmd
-        self._template = CommandTemplate(pip_cmd, local, **pip_conf)
+        self._pip_exec = pip_exec
+        self._template = CommandTemplate(pip_exec, local, **pip_conf)
     
-    def update_pip_options(self, **options):
+    def update_pip_options(self, **options) -> None:
         # noinspection PyArgumentList
         self._template = CommandTemplate(self._pip_exec, **options)
     
@@ -44,8 +45,6 @@ class Pip:
         """
         both print and return the command line output.
         """
-        print(':r', '[magenta dim]{}[/]'
-              .format(' '.join(args).replace('[', '\\[')))
         return run_cmd_args(*args, verbose=True, ignore_error=False)
     
     # -------------------------------------------------------------------------
@@ -59,19 +58,26 @@ class Pip:
         #   ['pip', '22.3', 'from ...'] -> '22.3'
     
     def download(
-            self, name: str, version='',
-            dest=paths.pypi.downloads, no_deps=False
+        self,
+        name: str,
+        version: str = '',
+        destination: str = paths.pypi.downloads,
+        no_dependency: bool = False,
+        custom_args: t.Sequence[str] = (),
     ) -> str:
         return self._run(
-            *self._template.pip_download(name, version, dest, no_deps)
+            *self._template.pip_download(
+                name, version, destination, no_dependency
+            ),
+            *(custom_args and compose_cmd(*custom_args))
         )
     
-    def download_r(self, file: str, dest=paths.pypi.downloads) -> str:
+    def download_r(self, file: str, dest: str = paths.pypi.downloads) -> str:
         return self._run(*self._template.pip_download_r(file, dest))
     
     def install(
-            self, name: str, version='',
-            dest=paths.pypi.installed, no_deps=False
+        self, name: str, version='',
+        dest=paths.pypi.installed, no_deps=False
     ) -> str:
         return self._run(
             *self._template.pip_install(name, version, dest, no_deps)
@@ -140,21 +146,20 @@ class Pip:
 class CommandTemplate:
     
     def __init__(
-            self,
-            pip_cmd: T.PipCommand,
-            local_dir: str = paths.pypi.downloads,
-            cache_dir: str = paths.pypi.cache,
-            *,
-            index_url: str = 'https://pypi.python.org/simple/',
-            local_first: bool = False,
-            offline: bool = False,
-            quiet: bool = False,
-            **_,
+        self,
+        pip_cmd: T.PipExecute,
+        local_dir: str = paths.pypi.downloads,
+        cache_dir: str = paths.pypi.cache,
+        *,
+        index_url: str = 'https://pypi.python.org/simple/',
+        # local_first: bool = False,  # TODO
+        offline: bool = False,
+        quiet: bool = False,
+        **_,
     ):
         # extend parameters
         if offline:
             host = ''
-            local_first = True
         else:
             assert index_url
             host = re.search(r'https?://([^/]+)', index_url).group(1)
@@ -193,10 +198,10 @@ class CommandTemplate:
     # -------------------------------------------------------------------------
     
     def pip_download(
-            self, name: str, version='', dest='', no_deps=False
+        self, name: str, version='', dest='', no_deps=False
     ) -> T.PopenArgs:
         return compose_cmd(
-            *self._pip, 'download', f'{name}{version}'.replace(' ', ''),
+            *self._pip, 'download', f'{name}{version.replace(" ", "")}',
             ('-d', dest), ('--no-deps' if no_deps else ''),
             *self._pip_options, *self._pip_download_options
         )
@@ -208,10 +213,10 @@ class CommandTemplate:
         )
     
     def pip_install(
-            self, name: str, version='', dest='', no_deps=False
+        self, name: str, version='', dest='', no_deps=False
     ) -> T.PopenArgs:
         return compose_cmd(
-            *self._pip, 'install', f'{name}{version}'.replace(' ', ''),
+            *self._pip, 'install', f'{name}{version.replace(" ", "")}',
             ('-t', dest), ('--no-deps' if no_deps else ''),
             *self._pip_options, *self._pip_install_options
         )
@@ -236,6 +241,6 @@ class CommandTemplate:
 
 
 pip = Pip(
-    pip_cmd=(paths.python.python, '-m', 'pip'),
+    pip_exec=(paths.python.python, '-m', 'pip'),
     local=paths.pypi.downloads,
 )

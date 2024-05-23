@@ -1,27 +1,84 @@
 [tool.poetry]
 name = "depsland"
-version = "0.1.0a30"
-description = ""
-authors = ["Likianta <likianta@foxmail.com>"]
+version = "0.7.0"
+description = "User oriented dependency management and application distribution tool."
 license = "MIT"
+authors = ["Likianta <likianta@foxmail.com>"]
+homepage = "https://github.com/likianta/depsland"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+argsense = "^0.5.7"
+# argsense = { version = "^0.5.7b0", source = "likianta-host" }
+conflore = "^0.2.0"
+# dash = "*"
+# dash-antd = "*"
+lk-logger = "^5.7.4"
+# lk-logger = { version = "^5.7.4", source = "likianta-host" }
+lk-utils = "^2.10.0"
+# lk-utils = { version = "^2.10.0b0", source = "likianta-host" }
+oss2 = "^2.18.3"  # DELETE
+pip = "^24.0.0"
+pipgrip = "^0.10.13"
+poetry = "^1.8.0"
+psutil = "^5.9.8"
+pyapp-window = "^1.0.0"
+# pyapp-window = { version = "^1.0.1a0", source = "likianta-host" }
+# pyside6 = { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" }
+# pyside6 = [
+#     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
+#     { version = "^6.6.1", python = "==3.12" },
+# ]
+pyyaml = "^6.0.0"
+# qmlease = "^3.0.4"
+rich = "^13.7.0"
+semver = "^3.0.2"
+streamlit = { version = "^1.34.0", python = "!=3.9.7" }
+streamlit-extras = "*"
+# streamlit-scrollable-textbox = "*"
+# toml = { version = "*", python = "<3.11" }
+toml = "*"
+# typing-extensions = { version = "*", python = "<3.11" }
+
+# --- fix indirect dependencies' verspecs ---
+numpy = { version = "^1.26.0", python = ">=3.9" }  # <- streamlit
+pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
+# toga = [  # <- pyapp-window
+#     { version = "^0.4.0", platform = "darwin", python = ">=3.8,<3.13" },
+#     { version = "^0.4.0", platform = "win32", python = ">=3.8,<3.13" },
+# ]
+
+[tool.poetry.group.dev.dependencies]
+ipython = { version = "^8.22.0", python = ">=3.10,<4.0" }
+pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.10,<3.13" }  # <- demo/hello-world-gui
+pysimplegui = "*"  # <- demo/hello-world-tkinter
+# qmlease = "^3.0.4"  # <- demo/hello-world-gui
+qmlease = { version = ">=3.0.5a4,<3.1.0", source = "likianta-host" }
+windows-toasts = { version = "^1.0.0", platform = "win32" }  # DELETE
+
+[tool.poetry.scripts]
+depsland = 'depsland.__main__:_run_cli'
 
 [[tool.poetry.source]]
 name = "tsinghua"
-url = "https://mirrors.tuna.tsinghua.edu.cn/pypi/web/simple/"
-default = true
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "primary"
 
-[tool.poetry.dependencies]
-python = "^3.10"
-argsense = "^0.5.0a0"
-lk-logger = "^5.4.6"
-lk-utils = "~2.5.0b10"
-oss2 = "*"
-pyyaml = "*"
-rich = "*"
-semver = "3.0.0dev3"
-wheel = "*"
+[[tool.poetry.source]]
+name = "likianta-host"
+url = "http://likianta.pro:2006/"
+priority = "supplemental"
 
-[tool.poetry.extras]
+[tool.poetry_extensions.deptry]
+ignores = [
+    "numpy",
+    "pandas",
+    "pip",
+    "pipgrip",
+    "poetry",
+    "pyportable_runtime",
+    "windows_toasts",
+]
 
 [build-system]
 requires = ["poetry"]

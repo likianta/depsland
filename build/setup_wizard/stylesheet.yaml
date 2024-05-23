@@ -1,0 +1,57 @@
+blue3: '#3C2F4F'  # martinique
+blue7: '#8888B2'  # wild blue yonder
+brown5: '#673939'  # congo brown
+dark3: '#140F23'  # ebony
+dark5: '#130F1F'  # vulcan
+dark6: '#0F2337'  # firefly
+dark7: '#1D1929'  # steel grey
+dark8: '#2B2834'  # baltic sea
+dark9: '#423E51'  # gun powder
+green3: '#174735'  # green pea
+green7: '#0ACC6B'  # malachite
+light1: '#5B5B61'  # scarpa flow
+light5: '#ADADCA'  # logan
+light7: '#FEFEFE'  # white
+red7: '#F23F5D'  # carnation
+yellow3: '#705E3A'  # yellow metal
+
+# -----------------------------------------------------------------------------
+
+#border_gradient_start: '$brown5'
+#border_gradient_end: '$blue3'
+
+button_bg: '$dark7'
+button_bg_disabled: '$dark9'
+button_bg_hovered: '$dark8'
+button_bg_pressed: '$dark3'
+button_border: '$brown5'
+button_text: '$light7'
+
+frame_border: '$brown5'
+
+border_highlighted: '$yellow3'
+
+input_bg: '$button_bg'
+input_bg_active: '$input_bg'
+input_border: '$brown5'
+input_cursor: '$light7'
+input_selection: '#6A373B'
+
+panel_bg: '$dark7'
+
+progress_bg: '$dark8'
+progress_fg: '$green7'
+progress_fg_dimmed: '$green3'
+progress_indicator_bg: '$blue7'
+
+text_accent: '$text_title'
+text_danger: '$red7'
+text_dimmed: '$light1'
+text_disabled: '#79799A'
+text_main: '$light5'
+text_subtitle: '$text_main'
+text_success: '$green7'
+text_title: '$light7'
+text_hint: '$text_dimmed'
+
+win_bg: '$dark5'

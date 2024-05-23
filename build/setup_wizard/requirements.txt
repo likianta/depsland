@@ -1,0 +1,4 @@
+argsense
+lk-utils
+pyside6  # or pyside6-lite
+qmlease

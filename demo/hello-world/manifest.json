@@ -1,0 +1,26 @@
+{
+    "appid": "hello_world",
+    "name": "Hello World",
+    "version": "0.4.13",
+    "assets": {
+        "src": "all"
+    },
+    "dependencies": [
+        "argsense"
+    ],
+    "launcher": {
+        "target": "src/main.py",
+        "type": "module",
+        "icon": "",
+        "args": [
+            "hello",
+            "likianta"
+        ],
+        "kwargs": {},
+        "enable_cli": true,
+        "add_to_desktop": false,
+        "add_to_start_menu": false,
+        "show_console": true
+    },
+    "depsland_version": "0.7.0"
+}
