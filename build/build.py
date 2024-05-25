@@ -133,11 +133,17 @@ def full_build(
         assert exists(os.getenv('DEPSLAND_CONFIG_ROOT'))
     
     root_i = paths.project.root
-    root_o = '{dist}/standalone/depsland-{version}-windows'.format(
-        dist=paths.project.dist, version=__version__
+    root_o = (
+        '{dist}/standalone/depsland-{version}-windows/depsland/{version}'
+        .format(dist=paths.project.dist, version=__version__)
     )
-    assert not exists(root_o)
-    os.mkdir(root_o)
+    # ^ see design note in `wiki/design-tkinking/why-does-dist-standalone-
+    #   directory-like-this.md`
+    assert not exists(
+        '{dist}/standalone/depsland-{version}-windows'
+        .format(dist=paths.project.dist, version=__version__)
+    )
+    fs.make_dirs(root_o)
     
     # -------------------------------------------------------------------------
     
@@ -200,9 +206,14 @@ def full_build(
         f'{root_i}/sidework',
         f'{root_o}/sidework',
     )
-    fs.copy_file(
-        f'{root_i}/.depsland_project',
-        f'{root_o}/.depsland_project',
+    # fs.copy_file(
+    #     f'{root_i}/.depsland_project.json',
+    #     f'{root_o}/.depsland_project.json',
+    # )
+    
+    fs.dump(
+        {'project_mode': 'production'},
+        f'{root_o}/.depsland_project.json'
     )
     
     if oss_scheme == 'aliyun':

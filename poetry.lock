@@ -1569,25 +1569,25 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-utils"
-version = "2.10.0"
+version = "2.10.1b1"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_utils-2.10.0-py3-none-any.whl", hash = "sha256:799d59b14b51c093e4399d83c8795f09b2a1431c5e60966a49eacc4cd044136e"},
+    {file = "lk_utils-2.10.1b1-py3-none-any.whl", hash = "sha256:7e6d73805042d223d295196346ffefc63368352860bcc2a3f9647f9115a0e3aa"},
 ]
 
 [package.dependencies]
-argsense = ">=0.5.6,<0.6.0"
-lk-logger = ">=5.6.4,<6.0.0"
+argsense = ">=0.5.7,<0.6.0"
+lk-logger = ">=5.7.4,<6.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
 rich = ">=13.0.0,<14.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2006"
+reference = "likianta-host"
 
 [[package]]
 name = "lxml"
@@ -2505,13 +2505,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "poetry"
-version = "1.8.2"
+version = "1.8.3"
 description = "Python dependency management and packaging made easy."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "poetry-1.8.2-py3-none-any.whl", hash = "sha256:b42b400d9a803af6e788a30a6f3e9998020b77860e28df20647eb10b6f414910"},
-    {file = "poetry-1.8.2.tar.gz", hash = "sha256:49cceb3838104647c3e1021f3a4f13c6053704cc18d33f849a90fe687a29cb73"},
+    {file = "poetry-1.8.3-py3-none-any.whl", hash = "sha256:88191c69b08d06f9db671b793d68f40048e8904c0718404b63dcc2b5aec62d13"},
+    {file = "poetry-1.8.3.tar.gz", hash = "sha256:67f4eb68288eab41e841cc71a00d26cf6bdda9533022d0189a145a34d0a35f48"},
 ]
 
 [package.dependencies]
@@ -2526,7 +2526,7 @@ installer = ">=0.7.0,<0.8.0"
 keyring = ">=24.0.0,<25.0.0"
 packaging = ">=23.1"
 pexpect = ">=4.7.0,<5.0.0"
-pkginfo = ">=1.9.4,<2.0.0"
+pkginfo = ">=1.10,<2.0"
 platformdirs = ">=3.0.0,<5"
 poetry-core = "1.9.0"
 poetry-plugin-export = ">=1.6.0,<2.0.0"
@@ -4565,4 +4565,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "865a40a048e31aa901ba17b07360a1b0571c0e576bf86be91f956283b10bd8b4"
+content-hash = "58ef13264e9fb0aa1f8c29617bb2a3c4a3a69f7f3fffdafd7a1b5cf9b751c78b"

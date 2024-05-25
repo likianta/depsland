@@ -1,0 +1,12 @@
+{
+    "# what's this": [
+        "this file only exists when you clone this repository by. it doesn't ",
+        "exist if you get this package by pip.",
+        "this file tells depsland to run itself in standalone mode.",
+        "the `project_mode` field tells depsland how to behave itself in ",
+        "first time startup. if it's `production`, depsland will create a ",
+        "desktop shortcut etc. in the first time.",
+        "see code at `depsland/paths.py : class Project` for more details."
+    ],
+    "project_mode": "development"
+}

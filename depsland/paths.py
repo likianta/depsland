@@ -45,18 +45,71 @@ class System:
 
 class Project:
     def __init__(self) -> None:
-        if exists(fs.xpath('../.depsland_project')):
-            self.root = fs.xpath('..', force_abspath=True)
-            self.is_project_mode = True
+        if exists(x := fs.xpath('../.depsland_project.json')):
+            self.project_mode = fs.load(x)['project_mode']
         else:
+            self.project_mode = ''
+        # project_mode
+        #   '': it means depsland is installed by pip.
+        #   'development': it means project is cloned by git.
+        #   'production': it means this is a standalone version. see also -
+        #       `build/build.py : full_build`
+        if self.project_mode == '':
             self.root = fs.xpath('.project', True)
-            self.is_project_mode = False
             if not exists(self.root):
                 print(
-                    ':v2',
                     'first time run depsland, init a virtual project root...',
+                    ':v2',
                 )
                 self._init_project_root(self.root)
+        elif self.project_mode == 'development':
+            self.root = fs.xpath('..', force_abspath=True)
+        elif self.project_mode == 'production':
+            self.root = fs.xpath('..', force_abspath=True)
+            assert fs.dirname(fs.xpath('../..')) == 'depsland'  # TEST
+            if not exists(fs.xpath('../../current')):
+                '''
+                create following directories/files:
+                    <user-programs>
+                        |- depsland
+                            |- 0.8.0
+                                |- depsland
+                                    |- paths.py     # <- we are here
+                                    |- ...
+                                |- .depsland_project.json
+                                |- Depsland.exe
+                                |- Depsland (Debug).exe
+                                |- ...
+                            |- current              # 1. symlink to 0.8.0
+                            |- Depsland.lnk         # 2. 0.8.0/Depsland.exe
+                            |- Depsland (Debug).lnk
+                                # 3. 0.8.0/Depsland (Debug).exe
+                    <desktop>
+                        |- Depsland.lnk
+                                # 4. <user-programs>/current/Depsland.exe
+                '''
+                print(
+                    'first time run depsland, init production environment...',
+                    ':v2'
+                )
+                dir = fs.xpath('../..')
+                fs.make_link(fs.xpath('..'), f'{dir}/current')
+                fs.make_shortcut(
+                    f'{dir}/current/Depsland.exe',
+                    f'{dir}/Depsland.lnk'
+                )
+                fs.make_shortcut(
+                    f'{dir}/current/Depsland (Debug).exe',
+                    f'{dir}/Depsland (Debug).lnk'
+                )
+                fs.make_shortcut(
+                    f'{dir}/current/Depsland.exe',
+                    '<desktop>/Depsland.lnk'
+                )
+        else:
+            raise Exception(self.project_mode)
+        
+        # ---------------------------------------------------------------------
         
         self.apps = f'{self.root}/apps'
         self.build = f'{self.root}/build'
@@ -248,7 +301,7 @@ class PyPI:
 
 class Python:
     def __init__(self) -> None:
-        if project.is_project_mode and _Env.PYTHON_STANDALONE == '1':
+        if project.project_mode and _Env.PYTHON_STANDALONE == '1':
             self.root = f'{project.root}/python'
             assert len(os.listdir(self.root)) > 3, (
                 'cannot find standalone python interpreter. \n'
