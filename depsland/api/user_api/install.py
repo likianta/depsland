@@ -242,7 +242,7 @@ def _install_files(
         curr_cnt += 1
         progress_updated.emit(
             'assets', assets_diff_cnt, curr_cnt,
-            'updating "{}" ({})'.format(relpath, action)
+            'updating asset "{}" ({})'.format(relpath, action)
         )
         
         if action == 'ignore':
@@ -320,7 +320,7 @@ def _install_packages(
         for i, info in enumerate(tasks_ignitor, 1):
             progress_updated.emit(
                 'deps', len(tasks_ignitor), i,
-                'updating "{}"'.format(info['id'])
+                'fetching dependency "{}"'.format(info['id'])
             )
             download_and_install(info)
         

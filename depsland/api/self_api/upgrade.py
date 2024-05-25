@@ -12,8 +12,29 @@ def self_upgrade() -> str:
     
     fs.move(dir_i, dir_o)
     fs.move(
-        '{}/{}'.format(paths.apps.venv, manifest['version']),
+        '{}/depsland/{}'.format(paths.apps.venv, manifest['version']),
         f'{dir_o}/chore/site_packages'
+    )
+    fs.remove_file(f'{dir_o}/Depsland Standalone.exe')
+    fs.remove_file(f'{dir_o}/Depsland Standalone (Debug).exe')
+    fs.copy_file(
+        f'{dir_o}/build/exe/depsland-cli.exe',
+        f'{dir_o}/apps/.bin/Depsland.exe',
+        True
+    )
+    fs.copy_file(
+        f'{dir_o}/build/exe/depsland-gui.exe',
+        f'{dir_o}/Depsland.exe',
+        True
+    )
+    fs.copy_file(
+        f'{dir_o}/build/exe/depsland-gui-debug.exe',
+        f'{dir_o}/Depsland (Debug).exe',
+        True
+    )
+    fs.dump(
+        {'project_mode': 'production'},
+        f'{dir_o}/.depsland_project.json'
     )
     fs.make_link(paths.apps.root, f'{dir_o}/apps', True)
     fs.make_link(paths.pypi.root, f'{dir_o}/pypi', True)

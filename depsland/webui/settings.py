@@ -2,6 +2,12 @@ import streamlit as st
 
 
 def main() -> None:
+    if st.button('Check for updates'):
+        st.write(
+            'Please input "depsland" in the search bar and click "Install" '
+            'button in main tab.'
+        )
+    
     with st.expander('System', True):
         add_to_path = st.checkbox(
             'Add to environment PATH',

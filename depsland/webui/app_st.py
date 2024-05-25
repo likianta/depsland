@@ -3,12 +3,14 @@ if __name__ == '__main__':
 
 import streamlit as st
 from lk_logger import parallel_printing
+from streamlit_extras.row import row as st_row
 
 from . import bottom_bar
 from . import installed_apps
 from . import progress_bar
 from . import settings
 from ..api.user_api.install import install_by_appid
+from ..api.self_api import self_upgrade
 
 
 def _get_session() -> dict:
@@ -20,6 +22,11 @@ def _get_session() -> dict:
 
 
 def main(default_appid: str = '', _run_at_once: bool = False) -> None:
+    # row = st_row((7, 3))
+    # with row.container():
+    #     st.title('Depsland AppManager')
+    # if row.button('Check for updates'):
+    #     pass
     st.title('Depsland AppManager')
     tabs = st.tabs(('Search & Install', 'Settings'))
     with tabs[0]:
@@ -57,7 +64,11 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
                 logger.clear()
                 with parallel_printing(logger):
                     # progress_bar.play_demo()  # TEST
-                    install_by_appid(appid)
+                    if appid == 'depsland':
+                        self_upgrade()
+                        st.warning('Please restart the app to see the changes.')
+                    else:
+                        install_by_appid(appid)
                     prog_callback()
 
 
