@@ -1,1 +1,1 @@
-from .upgrade import main as upgrade
+from .upgrade import self_upgrade

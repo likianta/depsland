@@ -43,16 +43,16 @@ progress_updated = Signal(str, int, int, str)  # used by ui side
 
 def install_by_appid(
     appid: str, upgrade: bool = True, reinstall: bool = False
-) -> None:
+) -> str:
     m1, m0 = _get_manifests(appid)
     if m0 is None:
         m0 = init_manifest(appid, m1['name'])
-    install(m1, m0, upgrade, reinstall)
+    return install(m1, m0, upgrade, reinstall)
 
 
 def install_local(
     manifest_file: T.Path, upgrade: bool = True, reinstall: bool = False
-) -> None:
+) -> str:
     m1 = load_manifest(manifest_file)
     
     if exists(d := '{}/.oss'.format(m1['start_directory'])):
@@ -72,7 +72,7 @@ def install_local(
     else:
         m0 = init_manifest(appid, name)
     
-    install(m1, m0, upgrade, reinstall, custom_oss_root)
+    return install(m1, m0, upgrade, reinstall, custom_oss_root)
 
 
 def install(
@@ -81,7 +81,7 @@ def install(
     upgrade: bool = True,
     reinstall: bool = False,
     custom_oss_root: T.Path = None,
-) -> None:
+) -> str:
     """
     download and install assets from oss & pypi to the target directory of -
     `manifest_new`.
@@ -118,6 +118,7 @@ def install(
                 'install -r {appid}` or `depsland reinstall {appid}` to force '
                 'reinstall it.'.format(appid=appid)
             )
+    return manifest_new['start_directory']
 
 
 def _install(

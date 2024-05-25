@@ -1,114 +1,23 @@
-import os
-import typing as t
-
 from lk_utils import fs
 
+from ..user_api import install_by_appid
 from ... import paths
-from ...manifest import T as T0
 from ...manifest import load_manifest
-from ...oss import T as T1
-from ...oss import get_oss_client
-from ...utils import init_target_tree
-from ...utils import make_temp_dir
-from ...verspec import compare_version
 
 
-class T:
-    Manifest = T0.Manifest
-    Oss = T1.Oss
-    CheckUpdatesResult = t.Optional[t.Tuple[Manifest, Manifest]]
-
-
-_is_dev_mode = False
-
-
-def main() -> None:
-    oss = get_oss_client(appid='depsland')
+def self_upgrade() -> str:
+    dir_i = install_by_appid('depsland')
+    dir_o = fs.abspath('{}/../{}'.format(paths.project.root, fs.dirname(dir_i)))
+    manifest = load_manifest(f'{dir_i}/manifest.pkl')
     
-    if not (x := _get_manifests(oss)):
-        print('no update available')
-        return
-    else:
-        manifest0: T.Manifest
-        manifest1: T.Manifest
-        manifest0, manifest1 = x
-    
-    dir0, dir1 = _init_directories(manifest0, manifest1)
-    temp_dir = make_temp_dir()
-    
-    global _is_dev_mode
-    _is_dev_mode = os.path.islink(paths.project.python)
-    
-    _install_files(manifest1, manifest0, oss, temp_dir)
-    _install_custom_packages(manifest1, manifest0, oss)
-    _install_dependencies(manifest1, dst_dir=paths.python.site_packages)
-    
-    # overwrite files from dir1 to dir0
-    for name in os.listdir(dir1):
-        if name in ('apps', 'pypi', 'python', 'temp'):
-            continue
-        print(':i', name)
-        fs.move(f'{dir1}/{name}', f'{dir0}/{name}', overwrite=True)
-    
+    fs.move(dir_i, dir_o)
     fs.move(
-        f'{paths.temp.self_upgrade}/manifest.pkl',
-        f'{dir0}/manifest.pkl',
-        True
+        '{}/{}'.format(paths.apps.venv, manifest['version']),
+        f'{dir_o}/chore/site_packages'
     )
-
-
-def _get_manifests(oss) -> T.CheckUpdatesResult:
-    oss.download(
-        oss.path.manifest,
-        latest_manifest_file := f'{paths.temp.self_upgrade}/manifest.pkl'
-    )
+    fs.make_link(paths.apps.root, f'{dir_o}/apps', True)
+    fs.make_link(paths.pypi.root, f'{dir_o}/pypi', True)
+    fs.make_link(paths.python.root, f'{dir_o}/python', True)
+    fs.make_link(dir_o, '{}/../current'.format(paths.project.root), True)
     
-    manifest0 = load_manifest(paths.project.manifest_pkl)
-    manifest1 = load_manifest(latest_manifest_file)
-    print(':v', manifest0['version'], manifest1['version'])
-    
-    if compare_version(manifest0['version'], '<', manifest1['version']):
-        return manifest0, manifest1
-    else:
-        return None
-
-
-def _init_directories(
-        manifest0: T.Manifest, manifest1: T.Manifest
-) -> t.Tuple[str, str]:
-    dir0 = paths.system.depsland
-    dir1 = paths.temp.self_upgrade + '/' + manifest1['version']
-    assert dir0 is not None
-    init_target_tree(manifest1, dir1)  # complete tree of `dir1`
-    manifest0['start_directory'] = dir0
-    manifest1['start_directory'] = dir1
-    return dir0, dir1
-
-
-def _install_files(
-        manifest1: T.Manifest,
-        manifest0: T.Manifest,
-        oss: T.Oss,
-        temp_dir: str
-) -> None:
-    from ..user_api.install import _install_files  # noqa
-    _install_files(manifest1, manifest0, oss, temp_dir)
-
-
-def _install_custom_packages(
-        manifest1: T.Manifest,
-        manifest0: T.Manifest,
-        oss: T.Oss
-) -> None:
-    if _is_dev_mode:
-        return
-    from ..user_api.install import _install_custom_packages  # noqa
-    _install_custom_packages(manifest1, manifest0, oss)
-
-
-def _install_dependencies(manifest1: T.Manifest, dst_dir: str) -> None:
-    if _is_dev_mode:
-        return
-    from ...pip import pip
-    for name, vspec in manifest1['dependencies'].items():
-        pip.install(name, vspec, dst_dir=dst_dir)
+    return dir_o
