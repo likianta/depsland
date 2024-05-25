@@ -1,30 +1,31 @@
 {
-    "appid": "depsland_appstore",
-    "name": "Depsland Store",
-    "version": "0.8.0a0",
+    "appid": "depsland",
+    "name": "Depsland Standalone",
+    "version": "0.8.0a2",
     "assets": {
         "apps/.bin": "root",
         "apps/.venv": "root",
-        "build/icon/launcher.ico": "all",
-        "chore/site_packages": "all",
+        "build": "all",
+        "chore/pypi_blank": "all",
         "config/depsland.yaml": "all",
         "depsland": "all",
         "dist": "root",
-        "oss/apps": "root",
-        "oss/test": "root",
-        "pypi/cache": "root",
-        "pypi/downloads": "root",
-        "pypi/index": "root",
-        "pypi/installed": "root",
+        "dist/standalone": "root",
+        "oss": "top_dirs",
+        "pypi": "top_dirs",
+        "python": "root",
         "temp": "root",
+        "tests": "root",
+        ".depsland_project.json": "all",
         "CHANGELOG.zh.md": "all",
+        "DEVNOTE.md": "all",
         "manifest.json": "all",
+        "poetry.lock": "all",
         "README.md": "all",
         "README.zh.md": "all",
-        "poetry.lock": "all",
         "requirements.lock": "all"
     },
-    "dependencies": [],
+    "dependencies": "poetry.lock",
     "launcher": {
         "target": "depsland",
         "type": "package",
@@ -36,7 +37,7 @@
         "enable_cli": true,
         "add_to_desktop": true,
         "add_to_start_menu": false,
-        "show_console": true
+        "show_console": false
     },
     "depsland_version": "0.8.0"
 }

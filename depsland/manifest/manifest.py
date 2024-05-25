@@ -29,6 +29,7 @@ class T(T0):
     Scheme1 = t.Literal[
         'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs'
     ]
+    # ^ see also `depsland.api.dev_api.publish._copy_assets`
     
     Assets0 = t.Dict[AnyPath, Scheme0]
     #   anypath: abspath or relpath, '/' or '\\' both allowed.
