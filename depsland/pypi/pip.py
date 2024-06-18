@@ -171,7 +171,7 @@ class CommandTemplate:
         self._pip = pip_cmd
         
         self._pip_options = tuple(compose_cmd(
-            f'--cache-dir', cache_dir,
+            # f'--cache-dir', cache_dir,
             f'--disable-pip-version-check',
             f'--no-python-version-warning',
             f'--quiet' if quiet else '',

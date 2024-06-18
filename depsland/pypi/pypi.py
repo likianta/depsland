@@ -5,10 +5,10 @@ from lk_utils import fs
 
 from .index import Index
 from .index import T as T0
+from .pip import Pip
+from .pip import pip as _default_pip
 from .. import normalization as norm
 from ..paths import pypi as pypi_paths
-from ..pip import Pip
-from ..pip import pip as _default_pip
 from ..venv import link_venv
 
 __all__ = ['LocalPyPI', 'T', 'pypi']

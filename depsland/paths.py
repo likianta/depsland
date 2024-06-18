@@ -289,6 +289,7 @@ class PyPI:
             if self.is_symlink else self.root
         )
         
+        # DELETE: is it better not to use custom cache dir?
         self.cache = f'{self.root}/cache'
         self.downloads = f'{self.root}/downloads'
         self.index = f'{self.root}/index'

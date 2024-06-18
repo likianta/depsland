@@ -80,7 +80,7 @@ def resolve_dependencies(
         json_data = run_cmd_args(
             'pipgrip', '--json', '--sort',
             ('-r', 'requirements.txt'),
-            ('--cache-dir', paths.pypi.cache),
+            # ('--cache-dir', paths.pypi.cache),
             ('--index-url', 'https://pypi.tuna.tsinghua.edu.cn/simple'),
             cwd=dir_m,
             verbose=False,

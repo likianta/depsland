@@ -26,11 +26,11 @@ from . import verspec
 from .api import init
 from .api import install
 from .api import publish
-from .pip import pip
 from .platform import sysinfo
 from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
+from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.8.0a6'
-__date__ = '2024-05-26'
+__version__ = '0.8.0a10'
+__date__ = '2024-06-18'
