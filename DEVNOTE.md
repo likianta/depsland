@@ -32,13 +32,13 @@
     pox build/init.py download-requirements
 
     # build pypi index
-    pox build/init.py self-build-pypi-index
+    pox build/init.py rebuild-pypi-index
     ```
 
 3. make site-packages folder
 
     ```sh
-    pox build/init.py make-site-packages
+    pox build/init.py make-site-packages --remove-exists
     ```
 
 ## Run Depsland GUI
