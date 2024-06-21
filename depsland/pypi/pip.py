@@ -10,8 +10,8 @@ from lk_utils.subproc import compose_cmd
 from lk_utils.subproc import run_cmd_args
 from yaml import safe_load as yaml_safe_load
 
-from . import paths
-from .config import app_settings
+from .. import paths
+from ..config import app_settings
 
 
 class T:

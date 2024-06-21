@@ -89,19 +89,19 @@ reference = "tsinghua"
 
 [[package]]
 name = "argsense"
-version = "0.5.7"
+version = "0.5.8"
 description = "New command line interface based on Python Rich library."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "argsense-0.5.7-py3-none-any.whl", hash = "sha256:6ce635dee13106bab81b5acce446f0c261d2dd36302f2d709423f134f49b0298"},
+    {file = "argsense-0.5.8-py3-none-any.whl", hash = "sha256:1bb91e706af89f13dde8b14a52b77dc0881fb96e5a3cd23e6ed9bf1628b6b539"},
 ]
 
 [package.dependencies]
 rich = ">=13.0.0,<14.0.0"
 
 [package.extras]
-gui = ["pysimplegui"]
+gui = ["pysimplegui (>=5.0.0,<6.0.0)"]
 
 [package.source]
 type = "legacy"
@@ -1551,12 +1551,12 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "5.7.4"
+version = "5.7.6a0"
 description = "Python print with source and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-5.7.4-py3-none-any.whl", hash = "sha256:47f87c11618cab877942879820174a2af6472bb2bd72fe282df6c815656db744"},
+    {file = "lk_logger-5.7.6a0-py3-none-any.whl", hash = "sha256:d43b130331d4cf1104064e4610939c403a6ac0de6e17b411d1045e3ab9c64762"},
 ]
 
 [package.dependencies]
@@ -1564,8 +1564,8 @@ rich = ">=13.0,<14.0"
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2006"
+reference = "likianta-host"
 
 [[package]]
 name = "lk-utils"
@@ -4565,4 +4565,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "59c21688ee6ae629bb0b1efcefdb23ad6cd36316daa7cf9041fc2cd0a5a50492"
+content-hash = "c57832e2eaa376a29be11799ea2c540a3206deec5c3c690485aabef8566e49ba"

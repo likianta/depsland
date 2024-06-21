@@ -37,7 +37,10 @@ def overview(custom_dir: str = None) -> None:
         print(pypi.index.name_2_ids, ':l')
 
 
-def rebuild_index(perform_pip_install: bool = False) -> None:
+def rebuild_index(
+    perform_pip_install: bool = False,
+    _save: bool = True  # DELETE: this function should not care about saving.
+) -> t.Tuple[T.Id2Paths, T.Name2Versions]:
     id_2_paths: T.Id2Paths = {}
     name_2_vers: T.Name2Versions = defaultdict(list)
     
@@ -67,8 +70,10 @@ def rebuild_index(perform_pip_install: bool = False) -> None:
     for vers in name_2_vers.values():
         verspec.sort_versions(vers, reverse=True)
     
-    dumps(id_2_paths, pypi_paths.id_2_paths)
-    dumps(name_2_vers, pypi_paths.name_2_vers)
+    if _save:
+        dumps(id_2_paths, pypi_paths.id_2_paths)
+        dumps(name_2_vers, pypi_paths.name_2_vers)
+    return id_2_paths, name_2_vers
 
 
 def _rebuild_dependencies(

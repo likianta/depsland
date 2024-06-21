@@ -194,6 +194,10 @@ def full_build(
     #     f'{root_i}/build/setup_wizard',
     #     f'{root_o}/build/setup_wizard',
     # )
+    fs.make_link(
+        f'{root_i}/chore/pypi_blank',
+        f'{root_o}/chore/pypi_blank',
+    )
     # fs.copy_tree(
     #     f'{root_i}/depsland',
     #     f'{root_o}/depsland',

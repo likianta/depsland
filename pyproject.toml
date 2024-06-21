@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.0a0"
+version = "0.8.0a12"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -8,13 +8,13 @@ homepage = "https://github.com/likianta/depsland"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-argsense = "^0.5.7"
+argsense = "^0.5.8"
 # argsense = { version = "^0.5.7b0", source = "likianta-host" }
 conflore = "^0.2.0"
 # dash = "*"
 # dash-antd = "*"
-lk-logger = "^5.7.4"
-# lk-logger = { version = "^5.7.4", source = "likianta-host" }
+# lk-logger = "^5.7.5"
+lk-logger = { version = "^5.7.6a0", source = "likianta-host" }
 lk-utils = "^2.10.1"
 # lk-utils = { version = "^2.10.1b1", source = "likianta-host" }
 oss2 = "^2.18.3"  # DELETE
