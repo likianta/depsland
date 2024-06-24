@@ -42,7 +42,7 @@ class LocalPyPI:
             assert pkg_id in custom_url, (pkg_id, custom_url)
             resp = self.pip.run(
                 ('download', custom_url),
-                ('--no-deps', '--no-index'),
+                ('--no-deps', '--no-index', '--disable-pip-version-check'),
                 ('-d', pypi_paths.downloads),
             )
         else:
@@ -79,7 +79,11 @@ class LocalPyPI:
             fs.make_dirs(dst_path)
         try:
             # https://github.com/pypa/pip/issues/12050
-            self.pip.run('install', src_path, '--no-deps', '-t', dst_path)
+            self.pip.run(
+                ('install', src_path),
+                ('--no-deps', '--disable-pip-version-check'),
+                ('-t', dst_path),
+            )
         except Exception as e:
             fs.remove_tree(dst_path)
             raise e
