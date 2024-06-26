@@ -24,10 +24,9 @@ poetry = "^1.8.3"
 psutil = "^5.9.8"
 pyapp-window = "^1.0.0"
 # pyapp-window = { version = "^1.0.1a0", source = "likianta-host" }
-# pyside6 = { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" }
 # pyside6 = [
 #     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
-#     { version = "^6.6.1", python = "==3.12" },
+#     { version = "^6.7.1", python = ">=3.12,<3.13" },
 # ]
 pyyaml = "^6.0.0"
 # qmlease = "^3.0.4"
@@ -43,10 +42,6 @@ toml = "*"
 # --- fix indirect dependencies' verspecs ---
 numpy = { version = "^1.26.0", python = ">=3.9" }  # <- streamlit
 pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
-# toga = [  # <- pyapp-window
-#     { version = "^0.4.0", platform = "darwin", python = ">=3.8,<3.13" },
-#     { version = "^0.4.0", platform = "win32", python = ">=3.8,<3.13" },
-# ]
 
 [tool.poetry.group.dev.dependencies]
 ipython = { version = "^8.22.0", python = ">=3.10,<4.0" }

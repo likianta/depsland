@@ -47,21 +47,13 @@ class LocalPyPI:
             )
         else:
             name, ver = self.split(pkg_id)
-            resp = self.pip.download(
-                name, f'=={ver}',
-                no_dependency=True,
-            )
+            resp = self.pip.download(name, f'=={ver}', no_dependency=True)
         for path, _ in self._parse_pip_download_response(resp):
-            if pypi_paths.is_symlink:  # workaround
-                # print(pkg_id, path, ':v')
-                if not path.lower().startswith(pypi_paths.downloads.lower()):
-                    print('fix downloaded path (redirect to symlink)',
-                          pkg_id, ':v3')
-                    assert path.lower().startswith(
-                        pypi_paths.real_root.lower() + '/downloads')
-                    path = '{}/{}'.format(
-                        pypi_paths.downloads, fs.basename(path))
-                    assert fs.exists(path), path
+            # fix path if it's a symlink
+            path = '{}/{}'.format(
+                pypi_paths.downloads, fs.basename(path).lower()
+            )
+            assert fs.exists(path), path
             if _auto_save_index:
                 self.index.add_to_index(path, 0)
             return path
