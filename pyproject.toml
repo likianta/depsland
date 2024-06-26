@@ -22,8 +22,8 @@ pip = "^24.0.0"
 pipgrip = "^0.10.13"
 poetry = "^1.8.3"
 psutil = "^5.9.8"
-pyapp-window = "^1.0.0"
-# pyapp-window = { version = "^1.0.1a0", source = "likianta-host" }
+# pyapp-window = "^1.0.0"
+pyapp-window = { version = "^1.1.0a0", source = "likianta-host" }
 # pyside6 = [
 #     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
 #     { version = "^6.7.1", python = ">=3.12,<3.13" },

@@ -198,6 +198,22 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "bottle"
+version = "0.12.25"
+description = "Fast and simple WSGI-framework for small web-applications."
+optional = false
+python-versions = "*"
+files = [
+    {file = "bottle-0.12.25-py3-none-any.whl", hash = "sha256:d6f15f9d422670b7c073d63bd8d287b135388da187a0f3e3c19293626ce034ea"},
+    {file = "bottle-0.12.25.tar.gz", hash = "sha256:e1a9c94970ae6d710b3fb4526294dfeb86f2cb4a81eff3a4b98dc40fb0e5e021"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "build"
 version = "1.2.1"
 description = "A simple, correct Python build frontend"
@@ -1688,7 +1704,6 @@ files = [
     {file = "lxml-5.2.1-cp37-cp37m-musllinux_1_2_x86_64.whl", hash = "sha256:9e2addd2d1866fe112bc6f80117bcc6bc25191c5ed1bfbcf9f1386a884252ae8"},
     {file = "lxml-5.2.1-cp37-cp37m-win32.whl", hash = "sha256:f51969bac61441fd31f028d7b3b45962f3ecebf691a510495e5d2cd8c8092dbd"},
     {file = "lxml-5.2.1-cp37-cp37m-win_amd64.whl", hash = "sha256:b0b58fbfa1bf7367dde8a557994e3b1637294be6cf2169810375caf8571a085c"},
-    {file = "lxml-5.2.1-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:3e183c6e3298a2ed5af9d7a356ea823bccaab4ec2349dc9ed83999fd289d14d5"},
     {file = "lxml-5.2.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:804f74efe22b6a227306dd890eecc4f8c59ff25ca35f1f14e7482bbce96ef10b"},
     {file = "lxml-5.2.1-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:08802f0c56ed150cc6885ae0788a321b73505d2263ee56dad84d200cab11c07a"},
     {file = "lxml-5.2.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0f8c09ed18ecb4ebf23e02b8e7a22a05d6411911e6fabef3a36e4f371f4f2585"},
@@ -2645,6 +2660,21 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "proxy-tools"
+version = "0.1.0"
+description = "Proxy Implementation"
+optional = false
+python-versions = "*"
+files = [
+    {file = "proxy_tools-0.1.0.tar.gz", hash = "sha256:ccb3751f529c047e2d8a58440d86b205303cf0fe8146f784d1cbcd94f0a28010"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "psutil"
 version = "5.9.8"
 description = "Cross-platform lib for process and system monitoring in Python."
@@ -2714,23 +2744,24 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "1.0.0"
+version = "1.1.0a0"
 description = "Launch URL with native window in WebView mode. Multiple backend implementations are supported."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-1.0.0-py3-none-any.whl", hash = "sha256:2409c6bbb6ac278be2f6c5369fa3ea0ed8bd3d4f1c9459122a0bc48b18447058"},
+    {file = "pyapp_window-1.1.0a0-py3-none-any.whl", hash = "sha256:2a223c2119dade1ed6997146c2e064e01ccbc332dd6f1422c262395df88dd0cc"},
 ]
 
 [package.dependencies]
-argsense = ">=0.5.7,<0.6.0"
+argsense = ">=0.5.8,<0.6.0"
 psutil = "*"
-toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and (sys_platform == \"darwin\" or sys_platform == \"win32\")"}
+pywebview = {version = ">=5.1,<6.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and sys_platform == \"win32\""}
+toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and sys_platform == \"darwin\""}
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2006"
+reference = "likianta-host"
 
 [[package]]
 name = "pyarrow"
@@ -3101,6 +3132,36 @@ files = [
     {file = "pytz-2024.1-py2.py3-none-any.whl", hash = "sha256:328171f4e3623139da4983451950b28e95ac706e13f3f2630a879749e7a8b319"},
     {file = "pytz-2024.1.tar.gz", hash = "sha256:2a29735ea9c18baf14b448846bde5a48030ed267578472d8955cd0e7443a9812"},
 ]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "pywebview"
+version = "5.1"
+description = "Build GUI for your Python program with JavaScript, HTML, and CSS"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pywebview-5.1-py3-none-any.whl", hash = "sha256:e352f587f82c173b28981fa0c893fab6124eb40d18c312e2bebf5346ab9f9f2c"},
+    {file = "pywebview-5.1.tar.gz", hash = "sha256:87eb60c299de5f20269aa18588ca6dd0d79580df5adc6edf8ac1e184fbe4885c"},
+]
+
+[package.dependencies]
+bottle = "*"
+proxy-tools = "*"
+pythonnet = {version = "*", markers = "sys_platform == \"win32\""}
+typing-extensions = "*"
+
+[package.extras]
+android = ["jnius", "kivy"]
+cef = ["cefpython3"]
+gtk = ["PyGObject", "PyGObject-stubs"]
+pyside2 = ["PySide2", "QtPy"]
+pyside6 = ["PySide6", "QtPy"]
+qt = ["PyQt5", "QtPy", "pyqtwebengine"]
 
 [package.source]
 type = "legacy"
@@ -4055,7 +4116,6 @@ files = [
 
 [package.dependencies]
 toga-cocoa = {version = "0.4.2", markers = "sys_platform == \"darwin\""}
-toga-winforms = {version = "0.4.2", markers = "sys_platform == \"win32\""}
 
 [package.source]
 type = "legacy"
@@ -4101,26 +4161,6 @@ travertino = ">=0.3.0"
 [package.extras]
 dev = ["Pillow (==10.2.0)", "coverage[toml] (==7.4.1)", "pre-commit (==3.5.0)", "pre-commit (==3.6.0)", "pytest (==7.4.4)", "pytest-asyncio (==0.23.4)", "pytest-freezer (==0.4.8)", "setuptools-scm (==8.0.4)", "tox (==4.12.1)", "typing-extensions (==4.9.0)"]
 docs = ["Pillow (==10.2.0)", "furo (==2024.1.29)", "pyenchant (==3.2.2)", "sphinx (==7.1.2)", "sphinx (==7.2.6)", "sphinx-autobuild (==2024.2.4)", "sphinx-autodoc-typehints (==1.25.3)", "sphinx-copybutton (==0.5.2)", "sphinx-csv-filter (==0.4.1)", "sphinx-tabs (==3.4.5)", "sphinx-toolbox (==3.5.0)", "sphinxcontrib-spelling (==8.0.0)"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
-name = "toga-winforms"
-version = "0.4.2"
-description = "A Windows backend for the Toga widget toolkit using the WinForms API."
-optional = false
-python-versions = ">=3.8"
-files = [
-    {file = "toga-winforms-0.4.2.tar.gz", hash = "sha256:71840befbdcf889895a9bffa970521cc383a5be83788fce84eb6171bac9c294d"},
-    {file = "toga_winforms-0.4.2-py3-none-any.whl", hash = "sha256:ec004140db84dd74ec93e6b4b5c717ceca8735b9007aa64d81c0bc39b3fe0f71"},
-]
-
-[package.dependencies]
-pythonnet = ">=3.0.0"
-toga-core = "0.4.2"
 
 [package.source]
 type = "legacy"
@@ -4565,4 +4605,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "c57832e2eaa376a29be11799ea2c540a3206deec5c3c690485aabef8566e49ba"
+content-hash = "10c5aab5bb426ff7919b015432e10e6fe1f66c1d53280926afc2681a27a31556"
