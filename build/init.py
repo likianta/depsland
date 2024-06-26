@@ -8,9 +8,12 @@ from argsense import cli
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
-os.chdir(fs.xpath('..'))
+# os.chdir(fs.xpath('..'))
 if not os.getenv('DEPSLAND_PYPI_ROOT'):
     os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
+if not fs.exists('chore/pypi_self/index/id_2_paths.json'):
+    fs.dump({}, 'chore/pypi_self/index/id_2_paths.json')
+    fs.dump({}, 'chore/pypi_self/index/name_2_vers.json')
 
 from depsland import paths
 from depsland.pypi.insight import rebuild_index
@@ -99,12 +102,12 @@ def init_pypi_blank(target_dir: str = 'chore/pypi_blank') -> None:
     """
     if you want to repair `chore/pypi_blank/index`, run this command.
     """
-    # fs.make_dir(f'{target_dir}')
-    # fs.make_dir(f'{target_dir}/cache')
-    # fs.make_dir(f'{target_dir}/downloads')
-    # fs.make_dir(f'{target_dir}/index')
-    # fs.make_dir(f'{target_dir}/index/snapdep')
-    # fs.make_dir(f'{target_dir}/installed')
+    fs.make_dir(f'{target_dir}')
+    fs.make_dir(f'{target_dir}/cache')
+    fs.make_dir(f'{target_dir}/downloads')
+    fs.make_dir(f'{target_dir}/index')
+    fs.make_dir(f'{target_dir}/index/snapdep')
+    fs.make_dir(f'{target_dir}/installed')
     fs.dump({}, f'{target_dir}/index/id_2_paths.json')
     fs.dump({}, f'{target_dir}/index/name_2_vers.json')
 
