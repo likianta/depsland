@@ -14,8 +14,7 @@
 /demo/*/dist/
 /depsland/webui/assets/
 /depsland/webui/static/
-/dist/*/*
-/dist/*.*
+/dist/**
 /docs/*/*.html
 /lib/
 /oss/*/*
@@ -35,11 +34,12 @@ __pycache__/
 .DS_Store
 *.bak.*
 
-!/chore/pypi_self/index/snapdep/.gitkeep
-!/python/README.md
-!/python/README.zh.md
 !/chore/pypi_self/*/
 !/chore/pypi_self/index/snapdep/
+!/dist/
+!/dist/standalone/
+!/python/README.md
+!/python/README.zh.md
 !/pypi/*/
 !/pypi/index/snapdep/
 !**/.gitkeep

@@ -216,7 +216,7 @@ def full_build(
     # )
     
     fs.dump(
-        {'project_mode': 'production'},
+        {'project_mode': 'production', 'depsland_version': __version__},
         f'{root_o}/.depsland_project.json'
     )
     

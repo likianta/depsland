@@ -5,7 +5,6 @@ import os
 import sys
 from os.path import exists
 
-from lk_utils import dumps
 from lk_utils import fs
 
 __all__ = [
@@ -46,14 +45,18 @@ class System:
 class Project:
     def __init__(self) -> None:
         if exists(x := fs.xpath('../.depsland_project.json')):
-            self.project_mode = fs.load(x)['project_mode']
+            project_info: dict = fs.load(x)
+            self.project_mode = project_info['project_mode']
         else:
+            project_info: dict = {}
             self.project_mode = ''
+        
         # project_mode
         #   '': it means depsland is installed by pip.
         #   'development': it means project is cloned by git.
         #   'production': it means this is a standalone version. see also -
         #       `build/build.py : full_build`
+        
         if self.project_mode == '':
             self.root = fs.xpath('.project', True)
             if not exists(self.root):
@@ -62,12 +65,28 @@ class Project:
                     ':v2',
                 )
                 self._init_project_root(self.root)
+        
         elif self.project_mode == 'development':
             self.root = fs.xpath('..', force_abspath=True)
+        
         elif self.project_mode == 'production':
             self.root = fs.xpath('..', force_abspath=True)
-            assert fs.dirname(fs.xpath('../..')) == 'depsland'  # TEST
-            if not exists(fs.xpath('../../current')):
+            
+            dir0 = fs.xpath('../..')
+            dir1 = fs.xpath('../../current')
+            assert fs.dirname(dir0) == 'depsland'  # TEST
+            assert (curr_ver := project_info['depsland_version'])
+            #   this key is set by `build/build.py:full_build`
+            
+            if exists(dir1):
+                # fmt:off
+                if (
+                    fs.load('{}/.depsland_project.json'.format(dir1))
+                    .get('depsland_version') != curr_ver
+                ):
+                    fs.remove_tree(dir1)
+                # fmt:on
+            if not exists(dir1):
                 '''
                 create following directories/files:
                     <user-programs>
@@ -92,20 +111,23 @@ class Project:
                     'first time run depsland, init production environment...',
                     ':v2'
                 )
-                dir = fs.xpath('../..')
-                fs.make_link(fs.xpath('..'), f'{dir}/current')
+                fs.make_link(fs.xpath('..'), dir1)
                 fs.make_shortcut(
-                    f'{dir}/current/Depsland.exe',
-                    f'{dir}/Depsland.lnk'
+                    f'{dir1}/Depsland.exe',
+                    f'{dir0}/Depsland.lnk',
+                    True
                 )
                 fs.make_shortcut(
-                    f'{dir}/current/Depsland (Debug).exe',
-                    f'{dir}/Depsland (Debug).lnk'
+                    f'{dir1}/Depsland (Debug).exe',
+                    f'{dir0}/Depsland (Debug).lnk',
+                    True
                 )
                 fs.make_shortcut(
-                    f'{dir}/current/Depsland.exe',
-                    '<desktop>/Depsland.lnk'
+                    f'{dir1}/Depsland.exe',
+                    '<desktop>/Depsland.lnk',
+                    True
                 )
+        
         else:
             raise Exception(self.project_mode)
         
@@ -163,8 +185,8 @@ class Project:
         extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
         
         # init files
-        dumps({}, f'{root}/pypi/index/id_2_paths.json')
-        dumps({}, f'{root}/pypi/index/name_2_vers.json')
+        fs.dump({}, f'{root}/pypi/index/id_2_paths.json')
+        fs.dump({}, f'{root}/pypi/index/name_2_vers.json')
 
 
 # -----------------------------------------------------------------------------
