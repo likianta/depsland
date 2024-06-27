@@ -38,7 +38,9 @@ def run_app(
     os.environ['DEPSLAND'] = paths.project.root
     sep = ';' if sysinfo.IS_WINDOWS else ':'
     os.environ['PYTHONPATH'] = sep.join((
-        '.',  # cur_dir
+        '.',  # "current" dir
+        'lib',  # frequently used dir
+        'src',  # frequently used dir
         manifest['start_directory'],  # app_dir
         paths.apps.get_packages(appid, version),  # pkg_dir
     ))
