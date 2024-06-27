@@ -8,7 +8,7 @@ Depsland is a tool for user with non-developing experience to install, launch, u
 
 ### Installation
 
-Download the latest release from *TODO*
+Download the latest release from ... (*TODO*)
 
 ### Get Started
 
@@ -94,4 +94,4 @@ Finally publish:
 py -m depsland publish /the/path/to/my-hello-world-app
 ```
 
-Once published, users can type "hello_world" in searchbox on the UI to install and launch your application.
+Once published, user can input "hello_world" in searchbox on the UI to install and launch your application.

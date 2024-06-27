@@ -2,6 +2,7 @@ import os
 import typing as t
 from collections import defaultdict
 
+# from lk_utils import Signal
 from lk_utils import fs
 
 from .. import paths
@@ -17,7 +18,10 @@ class T:
 
 
 def link_venv(
-    pkg_ids: T.PackageIds, venv_dir: T.AbsPath, overwrite: bool = None
+    pkg_ids: T.PackageIds,
+    venv_dir: T.AbsPath,
+    overwrite: bool = None,
+    # _signal: Signal[int] = None
 ) -> None:
     dirname_2_name_ids = defaultdict(list)
     for pid in pkg_ids:
