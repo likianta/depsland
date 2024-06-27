@@ -40,14 +40,15 @@ class LocalPyPI:
     ) -> T.Path:
         if custom_url:
             assert pkg_id in custom_url, (pkg_id, custom_url)
-            resp = self.pip.run(
-                ('download', custom_url),
-                ('--no-deps', '--no-index', '--disable-pip-version-check'),
-                ('-d', pypi_paths.downloads),
+            resp = self.pip.download(
+                custom_url, pypi_paths.downloads,
+                no_dependency=True, no_index=True
             )
         else:
             name, ver = self.split(pkg_id)
-            resp = self.pip.download(name, f'=={ver}', no_dependency=True)
+            resp = self.pip.download(
+                f'{name}=={ver}', pypi_paths.downloads, no_dependency=True
+            )
         for path, _ in self._parse_pip_download_response(resp):
             # fix path if it's a symlink
             path = '{}/{}'.format(
@@ -70,12 +71,7 @@ class LocalPyPI:
         if not fs.exists(dst_path):
             fs.make_dirs(dst_path)
         try:
-            # https://github.com/pypa/pip/issues/12050
-            self.pip.run(
-                ('install', src_path),
-                ('--no-deps', '--disable-pip-version-check'),
-                ('-t', dst_path),
-            )
+            self.pip.install(src_path, dst_path, no_dependency=True)
         except Exception as e:
             fs.remove_tree(dst_path)
             raise e

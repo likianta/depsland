@@ -61,7 +61,7 @@ def init_user_manifest(
     
     manifest.pop('start_directory')  # noqa
     manifest['version'] = version
-    manifest['dependencies'] = 'pyproject.toml'
+    manifest['dependencies'] = 'poetry.lock'
     
     if x := _deduce_target(root, appname, appid):
         manifest['launcher']['target'] = x['target']

@@ -80,11 +80,14 @@ def _flatten_dependencies(
 def _get_top_package_names(
     working_root: str, pyproj_data: dict
 ) -> t.Iterator[T.PackageName]:
-    dev_group_names = tuple(
-        normalize_name(x)
-        for x in pyproj_data
-        ['tool']['poetry']['group']['dev']['dependencies'].keys()
-    )
+    try:
+        dev_group_names = tuple(
+            normalize_name(x)
+            for x in pyproj_data
+            ['tool']['poetry']['group']['dev']['dependencies'].keys()
+        )
+    except KeyError:
+        dev_group_names = ()
     content: str = run_cmd_args(
         (sys.executable, '-m', 'poetry'),
         ('show', '-t', '--no-ansi'),
