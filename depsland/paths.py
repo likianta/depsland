@@ -84,7 +84,7 @@ class Project:
                     fs.load('{}/.depsland_project.json'.format(dir1))
                     .get('depsland_version') != curr_ver
                 ):
-                    fs.remove_tree(dir1)
+                    fs.remove(dir1)
                 # fmt:on
             if not exists(dir1):
                 '''

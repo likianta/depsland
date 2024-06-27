@@ -1585,25 +1585,25 @@ reference = "likianta-host"
 
 [[package]]
 name = "lk-utils"
-version = "2.10.1"
+version = "2.10.3b0"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_utils-2.10.1-py3-none-any.whl", hash = "sha256:f0f8cd255cfd1bde83553be6e35dee2ca99a6bb3df39b2c8ada186297deeab03"},
+    {file = "lk_utils-2.10.3b0-py3-none-any.whl", hash = "sha256:1f3918fa7ddb2d4a3b8429a13212352296fb5ef31b1eef3f0fcbbadc53afb87c"},
 ]
 
 [package.dependencies]
-argsense = ">=0.5.7,<0.6.0"
-lk-logger = ">=5.7.4,<6.0.0"
+argsense = ">=0.5.8,<0.6.0"
+lk-logger = ">=5.7.5,<6.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
 rich = ">=13.0.0,<14.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2006"
+reference = "likianta-host"
 
 [[package]]
 name = "lxml"
@@ -4605,4 +4605,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "10c5aab5bb426ff7919b015432e10e6fe1f66c1d53280926afc2681a27a31556"
+content-hash = "40bb518a72a72d9a7e177b9d59bb16912205df10d62a50bfbfb814bb994aba37"

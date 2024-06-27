@@ -3,6 +3,8 @@ import shutil
 import typing as t
 from zipfile import ZipFile
 
+from lk_utils import fs
+
 _IS_WINDOWS = os.name == 'nt'
 
 
@@ -10,37 +12,33 @@ def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> str:
     """
     ref: https://likianta.blog.csdn.net/article/details/126710855
     """
-    if os.path.exists(file_o):
+    if fs.exists(file_o):
         if not _overwrite(file_o, overwrite):
             return file_o
     # if dir_i.endswith('/.'):
     #     dir_i = dir_i[:-2]
-    dir_i_parent = os.path.dirname(dir_i)
+    dir_i_parent = fs.parent(dir_i)
     with ZipFile(file_o, 'w') as z:
-        z.write(dir_i, arcname=os.path.basename(dir_i))
-        for root, dirs, files in os.walk(dir_i):
-            for fn in files:
-                z.write(
-                    fp := os.path.join(root, fn),
-                    arcname=os.path.relpath(fp, dir_i_parent),
-                )
+        z.write(dir_i, arcname=fs.basename(dir_i))
+        for f in fs.findall_files(dir_i):
+            z.write(f.path, arcname=fs.relpath(f.path, dir_i_parent))
     return file_o
 
 
 def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
-    if os.path.exists(file_o):
+    if fs.exists(file_o):
         if not _overwrite(file_o, overwrite):
             return file_o
     if file_o.endswith('.fzip'):  # trick: just rename file_i to file_o
         shutil.copyfile(file_i, file_o)
         return file_o
     with ZipFile(file_o, 'w') as z:
-        z.write(file_i, arcname=os.path.basename(file_i))
+        z.write(file_i, arcname=fs.basename(file_i))
     return file_o
 
 
 def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
-    if os.path.exists(path_o):
+    if fs.exists(path_o):
         if not _overwrite(path_o, overwrite):
             return path_o
     
@@ -53,7 +51,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
         # if dir_o.endswith('/.'):
         #     dir_o = dir_o[:-2]
     
-    dirname_o = os.path.basename(os.path.abspath(dir_o))
+    dirname_o = fs.basename(fs.abspath(dir_o))
     with ZipFile(file_i, 'r') as z:
         if _IS_WINDOWS:
             # avoid path limit error in windows.
@@ -63,12 +61,12 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
             z.extractall(dir_o)
     
     dlist = tuple(
-        x for x in os.listdir(dir_o) if x not in ('.DS_Store', '__MACOSX')
+        x for x in os.listdir(dir_o)
+        if x not in ('.DS_Store', '__MACOSX')
     )
     if len(dlist) == 1:
         x = dlist[0]
-        if os.path.isdir(f'{dir_o}/{x}'):
-            # print(os.listdir(f'{dir_o}/{x}'), ':v')
+        if fs.isdir(f'{dir_o}/{x}'):
             if x == dirname_o:
                 print(
                     f'move up sub folder [cyan]({x})[/] to be'
@@ -76,7 +74,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
                     ':vspr',
                 )
                 dir_m = f'{dir_o}_tmp'
-                assert not os.path.exists(dir_m)
+                assert not fs.exists(dir_m)
                 os.rename(dir_o, dir_m)
                 shutil.move(f'{dir_m}/{x}', dir_o)
                 shutil.rmtree(dir_m)
@@ -108,9 +106,9 @@ def _overwrite(src: str, scheme: t.Optional[bool]) -> bool:
     if scheme is None:
         return False
     if scheme is True:
-        if os.path.isfile(src):
+        if fs.isfile(src):
             os.remove(src)
-        elif os.path.islink(src):
+        elif fs.islink(src):
             os.unlink(src)
         else:
             shutil.rmtree(src)
