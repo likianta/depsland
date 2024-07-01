@@ -21,7 +21,10 @@ def _get_session() -> dict:
 
 def make_progress_bar() -> t.Callable[[], None]:
     _prog_ctrl.reset()
-    prog_ui = st.progress(0.0, 'Initializing')
+    
+    prog_empty = st.empty()
+    with prog_empty:
+        prog_ui = st.progress(0.0, 'Initializing')
     
     @_prog_ctrl.updated
     def _(prog: float, msg: str) -> None:
@@ -30,6 +33,8 @@ def make_progress_bar() -> t.Callable[[], None]:
     
     def callback_done() -> None:
         prog_ui.progress(1.0, 'Installation done')
+        with prog_empty:
+            st.success('Installation done')
     
     return callback_done
 

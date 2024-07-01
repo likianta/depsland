@@ -2,10 +2,10 @@ if __name__ == '__main__':
     __package__ = 'depsland.webui'
 
 import streamlit as st
-from lk_logger import parallel_printing
-from streamlit_extras.row import row as st_row
+# from lk_logger import parallel_printing
+# from streamlit_extras.row import row as st_row
 
-from . import bottom_bar
+# from . import bottom_bar
 from . import installed_apps
 from . import progress_bar
 from . import settings
@@ -32,7 +32,7 @@ def main(default_appid: str = '', _run_at_once: bool = False) -> None:
     with tabs[0]:
         search_bar(default_appid, _run_at_once)
         installed_apps.main(_get_session()['placeholder'])
-        bottom_bar.main()
+        # bottom_bar.main()
     with tabs[1]:
         settings.main()
 
@@ -60,16 +60,23 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
             prog_callback = progress_bar.make_progress_bar()
         with placeholder:
             with st.spinner(f'Installing "{appid}"...'):
-                logger = bottom_bar.get_logger()
-                logger.clear()
-                with parallel_printing(logger):
-                    # progress_bar.play_demo()  # TEST
-                    if appid == 'depsland':
-                        self_upgrade()
-                        st.warning('Please restart the app to see the changes.')
-                    else:
-                        install_by_appid(appid)
-                    prog_callback()
+                # logger = bottom_bar.get_logger()
+                # logger.clear()
+                # with parallel_printing(logger):
+                #     # progress_bar.play_demo()  # TEST
+                #     if appid == 'depsland':
+                #         self_upgrade()
+                #         st.warning('Please restart the app to see the changes.')
+                #     else:
+                #         install_by_appid(appid)
+                #     prog_callback()
+                
+                if appid == 'depsland':
+                    self_upgrade()
+                    st.warning('Please restart the app to see the changes.')
+                else:
+                    install_by_appid(appid)
+                prog_callback()
 
 
 if __name__ == '__main__':
