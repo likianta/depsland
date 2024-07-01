@@ -16,6 +16,8 @@ from ...oss import T as T1
 from ...oss import get_oss_server
 from ...platform.launcher import bat_2_exe
 from ...platform.system_info import IS_WINDOWS
+from ...pypi import pypi
+from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...venv.target_venv import get_library_root
@@ -189,8 +191,7 @@ def _upload(
             )
             
             if action in ('append', 'update'):
-                # print(info1['paths'], ':v')
-                zipped_file = _compress_dependency(info1['id'], info1['paths'])
+                zipped_file = _compress_dependency(info1['id'], info1['files'])
             else:
                 zipped_file = None
             
@@ -216,30 +217,39 @@ def _upload(
         )
         return zipped_file
     
-    _library_root = get_library_root(manifest_new.start_directory)
+    _lib_root = get_library_root(manifest_new.start_directory)
     
     def _compress_dependency(
-        package_id: str, assets: t.Tuple[T.Path, ...]
+        package_id: str, relpaths: t.Tuple[str, ...]
     ) -> T.Path:
-        root_i = _library_root
-        root_m = f'{temp_dir}/{package_id}'
-        root_o = temp_dir
-        fs.make_dir(root_m)
+        path0 = '{}/{}.zip'.format(paths.pypi.downloads, package_id)
+        path1 = '{}/{}/{}'.format(paths.pypi.installed, *package_id.split('-'))
+        if fs.exists(path0):
+            assert fs.exists(path1)
+            return path0
         
-        for relpath_i in assets:
-            abspath_i = f'{root_i}/{relpath_i}'
-            abspath_m = f'{root_m}/{relpath_i}'
-            # # fs.make_link(abspath_i, abspath_m, True)
-            #   FIXME: `fs.make_link` doesn't work for `ziptool.compress_dir`.
-            if os.path.isdir(abspath_i):
-                fs.copy_tree(abspath_i, abspath_m, True)
+        reldirs = set()
+        for p in relpaths:
+            if p.startswith('../'):
+                reldirs.add('bin')
             else:
-                fs.copy_file(abspath_i, abspath_m, True)
-        # print(os.listdir(root_m), ':v')
+                if '/' in p:
+                    reldirs.add(p.rsplit('/', 1)[0])
+        init_target_tree(path1, reldirs)
         
-        abspath_o = f'{root_o}/{package_id}.zip'
-        ziptool.compress_dir(root_m, abspath_o)
-        return abspath_o
+        # copy files
+        for p in relpaths:
+            if p.startswith('../'):
+                file_i = fs.normpath('{}/{}'.format(_lib_root, p))
+                file_o = '{}/bin/{}'.format(path1, fs.basename(p))
+            else:
+                file_i = '{}/{}'.format(_lib_root, p)
+                file_o = '{}/{}'.format(path1, p)
+            fs.copy_file(file_i, file_o)
+        
+        ziptool.compress_dir(path1, path0, True)
+        pypi.index.update_index(package_id, path0, path1)
+        return path0
     
     # -------------------------------------------------------------------------
     

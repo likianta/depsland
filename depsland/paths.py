@@ -291,6 +291,7 @@ class Oss:  # note: this is a local dir that mimics OSS structure.
         self.root = f'{project.root}/oss'
         self.apps = f'{self.root}/apps'
         self.test = f'{self.root}/test'
+        self.pypi = f'{self.root}/pypi.pkl'
 
 
 class PyPI:

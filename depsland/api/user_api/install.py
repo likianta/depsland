@@ -22,7 +22,6 @@ from ...platform import sysinfo
 from ...platform.launcher import create_desktop_shortcut
 from ...pypi import pypi
 from ...pypi.pypi import LocalPyPI
-from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...verspec import compare_version
@@ -62,10 +61,9 @@ def install_local(
     else:
         custom_oss_root = None
     
-    init_target_tree(
-        m1,
-        d := '{}/{}/{}'.format(paths.project.apps, m1['appid'], m1['version']),
-    )
+    m1.make_tree(d := '{}/{}/{}'.format(
+        paths.project.apps, m1['appid'], m1['version']
+    ))
     m1.start_directory = d
     
     appid, name = m1['appid'], m1['name']
@@ -187,7 +185,7 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
             manifest_new['appid'],
             manifest_new['version'],
         )
-        init_target_tree(manifest_new)
+        manifest_new.make_tree()
         fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
         return manifest_new
     

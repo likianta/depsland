@@ -401,7 +401,6 @@ def _get_manifest_path(target: str, ensure_exists: bool = True) -> str:
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     from .manifest import load_manifest
     from .oss import get_oss_client
-    from .utils import init_target_tree
     from .utils import make_temp_dir
     
     temp_dir = make_temp_dir()
@@ -412,7 +411,7 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     manifest_new.start_directory = '{}/{}/{}'.format(
         paths.project.apps, manifest_new['appid'], manifest_new['version']
     )
-    init_target_tree(manifest_new)
+    manifest_new.make_tree()
     fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
     
     if x := _get_dir_to_last_installed_version(appid):

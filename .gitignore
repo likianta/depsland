@@ -17,7 +17,7 @@
 /dist/**
 /docs/*/*.html
 /lib/
-/oss/*/*
+/oss/**
 /pypi/**
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
@@ -38,6 +38,9 @@ __pycache__/
 !/chore/pypi_self/index/snapdep/
 !/dist/
 !/dist/standalone/
+!/oss/apps/
+!/oss/pypi/
+!/oss/test/
 !/python/README.md
 !/python/README.zh.md
 !/pypi/*/

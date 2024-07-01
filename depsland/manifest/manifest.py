@@ -15,6 +15,7 @@ from ..depsolver import resolve_dependencies
 from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
+from ..utils import init_target_tree
 
 
 # noinspection PyTypedDict
@@ -315,6 +316,18 @@ class Manifest:
             data0['assets'] = self._plainify_assets(data1['assets'])
         
         dumps(data0, file)
+    
+    def make_tree(self, root: str = None) -> None:
+        if not root:
+            root = self.start_directory
+        relpaths = []
+        for k, v in self._manifest['assets'].items():
+            if v.type == 'dir':
+                relpaths.append(k)
+            else:
+                if '/' in k:
+                    relpaths.append(k.rsplit('/', 1)[0])
+        init_target_tree(root, relpaths)
     
     # -------------------------------------------------------------------------
     

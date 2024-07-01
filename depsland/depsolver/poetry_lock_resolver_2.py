@@ -27,9 +27,13 @@ class T:
     PackageInfo = t.TypedDict('PackageInfo', {
         'id'      : PackageId,
         'name'    : PackageName,
-        'paths'   : t.Iterable[str],
-        #   the paths will finally be used in `depsland.api.dev_api.publish -
-        #   ._upload.upload_dependencies_`
+        # the files will finally be used in `depsland.api.dev_api.publish -
+        # ._upload.upload_dependencies_._compress_dependency`
+        # 'files'   : t.TypedDict('Files', {
+        #     'root' : str,  # absolute dirpath
+        #     'paths': t.Iterable[str],  # relative filepath
+        # }),
+        'files'   : t.Iterable[str],  # (relative_file_path, ...)
         'version' : ExactVersion,
         # 'dependencies': t.Sequence[PackageId],
         'appendix': t.TypedDict('Appendix', {
@@ -181,22 +185,13 @@ def _fill_packages_info(
     all_pkg_refs = dict(index_all_package_references(lib_root))
     print(pyproj_root, lib_root, len(all_pkg_refs), ':l')
     
-    # TEST
-    # fs.dump(tiled_pkgs, 'tests/01.txt')
-    # fs.dump(tuple(all_pkg_refs), 'tests/02.txt')
-    # for id in tiled_pkgs:
-    #     if id.split('-')[0] not in all_pkg_refs:
-    #         print(id, ':v4si2')
-    # sys.exit()
-    
     for item in poetry_data['package']:
         name = normalize_name(item['name'])
         ver = item['version']
         id = f'{name}-{ver}'
         if id in tiled_pkgs:
             record_file = '{}/RECORD'.format(all_pkg_refs[name][1])
-            src_dirs = set(analyze_records(record_file))
-            src_dirs = tuple(sorted(src_dirs))  # prettify and freeze
+            relpaths = tuple(sorted(analyze_records(record_file)))
             if url := get_custom_url():
                 appendix = {'custom_url': url}
             else:
@@ -205,7 +200,7 @@ def _fill_packages_info(
                 'id'      : id,
                 'name'    : name,
                 'version' : ver,
-                'paths'   : src_dirs,
+                'files'   : relpaths,
                 'appendix': appendix,  # noqa
             }
             yield name, info

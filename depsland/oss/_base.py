@@ -13,16 +13,10 @@ class BaseOss:
     
     def delete(self, link: str) -> None:
         raise NotImplementedError
-
+    
     @staticmethod
-    def _update_progress(
-            description: str,
-            bytes_consumed: int, total_bytes: int
-    ) -> None:
-        print('{}: {:.2%}'.format(
-            description,
-            bytes_consumed / total_bytes
-        ), end='\r')
+    def _update_progress(desc: str, curr_bytes: int, total_bytes: int) -> None:
+        print('{}: {:.2%}'.format(desc, curr_bytes / total_bytes), end='\r')
 
 
 class BaseOssPath:

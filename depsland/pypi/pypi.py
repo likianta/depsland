@@ -29,6 +29,9 @@ class LocalPyPI:
         self.pip = pip
         self.update_index = self.index.update_index
     
+    def __contains__(self, pkg_id: str) -> bool:
+        return self.index.has_id(pkg_id)
+    
     # -------------------------------------------------------------------------
     # main methods
     

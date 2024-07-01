@@ -11,7 +11,6 @@ import sys
 import typing as t
 
 from lk_utils import fs
-from lk_utils import loads
 from lk_utils import run_cmd_args
 
 from . import finder
@@ -30,10 +29,14 @@ class T:
     PackageInfo = t.TypedDict(
         'PackageInfo',
         {
-            'package_id': PackageId,
-            'version': ExactVersion,
-            'url': str,
-            'paths': t.Iterable[PathName],
+            'package_id'  : PackageId,
+            'version'     : ExactVersion,
+            'url'         : str,
+            # 'files'       : t.TypedDict('Files', {
+            #     'root' : str,  # absolute dirpath
+            #     'paths': t.Iterable[str],  # relative filepath
+            # }),
+            'files'       : t.Iterable[str],  # (relative_file_path, ...)
             'dependencies': t.List[PackageName],
         },
     )
@@ -63,7 +66,7 @@ def _find_dist_info_dirs(library_root: T.Path) -> t.Iterator[t.Tuple[str, str]]:
 
 def _get_custom_url(pkg_dir: str) -> t.Optional[str]:
     if fs.exists(f := f'{pkg_dir}/direct_url.json'):
-        data = loads(f)
+        data = fs.load(f)
         return data['url']
     return None
 
@@ -163,13 +166,13 @@ class LibraryIndexer:
         
         record_file = f'{dpath}/RECORD'
         assert fs.exists(record_file)
-        path_names = set(analyze_records(record_file))
+        relpaths = set(analyze_records(record_file))
         
         return {
-            'package_id': pkg_id,
-            'version': ver,
-            'url': url or '',  # noqa
-            'paths': tuple(sorted(path_names)),
+            'package_id'  : pkg_id,
+            'version'     : ver,
+            'url'         : url or '',  # noqa
+            'files'       : tuple(sorted(relpaths)),
             'dependencies': [],
         }
     
@@ -293,8 +296,8 @@ def analyze_metadata(
         Requires-Dist: sphinx ~= 4.0 ; extra == "docs"
         Requires-Dist: sphinx-autodoc-typehints!=1.23.4,>=1.23; extra == 'docs'
     """
+    #                       ╭── 1 ──╮      ╭─ 2 ─╮   ╭─ 3 ─╮
     pattern = re.compile(r'^([-.\w]+)(?: \(([^)]+)\)|([^;]+))?')
-    #                       ^1------^      ^2----^   ^3----^
     
     def walk() -> t.Iterator[str]:
         with open(metadata_file, 'r', encoding='utf-8') as f:
@@ -313,7 +316,7 @@ def analyze_metadata(
                         break
                 # assert flag == 1
                 # print(':v', line.rstrip())
-                yield line[len(head) :].strip()
+                yield line[len(head):].strip()
     
     for line in walk():
         if ';' in line:
@@ -332,19 +335,8 @@ def analyze_metadata(
         yield name, verspecs
 
 
-def analyze_records(record_file: str) -> t.Iterator[T.PathName]:
-    records = loads(record_file, 'plain').splitlines()
+def analyze_records(record_file: str) -> t.Iterator[str]:
+    records = fs.load(record_file, 'plain').splitlines()
     for line in records:
-        path = fs.normpath(line.rsplit(',', 2)[0])
-        if path.startswith('../'):
-            # e.g. '../../../bin/dulwich'
-            # TODO: currently we don't take account of this case.
-            # print(':vs', 'discard external binary', path)
-            continue
-            # assert path.lstrip('./').startswith('bin/')
-            # raise Exception(path)
-        elif path.startswith('bin/'):
-            path_name = 'bin/{}'.format(path[4:].split('/', 1)[0])
-        else:
-            path_name = path.split('/', 1)[0]
-        yield path_name
+        relpath = fs.normpath(line.rsplit(',', 2)[0])
+        yield relpath

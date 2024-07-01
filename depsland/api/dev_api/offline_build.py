@@ -34,7 +34,6 @@ from ...platform import sysinfo
 from ...platform.launcher import bat_2_exe
 from ...platform.launcher import create_launcher
 from ...pypi import pypi
-from ...utils import init_target_tree
 from ...venv import link_venv
 
 
@@ -137,7 +136,7 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     
     root_i = manifest['start_directory']
     root_o = f'{dst_dir}/source/apps/{manifest["appid"]}/{manifest["version"]}'
-    init_target_tree(manifest, root_o)
+    manifest.make_tree(root_o)
     
     # info1: T.AssetInfo
     for action, relpath, (info0, info1) in diff['assets']:
