@@ -330,7 +330,6 @@ def show(appid: str, version: str = None) -> None:
 @cli.cmd()
 def view_manifest(manifest: str = '.') -> None:
     from .manifest import load_manifest
-    
     manifest = load_manifest(_get_manifest_path(manifest))
     print(manifest, ':l')
 

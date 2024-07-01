@@ -34,6 +34,10 @@ class T(T0):
 
 
 def get_app_info(manifest_file: str) -> T.Appinfo:
+    """
+    load origin manifest file, copy it to `<depsland>/apps` hosted directory -
+    for unified management. and refresh the history file.
+    """
     data_i: T.Manifest = load_manifest(manifest_file)
     data_o: T.Appinfo = {
         'appid'  : data_i['appid'],

@@ -23,11 +23,11 @@ class BaseOssPath:
     appid: str
     root: str
     
-    def __init__(self, appid: str):
+    def __init__(self, appid: str) -> None:
         self.appid = appid
         # `self.root` needs to be implemented in subclasses
     
-    def __str__(self):
+    def __str__(self) -> str:
         return f'oss:/depsland/apps/{self.appid}'
     
     @property

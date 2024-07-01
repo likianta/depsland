@@ -9,7 +9,7 @@ from .normalization import split_filename_of_package
 from .normalization import normalize_verspecs
 
 
-def compare_version(v0: str, comp: str, v1: str, _patch=True) -> bool:
+def compare_version(v0: str, comp: str, v1: str, _patch: bool = True) -> bool:
     """
     args:
         comp: '>', '>=', '==', '<=', '<'

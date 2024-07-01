@@ -1,5 +1,6 @@
 import json
 import typing as t
+from functools import cache
 
 from lk_utils import fs
 from lk_utils import run_cmd_args
@@ -39,6 +40,7 @@ class T:
     Dependencies1 = t.Dict[str, dict]  # see T0.Packages
 
 
+@cache
 def resolve_dependencies(
     deps0: T.Dependencies0, proj_dir: str
 ) -> T.Dependencies1:
@@ -51,6 +53,7 @@ def resolve_dependencies(
     else:
         specfile = None
     lock_file = _get_snapshot_file(specfile or deps0)
+    # raise Exception
     if fs.exists(lock_file):
         return fs.load(lock_file)
     

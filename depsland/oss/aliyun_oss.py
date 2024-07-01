@@ -46,6 +46,7 @@ class AliyunOss(BaseOss):
         @atexit.register
         def _save_local_manifest() -> None:
             if self._pypi_has_changed:
+                print('save updated pypi manifest', len(self._pypi))
                 fs.dump(self._pypi, self.path.local_manifest)
     
     @property
@@ -58,16 +59,18 @@ class AliyunOss(BaseOss):
     
     def upload(self, file: str, link: str) -> None:
         name = basename(file)
-        if name not in self._pypi:
-            # noinspection PyUnusedLocal
-            resp = self._bucket.put_object_from_file(
-                link, file, progress_callback=partial(
-                    self._update_progress, f'uploading {name}'
-                )
+        if x := link.startswith(self.path.pypi + '/'):
+            if name in self._pypi:
+                return
+        self._bucket.put_object_from_file(
+            link, file, progress_callback=partial(
+                self._update_progress, f'uploading {name}'
             )
+        )
+        if x:
             self._pypi.add(name)
             self._pypi_has_changed = True
-            print(':rpt2', f'upload done [cyan]({name})[/]')
+        print(':rpt2', f'upload done [cyan]({name})[/]')
     
     def download(self, link: str, file: str) -> None:
         name = basename(file)
@@ -81,11 +84,16 @@ class AliyunOss(BaseOss):
     
     def delete(self, link: str) -> None:
         name = basename(link)
-        if name in self._pypi:
+        if link.startswith(self.path.pypi + '/'):
+            if name in self._pypi:
+                self._bucket.delete_object(link)
+                self._pypi.remove(name)
+                self._pypi_has_changed = True
+            else:
+                return
+        else:
             self._bucket.delete_object(link)
-            self._pypi.remove(name)
-            self._pypi_has_changed = True
-            print(':rpt2', f'[dim]delete done [cyan]({name})[/][/]')
+        print(':rpt2', f'[dim]delete done [cyan]({name})[/][/]')
     
     def pypi_sync(self) -> None:  # not used for now
         self.upload(

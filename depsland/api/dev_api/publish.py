@@ -42,10 +42,10 @@ def main(
     manifest = load_manifest(manifest_file)
     
     if upload_dependencies:
-        # print(manifest['experiments'], ':v')
         if manifest['experiments']['package_provider'] != 'oss':
             print(':v3s', 'force change "package_provider" to "oss"')
             manifest['experiments']['package_provider'] = 'oss'
+        # print(manifest['experiments'], ':v')
     else:
         assert manifest['experiments']['package_provider'] == 'pypi'
     

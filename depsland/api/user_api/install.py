@@ -136,7 +136,7 @@ def _install(
         oss = get_oss_client(manifest_new['appid'])
     print(oss.path)
     
-    package_resolve = pypi
+    package_resolver = pypi
     if x := manifest_new.get('experiments'):
         if x.get('package_provider') == 'oss':
             print(':v3s', 'experimental feature: use oss as package provider')

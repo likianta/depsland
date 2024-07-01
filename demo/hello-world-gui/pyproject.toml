@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "hello-world-gui"
+version = "0.7.0"
+description = ""
+authors = ["likianta <likianta@foxmail.com>"]
+readme = "readme.md"
+packages = [{ include = "hello_world_gui" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+lk-utils = "*"
+pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.12,<3.13" }
+qmlease = "^3.0.4"
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "likianta-host"
+url = "http://likianta.pro:2006/"
+priority = "supplemental"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
