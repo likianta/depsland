@@ -48,6 +48,7 @@ class T(T0):
         ),
     ]
     
+    # fmt:off
     Dependencies0 = t.Union[
         # 1. no dependency
         None,
@@ -65,6 +66,7 @@ class T(T0):
         t.Dict[str, t.Union[str, dict, list]],
     ]
     Dependencies1 = T0.Packages
+    # fmt:on
     
     Launcher0 = t.TypedDict(
         'Launcher0',
@@ -85,6 +87,14 @@ class T(T0):
     #   same with Launcher0 but 'target' and 'icon' are RelPath.
     #   FIXME: why we use relpath?
     
+    Experiments0 = t.TypedDict(
+        'Experiments0',
+        {
+            'package_provider': t.Literal['oss', 'pypi']
+        },
+    )
+    Experiments1 = Experiments0
+    
     # -------------------------------------------------------------------------
     
     # Manifest0: original manifest
@@ -100,6 +110,7 @@ class T(T0):
             'assets'          : Assets0,
             'dependencies'    : Dependencies0,
             'launcher'        : Launcher0,
+            'experiments'     : Experiments0,
             'depsland_version': str,
         },
         total=False,
@@ -123,6 +134,7 @@ class T(T0):
             'assets'          : Assets1,
             'dependencies'    : Dependencies1,
             'launcher'        : Launcher1,
+            'experiments'     : Experiments1,
             'depsland_version': str,
         },
     )
@@ -230,6 +242,9 @@ class Manifest:
                 'add_to_start_menu': False,
                 'show_console'     : True,
             },
+            'experiments'     : {
+                'package_provider': 'pypi',
+            },
             'depsland_version': __version__,
         }
         
@@ -273,6 +288,9 @@ class Manifest:
                 'launcher'        : self._update_launcher(
                     data0.get('launcher', {}), self._start_directory
                 ),
+                'experiments'     : data0.get('experiments', {
+                    'package_provider': 'pypi'
+                }),
                 'depsland_version': data0.get(
                     'depsland_version', __version__
                 ),
@@ -312,6 +330,9 @@ class Manifest:
     def start_directory(self, path: T.AnyPath) -> None:
         path = fs.abspath(path)
         self._start_directory = path
+    
+    def get(self, item: str) -> t.Any:
+        return self._manifest.get(item)  # noqa
     
     def __getitem__(self, item: str) -> t.Any:
         if item == 'start_directory':

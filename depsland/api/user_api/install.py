@@ -21,6 +21,7 @@ from ...platform import create_launcher
 from ...platform import sysinfo
 from ...platform.launcher import create_desktop_shortcut
 from ...pypi import pypi
+from ...pypi.pypi import LocalPyPI
 from ...utils import init_target_tree
 from ...utils import make_temp_dir
 from ...utils import ziptool
@@ -31,6 +32,7 @@ class T(T0):
     LauncherInfo = T0.Launcher  # alias
     Oss = T1.Oss
     Path = str
+    PackageResolver = t.Union[LocalPyPI, T1.Oss]
     ProgressStage = t.Literal['assets', 'deps', 'venv', 'cleanup']
 
 
@@ -136,8 +138,14 @@ def _install(
         oss = get_oss_client(manifest_new['appid'])
     print(oss.path)
     
+    package_resolve = pypi
+    if x := manifest_new.get('experiments'):
+        if x.get('package_provider') == 'oss':
+            print(':v3s', 'experimental feature: use oss as package provider')
+            package_resolver = oss
+    
     _install_files(manifest_new, manifest_old, oss, dir_m)
-    _install_packages(manifest_new, manifest_old)
+    _install_packages(manifest_new, manifest_old, package_resolver)
     _create_launchers(manifest_new)
     
     _save_history(manifest_new['appid'], manifest_new['version'])
@@ -269,7 +277,10 @@ def _install_files(
 
 
 def _install_packages(
-    manifest_new: T.Manifest, manifest_old: T.Manifest,
+    manifest_new: T.Manifest,
+    manifest_old: T.Manifest,
+    # package_resolver: t.Literal['oss', 'pypi'] = 'pypi',
+    package_resolver: T.PackageResolver = pypi,
 ) -> None:
     if not manifest_new['dependencies']:
         print('no dependency for this project')
@@ -306,7 +317,7 @@ def _install_packages(
     if tasks_ignitor:
         print(len(tasks_ignitor))
         
-        def download_and_install(info: T.PackageInfo) -> None:
+        def pip_download_and_install(info: T.PackageInfo) -> None:
             if info['id'] in pypi.index.id_2_paths:
                 # this case should always be False in production environment. -
                 # but may be True in development environment.
@@ -317,12 +328,19 @@ def _install_packages(
             )
             pypi.install_one(info['id'], dl_path)
         
-        for i, info in enumerate(tasks_ignitor, 1):
-            progress_updated.emit(
-                'deps', len(tasks_ignitor), i,
-                'fetching dependency "{}"'.format(info['id'])
+        def oss_download_and_install(info: T.PackageInfo) -> None:
+            resource_path = '{}/{}'.format(_oss.path.pypi, info['id'])
+            download_path = '{}/{}.zip'.format(paths.pypi.downloads, info['id'])
+            #   note: we use '<name>-<id>.zip' as downloaded filename, the -
+            #   normalization module supports segamenting this format.
+            #   see `depsland.normalization.split_filename_of_package`.
+            install_path = '{}/{}/{}'.format(
+                paths.pypi.installed, info['name'], info['version']
             )
-            download_and_install(info)
+            
+            _oss.download(resource_path, download_path)
+            ziptool.extract_file(download_path, install_path)
+            pypi.index.update_index(info['id'], download_path, install_path)
         
         # FIXME: thread_pool makes pip install stucked, and ctrl+c cannot -
         #   terminate the process.
@@ -335,6 +353,19 @@ def _install_packages(
         #     for info in tasks_ignitor
         # ]
         # for x in tasks: x.result()
+        
+        if package_resolver is pypi:
+            resolve = pip_download_and_install
+        else:
+            _oss: T.Oss = package_resolver
+            resolve = oss_download_and_install
+        
+        for i, info in enumerate(tasks_ignitor, 1):
+            progress_updated.emit(
+                'deps', len(tasks_ignitor), i,
+                'fetching dependency "{}"'.format(info['id'])
+            )
+            resolve(info)
     
     progress_updated.emit('cleanup', 2, 1, 'linking venv')
     venv_dir = paths.apps.make_packages(

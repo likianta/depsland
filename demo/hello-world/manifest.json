@@ -1,7 +1,7 @@
 {
     "appid": "hello_world",
     "name": "Hello World",
-    "version": "0.5.0",
+    "version": "0.5.5",
     "assets": {
         "src": "all"
     },
@@ -19,6 +19,9 @@
         "add_to_desktop": false,
         "add_to_start_menu": false,
         "show_console": true
+    },
+    "experiments": {
+        "package_provider": "oss"
     },
     "depsland_version": "0.8.0"
 }

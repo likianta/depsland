@@ -38,6 +38,15 @@ def main(
 ) -> None:
     app_info = get_app_info(manifest_file)
     manifest = load_manifest(manifest_file)
+    
+    if upload_dependencies:
+        # print(manifest['experiments'], ':v')
+        if manifest['experiments']['package_provider'] != 'oss':
+            print(':v3s', 'force change "package_provider" to "oss"')
+            manifest['experiments']['package_provider'] = 'oss'
+    else:
+        assert manifest['experiments']['package_provider'] == 'pypi'
+    
     dist_dir = '{root}/dist/{name}-{ver}'.format(
         root=manifest['start_directory'],
         name=manifest['appid'],

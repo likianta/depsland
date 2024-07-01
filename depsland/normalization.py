@@ -179,14 +179,14 @@ def split_filename_of_package(filename: str) -> t.Tuple[T.Name, T.Version]:
     
     for ext in ('.whl', '.tar.gz', '.zip'):
         if filename.endswith(ext):
-            filename = remove_suffix(filename, ext)
+            barename = remove_suffix(filename, ext)
             break
     else:
         raise ValueError(filename)
     # assert ext
     if ext == '.whl':
-        a, b, _ = filename.split('-', 2)
+        a, b, _ = barename.split('-', 2)
     else:
-        a, b = filename.rsplit('-', 1)
+        a, b = barename.rsplit('-', 1)
     a = normalize_name(a)
     return a, b
