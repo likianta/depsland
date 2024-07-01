@@ -22,7 +22,7 @@
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/ui_prototype/
-/temp/*/*
+/temp/*
 /tests/
 /unittests/demo_project/hello-world/dist/
 /unittests/demo_project/hello-world/manifest.pkl
