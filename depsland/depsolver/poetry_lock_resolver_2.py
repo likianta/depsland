@@ -179,7 +179,15 @@ def _fill_packages_info(
     
     lib_root = get_library_root(pyproj_root)
     all_pkg_refs = dict(index_all_package_references(lib_root))
-    print(lib_root, len(all_pkg_refs))
+    print(pyproj_root, lib_root, len(all_pkg_refs), ':l')
+    
+    # TEST
+    # fs.dump(tiled_pkgs, 'tests/01.txt')
+    # fs.dump(tuple(all_pkg_refs), 'tests/02.txt')
+    # for id in tiled_pkgs:
+    #     if id.split('-')[0] not in all_pkg_refs:
+    #         print(id, ':v4si2')
+    # sys.exit()
     
     for item in poetry_data['package']:
         name = normalize_name(item['name'])

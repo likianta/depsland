@@ -27,7 +27,27 @@ class T:
 
 
 def get_library_root(working_root: str) -> T.LibraryPath:
+    """
+    find venv root (the "site-packages" folder) by `poetry env` command.
+    FIXME: in poetry v1.8.3, the `poetry env` command doesn't work properly -
+        since it ignores `--directory ...` option.
+        see issue tracker at https://github.com/python-poetry/poetry/issues/9493
+        we use a workaround to fix it, see code below.
+    """
     from ...platform.system_info import IS_WINDOWS
+    
+    # wait for poetry to fix the issue.
+    # venv_root = fs.normpath(
+    #     run_cmd_args(
+    #         (*_poetry, 'env', 'info'),
+    #         ('--path', '--no-ansi'),
+    #         ('--directory', working_root),
+    #     )
+    # )
+    
+    # workaround
+    pyproj_file = '{}/pyproject.toml'.format(working_root)
+    proj_name = fs.load(pyproj_file)['tool']['poetry']['name']
     venv_root = fs.normpath(
         run_cmd_args(
             (*_poetry, 'env', 'info'),
@@ -35,6 +55,23 @@ def get_library_root(working_root: str) -> T.LibraryPath:
             ('--directory', working_root),
         )
     )
+    if not fs.dirname(venv_root).startswith(proj_name):
+        temp = []
+        for d in fs.find_dirs(fs.parent(venv_root)):
+            if d.name.startswith(proj_name):
+                temp.append(d)
+        if temp:
+            if len(temp) == 1:
+                venv_root = temp[0].path
+                print('fix auto detected venv root to: {}'.format(venv_root))
+            else:
+                for i, d in enumerate(temp):
+                    print(i, d.name)
+                sel = int(input('select one venv root to continue: '))
+                venv_root = temp[sel].path
+        else:
+            raise FileNotFoundError('venv root not found')
+    
     if IS_WINDOWS:
         out = '{}/Lib/site-packages'.format(venv_root)
     else:
