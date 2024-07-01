@@ -38,6 +38,7 @@ def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
 
 
 def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
+    # print(file_i, path_o, overwrite, fs.exists(path_o), ':lv')
     if fs.exists(path_o):
         if not _overwrite(path_o, overwrite):
             return path_o
@@ -89,7 +90,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
     return dir_o
 
 
-def _overwrite(src: str, scheme: t.Optional[bool]) -> bool:
+def _overwrite(target: str, scheme: t.Optional[bool]) -> bool:
     """
     args:
         scheme:
@@ -106,12 +107,14 @@ def _overwrite(src: str, scheme: t.Optional[bool]) -> bool:
     if scheme is None:
         return False
     if scheme is True:
-        if fs.isfile(src):
-            os.remove(src)
-        elif fs.islink(src):
-            os.unlink(src)
+        if os.path.isdir(target):
+            shutil.rmtree(target)
+        elif os.path.isfile(target):
+            os.remove(target)
+        elif os.path.islink(target):
+            os.unlink(target)
         else:
-            shutil.rmtree(src)
+            raise Exception(target)
         return True
     if scheme is False:
-        raise FileExistsError(src)
+        raise FileExistsError(target)

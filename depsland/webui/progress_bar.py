@@ -34,7 +34,7 @@ def make_progress_bar() -> t.Callable[[], None]:
     def callback_done() -> None:
         prog_ui.progress(1.0, 'Installation done')
         with prog_empty:
-            st.success('Installation done')
+            st.success('Installation done.')
     
     return callback_done
 
