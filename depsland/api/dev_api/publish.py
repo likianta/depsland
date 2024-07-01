@@ -31,7 +31,11 @@ class T:
     Scheme = T0.Scheme
 
 
-def main(manifest_file: str, full_upload: bool = False) -> None:
+def main(
+    manifest_file: str,
+    full_upload: bool = False,
+    upload_dependencies: bool = False,
+) -> None:
     app_info = get_app_info(manifest_file)
     manifest = load_manifest(manifest_file)
     dist_dir = '{root}/dist/{name}-{ver}'.format(
@@ -54,6 +58,7 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
             if not full_upload and app_info['history']
             else init_manifest(app_info['appid'], app_info['name'])
         ),
+        upload_dependencies=upload_dependencies,
     )
     
     if oss.type in ('local', 'fake'):
@@ -101,7 +106,11 @@ def main(manifest_file: str, full_upload: bool = False) -> None:
     )
 
 
-def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
+def _upload(
+    manifest_new: T.Manifest,
+    manifest_old: T.Manifest,
+    upload_dependencies: bool = False,
+) -> T.Oss:
     # print(':lv', manifest_new, manifest_old)
     
     _check_manifest(manifest_new, manifest_old)
@@ -153,11 +162,7 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
             else:  # action == 'delete'
                 oss.delete(f'{oss.path.assets}/{info0.uid}')
     
-    # noinspection PyUnusedLocal
-    def upload_dependencies() -> None:
-        # FIXME or DELETE: since depsland v0.7, all deps are hosted in pypi or \
-        #   private website. so this function is not needed.
-        
+    def upload_dependencies_() -> None:
         # `depsland.manifest.manifest._diff_dependencies`
         action: T.Scheme
         info0: t.Optional[T.PackageInfo]
@@ -230,7 +235,8 @@ def _upload(manifest_new: T.Manifest, manifest_old: T.Manifest) -> T.Oss:
     # -------------------------------------------------------------------------
     
     upload_assets()
-    # upload_dependencies()
+    if upload_dependencies:
+        upload_dependencies_()
     
     pkl_file = _save_manifest(manifest_new)
     oss.upload(pkl_file, oss.path.manifest)

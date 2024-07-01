@@ -88,7 +88,7 @@ class LibraryIndexer:
         self.library_root = finder.get_library_root(working_root)
         print(self.library_root)
         
-        # self._all_pgk_refs = dict(quick_index_packages(self.library_root))
+        # self._all_pkg_refs = dict(quick_index_packages(self.library_root))
         self.packages = self.index_packages()
         # print(self.library_root, self.packages, ':lv')
         # print(
@@ -103,10 +103,10 @@ class LibraryIndexer:
     # -------------------------------------------------------------------------
     
     def index_packages(self) -> T.FlattenPackages:
-        all_pgk_refs: T.PackageReferences = dict(
+        all_pkg_refs: T.PackageReferences = dict(
             index_all_package_references(self.library_root)
         )
-        print(len(all_pgk_refs))
+        print(len(all_pkg_refs))
         
         # get top package names
         for filename in (
@@ -126,7 +126,7 @@ class LibraryIndexer:
         top_pkgs: T.Packages = {}
         for top_name in top_pkg_names:
             print(':i2', top_name)
-            # assert top_name in all_pgk_refs
+            # assert top_name in all_pkg_refs
             # assert top_name not in top_pkgs, (
             #     (
             #         'currently we do not support one package with multiple '
@@ -135,7 +135,7 @@ class LibraryIndexer:
             #     (top_name, top_pkgs[top_name]['version']),
             # )
             try:
-                dname, dpath = all_pgk_refs[top_name]  # dist-info dir
+                dname, dpath = all_pkg_refs[top_name]  # dist-info dir
             except KeyError:
                 print(
                     'discard unexist dependency (mostly because of its '
@@ -145,11 +145,11 @@ class LibraryIndexer:
                 continue
             top_pkgs[top_name] = self._create_package_info(dname, dpath)
         # print(top_pkgs, ':lv')
-        self._fill_dependencies_2(top_pkgs, all_pgk_refs)
+        self._fill_dependencies_2(top_pkgs, all_pkg_refs)
         print(top_pkgs, ':lv')
         
         before = len(top_pkgs)
-        flatten_pkgs = self._flatten_packages(top_pkgs, all_pgk_refs)
+        flatten_pkgs = self._flatten_packages(top_pkgs, all_pkg_refs)
         # print(flatten_pkgs, ':lv')
         after = len(flatten_pkgs)
         print('flatten packages done', f'count: {before} -> {after}', ':v2')

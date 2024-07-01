@@ -7,6 +7,9 @@ from lk_utils import loads
 from lk_utils import run_cmd_args
 
 from ..normalization import normalize_name
+from ..venv.target_venv import get_library_root
+from ..venv.target_venv.indexer import analyze_records
+from ..venv.target_venv.indexer import index_all_package_references
 
 
 class T:
@@ -24,6 +27,9 @@ class T:
     PackageInfo = t.TypedDict('PackageInfo', {
         'id'      : PackageId,
         'name'    : PackageName,
+        'paths'   : t.Iterable[str],
+        #   the paths will finally be used in `depsland.api.dev_api.publish -
+        #   ._upload.upload_dependencies_`
         'version' : ExactVersion,
         # 'dependencies': t.Sequence[PackageId],
         'appendix': t.TypedDict('Appendix', {
@@ -36,18 +42,19 @@ class T:
 
 
 def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
+    pyproj_root = fs.parent(pyproj_file)
     pyproj_data = loads(pyproj_file, 'toml')
     poetry_data = loads(poetry_file, 'toml')
     
     all_pkgs = _get_all_packages(poetry_data)
     all_pkgs = _flatten_dependencies({k: tuple(v) for k, v in all_pkgs})
-    top_names = _get_top_package_names(fs.parent(poetry_file), pyproj_data)
+    top_names = _get_top_package_names(pyproj_root, pyproj_data)
     top_pkgs = _filter_top_packages(all_pkgs, tuple(top_names))
     tiled_pkgs = _get_tiled_packages(fs.parent(poetry_file))
     top_pkgs = _filter_invalid_markers(top_pkgs, dict(tiled_pkgs))
     tiled_pkgs = _flatten_packages(top_pkgs)
     
-    pkgs_info = _fill_packages_info(tuple(tiled_pkgs), poetry_data)
+    pkgs_info = _fill_packages_info(pyproj_root, tuple(tiled_pkgs), poetry_data)
     return dict(pkgs_info)
 
 
@@ -157,8 +164,7 @@ def _flatten_packages(
 
 
 def _fill_packages_info(
-    tiled_pkgs: t.Tuple[T.PackageId, ...],
-    poetry_data: dict
+    pyproj_root: str, tiled_pkgs: t.Tuple[T.PackageId, ...], poetry_data: dict,
 ) -> t.Iterator[t.Tuple[T.PackageName, T.PackageInfo]]:
     def get_custom_url() -> t.Optional[str]:
         if item['source']['type'] == 'legacy':
@@ -171,19 +177,28 @@ def _fill_packages_info(
                     item['files'][0]['file']
                 )
     
+    lib_root = get_library_root(pyproj_root)
+    all_pkg_refs = dict(index_all_package_references(lib_root))
+    print(lib_root, len(all_pkg_refs))
+    
     for item in poetry_data['package']:
         name = normalize_name(item['name'])
         ver = item['version']
         id = f'{name}-{ver}'
         if id in tiled_pkgs:
-            # noinspection PyTypeChecker
+            record_file = '{}/RECORD'.format(all_pkg_refs[name][1])
+            src_dirs = set(analyze_records(record_file))
+            src_dirs = tuple(sorted(src_dirs))  # prettify and freeze
+            if url := get_custom_url():
+                appendix = {'custom_url': url}
+            else:
+                appendix = {}
             info: T.PackageInfo = {
                 'id'      : id,
                 'name'    : name,
                 'version' : ver,
-                'appendix': (
-                    (custom_url := get_custom_url()) and
-                    {'custom_url': custom_url} or {})
+                'paths'   : src_dirs,
+                'appendix': appendix,  # noqa
             }
             yield name, info
 

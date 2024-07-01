@@ -68,7 +68,7 @@ def resolve_dependencies(
         )))
         if deps0 == 'requirements.lock':
             out = resolve_requirements_lock(a, b, c)
-        else:
+        else:  # NOTE (2024-07-01): currently this is mainly used.
             out = resolve_poetry_lock(a, b)
         fs.dump(out, lock_file)
         return out

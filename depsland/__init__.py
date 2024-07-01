@@ -32,5 +32,5 @@ from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.8.0a22'
-__date__ = '2024-06-27'
+__version__ = '0.8.0a25'
+__date__ = '2024-07-01'

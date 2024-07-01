@@ -247,7 +247,11 @@ def build(
 
 
 @cli.cmd()
-def publish(target='.', full_upload: bool = False) -> None:
+def publish(
+    target: str = '.',
+    full_upload: bool = False,
+    upload_dependencies: bool = False,
+) -> None:
     """
     publish dist assets to oss.
     if you configured a local oss server, it will generate assets to -
@@ -258,8 +262,9 @@ def publish(target='.', full_upload: bool = False) -> None:
         full_upload (-f): if true, will upload all assets, ignore the files -
             which may already exist in oss (they all will be overwritten).
             this option is useful if you found the oss server not work properly.
+        upload_dependencies (-d):
     """
-    api.publish(_get_manifest_path(target), full_upload)
+    api.publish(_get_manifest_path(target), full_upload, upload_dependencies)
 
 
 @cli.cmd()
