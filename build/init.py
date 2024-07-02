@@ -1,22 +1,14 @@
 """
 see DEVNOTE.md
 """
-import os
 import sys
 
 from argsense import cli
+
 from lk_utils import fs
-from lk_utils import run_cmd_args
 
-# os.chdir(fs.xpath('..'))
-if not os.getenv('DEPSLAND_PYPI_ROOT'):
-    os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
-if not fs.exists('chore/pypi_self/index/id_2_paths.json'):
-    fs.dump({}, 'chore/pypi_self/index/id_2_paths.json')
-    fs.dump({}, 'chore/pypi_self/index/name_2_vers.json')
-
-from depsland import paths
-from depsland.pypi.insight import rebuild_index
+from depsland import pypi
+from depsland.depsolver import resolve_dependencies
 
 
 @cli.cmd()
@@ -71,33 +63,6 @@ def help_me_choose_python(
 
 
 @cli.cmd()
-def download_requirements() -> None:
-    """
-    prerequisite:
-        - `python/python.exe` or `python/bin/python3`. if not exist, see
-          `python/README.zh.md`.
-    """
-    run_cmd_args(
-        paths.python.python, '-m', 'pip', 'wheel',
-        '-r', 'requirements.lock',
-        '--wheel-dir', 'chore/pypi_self/downloads',
-        '--no-deps', '--disable-pip-version-check',
-        verbose=True
-    )
-
-
-@cli.cmd()
-def rebuild_pypi_index(perform_pip_install: bool = True) -> None:
-    """
-    trick: if you want to rebuild `pypi` instead of `chore/pypi_self`, set -
-    environment variable `DEPSLAND_PYPI_ROOT` to `pypi` before running this -
-    command. (remember to unset it after running)
-    """
-    assert paths.pypi.root.endswith(('/chore/pypi_self', '/pypi'))
-    rebuild_index(perform_pip_install=perform_pip_install)
-
-
-@cli.cmd()
 def init_pypi_blank(target_dir: str = 'chore/pypi_blank') -> None:
     """
     if you want to repair `chore/pypi_blank/index`, run this command.
@@ -117,55 +82,18 @@ def make_site_packages(
     target_dir: str = 'chore/site_packages',
     remove_exists: bool = False
 ) -> None:
-    # run_cmd_args(
-    #     paths.python.python, '-m', 'pip', 'install',
-    #     '-r', 'requirements.lock',
-    #     '-t', target_dir,
-    #     '--find-links', 'chore/pypi_self/downloads',
-    #     '--no-deps', '--no-index',
-    #     '--no-warn-script-location', '--disable-pip-version-check',
-    #     verbose=True
-    # )
-    
-    import re
-    from depsland import pypi
-    from depsland.normalization import normalize_name
-    from depsland.normalization import split_filename_of_package
-    
     if remove_exists and fs.exists(target_dir):
         fs.remove_tree(target_dir)
     if not fs.exists(target_dir):
         fs.make_dir(target_dir)
         fs.copy_file('chore/.gitkeep', f'{target_dir}/.gitkeep')
     
-    downloaded_packages = set()
-    for f in fs.find_files('chore/pypi_self/downloads'):
-        name, ver = split_filename_of_package(f.name)
-        downloaded_packages.add(f'{name}-{ver}')
-    
-    valid_packages = []
-    pattern = re.compile(r'([-\w]+)(?:\[.*?])?==([^ ]+)')
-    for i, line in enumerate(fs.load('requirements.lock').splitlines(), 1):
-        print(i, line, ':v')
-        if not line or line.startswith(('#', '--')):
-            continue
-        if '@' in line:
-            name, ver, _ = line.rsplit('/', 1)[1].split('-', 2)
-        else:
-            name, ver = pattern.search(line).groups()
-        name = normalize_name(name)
-        if (x := f'{name}-{ver}') in downloaded_packages:
-            valid_packages.append(x)
-        else:
-            print(f'drop line {i}', line)
-    
-    pypi.linking(valid_packages, target_dir)
+    pkgs = resolve_dependencies('poetry.lock', fs.xpath('..'))
+    pkg_ids = (x['id'] for x in pkgs.values())
+    pypi.linking(pkg_ids, target_dir)
 
 
 if __name__ == '__main__':
     # pox build/init.py help-me-choose-python
-    # pox build/init.py download-requirements
-    # pox build/init.py rebuild-pypi-index
-    # pox build/init.py make-site-packages
     # pox build/init.py make-site-packages --remove-exists
     cli.run()

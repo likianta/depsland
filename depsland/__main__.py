@@ -18,6 +18,7 @@ from . import paths
 from .manifest import T
 from .manifest import get_last_installed_version
 from .normalization import check_name_normalized
+from .depsolver import resolve_dependencies
 
 # fix sys.argv
 if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
@@ -318,13 +319,25 @@ def show(appid: str, version: str = None) -> None:
     show manifest of an app.
     """
     from .manifest import load_manifest
-    
     if version is None:
         version = get_last_installed_version(appid)
     assert version is not None
     dir_ = '{}/{}/{}'.format(paths.project.apps, appid, version)
     manifest = load_manifest(f'{dir_}/manifest.pkl')
     print(manifest, ':l')
+
+
+@cli.cmd()
+def show_packages(poetry_file: str, save_result: str = None) -> None:
+    pkgs = resolve_dependencies('poetry.lock', fs.parent(poetry_file))
+    rows = [('index', 'name', 'version', 'files count')]
+    indx = 0
+    for name, info in pkgs.items():
+        indx += 1
+        rows.append((indx, name, info['version'], len(info['files'])))
+    print(rows, ':r2')
+    if save_result:
+        fs.dump(pkgs, save_result)
 
 
 @cli.cmd()

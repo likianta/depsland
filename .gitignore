@@ -6,7 +6,6 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
-/chore/pypi_self/**
 /chore/site_packages/*
 /config/.redirect
 /config/auto_saved.pkl
@@ -34,8 +33,6 @@ __pycache__/
 .DS_Store
 *.bak.*
 
-!/chore/pypi_self/*/
-!/chore/pypi_self/index/snapdep/
 !/dist/
 !/dist/standalone/
 !/oss/apps/

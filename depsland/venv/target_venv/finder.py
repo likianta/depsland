@@ -78,7 +78,7 @@ def get_library_root(working_root: str) -> T.LibraryPath:
         out = '{}/lib/python{}.{}/site-packages'.format(
             venv_root, sys.version_info.major, sys.version_info.minor
         )
-    assert fs.exists(out)
+    assert fs.exists(out), (working_root, venv_root, out)
     return out
 
 

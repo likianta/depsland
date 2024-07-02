@@ -10,9 +10,6 @@ from lk_utils import fs
 from lk_utils import loads
 from lk_utils import xpath
 
-os.chdir(xpath('..'))
-os.environ['DEPSLAND_PYPI_ROOT'] = 'chore/pypi_self'
-
 from depsland import __version__
 from depsland import bat_2_exe as _b2e
 from depsland import paths
@@ -72,8 +69,6 @@ def backup_project_resources() -> None:
         #              f'{dir_m}/build/depsland_setup.py')
         # fs.copy_file(f'{dir_i}/build/readme.zh.md',
         #              f'{dir_m}/build/readme.zh.md')
-        # fs.copy_file(f'{dir_i}/build/self_build.py',
-        #              f'{dir_m}/build/self_build.py')
         compress_dir(f'{dir_m}/build',
                      f'{dir_o}/build.zip', True)
     
@@ -109,18 +104,13 @@ def full_build(
             'config/depsland_for_dev.yaml', which contains aliyun oss access -
             & secret keys.
     kwargs:
-        pypi_scheme (-p): 'full', 'self', 'blank'
+        pypi_scheme (-p): 'full', 'blank'
             full: link `<proj>/pypi` to `<dist>/pypi`.
-            self: link `<proj>/chore/pypi_self` to `<dist>/pypi`.
-                this should be used only when you want to publish a version. -
-                be careful do not update any content of `<dist>/pypi`.
             blank: copy `<proj>/chore/pypi_blank` to `<dist>/pypi`.
             
             what's the difference for the schemes?
                 'full' is used for local test.
-                'self' is used for production release.
-                'blank' is also used for production release, it has a smaller -
-                size.
+                'blank' is used for production release, it has a smaller size.
                 if you want to partially release, or try to package a minimal -
                 version, use 'blank' with '_add_python_sdk=False'.
     """
@@ -243,9 +233,6 @@ def full_build(
     
     if pypi_scheme == 'full':
         fs.make_link(f'{root_i}/pypi', f'{root_o}/pypi')
-    elif pypi_scheme == 'self':
-        print(':v3s', 'do not edit "pypi" folder in the dist')
-        fs.make_link(f'{root_i}/chore/pypi_self', f'{root_o}/pypi')
     else:  # 'blank'
         fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
     

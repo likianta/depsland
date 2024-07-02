@@ -327,6 +327,10 @@ def _install_packages(
             pypi.install_one(info['id'], dl_path)
         
         def oss_download_and_install(info: T.PackageInfo) -> None:
+            if info['id'] in pypi.index.id_2_paths:
+                # this case should always be False in production environment. -
+                # but may be True in development environment.
+                return
             resource_path = '{}/{}'.format(_oss.path.pypi, info['id'])
             download_path = '{}/{}.zip'.format(paths.pypi.downloads, info['id'])
             #   note: we use '<name>-<id>.zip' as downloaded filename, the -
@@ -335,6 +339,7 @@ def _install_packages(
             install_path = '{}/{}/{}'.format(
                 paths.pypi.installed, info['name'], info['version']
             )
+            fs.make_dirs(install_path)
             
             _oss.download(resource_path, download_path)
             ziptool.extract_file(download_path, install_path)
