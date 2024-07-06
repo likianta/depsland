@@ -8,20 +8,26 @@ from lk_utils import fs
 _IS_WINDOWS = os.name == 'nt'
 
 
-def compress_dir(dir_i: str, file_o: str, overwrite: bool = None) -> str:
+def compress_dir(
+    dir_i: str,
+    file_o: str,
+    overwrite: bool = None,
+    top_name: str = None,
+) -> str:
     """
     ref: https://likianta.blog.csdn.net/article/details/126710855
     """
     if fs.exists(file_o):
         if not _overwrite(file_o, overwrite):
             return file_o
-    # if dir_i.endswith('/.'):
-    #     dir_i = dir_i[:-2]
-    dir_i_parent = fs.parent(dir_i)
+    if top_name is None:
+        top_name = fs.basename(dir_i)
     with ZipFile(file_o, 'w') as z:
-        z.write(dir_i, arcname=fs.basename(dir_i))
-        for f in fs.findall_files(dir_i):
-            z.write(f.path, arcname=fs.relpath(f.path, dir_i_parent))
+        z.write(dir_i, arcname=top_name)
+        for f in tuple(fs.findall_files(dir_i)):
+            z.write(f.path, arcname='{}/{}'.format(
+                top_name, fs.relpath(f.path, dir_i)
+            ))
     return file_o
 
 
