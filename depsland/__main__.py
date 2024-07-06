@@ -152,13 +152,13 @@ def launch_gui(
             verbose=True,
         )
         if _native_window:
-            pyapp_window.launch(
-                'Depsland User Interface',
-                url=f'http://localhost:{port}',
-                copilot_backend=proc,
+            pyapp_window.open_window(
+                title='Depsland Appstore',
+                url='http://localhost:{}'.format(port),
                 size=(1200, 2000),
                 icon=paths.build.launcher_icon,
             )
+            proc.kill()
     else:
         if _app_token == '""':  # FIXME: should be resolved in argsense library.
             _app_token = ''

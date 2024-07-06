@@ -58,7 +58,6 @@ def init_target_tree(root: str, relpath_dirs: t.Iterable[str]) -> None:
     # print(':vl', paths_to_be_created)
     for p in paths_to_be_created:
         os.makedirs(p, exist_ok=True)
-        print(fs.relpath(p, root), os.path.exists(p), ':vi')
 
 
 class _TempDirs:

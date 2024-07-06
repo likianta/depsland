@@ -173,7 +173,10 @@ def _kill_process_tree(pid: int) -> None:
     proc = psutil.Process(pid)
     print('kill [{}] {}'.format(pid, proc.name()), ':iv4s')
     for child in proc.children(recursive=True):
-        print('    |- kill [{}] {}'.format(child.pid, child.name()), ':iv4s')
-        child.kill()
+        try:
+            print('|- kill [{}] {}'.format(child.pid, child.name()), ':iv4s')
+            child.kill()
+        except psutil.NoSuchProcess:
+            pass
     proc.kill()
     print(':i0s')
