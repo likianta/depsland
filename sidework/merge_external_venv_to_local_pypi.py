@@ -1,4 +1,5 @@
 import typing as t
+from os.path import isfile
 
 from argsense import cli
 
@@ -48,7 +49,10 @@ def _compress_dependency(
         else:
             file_i = '{}/{}'.format(lib_root, p)
             file_o = '{}/{}'.format(path1, p)
-        fs.copy_file(file_i, file_o)
+        if isfile(file_i):
+            fs.copy_file(file_i, file_o)
+        else:
+            print(':v3', 'not a valid file', file_i)
     
     ziptool.compress_dir(path1, path0, True)
     pypi.index.update_index(package_id, path0, path1)
@@ -56,5 +60,7 @@ def _compress_dependency(
 
 
 if __name__ == '__main__':
-    # pox sidework/merge_external_venv_to_local_pypi.py ...
+    # pox sidework/merge_external_venv_to_local_pypi.py .
+    #   next: sidework/doctor/pypi.py
+    # pox sidework/merge_external_venv_to_local_pypi.py <third_project>
     cli.run(main)

@@ -339,10 +339,10 @@ def _install_packages(
             install_path = '{}/{}/{}'.format(
                 paths.pypi.installed, info['name'], info['version']
             )
-            fs.make_dirs(install_path)
+            fs.make_dirs('{}/{}'.format(paths.pypi.installed, info['name']))
             
             _oss.download(resource_path, download_path)
-            ziptool.extract_file(download_path, install_path)
+            ziptool.extract_file(download_path, install_path, True)
             pypi.index.update_index(info['id'], download_path, install_path)
         
         # FIXME: thread_pool makes pip install stucked, and ctrl+c cannot -

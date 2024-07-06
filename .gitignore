@@ -20,12 +20,14 @@
 /pypi/**
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
+/sidework/doctor/_*
 /sidework/ui_prototype/
 /temp/*
 /tests/
 /unittests/demo_project/hello-world/dist/
 /unittests/demo_project/hello-world/manifest.pkl
 /unittests/depsland_run_test/dist/
+/unittests/qmlease-3.0.5a6.zip
 
 __pycache__/
 *.bak.*

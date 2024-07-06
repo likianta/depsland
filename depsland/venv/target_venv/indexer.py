@@ -81,9 +81,8 @@ class LibraryIndexer:
     
     def __init__(self, working_root: T.Path):
         """
-        venv_root: this can be got by `get_target_venv_packages_dir()`. see \
-            usage at `depsland/manifest/manifest.py:Manifest \
-            ._update_dependencies()`.
+        venv_root: this can be got by `get_target_venv_packages_dir()`. see
+        usage at `depsland/manifest/manifest.py:Manifest._update_dependencies()`.
         """
         print(':t2s')
         
@@ -178,11 +177,10 @@ class LibraryIndexer:
     
     def _fill_dependencies(self, packages: T.Packages) -> None:
         """
-        notice: this method only works for top-level packages. i.e. it is not \
+        notice: this method only works for top-level packages. i.e. it is not
         available for `self._flatten_packages`.
-        DELETE: since `poetry show` may increase the range of listing \
-            packages, it is not a good idea to use `poetry show` to get \
-            dependencies.
+        DELETE: since `poetry show` may increase the range of listing packages,
+            it is not a good idea to use `poetry show` to get dependencies.
         """
         
         def get_secondary_packages() -> (
@@ -218,7 +216,7 @@ class LibraryIndexer:
         all_package_references: T.PackageReferences,
     ) -> None:
         """
-        fill dependencies field of `T.PackageInfo:[value]` by analyzing its \
+        fill dependencies field of `T.PackageInfo:[value]` by analyzing its
         metadata info.
         """
         for name, v in packages.items():
@@ -228,7 +226,7 @@ class LibraryIndexer:
             if fs.exists(metadata_file):
                 for dep_name, verspecs in analyze_metadata(metadata_file):
                     v['dependencies'].append(dep_name)
-                    # TODO: check the `verspecs` match existed info in \
+                    # TODO: check the `verspecs` match existed info in
                     #   `packages` or info in `all_package_references`.
                     # if dep_name in packages:
                     #     exact_version = packages[dep_name]['version']
@@ -336,6 +334,10 @@ def analyze_metadata(
 
 
 def analyze_records(record_file: str) -> t.Iterator[str]:
+    """
+    warning: some paths may be inexistent or invalid. use `os.path.isfile` to
+    check them.
+    """
     records = fs.load(record_file, 'plain').splitlines()
     for line in records:
         relpath = fs.normpath(line.rsplit(',', 2)[0])

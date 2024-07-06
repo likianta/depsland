@@ -245,7 +245,10 @@ def _upload(
             else:
                 file_i = '{}/{}'.format(_lib_root, p)
                 file_o = '{}/{}'.format(path1, p)
-            fs.copy_file(file_i, file_o)
+            # note that `file_i` is from record file, which may not exist, we
+            # should check its validity.
+            if os.path.isfile(file_i):
+                fs.copy_file(file_i, file_o)
         
         ziptool.compress_dir(path1, path0, True)
         pypi.index.update_index(package_id, path0, path1)

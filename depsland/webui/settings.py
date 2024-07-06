@@ -33,7 +33,7 @@ def main() -> None:
             help='Depsland will collect package files (*.whl, *.tar.gz, etc.) '
                  'in this folder to rebuil pypi index.'
         )
-        if dir_i:
+        if dir_i and fs.exists(dir_i):
             with st.spinner('Indexing...'):
                 dir_o = paths.pypi.downloads
                 for f in fs.find_files(dir_i):
