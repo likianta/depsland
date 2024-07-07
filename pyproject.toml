@@ -46,6 +46,8 @@ pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
 
 [tool.poetry.group.dev.dependencies]
 ipython = { version = "^8.22.0", python = ">=3.10,<4.0" }
+modulegraph = "^0.19.6"
+nuitka = "^2.3.11"
 pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.10,<3.13" }  # <- demo/hello-world-gui
 pysimplegui = "*"  # <- demo/hello-world-tkinter
 # qmlease = "^3.0.4"  # <- demo/hello-world-gui

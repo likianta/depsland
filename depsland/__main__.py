@@ -353,20 +353,6 @@ cli.add_cmd(api.user_api.run_app, 'run', transport_help=True)
 
 
 @cli.cmd()
-def rebuild_pypi_index(full: bool = False) -> None:
-    """
-    rebuild local pypi index. this may resolve some historical problems caused -
-    by pip network issues.
-    
-    kwargs:
-        full (-f): if a package is downloaded but not installed, will perform -
-            a `pip install` action.
-    """
-    from .doctor import rebuild_pypi_index
-    rebuild_pypi_index(perform_pip_install=full)
-
-
-@cli.cmd()
 def get_package_size(
     name: str, version: str = None, include_dependencies: bool = False
 ) -> None:
