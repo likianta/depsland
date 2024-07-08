@@ -61,6 +61,6 @@ def _compress_dependency(
 
 if __name__ == '__main__':
     # pox sidework/merge_external_venv_to_local_pypi.py .
-    #   next: sidework/doctor/pypi.py
+    #   next: pox build/init.py make-site-packages --remove-exists
     # pox sidework/merge_external_venv_to_local_pypi.py <third_project>
     cli.run(main)

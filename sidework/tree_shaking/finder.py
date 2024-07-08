@@ -15,14 +15,19 @@ from .file_parser import T
 def dump_all_references(entrances: str) -> None:
     d0 = find_all_references(*entrances.split(",,"))
     d1 = {}
+    print(':i0s')
     for module in sorted(d0.keys()):
         print(module, ":iv2s")
         d1[module] = d0[module]
     fs.dump(d1, p("_references.yaml"))
-    print(":t", 'done. see result at "_references.yaml"')
+    print(
+        ":tv2",
+        'done. dumped {} items. see result at "_references.yaml"'
+        .format(len(d1))
+    )
 
 
-def find_all_references(*entrance_scripts: str) -> t.Dict[T.ModuleName, T.Path]:
+def find_all_references(*entrance_scripts: str) -> t.Dict[T.ModuleId, T.Path]:
     """
     warning: this is time-consuming.
     """
@@ -32,14 +37,16 @@ def find_all_references(*entrance_scripts: str) -> t.Dict[T.ModuleName, T.Path]:
     return out
 
 
-def get_all_imports(script: T.Path, _holder: t.Set = None) -> T.ImportsInfo:
+def get_all_imports(
+    script: T.Path, _holder: t.Set = None
+) -> t.Iterator[t.Tuple[T.ModuleId, T.Path]]:
     if _holder is None:
         _holder = set()
     for module, path in get_direct_imports(script):
-        print(module, path)
-        if module not in _holder:
-            _holder.add(module)
-            yield module, path
+        # print(module, path)
+        if module.id not in _holder:
+            _holder.add(module.id)
+            yield module.id, path
             if path.endswith('.py'):
                 yield from get_all_imports(path, _holder)
 
@@ -51,5 +58,7 @@ def get_direct_imports(script: T.Path) -> T.ImportsInfo:
 
 if __name__ == "__main__":
     # pox sidework/tree_shaking/finder.py dump-all-references
-    #   depsland/__init__.py,,depsland/__main__.py
+    #   depsland/__main__.py
+    # pox sidework/tree_shaking/finder.py dump-all-references
+    #   sidework/tree_shaking/_test.py
     cli.run()

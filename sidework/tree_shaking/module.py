@@ -1,21 +1,57 @@
 import ast
+import re
 import sys
 import typing as t
+from dataclasses import dataclass
+from functools import cached_property
 
 from lk_utils import fs
 
 
+@dataclass
+class ModuleInfo:
+    name: str
+    end: str
+    level: int
+    base_dir: t.Optional[str]
+    
+    def __str__(self) -> str:
+        return self.id
+    
+    @cached_property
+    def relname(self) -> str:
+        if self.level:
+            return '.'.join(self.name.split('.')[self.level:])
+        return self.name
+    
+    @cached_property
+    def id(self) -> str:
+        return '{}.{}'.format(self.name, self.end).rstrip('.')
+    
+    @cached_property
+    def top(self) -> str:
+        return self.name.split('.', 1)[0]
+
+
 class T:
+    ModuleId = str
+    ModuleInfo = ModuleInfo
     ModuleName = str
     Path = str  # normalized absolute path
 
 
+# noinspection PyMethodMayBeStatic
 class ModuleInspector:
+    ignores: t.FrozenSet[str]
+    known_stdlib_module_names: t.FrozenSet[str]
+    module_name_2_file: t.Dict[T.ModuleId, T.Path]
+    top_name_2_path: t.Dict[T.ModuleName, t.Tuple[T.Path, bool]]
     
     def __init__(
         self,
         search_scopes: t.Iterable[str] = None,
         search_paths: t.Iterable[str] = (),
+        ignores: t.FrozenSet[str] = frozenset(),
     ) -> None:
         if search_scopes is None:
             search_scopes = sys.path
@@ -24,7 +60,9 @@ class ModuleInspector:
         )
         
         self.known_stdlib_module_names = frozenset((
-            # taken from Python 3.10
+            # ref: https://github.com/mgedmin/findimports/blob/master
+            #   /findimports.py
+            # taken from python 3.12
             '__future__',
             '_abc', '_aix_support', '_ast', '_asyncio',
             '_bisect', '_blake2', '_bootsubprocess', '_bz2',
@@ -94,22 +132,23 @@ class ModuleInspector:
             'syslog',
             'tabnanny', 'tarfile', 'telnetlib', 'tempfile', 'termios',
             'textwrap', 'this', 'threading', 'time', 'timeit', 'tkinter',
-            'token', 'tokenize', 'trace', 'traceback', 'tracemalloc', 'tty',
-            'turtle', 'turtledemo', 'types', 'typing',
+            'token', 'tokenize', 'tomllib', 'trace', 'traceback', 'tracemalloc',
+            'tty', 'turtle', 'turtledemo', 'types', 'typing',
             'unicodedata', 'unittest', 'urllib', 'uu', 'uuid',
             'venv',
             'warnings', 'wave', 'weakref', 'webbrowser', 'winreg', 'winsound',
             'wsgiref',
             'xdrlib', 'xml', 'xmlrpc',
-            'zipapp', 'zipfile', 'zipimport',
+            'zipapp', 'zipfile', 'zipimport', 'zlib',
         ))
+        self.ignores = ignores
         
-        self.module_name_2_path = {}
+        self.module_name_2_file = {}
         for name in self.known_stdlib_module_names:
-            self.module_name_2_path[name] = '<stdlib>'
+            self.module_name_2_file[name] = '<stdlib>'
         for name, (path, isdir) in self.top_name_2_path.items():
             if not isdir:
-                self.module_name_2_path[name] = path
+                self.module_name_2_file[name] = path
         # print(self.module_name_2_path['lk_utils'], ':v')
         # if input('continue: ') == 'x':
         #     sys.exit()
@@ -124,12 +163,13 @@ class ModuleInspector:
         for root in map(fs.abspath, search_scopes):
             for d in fs.find_dirs(root):
                 if '.' not in d.name and d.name != '__pycache__':
-                    if fs.exists(x := '{}/__init__.py'.format(d.path)):
-                        top_name_2_path[d.name] = (x, False)
-                    else:
-                        top_name_2_path[d.name] = (d.path, True)
+                    # if fs.exists(x := '{}/__init__.py'.format(d.path)):
+                    #     top_name_2_path[d.name] = (x, False)
+                    # else:
+                    #     top_name_2_path[d.name] = (d.path, True)
                     # assert fs.exists(x := '{}/__init__.py'.format(d.path)), d.path
                     # top_name_2_path[d.name] = (x, False)
+                    top_name_2_path[d.name] = (d.path, True)
             for f in fs.find_files(root):
                 if '.' not in f.stem:
                     top_name_2_path[f.stem] = (f.path, False)
@@ -143,78 +183,104 @@ class ModuleInspector:
                 self.known_stdlib_module_names
         return module_name in self.known_stdlib_module_names
     
-    def get_module_path(
-        self, module_name: T.ModuleName, base: T.Path = None
-    ) -> T.Path:
-        if module_name in self.module_name_2_path:
-            return self.module_name_2_path[module_name]
+    def find_module_path(self, module: T.ModuleInfo) -> T.Path:
+        if module.id in self.module_name_2_file:
+            return self.module_name_2_file[module.id]
+        if module.name in self.module_name_2_file:
+            out = self.module_name_2_file[module.name]
+            if not out.endswith('/__init__.py'):
+                self.module_name_2_file[module.id] = out
+                return out
         
-        print(module_name, ':p')
-        match module_name.count('.'):
-            case 0:
-                top = parent = name = module_name
-            case 1:
-                top, name = module_name.split('.', 1)
-                parent = top
-            case _:
-                top = module_name.split('.', 1)[0]
-                parent, name = module_name.rsplit('.', 1)
-        # assert top in self.module_name_2_path, (
-        #     'unindexed module', module_name, base
-        # )
-        
-        if top in self.known_stdlib_module_names:
-            self.module_name_2_path[module_name] = '<stdlib>'
+        if module.top in self.known_stdlib_module_names:
+            self.module_name_2_file[module.id] = '<stdlib>'
             return '<stdlib>'
+        if module.name in self.ignores or module.id in self.ignores:
+            self.module_name_2_file[module.id] = '<ignored>'
+            return '<ignored>'
         
         def determine_path() -> T.Path:
-            try:
-                top_path = base if base else self.top_name_2_path[top][0]
-            except KeyError:
-                raise PathNotFound(module_name, top)
-            parent_path = '{}/{}'.format(top_path, parent.replace('.', '/'))
-            # if parent_path.endswith('/api'):  # TEST
-            #     print(
-            #         ':vl',
-            #         fs.isdir(parent_path),
-            #         fs.exists('{}/__init__.py'.format(parent_path))
-            #     )
-            if fs.isdir(parent_path):
-                if fs.exists(x := '{}/__init__.py'.format(parent_path)):
-                    if parent == name:
+            if module.base_dir:
+                base_dir = module.base_dir
+                module_path = '{}/{}'.format(
+                    base_dir, module.relname.replace('.', '/')
+                ).rstrip('/')
+            else:
+                try:
+                    x = self.top_name_2_path[module.top]
+                except KeyError:
+                    raise ModuleNotFound(module)
+                # assert x[1], (module, x[0])
+                if x[1]:
+                    base_dir = x[0]
+                    module_path = '{}/{}'.format(
+                        base_dir,
+                        module.name
+                        .replace(module.top, '', 1)
+                        .lstrip('.')
+                        .replace('.', '/')
+                    ).rstrip('/')
+                else:
+                    # e.g.
+                    #   module = ModuleInfo(
+                    #       name='typing_extensions',
+                    #       end='Literal',
+                    #       level=0,
+                    #       base_dir=None,
+                    #   )
+                    #   x = ('<site_packages>/typing_extensions.py', False)
+                    return x[0]
+            if fs.isdir(module_path):
+                if fs.exists(x := '{}/__init__.py'.format(module_path)):
+                    if module.end:
+                        if re.match(r'__[a-zA-Z0-9]+__', module.end):
+                            # e.g. '__file__', '__path__', '__spec__', ...
+                            return x
+                        tree = ast.parse(fs.load(x), x)
+                        for node in ast.walk(tree):
+                            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                                for alias in node.names:
+                                    if (
+                                        alias.name == module.end or
+                                        alias.asname == module.end
+                                    ):
+                                        return x
+                    else:
                         return x
-                    tree = ast.parse(fs.load(x), x)
-                    for node in ast.walk(tree):
-                        if isinstance(node, (ast.Import, ast.ImportFrom)):
-                            for alias in node.names:
-                                if (
-                                    alias.name == name or
-                                    alias.asname == name
-                                ):
-                                    return x
-                for f in fs.find_files(parent_path, ('.py', '.pyc', '.pyd')):
-                    if f.stem == name:
+                for f in fs.find_files(module_path, ('.py', '.pyc', '.pyd')):
+                    if f.stem == module.end:
                         return f.path
-                for d in fs.find_dirs(parent_path):
-                    if d.name == name:
+                for d in fs.find_dirs(module_path):
+                    if d.name == module.end:
                         if fs.exists(x := '{}/__init__.py'.format(d.path)):
                             return x
                         else:
-                            raise PathNotFound(module_name, parent_path, name)
+                            raise PathNotFound(module)
+                raise ModuleNotFound(module)
             else:
-                parent_dir, parent_name = parent_path.rsplit('/', 1)
+                parent_dir, parent_name = module_path.rsplit('/', 1)
                 # print(':vl', parent_dir, fs.find_file_names(parent_dir))
                 for f in fs.find_files(parent_dir, ('.py', '.pyc', '.pyd')):
                     if f.stem == parent_name:
                         return f.path
                 else:
-                    raise PathNotFound(
-                        module_name, parent_dir, parent_name, name
-                    )
+                    raise PathNotFound(module)
         
         assert (out := determine_path())
-        self.module_name_2_path[module_name] = out
+        self.module_name_2_file[module.id] = out
         return out
+
+
+class ModuleNotFound(Exception):
+    """
+    module not found.
+    possible reasons:
+        - it is an optional dependency that not installed in venv or
+            site-packages.
+        - it is a function/class/variable/builtin name not a module name in
+            source.
+    """
+    pass
 
 
 class PathNotFound(Exception):
