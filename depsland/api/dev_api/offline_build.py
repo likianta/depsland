@@ -244,7 +244,7 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    create_launcher(manifest, dir_o=dst_dir)
+    create_launcher(manifest, dir_o=dst_dir, custom_cd='cd source')
     if sysinfo.SYSTEM == 'windows':
         create_launcher(
             manifest,
