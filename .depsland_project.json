@@ -8,5 +8,11 @@
         "desktop shortcut etc. in the first time.",
         "see code at `depsland/paths.py : class Project` for more details."
     ],
-    "project_mode": "development"
+    "project_mode": "development",
+    "# available mode": {
+        "": "empty means depsland is a package that installed by `pip` command.",
+        "development": "the default mode when you clone this repository by git.",
+        "production": "see `build/build.py:full_build`",
+        "shipboard": "see `depsland.api.dev_api.offline_build`"
+    }
 }

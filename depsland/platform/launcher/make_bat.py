@@ -7,7 +7,13 @@ from lk_utils.textwrap import dedent
 from ...manifest import T
 
 
-def make_bat(manifest: T.Manifest, file_o: str, *, debug: bool = False) -> str:
+def make_bat(
+    manifest: T.Manifest,
+    file_o: str,
+    *,
+    debug: bool = False,
+    custom_cd: '' = None,  # TEST
+) -> str:
     assert file_o.endswith('.bat')
     # if debug:
     #     template = dedent(r'''
@@ -32,13 +38,14 @@ def make_bat(manifest: T.Manifest, file_o: str, *, debug: bool = False) -> str:
     script = dedent(r'''
         {echo_off}
         cd /d %~dp0
-        cd ../../../
+        {cd}
         set PYTHONPATH=.;chore/site_packages
         set PYTHONUTF8=1
         .\python\python.exe -m depsland run {appid}
         {pause}
     '''.format(
         echo_off='' if debug else '@echo off',
+        cd=custom_cd or 'cd ../../../',
         appid=manifest['appid'],
         pause='pause' if debug else '',
     ))

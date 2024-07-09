@@ -1,3 +1,7 @@
+"""
+DELETE: this script is going to be removed or merged with
+    `./merge_external_venv_to_local_pypi.py`
+"""
 import os
 import sys
 import typing as t

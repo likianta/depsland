@@ -51,33 +51,35 @@ def main(manifest_file: str) -> None:
     _create_launcher(manifest, dir_o)
     _create_updator(manifest, dir_o)
     print(':t2', 'creating launcher done')
-    print('see result at {}'.format(fs.relpath(dir_o)))
+    print('see result at {}'.format(dir_o))
 
 
-def _init_dist_tree(
-    manifest: T.Manifest, dst_dir: str, pypi: str = 'least'
-) -> None:
+def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
     """
     params:
         pypi: 'standard', 'least'
     """
+    from ... import __version__
+    
     root_i = proj_paths.root
     root_o = dst_dir
     
     appid = manifest['appid']
     version = manifest['version']
     
+    # ref: build/build.py:full_build
     fs.make_dirs(f'{root_o}')
     fs.make_dir(f'{root_o}/source')
     fs.make_dir(f'{root_o}/source/apps')
     fs.make_dir(f'{root_o}/source/apps/.bin')
     fs.make_dir(f'{root_o}/source/apps/.venv')
     fs.make_dir(f'{root_o}/source/apps/.venv/{appid}')
-    fs.make_dir(f'{root_o}/source/apps/.venv/{appid}/{version}')  # TODO
+    fs.make_dir(f'{root_o}/source/apps/.venv/{appid}/{version}')
     fs.make_dir(f'{root_o}/source/apps/{appid}')
     fs.make_dir(f'{root_o}/source/apps/{appid}/{version}')
     fs.make_dir(f'{root_o}/source/build')
     # fs.make_dir(f'{root_o}/source/build/exe')
+    fs.make_dir(f'{root_o}/source/chore')
     fs.make_dir(f'{root_o}/source/config')
     # fs.make_dir(f'{root_o}/source/depsland')
     fs.make_dir(f'{root_o}/source/dist')
@@ -92,14 +94,49 @@ def _init_dist_tree(
     fs.make_dir(f'{root_o}/source/temp/.self_upgrade')
     fs.make_dir(f'{root_o}/source/temp/.unittests')
     
-    fs.make_link(f'{root_i}/build/exe', f'{root_o}/source/build/exe')
-    fs.make_link(f'{root_i}/depsland', f'{root_o}/source/depsland')
-    fs.make_link(f'{root_i}/python', f'{root_o}/source/python')
-    fs.make_link(f'{root_i}/sidework', f'{root_o}/source/sidework')
-    
+    fs.make_link(
+        f'{root_i}/build/exe',
+        f'{root_o}/source/build/exe'
+    )
     fs.copy_file(
-        f'{root_i}/.depsland_project',
-        f'{root_o}/source/.depsland_project'
+        f'{root_i}/build/exe/depsland-cli.exe',
+        f'{root_o}/source/apps/.bin/depsland.exe'
+    )
+    fs.copy_file(
+        f'{root_i}/build/exe/depsland-gui.exe',
+        f'{root_o}/source/Depsland.exe'
+    )
+    fs.copy_file(
+        f'{root_i}/build/exe/depsland-gui-debug.exe',
+        f'{root_o}/source/Depsland (Debug).exe'
+    )
+    fs.make_link(
+        f'{root_i}/build/icon',
+        f'{root_o}/source/build/icon'
+    )
+    fs.make_link(
+        f'{root_i}/chore/pypi_blank',
+        f'{root_o}/source/chore/pypi_blank'
+    )
+    fs.copy_tree(
+        f'{root_i}/chore/pypi_blank',
+        f'{root_o}/source/pypi'
+    )
+    fs.make_link(
+        f'{root_i}/chore/site_packages',
+        f'{root_o}/source/chore/site_packages'
+    )
+    fs.make_link(
+        f'{root_i}/depsland',
+        f'{root_o}/source/depsland'
+    )
+    fs.make_link(
+        f'{root_i}/python',
+        f'{root_o}/source/python'
+    )
+    fs.make_link(
+        f'{root_i}/sidework',
+        f'{root_o}/source/sidework'
     )
     # TEST
     fs.copy_file(
@@ -107,17 +144,11 @@ def _init_dist_tree(
         f'{root_o}/source/config/depsland.yaml'
     )
     
-    if pypi == 'least':
-        # notice: do not use `fs.make_link` here. we will inflate files in it \
-        # later. see `_relink_pypi`.
-        fs.copy_tree(
-            f'{root_i}/chore/pypi_clean',
-            f'{root_o}/source/pypi'
-        )
-    else:
-        raise NotImplementedError
-    
-    dumps(
+    fs.dump(
+        {'project_mode': 'shipboard', 'depsland_version': __version__},
+        f'{root_o}/source/.depsland_project.json'
+    )
+    fs.dump(
         version,
         f'{root_o}/source/apps/{appid}/.inst_history',
         'plain'
@@ -173,17 +204,11 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
-    # TODO: make sure all required packages have been installed and indexed \
-    #   pypi. see also `sidework/prepare_packages.py : preindex`.
-    info: T.PackageInfo
-    for info in manifest['dependencies'].values():
-        if not pypi.exists(id := info['id']):
-            print('add missing package', id, ':v3s')
-            pypi.install_one(
-                id, pypi.download_one(
-                    id, info['appendix'].get('custom_url')
-                )
-            )
+    """
+    TODO: make sure all required packages have already been installed and
+        indexed in pypi. see also `sidework/merge_external_venv_to_local_pypi
+        .py`
+    """
     # assert all(pypi.exists(x['id']) for x in manifest['dependencies'].values())
     link_venv(
         (x['id'] for x in manifest['dependencies'].values()),
@@ -206,16 +231,16 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
             )
         )
     # save index
-    name_2_ids = {
-        k: pypi.index.name_2_ids[k]
-        for k in manifest['dependencies'].keys()
-    }
     id_2_paths = {
         v['id']: pypi.index.id_2_paths[v['id']]
         for v in manifest['dependencies'].values()
     }
-    dumps(name_2_ids, f'{dst_dir}/source/pypi/index/name_2_ids.pkl')
-    dumps(id_2_paths, f'{dst_dir}/source/pypi/index/id_2_paths.pkl')
+    name_2_vers = {
+        v['name']: [v['version']]
+        for v in manifest['dependencies'].values()
+    }
+    dumps(id_2_paths, f'{dst_dir}/source/pypi/index/id_2_paths.json')
+    dumps(name_2_vers, f'{dst_dir}/source/pypi/index/name_2_vers.json')
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
@@ -226,8 +251,9 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
             dir_o=dst_dir,
             name=manifest['name'] + ' (Debug).exe',
             debug=True,
-            # keep_bat=True,  # TEST
+            keep_bat=True,  # TEST
             # uac_admin=True,
+            custom_cd='cd source',
         )
 
 

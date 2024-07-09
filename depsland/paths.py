@@ -128,6 +128,14 @@ class Project:
                     True
                 )
         
+        elif self.project_mode == 'shipboard':
+            self.root = fs.xpath('..', force_abspath=True)
+            fs.make_shortcut(
+                '{}/Depsland.exe'.format(self.root),
+                '<desktop>/Depsland.lnk',
+                None
+            )
+        
         else:
             raise Exception(self.project_mode)
         

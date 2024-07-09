@@ -13,11 +13,12 @@ def make_exe(
     # show_console: bool = True,
     uac_admin: bool = False,
     keep_bat: bool = False,
+    **kwargs
 ) -> str:
     assert file_o.endswith('.exe')
     file_bat = fs.replace_ext(file_o, 'bat')
     file_exe = file_o
-    make_bat(manifest, file_bat, debug=debug)
+    make_bat(manifest, file_bat, debug=debug, **kwargs)
     bat_2_exe(
         file_bat,
         file_exe,
