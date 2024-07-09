@@ -149,7 +149,8 @@ class ModuleInspector:
         for name, (path, isdir) in self.top_name_2_path.items():
             if not isdir:
                 self.module_name_2_file[name] = path
-        # print(self.module_name_2_path['lk_utils'], ':v')
+        # print(self.module_name_2_file, ':vl')
+        # print(self.module_name_2_file['lk_utils'], ':v')
         # if input('continue: ') == 'x':
         #     sys.exit()
     
@@ -162,6 +163,7 @@ class ModuleInspector:
         top_name_2_path = {}
         for root in map(fs.abspath, search_scopes):
             for d in fs.find_dirs(root):
+                # print(d.name, ':v')
                 if '.' not in d.name and d.name != '__pycache__':
                     # if fs.exists(x := '{}/__init__.py'.format(d.path)):
                     #     top_name_2_path[d.name] = (x, False)
@@ -187,6 +189,13 @@ class ModuleInspector:
         if module.id in self.module_name_2_file:
             return self.module_name_2_file[module.id]
         if module.name in self.module_name_2_file:
+            # a.
+            # return self.module_name_2_file[module.name]
+            # b.
+            # out = self.module_name_2_file[module.name]
+            # self.module_name_2_file[module.id] = out
+            # return out
+            # c.
             out = self.module_name_2_file[module.name]
             if not out.endswith('/__init__.py'):
                 self.module_name_2_file[module.id] = out
@@ -229,45 +238,62 @@ class ModuleInspector:
                     #       base_dir=None,
                     #   )
                     #   x = ('<site_packages>/typing_extensions.py', False)
-                    return x[0]
+                    # return x[0]
+                    raise Exception('impossible case', module, x)
             if fs.isdir(module_path):
-                if fs.exists(x := '{}/__init__.py'.format(module_path)):
-                    if module.end:
-                        if re.match(r'__[a-zA-Z0-9]+__', module.end):
-                            # e.g. '__file__', '__path__', '__spec__', ...
-                            return x
-                        tree = ast.parse(fs.load(x), x)
-                        for node in ast.walk(tree):
-                            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                                for alias in node.names:
-                                    if (
-                                        alias.name == module.end or
-                                        alias.asname == module.end
-                                    ):
-                                        return x
-                    else:
+                if module.end in ('', '*'):
+                    assert fs.exists(x := '{}/__init__.py'.format(module_path))
+                    self.module_name_2_file[module.id] = x
+                    self.module_name_2_file[module.name] = x
+                    return x
+                else:
+                    # if fs.exists(x := '{}/__init__.py'.format(module_path)):
+                    #     if module.end:
+                    #         if re.match(r'__[a-zA-Z0-9]+__', module.end):
+                    #             # e.g. '__file__', '__path__', '__spec__', ...
+                    #             return x
+                    #         tree = ast.parse(fs.load(x), x)
+                    #         for node in ast.walk(tree):
+                    #             if isinstance(node, (ast.Import, ast.ImportFrom)):
+                    #                 for alias in node.names:
+                    #                     if (
+                    #                         alias.name == module.end or
+                    #                         alias.asname == module.end
+                    #                     ):
+                    #                         return x
+                    #     else:
+                    #         return x
+                    for f in fs.find_files(
+                        module_path, ('.py', '.pyc', '.pyd')
+                    ):
+                        if f.stem == module.end:
+                            self.module_name_2_file[module.id] = f.path
+                            return f.path
+                    for d in fs.find_dirs(module_path):
+                        if d.name == module.end:
+                            if fs.exists(x := '{}/__init__.py'.format(d.path)):
+                                self.module_name_2_file[module.id] = x
+                                return x
+                            else:
+                                raise PathNotFound(module)
+                    if fs.exists(x := '{}/__init__.py'.format(module_path)):
+                        self.module_name_2_file[module.id] = x
+                        self.module_name_2_file[module.name] = x
                         return x
-                for f in fs.find_files(module_path, ('.py', '.pyc', '.pyd')):
-                    if f.stem == module.end:
-                        return f.path
-                for d in fs.find_dirs(module_path):
-                    if d.name == module.end:
-                        if fs.exists(x := '{}/__init__.py'.format(d.path)):
-                            return x
-                        else:
-                            raise PathNotFound(module)
                 raise ModuleNotFound(module)
             else:
                 parent_dir, parent_name = module_path.rsplit('/', 1)
                 # print(':vl', parent_dir, fs.find_file_names(parent_dir))
                 for f in fs.find_files(parent_dir, ('.py', '.pyc', '.pyd')):
                     if f.stem == parent_name:
+                        self.module_name_2_file[module.name] = f.path
+                        self.module_name_2_file[module.id] = f.path
                         return f.path
                 else:
                     raise PathNotFound(module)
         
         assert (out := determine_path())
-        self.module_name_2_file[module.id] = out
+        # self.module_name_2_file[module.id] = out
         return out
 
 

@@ -3,7 +3,6 @@ import sys
 import typing as t
 from os.path import exists
 
-from lk_utils import dumps
 from lk_utils import fs
 
 from ...manifest import T as T0
@@ -49,8 +48,7 @@ def init(
     print(':v2f2', appname, appid)
     
     manifest = init_user_manifest(dir_o, appname, appid, **kwargs)
-    
-    dumps(manifest, file_o)
+    fs.dump(manifest, file_o)
     print(f'see manifest file at \n\t"{file_o}"', ':tv2s')
 
 

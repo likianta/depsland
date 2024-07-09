@@ -20,6 +20,8 @@ _broken = set()
 
 class T(T0):
     ImportsInfo = t.Iterator[t.Tuple[T0.ModuleInfo, T0.Path]]
+    #   ((module_info, path), ...)
+    #       module_info: dataclass ModuleInfo
     Node = t.Union[ast.Import, ast.ImportFrom]
 
 
@@ -33,7 +35,8 @@ class FileParser:
         self.lines = tuple(self.code.splitlines())
     
     def parse_imports(self) -> T.ImportsInfo:
-        print(':dv2sp', 'start', self.file)
+        # print(':dv2sp', 'start', self.file)
+        print(':vsi2', 'start', self.file)
         tree = ast.parse(self.code, self.file)
         for node in ast.walk(tree):
             if isinstance(node, (ast.Import, ast.ImportFrom)):
@@ -67,7 +70,7 @@ class FileParser:
                         continue
                     else:
                         yield module, path
-        print(':vsp', 'end', self.file)
+        # print(':vsp', 'end', self.file)
     
     def _check_if_relative_import(self, node: ast.AST) -> int:
         lineno = node.lineno

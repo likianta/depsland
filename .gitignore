@@ -22,9 +22,7 @@
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
 /sidework/tree_shaking/_errors.txt
-/sidework/tree_shaking/_ignores.txt
 /sidework/tree_shaking/_references.yaml
-/sidework/tree_shaking/_test.py
 /sidework/ui_prototype/
 /temp/*
 /tests/
