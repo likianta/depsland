@@ -38,6 +38,6 @@ class FileNodesCache:
             fs.dump(self._cache, self._file)
 
 
-if not fs.exists(x := p('_file_nodes_cache.pkl')):
+if not fs.exists(x := p('_cache.pkl')):
     fs.dump({}, x)
 file_cache = FileNodesCache(x)

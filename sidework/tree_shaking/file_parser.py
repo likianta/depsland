@@ -63,13 +63,14 @@ class FileParser:
                     if module.id not in _broken:
                         _broken.add(module.id)
                         with _err_records.recording():
-                            print(
-                                ':v3l',
-                                '{}:{}'.format(self.file, node.lineno),
-                                line.strip(),
-                                module,
-                                type(e),
-                            )
+                            # print(
+                            #     ':v3l',
+                            #     '{}:{}'.format(self.file, node.lineno),
+                            #     line.strip(),
+                            #     module,
+                            #     type(e),
+                            # )
+                            pass
                     continue
                 except Exception as e:
                     print(':v4l', self.file, node.lineno, module)
