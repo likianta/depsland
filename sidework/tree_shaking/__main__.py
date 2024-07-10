@@ -32,5 +32,5 @@ if __name__ == '__main__':
     #       prepare: make sure `chore/site_packages` latest:
     #           pox sidework/merge_external_venv_to_local_pypi.py .
     #           pox build/init.py make-site-packages --remove-exists
-    # pox -m sidework.tree_shaking make-tree <output_dir>
+    # pox -m sidework.tree_shaking make-tree <file_i> <dir_o>
     cli.run()
