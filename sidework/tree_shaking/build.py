@@ -1,13 +1,10 @@
 import typing as t
 
-from argsense import cli
-
 from depsland.utils import init_target_tree
 from lk_utils import fs
 from lk_utils import p
 
 
-@cli.cmd()
 def make_tree(dir_o: str) -> None:
     references: t.Dict[str, str] = fs.load(p('_references.yaml'))
     assert all(
@@ -34,8 +31,3 @@ def make_tree(dir_o: str) -> None:
         len(set(references.values())),
     )
     print('done', ':t')
-
-
-if __name__ == '__main__':
-    # pox sidework/tree_shaking/make_tree.py <dir_o>
-    cli.run(make_tree)

@@ -22,6 +22,7 @@
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
 /sidework/tree_shaking/_errors.txt
+/sidework/tree_shaking/_file_nodes_cache.pkl
 /sidework/tree_shaking/_references.yaml
 /sidework/ui_prototype/
 /temp/*

@@ -2,6 +2,8 @@ from argsense import cli
 
 from lk_utils import fs
 from lk_utils import p
+from .build import make_tree
+from .check import check_on_lk_utils
 from .finder import find_all_references
 
 
@@ -21,10 +23,18 @@ def dump_all_references(entrances: str) -> None:
     )
 
 
+cli.add_cmd(check_on_lk_utils, 'check')
+cli.add_cmd(make_tree)
+
 if __name__ == '__main__':
     # pox -m sidework.tree_shaking -h
     # pox -m sidework.tree_shaking dump-all-references
     #   sidework/tree_shaking/_test.py
     # pox -m sidework.tree_shaking dump-all-references
     #   depsland/__main__.py
+    #   prepare: make sure `chore/site_packages` latest:
+    #       pox sidework/merge_external_venv_to_local_pypi.py .
+    #       pox build/init.py make-site-packages --remove-exists
+    # pox -m sidework.tree_shaking check
+    # pox -m sidework.tree_shaking make-tree <output_dir>
     cli.run()

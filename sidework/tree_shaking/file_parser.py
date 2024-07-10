@@ -6,14 +6,16 @@ from contextlib import contextmanager
 from lk_logger import parallel_printing
 from lk_utils import fs
 from lk_utils import p
-from .module import ModuleInspector, ModuleNotFound
-from .module import PathNotFound, ModuleInfo
+from .cache import file_cache
+from .module import ModuleInfo
+from .module import ModuleInspector
+from .module import ModuleNotFound
+from .module import PathNotFound
 from .module import T as T0
+from .path_scope import path_scope
 
 module_inspector = ModuleInspector(
-    search_scopes=(p('../../chore/site_packages'),),
-    search_paths=(p('../../depsland'),),
-    ignores=frozenset(fs.load(p('./_ignores.txt')).splitlines())
+    ignores=fs.load(p('./_ignores.txt')).splitlines()
 )
 _broken = set()
 
@@ -31,52 +33,56 @@ class FileParser:
     def __init__(self, file: T.Path) -> None:
         self.file = file
         self.dir = fs.parent(file)
-        self.code = fs.load(file)
-        self.lines = tuple(self.code.splitlines())
+        
+        if self.file in path_scope.path_2_module:
+            self.base_dir = self.dir
+            self.base_module_segs = ()
+        elif self.dir in path_scope.path_2_module:
+            self.base_dir = self.dir
+            self.base_module_segs = (path_scope.path_2_module[self.dir],)
+        else:
+            for top_path, top_name in path_scope.path_2_module.items():
+                if self.file.startswith(top_path + '/'):
+                    self.base_dir = top_path
+                    self.base_module_segs = (
+                        top_name, *self.dir[len(top_path) + 1:].split('/')
+                    )
+                    break
+            else:
+                raise Exception(
+                    'file should be existed in registered path scopes', file
+                )
     
     def parse_imports(self) -> T.ImportsInfo:
         # print(':dv2sp', 'start', self.file)
-        print(':vsi2', 'start', self.file)
-        tree = ast.parse(self.code, self.file)
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.Import, ast.ImportFrom)):
-                for module in self._get_module_info(node):
-                    # print(module, node.lineno, ':i')
-                    # if module.name.startswith('lk_utils'):  # TEST
-                    #     print(module.name, self._get_path(
-                    #         module.name, node.lineno
-                    #     ))
-                    #     if input('continue: ') == 'x':
-                    #         import sys
-                    #         sys.exit()
-                    try:
-                        path = self._get_module_path(module)
-                    except (ModuleNotFound, PathNotFound) as e:
-                        if module.id not in _broken:
-                            _broken.add(module.id)
-                            with _err_records.recording():
-                                print(
-                                    ':v3l',
-                                    '{}:{}'.format(self.file, node.lineno),
-                                    self.lines[node.lineno - 1].strip(),
-                                    module,
-                                    type(e),
-                                )
-                        continue
-                    except Exception as e:
-                        print(':v4l', self.file, node.lineno, module)
-                        raise e
-                    if path in ('<stdlib>', '<ignored>'):
-                        continue
-                    else:
-                        yield module, path
+        for node, line in file_cache.parse_nodes(self.file):
+            for module in self._get_module_info(node, line):
+                try:
+                    path = self._get_module_path(module)
+                except (ModuleNotFound, PathNotFound) as e:
+                    if module.id not in _broken:
+                        _broken.add(module.id)
+                        with _err_records.recording():
+                            print(
+                                ':v3l',
+                                '{}:{}'.format(self.file, node.lineno),
+                                line.strip(),
+                                module,
+                                type(e),
+                            )
+                    continue
+                except Exception as e:
+                    print(':v4l', self.file, node.lineno, module)
+                    raise e
+                if path in ('<stdlib>', '<ignored>'):
+                    continue
+                else:
+                    yield module, path
         # print(':vsp', 'end', self.file)
     
-    def _check_if_relative_import(self, node: ast.AST) -> int:
-        lineno = node.lineno
-        line = self.lines[lineno - 1]
-        x = line.split()[1]
-        if not x: raise Exception('empty import', self.file, lineno, line)
+    def _check_if_relative_import(self, line: str) -> int:
+        x = line.lstrip().split()[1]
+        if not x: raise Exception('empty import', self.file, line)
         dot_cnt = 0
         for ch in x:
             if ch == '.':
@@ -85,16 +91,20 @@ class FileParser:
                 break
         return dot_cnt
     
-    def _get_module_info(self, node: T.Node) -> t.Iterator[T.ModuleInfo]:
-        if dot_cnt := self._check_if_relative_import(node):
-            base_module = '.'.join(self.dir.rsplit('/', dot_cnt)[1:])
-            assert base_module.count('.') == dot_cnt - 1
+    def _get_module_info(
+        self, node: T.Node, line: str
+    ) -> t.Iterator[T.ModuleInfo]:
+        if dot_cnt := self._check_if_relative_import(line):
+            if dot_cnt == 1:
+                base_module = '.'.join(self.base_module_segs)
+            else:
+                base_module = '.'.join(self.base_module_segs[:-(dot_cnt - 1)])
         else:
             base_module = None
         if base_module:
-            base_dir = fs.normpath('{}/{}'.format(
-                self.dir, '../' * (dot_cnt - 1)
-            ))
+            base_dir = fs.normpath(
+                '{}/{}'.format(self.dir, '../' * (dot_cnt - 1))
+            )
         else:
             base_dir = None
         
@@ -104,7 +114,13 @@ class FileParser:
                     module_name = '{}.{}'.format(base_module, alias.name)
                 else:
                     module_name = alias.name
-                yield ModuleInfo(module_name, '', dot_cnt, base_dir)
+                yield ModuleInfo(
+                    name0=module_name,
+                    name1=alias.name,
+                    name2='',
+                    level=dot_cnt,
+                    base_dir=base_dir,
+                )
         if isinstance(node, ast.ImportFrom):
             for alias in node.names:
                 if base_module:
@@ -117,9 +133,16 @@ class FileParser:
                         module_name = node.module
                     else:
                         raise Exception
-                yield ModuleInfo(module_name, alias.name, dot_cnt, base_dir)
+                yield ModuleInfo(
+                    name0=module_name,
+                    name1=node.module or '',
+                    name2=alias.name,
+                    level=dot_cnt,
+                    base_dir=base_dir,
+                )
     
     def _get_module_path(self, module: T.ModuleInfo) -> T.Path:
+        # assert '//' not in module_inspector.find_module_path(module), module
         return module_inspector.find_module_path(module)
 
 

@@ -22,9 +22,10 @@ def get_all_imports(
         _holder = set()
     for module, path in get_direct_imports(script):
         # print(module, path)
-        if module.id not in _holder:
-            _holder.add(module.id)
-            yield module.id, path
+        assert module.full_name
+        if module.full_name not in _holder:
+            _holder.add(module.full_name)
+            yield module.full_name, path
             if path.endswith('.py'):
                 yield from get_all_imports(path, _holder)
 

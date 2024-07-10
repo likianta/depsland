@@ -1,36 +1,36 @@
-import ast
-import re
-import sys
 import typing as t
 from dataclasses import dataclass
 from functools import cached_property
 
 from lk_utils import fs
+from .path_scope import path_scope
 
 
 @dataclass
 class ModuleInfo:
-    name: str
-    end: str
-    level: int
-    base_dir: t.Optional[str]
+    name0: str  # e.g. 'a.b.c'
+    name1: str  # e.g. 'b.c'
+    name2: str  # e.g. 'd'
+    level: int  # e.g. 1
+    base_dir: t.Optional[str]  # e.g. '<path/to/a>'
+    full_name: str = None  # e.g. 'a.b.c.d'
     
-    def __str__(self) -> str:
-        return self.id
+    # def __str__(self) -> str:
+    #     return self.id
     
     @cached_property
     def relname(self) -> str:
         if self.level:
-            return '.'.join(self.name.split('.')[self.level:])
-        return self.name
+            return '.'.join(self.name0.split('.')[self.level:])
+        return self.name0
     
     @cached_property
     def id(self) -> str:
-        return '{}.{}'.format(self.name, self.end).rstrip('.')
+        return '{}.{}'.format(self.name0, self.name2).rstrip('.')
     
     @cached_property
     def top(self) -> str:
-        return self.name.split('.', 1)[0]
+        return self.name0.split('.', 1)[0]
 
 
 class T:
@@ -42,23 +42,10 @@ class T:
 
 # noinspection PyMethodMayBeStatic
 class ModuleInspector:
-    ignores: t.FrozenSet[str]
     known_stdlib_module_names: t.FrozenSet[str]
     module_name_2_file: t.Dict[T.ModuleId, T.Path]
-    top_name_2_path: t.Dict[T.ModuleName, t.Tuple[T.Path, bool]]
     
-    def __init__(
-        self,
-        search_scopes: t.Iterable[str] = None,
-        search_paths: t.Iterable[str] = (),
-        ignores: t.FrozenSet[str] = frozenset(),
-    ) -> None:
-        if search_scopes is None:
-            search_scopes = sys.path
-        self.top_name_2_path = self._index_top_names(
-            search_scopes, search_paths
-        )
-        
+    def __init__(self, ignores: t.Iterable[str] = ()) -> None:
         self.known_stdlib_module_names = frozenset((
             # ref: https://github.com/mgedmin/findimports/blob/master
             #   /findimports.py
@@ -141,160 +128,151 @@ class ModuleInspector:
             'xdrlib', 'xml', 'xmlrpc',
             'zipapp', 'zipfile', 'zipimport', 'zlib',
         ))
-        self.ignores = ignores
         
         self.module_name_2_file = {}
         for name in self.known_stdlib_module_names:
             self.module_name_2_file[name] = '<stdlib>'
-        for name, (path, isdir) in self.top_name_2_path.items():
+        for name in ignores:
+            self.module_name_2_file[name] = '<ignored>'
+        for name, (path, isdir) in path_scope.module_2_path.items():
             if not isdir:
                 self.module_name_2_file[name] = path
+        # print(self.module_name_2_file['typing_extensions'], ':v')
         # print(self.module_name_2_file, ':vl')
         # print(self.module_name_2_file['lk_utils'], ':v')
         # if input('continue: ') == 'x':
+        #     import sys
         #     sys.exit()
-    
-    def _index_top_names(
-        self,
-        search_scopes: t.Iterable[str],
-        search_paths: t.Iterable[str] = (),
-    ) -> t.Dict[str, t.Tuple[str, bool]]:
-        # {str top_name: (path, is_dir), ...}
-        top_name_2_path = {}
-        for root in map(fs.abspath, search_scopes):
-            for d in fs.find_dirs(root):
-                # print(d.name, ':v')
-                if '.' not in d.name and d.name != '__pycache__':
-                    # if fs.exists(x := '{}/__init__.py'.format(d.path)):
-                    #     top_name_2_path[d.name] = (x, False)
-                    # else:
-                    #     top_name_2_path[d.name] = (d.path, True)
-                    # assert fs.exists(x := '{}/__init__.py'.format(d.path)), d.path
-                    # top_name_2_path[d.name] = (x, False)
-                    top_name_2_path[d.name] = (d.path, True)
-            for f in fs.find_files(root):
-                if '.' not in f.stem:
-                    top_name_2_path[f.stem] = (f.path, False)
-        for p in map(fs.abspath, search_paths):
-            top_name_2_path[fs.basename(p, suffix=False)] = (p, fs.isdir(p))
-        return top_name_2_path
-    
-    def is_stdlib_module(self, module_name: T.ModuleName) -> bool:
-        if '.' in module_name:
-            return module_name.split('.', 1)[0] in \
-                self.known_stdlib_module_names
-        return module_name in self.known_stdlib_module_names
     
     def find_module_path(self, module: T.ModuleInfo) -> T.Path:
         if module.id in self.module_name_2_file:
+            module.full_name = module.id.removesuffix('.*')
             return self.module_name_2_file[module.id]
-        if module.name in self.module_name_2_file:
-            # a.
-            # return self.module_name_2_file[module.name]
-            # b.
-            # out = self.module_name_2_file[module.name]
-            # self.module_name_2_file[module.id] = out
-            # return out
-            # c.
-            out = self.module_name_2_file[module.name]
-            if not out.endswith('/__init__.py'):
+        if module.name0 in self.module_name_2_file:
+            out = self.module_name_2_file[module.name0]
+            if out in ('<stdlib>', '<ignored>'):
+                if module.name2:
+                    self.module_name_2_file[module.id] = out
+                return out
+            if module.name2 in ('', '*'):
+                module.full_name = module.name0
                 self.module_name_2_file[module.id] = out
                 return out
+            else:
+                if out.endswith('/__init__.py'):
+                    pass
+                else:
+                    module.full_name = module.name0
+                    self.module_name_2_file[module.id] = out
+                    return out
         
         if module.top in self.known_stdlib_module_names:
             self.module_name_2_file[module.id] = '<stdlib>'
             return '<stdlib>'
-        if module.name in self.ignores or module.id in self.ignores:
-            self.module_name_2_file[module.id] = '<ignored>'
-            return '<ignored>'
         
         def determine_path() -> T.Path:
             if module.base_dir:
-                base_dir = module.base_dir
-                module_path = '{}/{}'.format(
-                    base_dir, module.relname.replace('.', '/')
-                ).rstrip('/')
+                if module.name1:
+                    if module.name2 not in ('', '*'):
+                        if x := self._quick_check_path(
+                            '{}/{}/{}'.format(
+                                module.base_dir,
+                                module.name1.replace('.', '/'),
+                                module.name2
+                            ),
+                            case_sensitive=True
+                        ):
+                            module.full_name = module.id
+                            self.module_name_2_file[module.id] = x
+                            return x
+                    if x := self._quick_check_path('{}/{}'.format(
+                        module.base_dir, module.name1.replace('.', '/')
+                    )):
+                        module.full_name = module.name0
+                        self.module_name_2_file[module.name0] = x
+                        self.module_name_2_file[module.id] = x
+                        return x
+                else:
+                    if module.name2 in ('', '*'):
+                        raise Exception('unreachable case')
+                    else:
+                        if x := self._quick_check_path(
+                            '{}/{}'.format(module.base_dir, module.name2),
+                            case_sensitive=True
+                        ):
+                            module.full_name = module.id
+                            self.module_name_2_file[module.id] = x
+                            return x
             else:
                 try:
-                    x = self.top_name_2_path[module.top]
+                    top_path, isdir = path_scope.module_2_path[module.top]
                 except KeyError:
                     raise ModuleNotFound(module)
                 # assert x[1], (module, x[0])
-                if x[1]:
-                    base_dir = x[0]
-                    module_path = '{}/{}'.format(
-                        base_dir,
-                        module.name
-                        .replace(module.top, '', 1)
-                        .lstrip('.')
-                        .replace('.', '/')
-                    ).rstrip('/')
-                else:
-                    # e.g.
-                    #   module = ModuleInfo(
-                    #       name='typing_extensions',
-                    #       end='Literal',
-                    #       level=0,
-                    #       base_dir=None,
-                    #   )
-                    #   x = ('<site_packages>/typing_extensions.py', False)
-                    # return x[0]
-                    raise Exception('impossible case', module, x)
-            if fs.isdir(module_path):
-                if module.end in ('', '*'):
-                    assert fs.exists(x := '{}/__init__.py'.format(module_path))
-                    self.module_name_2_file[module.id] = x
-                    self.module_name_2_file[module.name] = x
-                    return x
-                else:
-                    # if fs.exists(x := '{}/__init__.py'.format(module_path)):
-                    #     if module.end:
-                    #         if re.match(r'__[a-zA-Z0-9]+__', module.end):
-                    #             # e.g. '__file__', '__path__', '__spec__', ...
-                    #             return x
-                    #         tree = ast.parse(fs.load(x), x)
-                    #         for node in ast.walk(tree):
-                    #             if isinstance(node, (ast.Import, ast.ImportFrom)):
-                    #                 for alias in node.names:
-                    #                     if (
-                    #                         alias.name == module.end or
-                    #                         alias.asname == module.end
-                    #                     ):
-                    #                         return x
-                    #     else:
-                    #         return x
-                    for f in fs.find_files(
-                        module_path, ('.py', '.pyc', '.pyd')
+                if isdir:
+                    if module.name2 not in ('', '*'):
+                        if x := self._quick_check_path(
+                            '{}/{}/{}'.format(
+                                top_path,
+                                module.name0
+                                    .replace(module.top, '', 1)
+                                    .lstrip('.')
+                                    .replace('.', '/'),
+                                module.name2
+                            ).replace('//', '/'),
+                            case_sensitive=True
+                        ):
+                            module.full_name = module.id
+                            self.module_name_2_file[module.id] = x
+                            return x
+                    if x := self._quick_check_path(
+                        '{}/{}'.format(
+                            top_path,
+                            '' if module.name0 == module.top else
+                            module.name0
+                                .replace(module.top, '', 1)
+                                .lstrip('.')
+                                .replace('.', '/'),
+                        ).rstrip('/')
                     ):
-                        if f.stem == module.end:
-                            self.module_name_2_file[module.id] = f.path
-                            return f.path
-                    for d in fs.find_dirs(module_path):
-                        if d.name == module.end:
-                            if fs.exists(x := '{}/__init__.py'.format(d.path)):
-                                self.module_name_2_file[module.id] = x
-                                return x
-                            else:
-                                raise PathNotFound(module)
-                    if fs.exists(x := '{}/__init__.py'.format(module_path)):
+                        # if module.name0 == 'lk_utils':
+                        #     print(':v', module, x)
+                        #     _debug_interrupt()
+                        module.full_name = module.name0
+                        self.module_name_2_file[module.name0] = x
                         self.module_name_2_file[module.id] = x
-                        self.module_name_2_file[module.name] = x
                         return x
-                raise ModuleNotFound(module)
-            else:
-                parent_dir, parent_name = module_path.rsplit('/', 1)
-                # print(':vl', parent_dir, fs.find_file_names(parent_dir))
-                for f in fs.find_files(parent_dir, ('.py', '.pyc', '.pyd')):
-                    if f.stem == parent_name:
-                        self.module_name_2_file[module.name] = f.path
-                        self.module_name_2_file[module.id] = f.path
-                        return f.path
                 else:
-                    raise PathNotFound(module)
+                    module.full_name = module.top
+                    self.module_name_2_file[module.name0] = top_path
+                    self.module_name_2_file[module.id] = top_path
+                    return top_path
+            raise ModuleNotFound(module)
         
         assert (out := determine_path())
-        # self.module_name_2_file[module.id] = out
         return out
+    
+    def _quick_check_path(
+        self, possible_path: str, case_sensitive: bool = False
+    ) -> t.Optional[T.Path]:
+        if fs.isdir(possible_path):
+            if fs.exists(x := f'{possible_path}/__init__.py'):
+                return x
+        if case_sensitive:
+            a, b = possible_path.rsplit('/', 1)
+            for f in fs.find_files(a, ('.py', '.pyc', '.pyd')):
+                if f.stem == b:
+                    return f.path
+        else:
+            for ext in ('.py', '.pyc', '.pyd'):
+                if fs.exists(x := possible_path + ext):
+                    return x
+
+
+def _debug_interrupt() -> None:
+    if input('continue: ') == 'x':
+        import sys
+        sys.exit()
 
 
 class ModuleNotFound(Exception):

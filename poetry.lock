@@ -69,22 +69,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-name = "altgraph"
-version = "0.17.4"
-description = "Python graph (network) package"
-optional = false
-python-versions = "*"
-files = [
-    {file = "altgraph-0.17.4-py2.py3-none-any.whl", hash = "sha256:642743b4750de17e655e6711601b077bc6598dbfa3ba5fa2b2a35ce12b508dff"},
-    {file = "altgraph-0.17.4.tar.gz", hash = "sha256:1b5afbb98f6c4dcadb2e2ae6ab9fa994bbb8c1d75f4fa96d340f9437ae454406"},
-]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
 name = "anytree"
 version = "2.12.1"
 description = "Powerful and Lightweight Python Tree Data Structure with various plugins"
@@ -1585,12 +1569,12 @@ reference = "likianta-host"
 
 [[package]]
 name = "lk-utils"
-version = "2.10.6b3"
+version = "2.10.6b5"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_utils-2.10.6b3-py3-none-any.whl", hash = "sha256:7cc32451619f1e243f924e15f9cbdbb2f53d13211e22df186ef0748838000067"},
+    {file = "lk_utils-2.10.6b5-py3-none-any.whl", hash = "sha256:ff6dff1c0499ab2a837240b382472216c00d4ca37a4137b35f48c7f7ae68d7b5"},
 ]
 
 [package.dependencies]
@@ -2034,26 +2018,6 @@ files = [
     {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
     {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
 ]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
-name = "modulegraph"
-version = "0.19.6"
-description = "Python module dependency analysis tool"
-optional = false
-python-versions = "*"
-files = [
-    {file = "modulegraph-0.19.6-py2.py3-none-any.whl", hash = "sha256:5443e6d93c0b263f4ea309e2ff01312eef7c424dd51981a1e78e960c90e572b8"},
-    {file = "modulegraph-0.19.6.tar.gz", hash = "sha256:c914c8c95a0e10fe88505d4e9c2284b4e3dbc70943e306cc6567e36cc541bf4b"},
-]
-
-[package.dependencies]
-altgraph = ">=0.15"
-setuptools = "*"
 
 [package.source]
 type = "legacy"
@@ -4723,4 +4687,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "103937869f7b20ddf674013190e28a5a694e2085889c5e4c4b76a994b72387e7"
+content-hash = "542f21be39f720d16c2e06f328aabcef7305387f99302886871d0c8b599954b2"
