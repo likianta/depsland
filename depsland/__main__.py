@@ -129,7 +129,7 @@ def launch_gui(
     """
     # print(_user_call, sys.argv, ':lv')
     if _user_call:
-        proc = run_cmd_args(
+        run_cmd_args(
             (
                 sys.executable, '-m', 'streamlit', 'run',
                 'depsland/__main__.py',
@@ -157,8 +157,8 @@ def launch_gui(
                 url='http://localhost:{}'.format(port),
                 size=(1200, 2000),
                 icon=paths.build.launcher_icon,
+                blocking=True,
             )
-            proc.kill()
     else:
         if _app_token == '""':  # FIXME: should be resolved in argsense library.
             _app_token = ''

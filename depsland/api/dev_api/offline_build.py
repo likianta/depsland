@@ -251,7 +251,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
             dir_o=dst_dir,
             name=manifest['name'] + ' (Debug).exe',
             debug=True,
-            keep_bat=True,  # TEST
+            # keep_bat=True,  # TEST
             # uac_admin=True,
             custom_cd='cd source',
         )
@@ -280,8 +280,9 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
             @echo off
             cd /d %~dp0
             cd source
-            set PYTHONPATH=.
-            .\python\python.exe -m depsland launch-gui {appid}
+            set "PYTHONPATH=.;chore/site_packages"
+            set "PYTHONUTF8=1"
+            .\python\python.exe -m depsland launch-gui --app-token {appid}
         ''')
         script = template.format(appid=manifest['appid'])
         dumps(script, file_bat)
@@ -292,7 +293,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
                 (x := manifest['launcher']['icon']) and
                 '{}/{}'.format(manifest.start_directory, x) or ''
             ),
-            show_console=True,
+            show_console=False,
             # show_console=False,
             uac_admin=True,
         )
