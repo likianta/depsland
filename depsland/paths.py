@@ -135,6 +135,30 @@ class Project:
                 '<desktop>/Depsland.lnk',
                 None
             )
+            
+            if project_info.get('unblock_dlls'):  # experiemntal
+                # related: `depsland.api.dev_api.offline_build._init_dist_tree`
+                # https://stackoverflow.com/questions/20886450/unblock-a
+                # -file-in-windows-from-a-python-script
+                from lk_utils import run_cmd_args
+                
+                def unblock_all(dir: str) -> None:
+                    for f in fs.findall_files(dir, '.dll'):
+                        print(':v3s', 'unblock', f.relpath)
+                        unblock(f.path)
+                
+                def unblock(file: str) -> None:
+                    run_cmd_args(
+                        'powershell.exe', '-Command', 'Unblock-File',
+                        '-Path', os.path.abspath(file)
+                    )
+                
+                site_packages_dir = fs.xpath('../chore/site_packages')
+                unblock_all('{}/pythonnet'.format(site_packages_dir))
+                unblock_all('{}/toga_winforms'.format(site_packages_dir))
+                
+                project_info.pop('unblock_dlls')
+                fs.dump(project_info, fs.xpath('../.depsland_project.json'))
         
         else:
             raise Exception(self.project_mode)

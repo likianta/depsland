@@ -145,7 +145,11 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
     )
     
     fs.dump(
-        {'project_mode': 'shipboard', 'depsland_version': __version__},
+        {
+            'project_mode': 'shipboard',
+            'depsland_version': __version__,
+            'unblock_dlls': True,
+        },
         f'{root_o}/source/.depsland_project.json'
     )
     fs.dump(
