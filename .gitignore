@@ -21,7 +21,7 @@
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
-/sidework/tree_shaking/results/
+/sidework/tree_shaking/results/*
 /sidework/tree_shaking/_cache.pkl
 /sidework/tree_shaking/_errors.txt
 /sidework/ui_prototype/

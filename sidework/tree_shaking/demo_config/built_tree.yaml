@@ -1,0 +1,31 @@
+batch:
+  - sidework/tree_shaking/results/depsland.yaml
+  - sidework/tree_shaking/results/depsland-main.yaml
+  - sidework/tree_shaking/results/numpy.yaml
+  - sidework/tree_shaking/results/streamlit.yaml
+  - sidework/tree_shaking/results/streamlit-extras.yaml
+  - sidework/tree_shaking/results/streamlit-main.yaml
+  - sidework/tree_shaking/results/toga-winforms.yaml
+single:
+  - chore/site_packages/_cffi_backend.cp312-win_amd64.pyd
+  - chore/site_packages/clr_loader/
+  - chore/site_packages/clr_loader-0.2.6.dist-info/
+  - chore/site_packages/pythonnet/
+  - chore/site_packages/streamlit/runtime/scriptrunner/magic_funcs.py
+  - chore/site_packages/streamlit/static/
+  - chore/site_packages/streamlit/__init__.py
+  - chore/site_packages/streamlit/__main__.py
+  - chore/site_packages/streamlit-1.36.0.dist-info/
+  - chore/site_packages/streamlit_extras/__init__.py
+  # - chore/site_packages/toga/
+  - chore/site_packages/toga_core-0.4.5.dist-info/
+  - chore/site_packages/toga_winforms/
+  - chore/site_packages/toga_winforms-0.4.5.dist-info/
+  - chore/site_packages/travertino-0.3.0.dist-info/
+  - depsland/chore/
+  - depsland/__init__.py
+  - depsland/__main__.py
+replace:
+  tests/empty_package:
+    - chore/site_packages/numpy/
+    - chore/site_packages/pandas/

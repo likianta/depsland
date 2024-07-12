@@ -1,5 +1,4 @@
 from lk_utils import fs
-from .finder import get_result_file
 
 
 def check_on_lk_utils() -> None:
@@ -9,7 +8,7 @@ def check_on_lk_utils() -> None:
         files0.append(f.relpath)
     
     files1 = []
-    for k, v in fs.load(get_result_file(fs.xpath('_test.py'))).items():
+    for k, v in fs.load(fs.xpath('./results/tree-shaking-test.yaml')).items():
         if k.startswith('lk_utils'):
             files1.append(v.split('/lk_utils/')[1])
     

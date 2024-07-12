@@ -1,0 +1,7 @@
+depsland/__init__.py: depsland
+depsland/__main__.py: depsland-main
+chore/site_packages/numpy/__init__.py: numpy
+chore/site_packages/streamlit/__init__.py: streamlit
+chore/site_packages/streamlit/__main__.py: streamlit-main
+chore/site_packages/streamlit_extras/__init__.py: streamlit-extras
+chore/site_packages/toga_winforms/__init__.py: toga-winforms

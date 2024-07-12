@@ -10,10 +10,11 @@ class T:
     Data = t.TypedDict('Data', {
         'batch' : t.List[str],
         'single': t.List[str],
+        'replace': t.Dict[str, t.Union[str, t.List[str]]],
     })
 
 
-def make_tree(file_i: str, dir_o: str) -> None:
+def make_tree(file_i: str, dir_o: str, copyfiles: bool = False) -> None:
     """
     file_i:
         data for example:
@@ -40,7 +41,7 @@ def make_tree(file_i: str, dir_o: str) -> None:
     for path in data['batch']:
         datum = fs.load(path)
         files.update(datum.values())
-    for path in data['single']:
+    for path in data.get('single', ()):
         if path.endswith('/'):
             dirs.add(fs.abspath(path))
         else:
@@ -62,10 +63,32 @@ def make_tree(file_i: str, dir_o: str) -> None:
     for f in files:
         i = f
         o = '{}/{}'.format(dir_o, f.removeprefix(base_prefix + '/'))
-        fs.copy_file(i, o)
+        if copyfiles:
+            fs.copy_file(i, o)
+        else:
+            fs.make_link(i, o)
     for d in dirs:
         i = d
         o = '{}/{}'.format(dir_o, d.removeprefix(base_prefix + '/'))
-        fs.copy_tree(i, o, True)
+        if copyfiles:
+            fs.copy_tree(i, o, True)
+        else:
+            fs.make_link(i, o, True)
+    
+    # for k, v in data.get('replace', {}).items():
+    #     if isinstance(v, str):
+    #         v = (v,)
+    #     src = k
+    #     for dst in v:
+    #         if dst.endswith('/'):
+    #             if copyfiles:
+    #                 fs.copy_tree(src, dst, True)
+    #             else:
+    #                 fs.make_link(src, dst, True)
+    #         else:
+    #             if copyfiles:
+    #                 fs.copy_file(src, dst, True)
+    #             else:
+    #                 fs.make_link(src, dst, True)
     
     print('done', ':t')
