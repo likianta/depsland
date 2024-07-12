@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.0b6"
+version = "0.8.0b7"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -39,6 +39,7 @@ streamlit-extras = "*"
 # toml = { version = "*", python = "<3.11" }
 toml = "*"
 # typing-extensions = { version = "*", python = "<3.11" }
+windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 # --- fix indirect dependencies' verspecs ---
 numpy = { version = "^1.26.0", python = ">=3.9" }  # <- streamlit
@@ -52,7 +53,6 @@ pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.10,<3.13" }  # <- demo/hel
 pysimplegui = "*"  # <- demo/hello-world-tkinter
 # qmlease = "^3.0.4"  # <- demo/hello-world-gui
 qmlease = { version = ">=3.0.5a4,<3.1.0", source = "likianta-host" }
-windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'
