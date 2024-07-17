@@ -237,8 +237,12 @@ def full_build(
         fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
     
     if _add_python_sdk:
+        # fs.make_link(
+        #     f'{root_i}/chore/site_packages',
+        #     f'{root_o}/chore/site_packages',
+        # )
         fs.make_link(
-            f'{root_i}/chore/site_packages',
+            f'{root_i}/chore/minified_site_packages',
             f'{root_o}/chore/site_packages',
         )
         fs.make_link(
