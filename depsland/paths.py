@@ -47,9 +47,6 @@ class System:
     @new_thread()
     def set_environment_variables(depsland_dir: str) -> None:
         """
-        FIXME:
-            - `setx` command runs very slow in some computer.
-        
         issue: `winreg` can create env var successfully, but when we open a new
         process and check the env we had just set, it shows none unless reboot.
             ref: https://stackoverflow.com/questions/71253807
@@ -57,10 +54,11 @@ class System:
         """
         # quick check
         depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
-        if os.environ['DEPSLAND'] == depsland_dir:
+        if os.getenv('DEPSLAND') == depsland_dir:
             return
         
         # --- a) use `setx`
+        # FIXME: `setx` command runs very slow in some computer.
         # from lk_utils import run_cmd_args
         # depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
         # run_cmd_args('setx', 'DEPSLAND', depsland_dir, verbose=True)
