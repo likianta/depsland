@@ -93,7 +93,16 @@ def make_site_packages(
     pypi.linking(pkg_ids, target_dir)
 
 
+@cli.cmd()
+def make_minified_site_packages(dir_i: str) -> None:
+    dir_o = 'chore/minified_site_packages'
+    fs.remove(dir_o)
+    fs.make_link(dir_i, dir_o)
+    fs.copy_file('chore/.gitkeep', f'{dir_o}/.gitkeep')
+
+
 if __name__ == '__main__':
     # pox build/init.py help-me-choose-python
     # pox build/init.py make-site-packages --remove-exists
+    # pox build/init.py make-minified-site-packages <dir_i>
     cli.run()
