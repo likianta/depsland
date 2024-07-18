@@ -7,8 +7,6 @@ from os.path import exists
 
 from argsense import cli
 from lk_utils import fs
-from lk_utils import loads
-from lk_utils import xpath
 
 from depsland import __version__
 from depsland import bat_2_exe as _b2e
@@ -22,14 +20,15 @@ print(':v2', f'depsland version: {__version__}')
 
 
 @cli.cmd()
-def self_check() -> bool:
+def self_check() -> None:
     ver0 = __version__
-    ver1 = loads('manifest.json')['version']
-    ver2 = loads('pyproject.toml')['tool']['poetry']['version']
+    ver1 = fs.load('manifest.json')['version']
+    ver2 = fs.load('pyproject.toml')['tool']['poetry']['version']
     if not (ver0 == ver1 == ver2):
-        print('version is not consistent', (ver0, ver1, ver2), ':v3')
-        return False
-    return True
+        print(':v3', 'version is not consistent', (ver0, ver1, ver2))
+        
+    if fs.exists('depsland/.project'):
+        raise Exception('please remove "depsland/.project" to continue.')
 
 
 @cli.cmd()
@@ -74,7 +73,7 @@ def backup_project_resources() -> None:
     
     def copy_config_dir() -> None:
         # make sure config/depsland.yaml has configured local oss.
-        assert loads(f'{dir_i}/config/depsland.yaml')['oss']['server'] == 'local'
+        assert fs.load(f'{dir_i}/config/depsland.yaml')['oss']['server'] == 'local'
         fs.copy_file(f'{dir_i}/config/depsland.yaml', f'{dir_m}/depsland.yaml')
         compress_dir(f'{dir_m}/depsland.yaml', f'{dir_o}/config.zip', True)
     
@@ -93,7 +92,7 @@ def backup_project_resources() -> None:
 
 @cli.cmd()
 def full_build(
-    oss_scheme: str, pypi_scheme: str = 'full', _add_python_sdk: bool = True
+    oss_scheme: str, pypi_scheme: str = 'blank', _add_python_sdk: bool = True
 ) -> None:
     """
     generate `dist/depsland-setup-<version>` folder.
@@ -110,15 +109,12 @@ def full_build(
             
             what's the difference for the schemes?
                 'full' is used for local test.
-                'blank' is used for production release, it has a smaller size.
-                if you want to partially release, or try to package a minimal -
+                'blank' is used for production release, it has a minified size.
+                if you want to partially release, or try to package a minimal
                 version, use 'blank' with '_add_python_sdk=False'.
     """
     # checks
-    if not self_check():
-        # print(':v3s', 'please resolve self-check problems first')
-        # exit()
-        pass
+    self_check()
     if oss_scheme == 'aliyun':
         assert exists(os.getenv('DEPSLAND_CONFIG_ROOT'))
     
@@ -214,7 +210,7 @@ def full_build(
         # assert exists(custom := os.getenv('DEPSLAND_CONFIG_ROOT'))
         custom = os.getenv('DEPSLAND_CONFIG_ROOT')
         assert (
-            loads(f'{custom}/depsland.yaml')
+            fs.load(f'{custom}/depsland.yaml')
             ['oss']['server'] == 'aliyun'
         )
         fs.copy_file(
@@ -223,7 +219,7 @@ def full_build(
         )
     else:
         assert (
-            loads(f'{root_i}/config/depsland.yaml')
+            fs.load(f'{root_i}/config/depsland.yaml')
             ['oss']['server'] == 'local'
         )
         fs.copy_file(
@@ -265,7 +261,8 @@ def full_build(
 def bat_2_exe(
     file_i: str,
     show_console: bool = True,
-    uac_admin: bool = False
+    uac_admin: bool = False,
+    icon: str = fs.xpath('exe/launcher.ico'),
 ) -> None:
     """
     args:
@@ -278,7 +275,7 @@ def bat_2_exe(
     _b2e(
         file_bat=file_i,
         file_exe=fs.replace_ext(file_i, 'exe'),
-        icon=xpath('exe/launcher.ico'),
+        icon=icon,
         show_console=show_console,
         uac_admin=uac_admin,
     )
@@ -296,14 +293,22 @@ if __name__ == '__main__':
     # pox build/build.py bat-2-exe build/exe/depsland-cli.bat
     # pox build/build.py bat-2-exe build/exe/depsland-gui.bat -C -u
     # pox build/build.py bat-2-exe build/exe/depsland-gui-debug.bat -u
-    # pox build/build.py bat-2-exe build/exe/depsland-runapp.bat -C
-    # pox build/build.py bat-2-exe build/exe/depsland-runapp-debug.bat -u
+    # pox build/build.py bat-2-exe build/exe/depsland-runapp.bat -C --icon
+    #   build/icon/python.ico
+    # pox build/build.py bat-2-exe build/exe/depsland-runapp-debug.bat -u --icon
+    #   build/icon/python.ico
     
     # pox build/build.py backup-project-resources
     
     # pox build/build.py full-build aliyun
-    # pox build/build.py full-build aliyun -p blank
-    #   before running this command, you need to set environment variable -
-    #   'DEPSLAND_CONFIG_ROOT' to the path to your custom config folder.
-    # pox build/build.py full-build aliyun -p blank --not-add-python-sdk
+    #   prerequisites:
+    #       1. set environment variable:
+    #           $env.DEPSLAND_CONFIG_ROOT = 'tests/config'
+    #       2. make sure poetry.lock is synced to 'chore/site_packages' and
+    #       'chore/minified_site_packages'
+    #           see also:
+    #               sidework/merge_external_venv_to_local_pypi.py
+    #               build/init.py : make_site_packages
+    #               build/init.py : make_minified_site_packages
+    #               <tree_shaking_project>/examples/depsland_modules.yaml
     cli.run()

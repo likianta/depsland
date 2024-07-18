@@ -1,11 +1,5 @@
 """
 readme: wiki/launcher-icon-setting.md
-requirements:
-    - argsense
-    - depsland
-    - icnsutil
-    - lk-utils
-    - pillow
 TODO: support svg.
 """
 import os
@@ -43,8 +37,7 @@ def _correct_io(ext: T.Extension) -> t.Callable[[T.Function], T.Function]:
 @cli.cmd('all')
 def icns_2_all(file_i: str, name_o: str = None) -> None:
     assert file_i.endswith('.icns')
-    if not name_o:
-        name_o = fs.basename(file_i, False)
+    if not name_o: name_o = fs.basename(file_i, False)
     file_m = icns_2_png(file_i, '{}/{}.png'.format(fs.parent(file_i), name_o))
     png_2_ico(file_m, '{}/{}.ico'.format(fs.parent(file_i), name_o))
 
