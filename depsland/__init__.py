@@ -1,5 +1,5 @@
 if 1:
-    import os.path
+    import os
     import sys
     _parent_dir = os.path.abspath(f'{__file__}/../..')
     if sys.base_prefix.startswith(_parent_dir):
@@ -32,5 +32,5 @@ from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.8.0b11'
+__version__ = '0.8.0b14'
 __date__ = '2024-07-18'

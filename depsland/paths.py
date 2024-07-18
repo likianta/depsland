@@ -7,7 +7,7 @@ import typing as t
 from os.path import exists
 
 from lk_utils import fs
-# from lk_utils import run_cmd_args
+from lk_utils import new_thread
 
 __all__ = [
     'apps',
@@ -44,6 +44,7 @@ class System:
             pass  # TODO
     
     @staticmethod
+    @new_thread()
     def set_environment_variables(depsland_dir: str) -> None:
         """
         FIXME:
@@ -54,7 +55,13 @@ class System:
             ref: https://stackoverflow.com/questions/71253807
             resolved: https://stackoverflow.com/a/63840426/9695911
         """
+        # quick check
+        depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
+        if os.environ['DEPSLAND'] == depsland_dir:
+            return
+        
         # --- a) use `setx`
+        # from lk_utils import run_cmd_args
         # depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
         # run_cmd_args('setx', 'DEPSLAND', depsland_dir, verbose=True)
         # run_cmd_args('setx', 'PYTHONUTF8', '1', verbose=True)
@@ -103,7 +110,6 @@ class System:
                     SMTO_ABORT_IF_HUNG, 1000, ctypes.byref(ctypes.c_long())
                 )
         
-        depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
         env = EnvironmentVariablesAccess()
         env.set_key('DEPSLAND', depsland_dir)
         env.close()
@@ -167,6 +173,7 @@ class Project:
         # ---------------------------------------------------------------------
         
         if project_mode == 'development':
+            os.environ['LK_LOGGER_FORCE_COLOR'] = '1'
             return project_root, project_mode
         
         elif project_mode == 'package':
