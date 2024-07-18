@@ -1570,12 +1570,12 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "5.7.6b1"
+version = "5.7.6"
 description = "Python print with source and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-5.7.6b1-py3-none-any.whl", hash = "sha256:487934dfe7ea38ed91753ee71a2654323dd7be4370810ba43955faba61309600"},
+    {file = "lk_logger-5.7.6-py3-none-any.whl", hash = "sha256:47147af796e1dae1ecbfe4023a23a5d6342dfe913e3d2880809e0059d81c5aae"},
 ]
 
 [package.dependencies]
@@ -1583,22 +1583,22 @@ rich = ">=13.0,<14.0"
 
 [package.source]
 type = "legacy"
-url = "http://likianta.pro:2006"
-reference = "likianta-host"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
 
 [[package]]
 name = "lk-utils"
-version = "2.10.7b1"
+version = "2.10.7"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_utils-2.10.7b1-py3-none-any.whl", hash = "sha256:68eb2dc0373b5f655018d1980422659d9961d84da75d2532d3d5e5cf65778010"},
+    {file = "lk_utils-2.10.7-py3-none-any.whl", hash = "sha256:fb2a6ec0a25495e8b7f6851ba96c13e0e3436887416777d0e5a81c5d9d941733"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.8,<0.6.0"
-lk-logger = ">=5.7.6b1,<6.0.0"
+lk-logger = ">=5.7.6,<6.0.0"
 psutil = ">=6.0.0,<7.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
 rich = ">=13.0.0,<14.0.0"
@@ -1606,8 +1606,8 @@ typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.source]
 type = "legacy"
-url = "http://likianta.pro:2006"
-reference = "likianta-host"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
 
 [[package]]
 name = "lxml"
@@ -2773,17 +2773,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "2.0.0a9"
+version = "2.0.0b0"
 description = "Launch URL with native window in WebView mode. Multiple backend implementations are supported."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-2.0.0a9-py3-none-any.whl", hash = "sha256:59fd748c8790d1fccdf10c44950d580104ad2a52bed4d307122d152b758a4316"},
+    {file = "pyapp_window-2.0.0b0-py3-none-any.whl", hash = "sha256:0157ebe1516d121ff67968c42e8c375a263a91bbf2476562e9b1289479376769"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.8,<0.6.0"
-lk-utils = ">=2.10.7a0,<3.0.0"
+lk-utils = ">=2.10.7,<3.0.0"
 toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and (sys_platform == \"darwin\" or sys_platform == \"win32\")"}
 webui2 = {version = ">=2.4.5,<3.0.0", markers = "sys_platform == \"darwin\" or sys_platform == \"linux\""}
 
@@ -3250,17 +3250,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "qmlease"
-version = "3.0.5a4"
+version = "3.0.5a8"
 description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "qmlease-3.0.5a4-py3-none-any.whl", hash = "sha256:1dbfc02f99f457760ae62cb03229770c07f63c7d6f053712768c4c2155c35ff1"},
+    {file = "qmlease-3.0.5a8-py3-none-any.whl", hash = "sha256:c184fa216441e1dd444825de77bb2df68e018caa86f10b78ab5ceaaa2d93bdb6"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.7,<0.6.0"
-lk-logger = ">=5.6.4,<6.0.0"
+lk-logger = ">=5.7.6b1,<6.0.0"
 lk-utils = ">=2.10.0,<3.0.0"
 qtpy = ">=2.3.0,<3.0.0"
 typing-extensions = "*"
@@ -4707,4 +4707,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "f51146087bb056d84916b54efc13f4b1642b6fa05c028bd8e77c1992d4f05cba"
+content-hash = "f8fc41bc1633a2dd5353c294141ac9b4e937ec05dadc41dde17b04d7b35fcb57"
