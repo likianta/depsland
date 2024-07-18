@@ -4,6 +4,7 @@ import typing as t
 
 import lk_logger
 from argsense import args_2_cargs
+from lk_utils import fs
 from lk_utils import run_cmd_args
 
 from ... import paths
@@ -14,11 +15,27 @@ from ...platform import sysinfo
 
 
 def run_app(
-    appid: str, *args, _version: str = None, _blocking: bool = True, **kwargs
+    appid: str = None,
+    *args,
+    _caller_location: str = None,
+    _version: str = None,
+    _blocking: bool = True,
+    **kwargs
 ) -> t.Optional[subprocess.Popen]:
     """
     a general launcher to start an installed app.
     """
+    if appid is None:
+        assert _caller_location
+        # related:
+        #   depsland.api.user_api.install._create_launchers
+        #   build/exe/depsland-runapp.bat
+        #   build/exe/depsland-runapp-debug.bat
+        #   build/build.py : [code] if __name__ == '__main__' : [comment]
+        caller_dir = fs.parent(_caller_location)
+        _, appid, _version = caller_dir.rsplit('/', 2)
+        print(_caller_location, appid, _version)
+    
     version = _version or get_last_installed_version(appid)
     if not version:
         print(':v4', f'cannot find installed version of {appid}')

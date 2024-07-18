@@ -284,13 +284,6 @@ def bat_2_exe(
     )
 
 
-# @cli.cmd()
-# def build_all_launchers():  # FIXME
-#     for f in fs.find_files(xpath('exe'), '.bat'):
-#         print(':i', f.name)
-#         _b2e(f.path, icon=xpath('exe/launcher.ico'))
-
-
 @cli.cmd()
 def compress_to_zip():
     dir_i = '{}/{}'.format(paths.project.dist, f'depsland-{__version__}')
@@ -303,6 +296,8 @@ if __name__ == '__main__':
     # pox build/build.py bat-2-exe build/exe/depsland-cli.bat
     # pox build/build.py bat-2-exe build/exe/depsland-gui.bat -C -u
     # pox build/build.py bat-2-exe build/exe/depsland-gui-debug.bat -u
+    # pox build/build.py bat-2-exe build/exe/depsland-runapp.bat -C
+    # pox build/build.py bat-2-exe build/exe/depsland-runapp-debug.bat -u
     
     # pox build/build.py backup-project-resources
     

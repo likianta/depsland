@@ -6,6 +6,7 @@ import sys
 from os.path import exists
 
 from lk_utils import fs
+from lk_utils import run_cmd_args
 
 __all__ = [
     'apps',
@@ -40,6 +41,12 @@ class System:
             self.temp = fs.normpath(os.environ['TEMP'])
         else:
             pass  # TODO
+        
+    @staticmethod
+    def set_environment_variables(depsland_dir: str) -> None:
+        depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
+        run_cmd_args('setx', 'DEPSLAND', depsland_dir)
+        run_cmd_args('setx', 'PYTHONUTF8', '1')
 
 
 class Project:
@@ -127,6 +134,7 @@ class Project:
                     '<desktop>/Depsland.lnk',
                     True
                 )
+                system.set_environment_variables(dir1)
         
         elif self.project_mode == 'shipboard':
             self.root = fs.xpath('..', force_abspath=True)
@@ -155,6 +163,8 @@ class Project:
                 
                 project_info.pop('unblock_dlls')
                 fs.dump(project_info, fs.xpath('../.depsland_project.json'))
+                
+                system.set_environment_variables(self.root)
         
         else:
             raise Exception(self.project_mode)
@@ -270,15 +280,19 @@ class Apps:
 class Build:
     def __init__(self) -> None:
         self.root = f'{project.root}/build'
-        self.icon = f'{self.root}/icon'  # the folder
-        if sys.platform == 'darwin':
-            self.launcher_icon = f'{self.root}/icon/launcher.icns'
-        elif sys.platform == 'linux':
-            self.launcher_icon = f'{self.root}/icon/launcher.png'
-        elif sys.platform == 'win32':
-            self.launcher_icon = f'{self.root}/icon/launcher.ico'
-        else:
-            raise Exception(sys.platform)
+        
+        self.exe = f'{self.root}/exe'  # the folder
+        # self.icon = f'{self.root}/icon'  # the folder
+        
+        self.depsland_runapp_exe = f'{self.exe}/depsland-runapp.exe'
+        self.depsland_runapp_debug_exe = f'{self.exe}/depsland-runapp-debug.exe'
+        
+        self.launcher_icon = '{}/icon/launcher.{}'.format(
+            self.root,
+            'icns' if sys.platform == 'darwin' else
+            'png' if sys.platform == 'linux' else
+            'ico'
+        )
 
 
 class Config:

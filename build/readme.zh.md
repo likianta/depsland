@@ -17,7 +17,7 @@ depsland/build/exe
 
 如果发现有缺少 exe 文件的情况, 或者 bat 的内容发生了改变, 则需要使用 bat-2-exe 工具生成新的 exe.
 
-你需要一个 windows 电脑, 在命令行完成:
+你需要一台 windows 电脑, 在命令行完成:
 
 ```sh
 # 查看帮助
@@ -25,6 +25,7 @@ py build/build.py bat-2-exe -h
 
 # 生成命令行工具
 py build/build.py bat-2-exe build/exe/depsland.bat
+#   会在与 bat 同一目录下生成同名的 exe 文件.
 
 # 生成桌面启动器 (UAC 标识)
 py build/build.py bat-2-exe build/exe/desktop.bat -u
