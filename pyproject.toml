@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.0"
+version = "0.8.1a0"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -28,7 +28,7 @@ pyapp-window = "^2.0.0"
 #     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
 #     { version = "^6.7.1", python = ">=3.12,<3.13" },
 # ]
-pyyaml = "^6.0.0"
+# pyyaml = "^6.0.0"
 # qmlease = "^3.0.4"
 rich = "^13.7.0"
 semver = "^3.0.2"
@@ -40,15 +40,12 @@ toml = "*"
 # typing-extensions = { version = "*", python = "<3.11" }
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
-# --- fix indirect dependencies' verspecs ---
-numpy = { version = "^1.26.0", python = ">=3.9" }  # <- streamlit
-pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
-
 [tool.poetry.group.dev.dependencies]
 icnsutil = "*"  # <- sidework/image_converter.py
 ipython = { version = "^8.22.0", python = ">=3.10,<4.0" }
-# modulegraph = "^0.19.6"
 nuitka = "^2.3.11"
+numpy = { version = "^1.26.0", python = ">=3.9" }  # <- streamlit
+pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
 pillow = "*"  # <- sidework/image_converter.py
 pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.10,<3.13" }  # <- demo/hello-world-gui
 pysimplegui = "*"  # <- demo/hello-world-tkinter
@@ -68,17 +65,14 @@ name = "likianta-host"
 url = "http://likianta.pro:2006/"
 priority = "supplemental"
 
-[tool.poetry_extensions.deptry]
-ignores = [
-    "numpy",
-    "pandas",
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
+
+[tool.poetry-extensions]
+ignored_redundant_packages = [
     "pip",
     "pipgrip",
     "poetry",
     "pyportable_runtime",
-    "windows_toasts",
 ]
-
-[build-system]
-requires = ["poetry"]
-build-backend = "poetry.masonry.api"

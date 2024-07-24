@@ -92,16 +92,19 @@ class T(T0):
     Experiments0 = t.TypedDict(
         'Experiments0',
         {
-            'package_provider': t.Literal['oss', 'pypi']
+            'calculate_dir_hash': bool,
+            #   see `Manifest._update_assets`
+            'package_provider'  : t.Literal['oss', 'pypi'],
         },
+        total=False
     )
     Experiments1 = Experiments0
     
     # -------------------------------------------------------------------------
     
     # Manifest0: original manifest
-    #   this is a json-compatible dict. it is either made by user or dumped by \
-    #   `dump_manifest` function (when caller passes a '.json' file param to \
+    #   this is a json-compatible dict. it is either made by user or dumped by
+    #   `dump_manifest` function (when caller passes a '.json' file param to
     #   it).
     Manifest0 = t.TypedDict(
         'Manifest0',
@@ -119,8 +122,8 @@ class T(T0):
     )
     
     # Manifest1: standard manifest
-    #   this is core and unified data structure for program to use. it is \
-    #   loaded from a '.pkl' file, or parsed from a '.json' file by \
+    #   this is core and unified data structure for program to use. it is
+    #   loaded from a '.pkl' file, or parsed from a '.json' file by
     #   `Manifest.load_from_file`.
     #   the differences between Manifest0 and Manifest1 are:
     #       1. ~1 has an unified path form (all must be abspath).
@@ -245,7 +248,8 @@ class Manifest:
                 'show_console'     : True,
             },
             'experiments'     : {
-                'package_provider': 'pypi',
+                'calculate_dir_hash': False,
+                'package_provider'  : 'pypi',
             },
             'depsland_version': __version__,
         }
@@ -282,7 +286,11 @@ class Manifest:
                 'version'         : data0['version'],
                 'start_directory' : self._start_directory,
                 'assets'          : self._update_assets(
-                    data0.get('assets', {}), self._start_directory
+                    data0.get('assets', {}),
+                    self._start_directory,
+                    data0.get('experiments', {}).get(
+                        'calculate_dir_hash', False
+                    )
                 ),
                 'dependencies'    : self._update_dependencies(
                     data0.get('dependencies', 'requirements.lock'),
@@ -291,7 +299,8 @@ class Manifest:
                     data0.get('launcher', {}), self._start_directory
                 ),
                 'experiments'     : data0.get('experiments', {
-                    'package_provider': 'pypi'
+                    'calculate_dir_hash': False,
+                    'package_provider'  : 'pypi',
                 }),
                 'depsland_version': data0.get(
                     'depsland_version', __version__
@@ -474,26 +483,38 @@ class Manifest:
     
     @staticmethod
     def _update_assets(
-        assets0: T.Assets0, start_directory: T.AbsPath
+        assets0: T.Assets0,
+        start_directory: T.AbsPath,
+        calculate_dir_hash: bool = False,
     ) -> T.Assets1:
-        def generate_hash() -> str:
-            # nonlocal: abspath, ftype (file_type)
-            # generate: fhash (file_hash)
+        """
+        varibale abbreviations:
+            ftype: file type
+            relpath: relative path
+            utime: updated time
+        """
+        
+        def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
                 return get_file_hash(abspath)
+            if calculate_dir_hash:
+                meta_info = []
+                for d in fs.findall_dirs(abspath):
+                    meta_info.append('dir:{}'.format(d.relpath))
+                for f in fs.findall_files(abspath):
+                    meta_info.append('file:{}:{}'.format(
+                        f.relpath, os.path.getsize(f.path)
+                    ))
+                return get_content_hash('\n'.join(meta_info))
             return ''
         
-        def generate_utime() -> int:
-            # nonlocal: abspath, scheme
-            # generate: utime (updated_time)
+        def generate_utime(abspath: str, scheme: str) -> int:
             if scheme in ('root', 'top', 'top_files', 'top_dirs'):
                 return get_updated_time(abspath, recursive=False)
             else:
                 return get_updated_time(abspath, recursive=True)
         
-        def generate_uid() -> str:
-            # nonlocal: ftype, relpath
-            # generate: uid (hash_of_relpath)
+        def generate_uid(ftype: str, relpath: str) -> str:
             return get_content_hash(f'{ftype}:{relpath}')
         
         out = {}
@@ -512,15 +533,14 @@ class Manifest:
                     path
                 )
             # minor fix relpath
-            if relpath == '.':
-                # `fs.relpath` may return '.', we need to convert it to ''.
-                relpath = ''
+            if relpath == '.': relpath = ''
+            ftype = 'file' if os.path.isfile(abspath) else 'dir'
             out[relpath] = AssetInfo(
-                type=(ftype := 'file' if os.path.isfile(abspath) else 'dir'),
+                type=ftype,
                 scheme=scheme,
-                utime=generate_utime(),
-                hash=generate_hash(),
-                uid=generate_uid(),
+                utime=generate_utime(abspath, ftype),
+                hash=generate_hash(abspath, ftype),
+                uid=generate_uid(ftype, relpath),
             )
         return out  # noqa
     
@@ -594,6 +614,10 @@ class Manifest:
 
 
 def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
+    """
+    ref: docs/devnote/assets-diff-strategy.zh.md
+    """
+    
     def is_same(new: T.AssetInfo, old: T.AssetInfo) -> bool:
         """
         comparing assets is considered based on a variety of factors:
@@ -608,9 +632,11 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             return False
         if new.type != old.type:
             return False
-        if new.hash == old.hash != '':
+        if new.type == 'file' and new.hash == old.hash:
             return True
-        if new.utime == old.utime:
+        if new.utime == old.utime:  # FIXME: used for dir only?
+            return True
+        if new.type == 'dir' and new.hash == old.hash != '':
             return True
         return False
     
