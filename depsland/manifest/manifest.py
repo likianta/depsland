@@ -1,7 +1,7 @@
 import os
 import typing as t
 from collections import namedtuple
-# from functools import cache
+from functools import cache
 from os.path import exists
 from textwrap import dedent
 from time import sleep
@@ -257,6 +257,7 @@ class Manifest:
         return self
     
     @classmethod
+    @cache
     def load_from_file(cls, file: T.AnyPath) -> 'Manifest':
         """
         args:
@@ -493,6 +494,8 @@ class Manifest:
             relpath: relative path
             utime: updated time
         """
+        if calculate_dir_hash:
+            print('experimental: enable calculate_dir_hash')
         
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
