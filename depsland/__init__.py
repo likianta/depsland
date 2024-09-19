@@ -33,4 +33,4 @@ from .pypi import pip
 from .pypi import pypi
 
 __version__ = '0.8.1'
-__date__ = '2024-07-24'
+__date__ = '2024-09-19'
