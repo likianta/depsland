@@ -13,26 +13,27 @@ argsense = "^0.5.8"
 conflore = "^0.2.0"
 # dash = "*"
 # dash-antd = "*"
-lk-logger = "^5.7.6"
-# lk-logger = { version = "^5.7.6b1", source = "likianta-host" }
-lk-utils = "^2.10.7"
-# lk-utils = { version = "^2.10.7b1", source = "likianta-host" }
+# lk-logger = "^5.7.6"
+lk-logger = { version = "^6.0.0a19", source = "likianta-host" }
+# lk-utils = "^2.10.7"
+lk-utils = { version = "^2.11.0a12", source = "likianta-host" }
 oss2 = "^2.18.3"  # DELETE
 pip = "^24.0.0"
 pipgrip = "^0.10.13"
 poetry = "^1.8.3"
 psutil = "^6.0.0"
-pyapp-window = "^2.0.0"
-# pyapp-window = { version = "^2.0.0b0", source = "likianta-host" }
+# pyapp-window = "^2.0.0"
+pyapp-window = { version = "^2.1.0a3", source = "likianta-host" }
 # pyside6 = [
 #     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
 #     { version = "^6.7.1", python = ">=3.12,<3.13" },
 # ]
 # pyyaml = "^6.0.0"
+# pyzmq = "^26.1.0"
 # qmlease = "^3.0.4"
 rich = "^13.7.0"
 semver = "^3.0.2"
-streamlit = { version = "^1.36.0", python = "!=3.9.7" }
+streamlit = { version = "^1.38.0", python = "!=3.9.7" }
 streamlit-extras = "*"
 # streamlit-scrollable-textbox = "*"
 # toml = { version = "*", python = "<3.11" }
@@ -62,7 +63,7 @@ priority = "primary"
 
 [[tool.poetry.source]]
 name = "likianta-host"
-url = "http://likianta.pro:2006/"
+url = "http://likianta.pro:2131/"
 priority = "supplemental"
 
 [build-system]

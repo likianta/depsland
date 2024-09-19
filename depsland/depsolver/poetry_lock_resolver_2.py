@@ -51,7 +51,10 @@ def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
     poetry_data = loads(poetry_file, 'toml')
     
     all_pkgs = _get_all_packages(poetry_data)
-    all_pkgs = _flatten_dependencies({k: tuple(v) for k, v in all_pkgs})
+    all_pkgs = _flatten_dependencies(
+        {k: tuple(v) for k, v in all_pkgs},
+        pyproj_data['tool']['poetry']['name']
+    )
     top_names = _get_top_package_names(pyproj_root, pyproj_data)
     top_pkgs = _filter_top_packages(all_pkgs, tuple(top_names))
     tiled_pkgs = _get_tiled_packages(fs.parent(poetry_file))
@@ -73,16 +76,27 @@ def _get_all_packages(
 
 
 def _flatten_dependencies(
-    all_pkgs: t.Dict[T.PackageName, t.Tuple[T.PackageName, ...]]
+    all_pkgs: t.Dict[T.PackageName, t.Tuple[T.PackageName, ...]],
+    ignored_current_project_name: str = None,
 ) -> t.Iterator[t.Tuple[T.PackageName, t.Iterable[T.PackageName]]]:
     def recurse(key: str, _recorded: set = None) -> t.Iterator[T.PackageName]:
         if _recorded is None:
             _recorded = set()
-        for dep_name in all_pkgs[key]:
-            if dep_name not in _recorded:
-                _recorded.add(dep_name)
-                yield dep_name
-                yield from recurse(dep_name, _recorded)
+        try:
+            for dep_name in all_pkgs[key]:
+                if dep_name not in _recorded:
+                    _recorded.add(dep_name)
+                    yield dep_name
+                    yield from recurse(dep_name, _recorded)
+        except KeyError as e:
+            if e.args[0] == ignored_current_project_name:
+                print(
+                    ':v3s',
+                    'ignore a key error for "{}" since it is the project name'
+                    .format(ignored_current_project_name)
+                )
+            else:
+                raise e
     
     for key in all_pkgs:
         yield key, recurse(key)

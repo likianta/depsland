@@ -1570,35 +1570,38 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "5.7.6"
-description = "Python print with source and varnames."
+version = "6.0.0a19"
+description = "Python print with source map and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-5.7.6-py3-none-any.whl", hash = "sha256:47147af796e1dae1ecbfe4023a23a5d6342dfe913e3d2880809e0059d81c5aae"},
+    {file = "lk_logger-6.0.0a19-py3-none-any.whl", hash = "sha256:376aad11a5346a0fd4b72d735203dbb6e8940252e5d5db3c70a5d3f153702b7c"},
 ]
 
 [package.dependencies]
-rich = ">=13.0,<14.0"
+rich = ">=13.8,<14.0"
+
+[package.extras]
+svg = ["svg-ultralight"]
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2131"
+reference = "likianta-host"
 
 [[package]]
 name = "lk-utils"
-version = "2.10.7"
+version = "2.11.0a12"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_utils-2.10.7-py3-none-any.whl", hash = "sha256:fb2a6ec0a25495e8b7f6851ba96c13e0e3436887416777d0e5a81c5d9d941733"},
+    {file = "lk_utils-2.11.0a12-py3-none-any.whl", hash = "sha256:daf79f5b3561f85c364f553f64c33e670ab0aeb97d44249f5d1db802cc2a266e"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.8,<0.6.0"
-lk-logger = ">=5.7.6,<6.0.0"
+lk-logger = ">=6.0.0a19,<7.0.0"
 psutil = ">=6.0.0,<7.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
 rich = ">=13.0.0,<14.0.0"
@@ -1606,8 +1609,8 @@ typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2131"
+reference = "likianta-host"
 
 [[package]]
 name = "lxml"
@@ -1708,6 +1711,7 @@ files = [
     {file = "lxml-5.2.1-cp37-cp37m-musllinux_1_2_x86_64.whl", hash = "sha256:9e2addd2d1866fe112bc6f80117bcc6bc25191c5ed1bfbcf9f1386a884252ae8"},
     {file = "lxml-5.2.1-cp37-cp37m-win32.whl", hash = "sha256:f51969bac61441fd31f028d7b3b45962f3ecebf691a510495e5d2cd8c8092dbd"},
     {file = "lxml-5.2.1-cp37-cp37m-win_amd64.whl", hash = "sha256:b0b58fbfa1bf7367dde8a557994e3b1637294be6cf2169810375caf8571a085c"},
+    {file = "lxml-5.2.1-cp38-cp38-macosx_10_9_universal2.whl", hash = "sha256:3e183c6e3298a2ed5af9d7a356ea823bccaab4ec2349dc9ed83999fd289d14d5"},
     {file = "lxml-5.2.1-cp38-cp38-macosx_10_9_x86_64.whl", hash = "sha256:804f74efe22b6a227306dd890eecc4f8c59ff25ca35f1f14e7482bbce96ef10b"},
     {file = "lxml-5.2.1-cp38-cp38-manylinux_2_12_i686.manylinux2010_i686.manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:08802f0c56ed150cc6885ae0788a321b73505d2263ee56dad84d200cab11c07a"},
     {file = "lxml-5.2.1-cp38-cp38-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0f8c09ed18ecb4ebf23e02b8e7a22a05d6411911e6fabef3a36e4f371f4f2585"},
@@ -2772,24 +2776,26 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "2.0.0"
+version = "2.1.0a3"
 description = "Launch URL with native window in WebView mode. Multiple backend implementations are supported."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-2.0.0-py3-none-any.whl", hash = "sha256:f69365895f9c2f42bed8808cfa96c4532a0bd0f51e4eb06988ed08470d2bf70d"},
+    {file = "pyapp_window-2.1.0a3-py3-none-any.whl", hash = "sha256:3b3260e0e426f86471de5ac6c2adc75c6f044fbdb8b11f9df97e94019148375b"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.8,<0.6.0"
-lk-utils = ">=2.10.7,<3.0.0"
+lk-logger = ">=6.0.0a19,<7.0.0"
+lk-utils = ">=2.11.0a12,<3.0.0"
+requests = "*"
 toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and (sys_platform == \"darwin\" or sys_platform == \"win32\")"}
 webui2 = {version = ">=2.4.5,<3.0.0", markers = "sys_platform == \"darwin\" or sys_platform == \"linux\""}
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2131"
+reference = "likianta-host"
 
 [[package]]
 name = "pyarrow"
@@ -3249,24 +3255,24 @@ reference = "tsinghua"
 
 [[package]]
 name = "qmlease"
-version = "3.0.5a8"
+version = "3.0.5a9"
 description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "qmlease-3.0.5a8-py3-none-any.whl", hash = "sha256:c184fa216441e1dd444825de77bb2df68e018caa86f10b78ab5ceaaa2d93bdb6"},
+    {file = "qmlease-3.0.5a9-py3-none-any.whl", hash = "sha256:727e4a57a73fa183b976acb565e5b6f1470661263b2805676c2df58e56556634"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.7,<0.6.0"
-lk-logger = ">=5.7.6b1,<6.0.0"
-lk-utils = ">=2.10.0,<3.0.0"
+lk-logger = ">=6.0.0a1,<7.0.0"
+lk-utils = ">=2.10.8,<3.0.0"
 qtpy = ">=2.3.0,<3.0.0"
 typing-extensions = "*"
 
 [package.source]
 type = "legacy"
-url = "http://likianta.pro:2006"
+url = "http://likianta.pro:2131"
 reference = "likianta-host"
 
 [[package]]
@@ -3465,13 +3471,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "rich"
-version = "13.7.1"
+version = "13.8.1"
 description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
 optional = false
 python-versions = ">=3.7.0"
 files = [
-    {file = "rich-13.7.1-py3-none-any.whl", hash = "sha256:4edbae314f59eb482f54e9e30bf00d33350aaa94f4bfcd4e9e3110e64d0d7222"},
-    {file = "rich-13.7.1.tar.gz", hash = "sha256:9be308cb1fe2f1f57d67ce99e95af38a1e2bc71ad9813b0e247cf7ffbcc3a432"},
+    {file = "rich-13.8.1-py3-none-any.whl", hash = "sha256:1760a3c0848469b97b558fc61c85233e3dafb69c7a071b4d60c38099d3cd4c06"},
+    {file = "rich-13.8.1.tar.gz", hash = "sha256:8260cda28e3db6bf04d2d1ef4dbc03ba80a824c88b0e7668a0f23126a424844a"},
 ]
 
 [package.dependencies]
@@ -3823,13 +3829,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "streamlit"
-version = "1.36.0"
+version = "1.38.0"
 description = "A faster way to build and share data apps"
 optional = false
 python-versions = ">=3.8, !=3.9.7"
 files = [
-    {file = "streamlit-1.36.0-py2.py3-none-any.whl", hash = "sha256:3399a33ea5faa26c05dd433d142eefe68ade67e9189a9e1d47a1731ae30a1c42"},
-    {file = "streamlit-1.36.0.tar.gz", hash = "sha256:a12af9f0eb61ab5832f438336257b1ec20eb29d8e0e0c6b40a79116ba939bc9c"},
+    {file = "streamlit-1.38.0-py2.py3-none-any.whl", hash = "sha256:0653ecfe86fef0f1608e3e082aef7eb335d8713f6f31e9c3b19486d1c67d7c41"},
+    {file = "streamlit-1.38.0.tar.gz", hash = "sha256:c4bf36b3ef871499ed4594574834583113f93f077dd3035d516d295786f2ad63"},
 ]
 
 [package.dependencies]
@@ -3854,7 +3860,7 @@ typing-extensions = ">=4.3.0,<5"
 watchdog = {version = ">=2.1.5,<5", markers = "platform_system != \"Darwin\""}
 
 [package.extras]
-snowflake = ["snowflake-connector-python (>=2.8.0)", "snowflake-snowpark-python (>=0.9.0)"]
+snowflake = ["snowflake-connector-python (>=2.8.0)", "snowflake-snowpark-python[modin] (>=1.17.0)"]
 
 [package.source]
 type = "legacy"
@@ -4706,4 +4712,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "f58f9b9ebd5f99c731cf0e568d98d2b9e991c39d7525bc70d497ec64a7ae8a1e"
+content-hash = "3077ea8e7d7890501500bde4b51a9c8476c42219f75e335f408afb537e0c7b9c"
