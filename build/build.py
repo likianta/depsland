@@ -1,14 +1,10 @@
-"""
-py build/build.py full-build aliyun
-py build/build.py full-build local
-"""
 import os
 from os.path import exists
 
 from argsense import cli
 from lk_utils import fs
 
-from depsland import __version__
+from depsland import __version__ as depsland_version
 from depsland import bat_2_exe as _b2e
 from depsland import paths
 from depsland.manifest import dump_manifest
@@ -16,12 +12,12 @@ from depsland.manifest import load_manifest
 from depsland.utils import make_temp_dir
 from depsland.utils import ziptool
 
-print(':v2', f'depsland version: {__version__}')
+print(':v2', f'depsland version: {depsland_version}')
 
 
 @cli.cmd()
 def self_check() -> None:
-    ver0 = __version__
+    ver0 = depsland_version
     ver1 = fs.load('manifest.json')['version']
     ver2 = fs.load('pyproject.toml')['tool']['poetry']['version']
     if not (ver0 == ver1 == ver2):
@@ -121,13 +117,13 @@ def full_build(
     root_i = paths.project.root
     root_o = (
         '{dist}/standalone/depsland-{version}-windows/depsland/{version}'
-        .format(dist=paths.project.dist, version=__version__)
+        .format(dist=paths.project.dist, version=depsland_version)
     )
     # ^ see design note in `wiki/design-tkinking/why-does-dist-standalone-
     #   directory-like-this.md`
     assert not exists(
         '{dist}/standalone/depsland-{version}-windows'
-        .format(dist=paths.project.dist, version=__version__)
+        .format(dist=paths.project.dist, version=depsland_version)
     )
     fs.make_dirs(root_o)
     
@@ -202,7 +198,7 @@ def full_build(
     # )
     
     fs.dump(
-        {'project_mode': 'production', 'depsland_version': __version__},
+        {'project_mode': 'production', 'depsland_version': depsland_version},
         f'{root_o}/.depsland_project.json'
     )
     
@@ -283,20 +279,23 @@ def bat_2_exe(
 
 @cli.cmd()
 def compress_to_zip():
-    dir_i = '{}/{}'.format(paths.project.dist, f'depsland-{__version__}')
-    file_o = '{}/{}'.format(paths.project.dist, f'depsland-{__version__}.zip')
+    dir_i = '{}/{}'.format(paths.project.dist, f'depsland-{depsland_version}')
+    file_o = '{}/{}'.format(paths.project.dist, f'depsland-{depsland_version}.zip')
     ziptool.compress_dir(dir_i, file_o, overwrite=True)
     print(':t', 'see result at', fs.relpath(file_o))
 
 
 if __name__ == '__main__':
-    # pox build/build.py bat-2-exe build/exe/depsland-cli.bat
-    # pox build/build.py bat-2-exe build/exe/depsland-gui.bat -C -u
-    # pox build/build.py bat-2-exe build/exe/depsland-gui-debug.bat -u
-    # pox build/build.py bat-2-exe build/exe/depsland-runapp.bat -C --icon
-    #   build/icon/python.ico
-    # pox build/build.py bat-2-exe build/exe/depsland-runapp-debug.bat -u --icon
-    #   build/icon/python.ico
+    # create/refresh depsland launchers:
+    #   pox build/build.py bat-2-exe build/exe/depsland-cli.bat
+    #   pox build/build.py bat-2-exe build/exe/depsland-gui.bat -C -u
+    #   pox build/build.py bat-2-exe build/exe/depsland-gui-debug.bat -u
+    #   pox build/build.py bat-2-exe build/exe/depsland-runapp.bat -C --icon
+    #       build/icon/python.ico
+    #   pox build/build.py bat-2-exe build/exe/depsland-runapp-console.bat
+    #       --icon build/icon/python.ico
+    #   pox build/build.py bat-2-exe build/exe/depsland-runapp-debug.bat -u
+    #       --icon build/icon/python.ico
     
     # pox build/build.py backup-project-resources
     

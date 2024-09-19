@@ -397,52 +397,50 @@ def _create_launchers(manifest: T.Manifest) -> None:
     print('creating launcher... (this may be slow)')
     progress_updated.emit('cleanup', 2, 2, 'creating launcher')
     
-    # exe_file = create_launcher(
-    #     manifest,
-    #     dir_o='{apps}/{appid}/{version}'.format(
-    #         apps=paths.project.apps,
-    #         appid=manifest['appid'],
-    #         version=manifest['version'],
-    #     ),
-    # )
     exe_file = '{}/{}/{}/{}.exe'.format(
         paths.project.apps,
         manifest['appid'],
         manifest['version'],
         manifest['name'],
     )
-    fs.copy_file(paths.build.depsland_runapp_exe, exe_file)
+    if manifest['launcher']['show_console']:
+        fs.copy_file(paths.build.depsland_runapp_console_exe, exe_file)
+    else:
+        fs.copy_file(paths.build.depsland_runapp_exe, exe_file)
     if x := manifest['launcher']['icon']:
         add_icon_to_exe(exe_file, '{}/{}'.format(manifest.start_directory, x))
     
     if sysinfo.IS_WINDOWS:
         launcher: T.LauncherInfo = manifest['launcher']
-        if not launcher['show_console']:
-            # since console-less application is hard to debug if failed at -
-            # startup, we provide a "debug" launcher for user.
-            # create_launcher(
-            #     manifest,
-            #     dir_o='{apps}/{appid}/{version}'.format(
-            #         apps=paths.project.apps,
-            #         appid=manifest['appid'],
-            #         version=manifest['version'],
-            #     ),
-            #     name=manifest['name'] + ' (Debug).exe',
-            #     debug=True,
-            #     # keep_bat=False,
-            #     uac_admin=True,
-            # )
-            exe_file = '{}/{}/{}/{} (Debug).exe'.format(
-                paths.project.apps,
-                manifest['appid'],
-                manifest['version'],
-                manifest['name'],
+        
+        # if not launcher['show_console']:
+        #     # since console-less application is hard to debug if failed at -
+        #     # startup, we provide a "debug" launcher for user.
+        #     create_launcher(
+        #         manifest,
+        #         dir_o='{apps}/{appid}/{version}'.format(
+        #             apps=paths.project.apps,
+        #             appid=manifest['appid'],
+        #             version=manifest['version'],
+        #         ),
+        #         name=manifest['name'] + ' (Debug).exe',
+        #         debug=True,
+        #         # keep_bat=False,
+        #         uac_admin=True,
+        #     )
+        # create debug launcher
+        exe_file = '{}/{}/{}/{} (Debug).exe'.format(
+            paths.project.apps,
+            manifest['appid'],
+            manifest['version'],
+            manifest['name'],
+        )
+        fs.copy_file(paths.build.depsland_runapp_debug_exe, exe_file)
+        if x := manifest['launcher']['icon']:
+            add_icon_to_exe(
+                exe_file, '{}/{}'.format(manifest.start_directory, x)
             )
-            fs.copy_file(paths.build.depsland_runapp_debug_exe, exe_file)
-            if x := manifest['launcher']['icon']:
-                add_icon_to_exe(
-                    exe_file, '{}/{}'.format(manifest.start_directory, x)
-                )
+        
         if launcher['enable_cli']:
             fs.copy_file(exe_file, '{}/{}.exe'.format(
                 paths.apps.bin, manifest['appid']

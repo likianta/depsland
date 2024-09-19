@@ -437,8 +437,12 @@ class Build:
         self.exe = f'{self.root}/exe'  # the folder
         # self.icon = f'{self.root}/icon'  # the folder
         
-        self.depsland_runapp_exe = f'{self.exe}/depsland-runapp.exe'
-        self.depsland_runapp_debug_exe = f'{self.exe}/depsland-runapp-debug.exe'
+        self.depsland_runapp_exe = \
+            f'{self.exe}/depsland-runapp.exe'
+        self.depsland_runapp_console_exe = \
+            f'{self.exe}/depsland-runapp-conosle.exe'
+        self.depsland_runapp_debug_exe = \
+            f'{self.exe}/depsland-runapp-debug.exe'
         
         self.launcher_icon = '{}/icon/launcher.{}'.format(
             self.root,
