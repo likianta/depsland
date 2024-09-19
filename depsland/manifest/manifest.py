@@ -285,10 +285,16 @@ class Manifest:
             data0: T.Manifest0 = loads(self._file)
             
             if 'start_directory' in data0:
+                x = data0['start_directory']
+                if x.startswith('.'):
+                    self._start_directory = fs.abspath('{}/{}'.format(
+                        fs.parent(self._file), x
+                    ))
+                else:
+                    self._start_directory = fs.abspath(x)
                 print('change `start_directory` to {}'.format(
-                    data0['start_directory']
+                    self._start_directory
                 ))
-                self._start_directory = fs.abspath(data0['start_directory'])
             
             self._precheck_manifest(data0)
             data1 = {
