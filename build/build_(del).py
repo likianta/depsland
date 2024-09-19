@@ -4,6 +4,7 @@ from os.path import exists
 from argsense import cli
 from lk_utils import fs
 
+import depsland
 from depsland import __version__ as depsland_version
 from depsland import bat_2_exe as _b2e
 from depsland import paths
@@ -15,19 +16,7 @@ from depsland.utils import ziptool
 print(':v2', f'depsland version: {depsland_version}')
 
 
-@cli.cmd()
-def self_check() -> None:
-    ver0 = depsland_version
-    ver1 = fs.load('manifest.json')['version']
-    ver2 = fs.load('pyproject.toml')['tool']['poetry']['version']
-    if not (ver0 == ver1 == ver2):
-        print(':v3', 'version is not consistent', (ver0, ver1, ver2))
-        
-    if fs.exists('depsland/.project'):
-        raise Exception('please remove "depsland/.project" to continue.')
-
-
-@cli.cmd()
+@cli.cmd()  # DELETE
 def backup_project_resources() -> None:
     """
     generate/refresh `depsland/chore/*.zip`.
@@ -87,30 +76,35 @@ def backup_project_resources() -> None:
 
 
 @cli.cmd()
-def full_build(
-    oss_scheme: str, pypi_scheme: str = 'blank', _add_python_sdk: bool = True
+def build_depsland_standalone(
+    oss_scheme: str,
+    pypi_scheme: str = 'blank',
+    _add_python_sdk: bool = True,
+    _new_version: str = 'auto_bump',
 ) -> None:
     """
-    generate `dist/depsland-setup-<version>` folder.
+    generate `dist/standalone/depsland-<version>`.
     
     args:
         oss_scheme: 'aliyun' or 'local'
-            aliyun: you need to prepare a file named -
+            - 'aliyun': you need to prepare a file named -
             'config/depsland_for_dev.yaml', which contains aliyun oss access -
-            & secret keys.
+            key and secret key.
     kwargs:
         pypi_scheme (-p): 'full', 'blank'
-            full: link `<proj>/pypi` to `<dist>/pypi`.
-            blank: copy `<proj>/chore/pypi_blank` to `<dist>/pypi`.
-            
-            what's the difference for the schemes?
+            - full: link `<proj>/pypi` to `<dist>/pypi`.
+            - blank: copy `<proj>/chore/pypi_blank` to `<dist>/pypi`.
+            what's the difference?
                 'full' is used for local test.
-                'blank' is used for production release, it has a minified size.
-                if you want to partially release, or try to package a minimal
-                version, use 'blank' with '_add_python_sdk=False'.
+                'blank' is used for production release, it has a minified -
+                size.
+                if you want to partially release, or try to package a minimal -
+                version, use `pypi_scheme='blank'` with `_add_python_sdk=False`.
     """
+    if fs.exists('depsland/.project'):
+        raise Exception('please remove "depsland/.project" to continue.')
+    
     # checks
-    self_check()
     if oss_scheme == 'aliyun':
         assert exists(os.getenv('DEPSLAND_CONFIG_ROOT'))
     
@@ -299,7 +293,7 @@ if __name__ == '__main__':
     
     # pox build/build.py backup-project-resources
     
-    # pox build/build.py full-build aliyun
+    # pox build/build.py build-depsland-standalone aliyun
     #   prerequisites:
     #       1. set environment variable:
     #           $env.DEPSLAND_CONFIG_ROOT = 'tests/config'

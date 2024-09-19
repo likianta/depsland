@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.1a0"
+version = "0.8.1b7"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -8,11 +8,9 @@ homepage = "https://github.com/likianta/depsland"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-argsense = "^0.5.8"
-# argsense = { version = "^0.5.7b0", source = "likianta-host" }
+# argsense = "^0.5.8"
+argsense = { version = "^0.5.9a0", source = "likianta-host" }
 conflore = "^0.2.0"
-# dash = "*"
-# dash-antd = "*"
 # lk-logger = "^5.7.6"
 lk-logger = { version = "^6.0.0a19", source = "likianta-host" }
 # lk-utils = "^2.10.7"
@@ -24,13 +22,7 @@ poetry = "^1.8.3"
 psutil = "^6.0.0"
 # pyapp-window = "^2.0.0"
 pyapp-window = { version = "^2.1.0a3", source = "likianta-host" }
-# pyside6 = [
-#     { version = ">=6.4.3,<6.5.0", python = ">=3.8,<3.12" },
-#     { version = "^6.7.1", python = ">=3.12,<3.13" },
-# ]
 # pyyaml = "^6.0.0"
-# pyzmq = "^26.1.0"
-# qmlease = "^3.0.4"
 rich = "^13.7.0"
 semver = "^3.0.2"
 streamlit = { version = "^1.38.0", python = "!=3.9.7" }
@@ -42,16 +34,21 @@ toml = "*"
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]
-icnsutil = "*"  # <- sidework/image_converter.py
 ipython = { version = "^8.22.0", python = ">=3.10,<4.0" }
-nuitka = "^2.3.11"
-numpy = { version = "^1.26.0", python = ">=3.9" }  # <- streamlit
+# nuitka = "^2.3.11"
+
+# --- indirect deps
+numpy = { version = "^2.0.0", python = ">=3.9" }  # <- streamlit
 pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
+
+# --- sidework
+icnsutil = "*"  # <- sidework/image_converter.py
 pillow = "*"  # <- sidework/image_converter.py
+
+# --- demo
 pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.10,<3.13" }  # <- demo/hello-world-gui
 pysimplegui = "*"  # <- demo/hello-world-tkinter
-# qmlease = "^3.0.4"  # <- demo/hello-world-gui
-qmlease = { version = ">=3.0.5a7,<3.1.0", source = "likianta-host" }
+qmlease = { version = ">=3.0.5a9,<3.1.0", source = "likianta-host" }  # <- demo/hello-world-gui
 
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'

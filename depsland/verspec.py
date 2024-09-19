@@ -20,16 +20,7 @@ def compare_version(v0: str, comp: str, v1: str, _patch: bool = True) -> bool:
     return eval(f'r {comp} 0', {'r': r})
 
 
-def findone_eligible_version(
-    verspecs: t.Sequence[VersionSpec],
-    candidates: t.Sequence[T.Version],
-) -> t.Optional[T.Version]:
-    for one in findall_eligible_versions(verspecs, candidates):
-        return one
-    return None
-
-
-def findall_eligible_versions(
+def find_all_eligible_versions(
     verspecs: t.Sequence[VersionSpec],
     candidates: t.Sequence[T.Version],
 ) -> t.Iterator[T.Version]:
@@ -49,6 +40,15 @@ def findall_eligible_versions(
                 candidate, spec.comparator, spec.version
             ):
                 yield candidate
+
+
+def find_one_eligible_version(
+    verspecs: t.Sequence[VersionSpec],
+    candidates: t.Sequence[T.Version],
+) -> t.Optional[T.Version]:
+    for one in find_all_eligible_versions(verspecs, candidates):
+        return one
+    return None
 
 
 # DELETE
@@ -83,6 +83,10 @@ def find_proper_version(
     return candidates[0]
 
 
+def get_max_version(versions: t.Sequence[T.Version]) -> T.Version:
+    return max(versions, key=semver_parse)
+
+
 def get_verspec_from_filename(filename: str) -> VersionSpec:
     name, ver = split_filename_of_package(filename)
     verspecs = tuple(normalize_verspecs(name, ver))
@@ -90,6 +94,20 @@ def get_verspec_from_filename(filename: str) -> VersionSpec:
     verspec = verspecs[0]
     # -> VersionSpec<'pyside6==6.0.0'>
     return verspec
+
+
+def minorly_bump_version(old_ver: str) -> str:
+    """
+    example:
+        0.12.0   -> 0.12.1
+        0.12.1a9 -> 0.12.1a10
+        0.12.1b0 -> 0.12.1b1
+    """
+    a, b, c, d = re.match(r'(\d+)\.(\d+)\.(\d+)([ab]\d+)?', old_ver).groups()
+    if d is None:
+        return f'{a}.{b}.{int(c) + 1}'
+    else:
+        return f'{a}.{b}.{c}{d[0]}{int(d[1:]) + 1}'
 
 
 def semver_parse(ver: str) -> semver.Version:

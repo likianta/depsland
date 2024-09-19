@@ -8,7 +8,7 @@
 /build/manifest.pkl
 /chore/minified_site_packages/*
 /chore/site_packages/*
-/chore/minified_site_packages.7z
+/chore/venv
 /config/.redirect
 /config/auto_saved.pkl
 /deleted/
