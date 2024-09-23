@@ -71,11 +71,19 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     #       unc path prefix '\\?\<a_very_long_absolute_local_path>'
     #       if you encountered an error like this:
     #           CMD doesn't support UNC paths as current directory
-    #       it may becuase you are using an inproper terminal application \
-    #       other than "command prompt" terminal.
-    #       ref: https://stackoverflow.com/questions/21194530/what-does-mean \
+    #       it may becuase you are using an inproper terminal application other
+    #       than "command prompt" terminal.
+    #       ref: https://stackoverflow.com/questions/21194530/what-does-mean
     #       -when-prepended-to-a-file-path
-    if command.endswith('%*'): command = command[:-3]
+    if command.endswith('%0'):
+        # FIXME: this is a bug
+        raise Exception(
+            'cannot use `%[0-9]` in the end of command, '
+            'please consider using `%~dp0` instead. or, you can turn to use '
+            '`../bat_2_exe_2` for a more stable conversion.'
+        )
+    if command.endswith('%*'):
+        command = command[:-3]
     assert len(command) <= 259, 'command too long'
     command += '\0' * (259 - len(command)) + ('1' if show_console else '0')
     encoded_command = command.encode('ascii')

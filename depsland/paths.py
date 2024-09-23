@@ -440,7 +440,7 @@ class Build:
         self.depsland_runapp_exe = \
             f'{self.exe}/depsland-runapp.exe'
         self.depsland_runapp_console_exe = \
-            f'{self.exe}/depsland-runapp-conosle.exe'
+            f'{self.exe}/depsland-runapp-console.exe'
         self.depsland_runapp_debug_exe = \
             f'{self.exe}/depsland-runapp-debug.exe'
         

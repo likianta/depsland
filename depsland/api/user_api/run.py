@@ -26,7 +26,9 @@ def run_app(
     a general launcher to start an installed app.
     """
     if appid is None:
-        assert _caller_location
+        assert (
+            _caller_location and _caller_location.endswith(('.exe', '.bat'))
+        ), _caller_location
         # related:
         #   depsland.api.user_api.install._create_launchers
         #   build/exe/depsland-runapp.bat

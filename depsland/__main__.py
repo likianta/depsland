@@ -361,7 +361,6 @@ def get_package_size(
         include_dependencies (-d):
     """
     from .pypi import insight
-    
     insight.measure_package_size(name, version, include_dependencies)
 
 

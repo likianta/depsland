@@ -5,6 +5,7 @@ if __name__ == '__main__':
 
 from argsense import cli
 
+from .launcher_builder import bat_2_exe
 from .minifier import minify_dependencies
 from .self_build import build_dist
 from .version_bump import bump_version
@@ -27,8 +28,12 @@ def build_depsland_standalone(
     build_dist(version=new_version, **kwargs)
 
 
+cli.add_cmd(bat_2_exe)
+
+
 if __name__ == '__main__':
     # pox build/build_tool/__main__.py -h
+    
     # pox build/build_tool/__main__.py build-depsland-standalone -h
     # pox build/build_tool/__main__.py build-depsland-standalone -m
     #   --oss-scheme aliyun
@@ -36,4 +41,7 @@ if __name__ == '__main__':
     #           1. set environment variable:
     #               $env.DEPSLAND_CONFIG_ROOT = 'tests/config'
     #           2. make sure poetry.lock is latest.
+    
+    # pox build/build_tool/__main__.py bat-2-exe
+    #   build/exe/depsland-runapp-console.bat --icon build/icon/python.ico
     cli.run()
