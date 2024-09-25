@@ -3,7 +3,6 @@ from os.path import exists
 
 from lk_utils import fs
 
-# from depsland import __version__ as depsland_version
 from depsland import paths
 from depsland.manifest import dump_manifest
 from depsland.manifest import load_manifest
@@ -43,16 +42,13 @@ def build_dist(
     
     root_i = paths.project.root
     root_o = (
-        '{dist}/standalone/depsland-{version}-windows/depsland/{version}'
-        .format(dist=paths.project.dist, version=version)
-    )
-    # ^ see design note in `wiki/design-tkinking/why-does-dist-standalone-
-    #   directory-like-this.md`
-    assert not exists(
         '{dist}/standalone/depsland-{version}-windows'
         .format(dist=paths.project.dist, version=version)
     )
-    fs.make_dirs(root_o)
+    # ^ related doc: `wiki/design-tkinking/why-does-dist-standalone-directory
+    #   -like-this.md`
+    assert not exists(root_o)
+    fs.make_dir(root_o)
     
     # -------------------------------------------------------------------------
     

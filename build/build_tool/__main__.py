@@ -41,6 +41,8 @@ if __name__ == '__main__':
     #           1. set environment variable:
     #               $env.DEPSLAND_CONFIG_ROOT = 'tests/config'
     #           2. make sure poetry.lock is latest.
+    # pox build/build_tool/__main__.py build-depsland-standalone -M
+    #   --oss-scheme aliyun --pypi-scheme full
     
     # pox build/build_tool/__main__.py bat-2-exe
     #   build/exe/depsland-runapp-console.bat --icon build/icon/python.ico

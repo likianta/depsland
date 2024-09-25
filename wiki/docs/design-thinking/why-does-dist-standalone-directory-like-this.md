@@ -54,7 +54,7 @@ dist
     |- depsland
         |- 0.8.0
         |- 0.9.0
-        |- current                  # 一个软连接目录, 原先指向 0.8.0, 现在指向 0.9.0
+        |- current                  # 一个软链接目录, 原先指向 0.8.0, 现在指向 0.9.0
         |- Depsland.lnk             # <- current/Depsland.exe
         |- Depsland (Debug).lnk     # <- current/Depsland (Debug).exe
     <desktop>
