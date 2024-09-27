@@ -1,6 +1,7 @@
 import os
 import shutil
 import typing as t
+from zipfile import ZIP_DEFLATED
 from zipfile import ZipFile
 
 from lk_utils import fs
@@ -22,7 +23,7 @@ def compress_dir(
             return file_o
     if top_name is None:
         top_name = fs.basename(dir_i)
-    with ZipFile(file_o, 'w') as z:
+    with ZipFile(file_o, 'w', compression=ZIP_DEFLATED, compresslevel=7) as z:
         z.write(dir_i, arcname=top_name)
         for f in tuple(fs.findall_files(dir_i)):
             z.write(f.path, arcname='{}/{}'.format(
@@ -38,7 +39,7 @@ def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
     if file_o.endswith('.fzip'):  # trick: just rename file_i to file_o
         shutil.copyfile(file_i, file_o)
         return file_o
-    with ZipFile(file_o, 'w') as z:
+    with ZipFile(file_o, 'w', compression=ZIP_DEFLATED, compresslevel=7) as z:
         z.write(file_i, arcname=fs.basename(file_i))
     return file_o
 
@@ -59,7 +60,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
         #     dir_o = dir_o[:-2]
     
     dirname_o = fs.basename(fs.abspath(dir_o))
-    with ZipFile(file_i, 'r') as z:
+    with ZipFile(file_i, 'r', compression=ZIP_DEFLATED, compresslevel=7) as z:
         if _IS_WINDOWS:
             # avoid path limit error in windows.
             # ref: docs/devnote/issues-summary-202401.zh.md

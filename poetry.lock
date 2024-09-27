@@ -1579,12 +1579,12 @@ reference = "likianta-host"
 
 [[package]]
 name = "lk-utils"
-version = "2.11.0b0"
+version = "3.0.0a2"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_utils-2.11.0b0-py3-none-any.whl", hash = "sha256:862cfdc7adb827baf6e4ea04dd87152c5c903ebce4795b7672e3953e3916a700"},
+    {file = "lk_utils-3.0.0a2-py3-none-any.whl", hash = "sha256:4679d1fb9cf71d49fc60b939a0222d35b6b2f1265427b355470843bc12479c4f"},
 ]
 
 [package.dependencies]
@@ -1592,7 +1592,7 @@ argsense = ">=0.5.8,<0.6.0"
 lk-logger = ">=6.0.0a19,<7.0.0"
 psutil = ">=6.0.0,<7.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
-rich = ">=13.0.0,<14.0.0"
+rich = ">=13.8.0,<14.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.source]
@@ -2729,18 +2729,18 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "2.1.0a3"
+version = "2.1.0a4"
 description = "Launch URL with native window in WebView mode. Multiple backend implementations are supported."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-2.1.0a3-py3-none-any.whl", hash = "sha256:3b3260e0e426f86471de5ac6c2adc75c6f044fbdb8b11f9df97e94019148375b"},
+    {file = "pyapp_window-2.1.0a4-py3-none-any.whl", hash = "sha256:09737d2597857a669b653dbfeb0ae936757e4e7c228a5df5c8bd1ac8d11e4b9b"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.8,<0.6.0"
 lk-logger = ">=6.0.0a19,<7.0.0"
-lk-utils = ">=2.11.0a12,<3.0.0"
+lk-utils = ">=2.11.0a12,<4.0.0"
 requests = "*"
 toga = {version = ">=0.4.0,<0.5.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\" and (sys_platform == \"darwin\" or sys_platform == \"win32\")"}
 webui2 = {version = ">=2.4.5,<3.0.0", markers = "sys_platform == \"darwin\" or sys_platform == \"linux\""}
@@ -3208,18 +3208,18 @@ reference = "tsinghua"
 
 [[package]]
 name = "qmlease"
-version = "3.0.5a9"
+version = "3.0.5a10"
 description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "qmlease-3.0.5a9-py3-none-any.whl", hash = "sha256:727e4a57a73fa183b976acb565e5b6f1470661263b2805676c2df58e56556634"},
+    {file = "qmlease-3.0.5a10-py3-none-any.whl", hash = "sha256:c33c4c2d2c5c98f9959946ba78b7565a73b2d5d6b7d64e411de6fedc261d27d1"},
 ]
 
 [package.dependencies]
-argsense = ">=0.5.7,<0.6.0"
-lk-logger = ">=6.0.0a1,<7.0.0"
-lk-utils = ">=2.10.8,<3.0.0"
+argsense = ">=0.5.8,<0.6.0"
+lk-logger = ">=6.0.0a6,<7.0.0"
+lk-utils = ">=2.10.9b1,<4.0.0"
 qtpy = ">=2.3.0,<3.0.0"
 typing-extensions = "*"
 
@@ -4599,4 +4599,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "975991da204c0a51fb6622a5c9397a6c673006ab00ad927cb99660426c9abeb5"
+content-hash = "3e0f87126f7d4f6ddd52403894d216564619120ab69fd53c780a7008ad35a3d4"
