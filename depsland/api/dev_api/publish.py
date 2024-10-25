@@ -2,7 +2,6 @@ import os
 import typing as t
 from textwrap import dedent
 
-from lk_utils import dumps
 from lk_utils import fs
 
 from ... import paths
@@ -86,7 +85,7 @@ def main(
                 cd /d %~dp0
                 "%DEPSLAND%\depsland-sui.exe" launch-gui manifest.pkl :true
             ''').strip()
-            dumps(command, bat_file)
+            fs.dump(command, bat_file)
             
             bat_2_exe(
                 bat_file,
@@ -104,7 +103,7 @@ def main(
             print('"setup.exe" is not available on other platforms', ':v3')
     
     app_info['history'].insert(0, app_info['version'])
-    dumps(
+    fs.dump(
         app_info['history'],
         paths.apps.get_distribution_history(app_info['appid']),
         type='plain',

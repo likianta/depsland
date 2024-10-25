@@ -5,15 +5,22 @@ root: ../../
 search_paths:
   - <root>
   - <root>/chore/venv
-modules:
+entries:
   <root>/depsland/__init__.py: depsland
   <root>/depsland/__main__.py: depsland-main
   <root>/chore/venv/streamlit/__init__.py: streamlit
   <root>/chore/venv/streamlit/__main__.py: streamlit-main
   <root>/chore/venv/streamlit_extras/__init__.py: streamlit-extras
   <root>/chore/venv/toga_winforms/__init__.py: toga-winforms
-build:
+ignores:
+  - ipython
+  - pil
+  - pyside6
+  - qmlease
+  - qtpy
+export:
   module_graphs: '*'
+  spec_files: []
   # spec_files:
   #   # - <root>/build/
   #   - <root>/depsland/

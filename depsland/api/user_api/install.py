@@ -1,12 +1,8 @@
 import os
 import typing as t
-# from concurrent.futures import ThreadPoolExecutor
-from os.path import exists
 
 from lk_utils import Signal
-from lk_utils import dumps
 from lk_utils import fs
-from lk_utils import loads
 
 from ... import paths
 from ...manifest import T as T0
@@ -57,7 +53,7 @@ def install_local(
 ) -> str:
     m1 = load_manifest(manifest_file)
     
-    if exists(d := '{}/.oss'.format(m1['start_directory'])):
+    if fs.exists(d := '{}/.oss'.format(m1['start_directory'])):
         custom_oss_root = d
     else:
         custom_oss_root = None
@@ -170,7 +166,7 @@ def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     if last_ver := get_last_installed_version(appid):
         dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
-        assert exists(dir_), dir_
+        assert fs.exists(dir_), dir_
         return dir_
     return None
 
@@ -464,11 +460,11 @@ def _create_launchers(manifest: T.Manifest) -> None:
 def _save_history(appid: str, version: str) -> None:
     file = paths.apps.get_installation_history(appid)
     if os.path.exists(file):
-        data: list = loads(file).splitlines()
+        data: list = fs.load(file).splitlines()
     else:
         data = []
     data.insert(0, version)
-    dumps(data, file)
+    fs.dump(data, file)
     print('new installation is recorded')
 
 

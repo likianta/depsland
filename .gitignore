@@ -20,6 +20,7 @@
 /docs/*/*.html
 /lib/
 /oss/**
+/product/
 /pypi/**
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe

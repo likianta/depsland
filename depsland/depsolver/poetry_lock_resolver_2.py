@@ -3,7 +3,6 @@ import sys
 import typing as t
 
 from lk_utils import fs
-from lk_utils import loads
 from lk_utils import run_cmd_args
 
 from ..normalization import normalize_name
@@ -47,8 +46,8 @@ class T:
 
 def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
     pyproj_root = fs.parent(pyproj_file)
-    pyproj_data = loads(pyproj_file, 'toml')
-    poetry_data = loads(poetry_file, 'toml')
+    pyproj_data = fs.load(pyproj_file, 'toml')
+    poetry_data = fs.load(poetry_file, 'toml')
     
     all_pkgs = _get_all_packages(poetry_data)
     all_pkgs = _flatten_dependencies(
@@ -106,18 +105,19 @@ def _get_top_package_names(
     working_root: str, pyproj_data: dict
 ) -> t.Iterator[T.PackageName]:
     try:
-        dev_group_names = tuple(
+        names_in_dev_group = tuple(
             normalize_name(x)
             for x in pyproj_data
             ['tool']['poetry']['group']['dev']['dependencies'].keys()
         )
     except KeyError:
-        dev_group_names = ()
+        names_in_dev_group = ()
     content: str = run_cmd_args(
         (sys.executable, '-m', 'poetry'),
         ('show', '-t', '--no-ansi'),
         ('--directory', working_root),
     )
+    # print(':v', content, content.count('\n'))
     pattern = re.compile(r'^[-\w]+')
     for line in content.splitlines():
         if line.startswith((' ', '│', '├', '└')):
@@ -125,7 +125,7 @@ def _get_top_package_names(
         # print(':vi2', line, bool(pattern.match(line)))
         if m := pattern.match(line):
             top_name = normalize_name(m.group())
-            if top_name not in dev_group_names:
+            if top_name not in names_in_dev_group:
                 yield top_name
 
 
@@ -197,7 +197,7 @@ def _fill_packages_info(
     
     lib_root = get_library_root(pyproj_root)
     all_pkg_refs = dict(index_all_package_references(lib_root))
-    print(pyproj_root, lib_root, len(all_pkg_refs), ':l')
+    print(pyproj_root, lib_root, len(all_pkg_refs), len(tiled_pkgs), ':l')
     
     for item in poetry_data['package']:
         name = normalize_name(item['name'])

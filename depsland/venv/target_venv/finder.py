@@ -4,7 +4,6 @@ import sys
 import typing as t
 
 from lk_utils import fs
-from lk_utils import loads
 from lk_utils import run_cmd_args
 
 from ...normalization import normalize_name
@@ -140,4 +139,4 @@ def _get_top_names_from_requirements_file(
     reqs_file: str,
 ) -> t.Iterator[T.PackageName]:
     re_name = re.compile(r'^([-\w]+)', re.M)
-    yield from map(normalize_name, re_name.findall(loads(reqs_file)))
+    yield from map(normalize_name, re_name.findall(fs.load(reqs_file)))

@@ -1,7 +1,7 @@
 import os
 from textwrap import dedent
 
-from lk_utils import dumps
+from lk_utils import dump
 from lk_utils import run_cmd_args
 
 from ...utils import make_temp_dir
@@ -39,6 +39,6 @@ def make_shortcut(file_i: str, file_o: str = None) -> None:
         file_i=file_i.replace('/', '\\'),
         file_o=file_o.replace('/', '\\'),
     )
-    dumps(command, vbs, type='plain')
+    dump(command, vbs, type='plain')
     
     run_cmd_args('cscript', '/nologo', vbs)

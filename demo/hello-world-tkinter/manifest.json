@@ -1,7 +1,7 @@
 {
     "appid": "hello_world_tkinter",
     "name": "Hello World (Tkinter)",
-    "version": "0.2.1",
+    "version": "0.2.8",
     "assets": {
         "main.py": "all"
     },
@@ -20,5 +20,5 @@
     "experiments": {
         "package_provider": "oss"
     },
-    "depsland_version": "0.8.0"
+    "depsland_version": "0.8.1"
 }

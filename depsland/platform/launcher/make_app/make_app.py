@@ -4,10 +4,7 @@ ref: https://github.com/tfmoraes/macnolo
 """
 import re
 
-from lk_utils import dumps
 from lk_utils import fs
-from lk_utils import loads
-from lk_utils import xpath
 
 from .... import paths
 from ....manifest import T
@@ -16,7 +13,7 @@ from ....manifest import T
 # FIXME: not ready to use
 def make_app(manifest: T.Manifest, dir_o: str, icon: str = None) -> str:
     assert dir_o.endswith('.app')
-    dir_i = xpath('template')
+    dir_i = fs.xpath('template')
     
     fs.copy_tree(dir_i, dir_o, overwrite=True)
     
@@ -59,6 +56,6 @@ _re_placeholder = re.compile(r'\$(\w+)')
 
 
 def _inplace(file: str, placeholders: dict) -> None:
-    data_i: str = loads(file, 'plain')
+    data_i: str = fs.load(file, 'plain')
     data_o = _re_placeholder.sub(lambda m: placeholders[m.group(1)], data_i)
-    dumps(data_o, file, 'plain')
+    fs.dump(data_o, file, 'plain')

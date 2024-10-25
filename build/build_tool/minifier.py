@@ -22,14 +22,14 @@ def minify_dependencies() -> None:
     
     print('build module graphs')
     poetry.run(
-        'python', '-m', 'tree_shaking', 'batch-dump-module-graphs',
+        'python', '-m', 'tree_shaking', 'build-module-graphs',
         abspath('_tree_shaking_model.yaml'),
         cwd=abspath('../../../python-tree-shaking'),
     )
     
     print('build tree')
     poetry.run(
-        'python', '-m', 'tree_shaking', 'build-tree',
+        'python', '-m', 'tree_shaking', 'dump-tree',
         abspath('_tree_shaking_model.yaml'),
         # x := abspath('../../temp/{}'.format(timestamp('ymd-hns'))),
         x := make_temp_dir(),

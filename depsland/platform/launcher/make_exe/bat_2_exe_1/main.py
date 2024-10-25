@@ -1,7 +1,7 @@
 import os
 
-from lk_utils import dumps
-from lk_utils import loads
+from lk_utils import dump
+from lk_utils import load
 from lk_utils import run_cmd_args
 from lk_utils import xpath
 
@@ -65,7 +65,7 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     https://github.com/silvandeleemput/gen-exe
     https://blog.csdn.net/qq981378640/article/details/52980741
     """
-    command = ' && '.join(loads(file_bat).splitlines()).strip()
+    command = ' && '.join(load(file_bat).splitlines()).strip()
     command = command.replace('%~dp0', '{EXE_DIR}').replace('%cd%', '{EXE_DIR}')
     #   backup note:
     #       unc path prefix '\\?\<a_very_long_absolute_local_path>'
@@ -88,7 +88,7 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     command += '\0' * (259 - len(command)) + ('1' if show_console else '0')
     encoded_command = command.encode('ascii')
     
-    template: bytes = loads(_template_exe, type='binary')
+    template: bytes = load(_template_exe, type='binary')
     output = template.replace(b'X' * 259 + b'1', encoded_command)
     print('add command to exe', command)
-    dumps(output, file_exe, type='binary')
+    dump(output, file_exe, type='binary')

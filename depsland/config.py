@@ -1,7 +1,7 @@
 import typing as t
 
 from conflore import Conflore
-from lk_utils import loads
+from lk_utils import load
 
 from . import paths
 
@@ -54,7 +54,7 @@ class GlobalControls:  # TODO: no usage yet.
     ignore_old_manifest = False
 
 
-app_settings: T.AppSettings = loads(paths.config.depsland)
+app_settings: T.AppSettings = load(paths.config.depsland)
 controls = GlobalControls()
 auto_saved: T.AutoSaved = Conflore(
     paths.config.auto_saved,

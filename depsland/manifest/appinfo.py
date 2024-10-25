@@ -3,7 +3,6 @@ import typing as t
 from os.path import exists
 
 from lk_utils import fs
-from lk_utils import load
 
 from .manifest import Manifest
 from .manifest import T as T0
@@ -57,7 +56,7 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
     # update history
     history_file = paths.apps.get_distribution_history(data_o['appid'])
     if exists(history_file):
-        data_o['history'] = load(history_file, 'plain').splitlines()
+        data_o['history'] = fs.load(history_file, 'plain').splitlines()
     else:
         print(
             'no history found, it would be the first release',

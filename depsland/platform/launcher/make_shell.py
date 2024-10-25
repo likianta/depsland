@@ -1,4 +1,4 @@
-from lk_utils import dumps
+from lk_utils import dump
 from lk_utils.textwrap import dedent
 
 from ...manifest import T
@@ -41,5 +41,5 @@ def make_shell(manifest: T.Manifest, file_o: str) -> str:
         appid=manifest['appid'],
         version=manifest['version'],
     )
-    dumps(script, file_o)
+    dump(script, file_o)
     return file_o

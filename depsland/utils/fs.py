@@ -5,13 +5,6 @@ import shutil
 import typing as t
 from uuid import uuid1
 
-from lk_utils import fs
-
-if __name__ == '__main__':  # unreachable. just for typing
-    from ..manifest.manifest import Manifest
-else:
-    Manifest = ...
-
 
 def get_content_hash(content: str) -> str:
     return hashlib.md5(content.encode()).hexdigest()

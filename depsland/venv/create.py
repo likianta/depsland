@@ -3,7 +3,6 @@ import typing as t
 from collections import defaultdict
 
 from lk_utils import fs
-from lk_utils import loads
 
 from ..normalization import normalize_name
 from ..normalization import normalize_verspecs
@@ -16,7 +15,7 @@ def create_from_file(dst_dir: str, requirements_file: str) -> None:
 
 def _load_requirements(file: str) -> t.Iterator[t.Tuple[str, str]]:
     pattern = re.compile(r'([-\w]+)(.*)')
-    for line in loads(file).splitlines():
+    for line in fs.load(file).splitlines():
         line = line.strip()
         if line and not line.startswith('#'):
             name, ver = pattern.search(line).groups()

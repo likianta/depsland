@@ -1,7 +1,7 @@
 """
 for windows only.
 """
-from lk_utils import dumps
+from lk_utils import dump
 from lk_utils.textwrap import dedent
 
 from ...manifest import T
@@ -49,5 +49,5 @@ def make_bat(
         appid=manifest['appid'],
         pause='pause' if debug else '',
     ))
-    dumps(script, file_o)
+    dump(script, file_o)
     return file_o

@@ -1,5 +1,11 @@
-if __name__ == '__main__':
-    __package__ = 'depsland'
+if 1:
+    if not __package__:  # noqa
+        __package__ = 'depsland'
+if 2:
+    import os
+    import sys
+    if sys.orig_argv[0].endswith('.exe'):
+        os.environ['LK_LOGGER_MODERN_WINDOW'] = '0'
 
 import os
 import sys
@@ -28,9 +34,8 @@ if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
 
 cli = CommandLineInterface('depsland')
 print(
-    'depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
-        __version__, __path__[0]
-    ), ':r'
+    'depsland [red][dim]v[/]{}[/] [dim]({})[/]'
+    .format(__version__, __path__[0]), ':r'
 )
 
 
@@ -150,6 +155,7 @@ def launch_gui(
             ),
             blocking=not _native_window,
             verbose=True,
+            force_term_color=True,
         )
         if _native_window:
             pyapp_window.open_window(
@@ -435,5 +441,6 @@ def _run_cli() -> None:
 
 
 if __name__ == '__main__':
+    # pox -m depsland -h
     # pox -m depsland launch-gui
     cli.run()

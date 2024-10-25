@@ -79,6 +79,12 @@ py build/build.py bat-2-exe build/exe/desktop.bat -u
     py build/build.py full-build aliyun
     ```
 
+### 生成精简版的独立应用
+
+精简版的应用是在独立版应用的基础上, 利用 "树摇" 技术对依赖包的体积进行大幅裁剪. 关于 "树摇" 的技术说明, 请参考 https://github.com/likianta/python-tree-shaking .
+
+1. 同步版本号
+
 ### 生成 whl 文件
 
 1. 检查版本号是否为最新

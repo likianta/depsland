@@ -4,9 +4,7 @@ import sys
 import typing as t
 from collections import defaultdict
 
-from lk_utils import dumps
 from lk_utils import fs
-from lk_utils import loads
 
 from .index import T as T0
 from .pypi import pypi
@@ -30,8 +28,8 @@ class T(T0):
 
 def overview(custom_dir: str = None) -> None:
     if custom_dir:
-        print(loads(f'{custom_dir}/id_2_paths.pkl'), ':ls')
-        print(loads(f'{custom_dir}/name_2_ids.pkl'), ':ls')
+        print(fs.load(f'{custom_dir}/id_2_paths.pkl'), ':ls')
+        print(fs.load(f'{custom_dir}/name_2_ids.pkl'), ':ls')
     else:
         print(pypi.index.id_2_paths, ':l')
         print(pypi.index.name_2_ids, ':l')
@@ -71,8 +69,8 @@ def rebuild_index(
         verspec.sort_versions(vers, reverse=True)
     
     if _save:
-        dumps(id_2_paths, pypi_paths.id_2_paths)
-        dumps(name_2_vers, pypi_paths.name_2_vers)
+        fs.dump(id_2_paths, pypi_paths.id_2_paths)
+        fs.dump(name_2_vers, pypi_paths.name_2_vers)
     return id_2_paths, name_2_vers
 
 

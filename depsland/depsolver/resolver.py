@@ -59,7 +59,7 @@ def resolve_dependencies(
     
     print(
         'the first time building dependencies tree, this may take a while...',
-        ':t2v3s'
+        ':v6'
     )
     
     if isinstance(deps0, str):  # a file

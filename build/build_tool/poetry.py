@@ -17,7 +17,6 @@ class PoetryExecutable:
             cwd=cwd,
             verbose=True,
             force_term_color=True,
-            ignore_return=True,
             **kwargs
         )
 

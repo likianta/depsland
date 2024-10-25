@@ -8,7 +8,6 @@ import sys
 import typing as t
 
 from lk_utils import fs
-from lk_utils import loads
 from lk_utils import run_cmd_args
 
 from ..normalization import normalize_name
@@ -72,9 +71,9 @@ def resolve_requirements_lock(
     `pyproj_file` helps to filter inexistent packages in above list.
     `poetry_file` provides tree-like relations for dependencies.
     """
-    pyproj_data: dict = loads(pyproj_file, 'toml')
-    poetry_data: dict = loads(poetry_file, 'toml')
-    reqlock_data: str = loads(requirements_file, 'plain')
+    pyproj_data: dict = fs.load(pyproj_file, 'toml')
+    poetry_data: dict = fs.load(poetry_file, 'toml')
+    reqlock_data: str = fs.load(requirements_file, 'plain')
     
     valid_names = _get_valid_package_names(
         pyproj_data,

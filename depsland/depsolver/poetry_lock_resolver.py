@@ -13,7 +13,6 @@ import sys
 import typing as t
 
 from lk_utils import fs
-from lk_utils import loads
 from lk_utils import run_cmd_args
 
 from ..normalization import normalize_name
@@ -46,7 +45,7 @@ class T:
 
 
 def resolve_poetry_lock(poetry_lock_file: str) -> T.Packages:
-    data = loads(poetry_lock_file, 'toml')
+    data = fs.load(poetry_lock_file, 'toml')
     name_2_id = _get_tiled_dict(poetry_lock_file)
     deps_tree = _parse_dependencies_tree(data, name_2_id)
     

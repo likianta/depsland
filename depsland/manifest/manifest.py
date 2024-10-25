@@ -6,9 +6,7 @@ from os.path import exists
 from textwrap import dedent
 from time import sleep
 
-from lk_utils import dumps
 from lk_utils import fs
-from lk_utils import loads
 
 from .. import normalization as norm
 from ..depsolver import T as T0
@@ -277,12 +275,12 @@ class Manifest:
         data1: T.Manifest1
         
         if self._file.endswith('.pkl'):
-            data0: T.Manifest1 = loads(self._file)
+            data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
             data1['start_directory'] = self._start_directory
         else:
             assert self._file.endswith('.json')  # yaml is not implemented yet
-            data0: T.Manifest0 = loads(self._file)
+            data0: T.Manifest0 = fs.load(self._file)
             
             if 'start_directory' in data0:
                 x = data0['start_directory']
@@ -342,7 +340,7 @@ class Manifest:
             data0.pop('start_directory')
             data0['assets'] = self._plainify_assets(data1['assets'])
         
-        dumps(data0, file)
+        fs.dump(data0, file)
     
     def make_tree(self, root: str = None) -> None:
         if not root:

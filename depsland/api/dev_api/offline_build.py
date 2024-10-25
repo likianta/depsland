@@ -20,7 +20,7 @@ what does "Hello World.exe" do:
     3. run "python/python.exe -m depsland run hello_world"
         depsland will find the target's location and launch it.
 """
-from lk_utils import dumps
+from lk_utils import dump
 from lk_utils import fs
 from lk_utils.textwrap import dedent
 
@@ -247,8 +247,8 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
         v['name']: [v['version']]
         for v in manifest['dependencies'].values()
     }
-    dumps(id_2_paths, f'{dst_dir}/source/pypi/index/id_2_paths.json')
-    dumps(name_2_vers, f'{dst_dir}/source/pypi/index/name_2_vers.json')
+    dump(id_2_paths, f'{dst_dir}/source/pypi/index/id_2_paths.json')
+    dump(name_2_vers, f'{dst_dir}/source/pypi/index/name_2_vers.json')
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
@@ -279,7 +279,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
             python/bin/python3 -m depsland launch-gui {appid}
         ''', join_sep='\\')
         script = template.format(appid=manifest['appid'])
-        dumps(script, file_sh)
+        dump(script, file_sh)
     
     elif sysinfo.SYSTEM == 'windows':
         file_bat = f'{dst_dir}/Check Updates.bat'
@@ -293,7 +293,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
             .\python\python.exe -m depsland launch-gui --app-token {appid}
         ''')
         script = template.format(appid=manifest['appid'])
-        dumps(script, file_bat)
+        dump(script, file_bat)
         bat_2_exe(
             file_bat,
             file_exe,
