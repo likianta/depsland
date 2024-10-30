@@ -1,5 +1,7 @@
 import os
+import shlex
 import subprocess
+import sys
 import typing as t
 
 import lk_logger
@@ -10,7 +12,6 @@ from lk_utils import run_cmd_args
 from ... import paths
 from ...manifest import get_last_installed_version
 from ...manifest import load_manifest
-from ...manifest import parse_script_info
 from ...platform import sysinfo
 
 
@@ -40,7 +41,7 @@ def run_app(
     
     version = _version or get_last_installed_version(appid)
     if not version:
-        print(':v4', f'cannot find installed version of {appid}')
+        print(':v8', f'cannot find installed version of {appid}')
         return
     else:
         print(
@@ -52,8 +53,6 @@ def run_app(
         paths.project.apps, appid, version
     ))
     assert manifest['version'] == version
-    command, args0, kwargs0 = parse_script_info(manifest)
-    # print(command, args0, kwargs0, ':l')
     os.environ['DEPSLAND'] = paths.project.root
     sep = ';' if sysinfo.IS_WINDOWS else ':'
     os.environ['PYTHONPATH'] = sep.join((
@@ -74,30 +73,23 @@ def run_app(
                 'Depsland is launching "{} (v{})"'.format(appid, version)
             )
     
-    print(':vs', ' '.join(
-        (*command, *args_2_cargs(*args, *args0, **kwargs, **kwargs0))
-    ))
+    command = '{} {}'.format(
+        manifest['launcher']['command'].replace('<python>', sys.executable),
+        args_2_cargs(*args, **kwargs)
+    ).strip()
+    print(':v', command)
     # lk_logger.unload()
     try:
-        # TODO: use '--' to separate different args/kwargs groups.
         return run_cmd_args(
-            command, args_2_cargs(*args, *args0, **kwargs, **kwargs0),
+            shlex.split(command),
             cwd=manifest['start_directory'],
             blocking=_blocking,
             shell=True,
             verbose=True,
-            # verbose=False,
         )
-        # subprocess.run(
-        #     (*command, *args_2_cargs(*args, *args0, **kwargs, **kwargs0)),
-        #     check=True,
-        #     cwd=manifest['start_directory'],
-        #     stderr=subprocess.PIPE,
-        #     text=True,
-        # )
-    except subprocess.CalledProcessError as e:
+    except Exception as e:
         lk_logger.enable()
-        print(':v4f', '\n' + (e.stderr or '').replace('\r', ''))
+        print(':e', e)
         if manifest['launcher']['show_console']:
             # raise e
             input('press ENTER to exit... ')
@@ -124,7 +116,7 @@ def _toast_notification(text: str) -> None:
         from windows_toasts import WindowsToaster
     except ImportError:
         # raise ImportError('pip install windows-toasts')
-        print('module not found: windows-toasts', ':v3p')
+        print('module not found: windows-toasts', ':v6p')
         return
     toaster = WindowsToaster('Depsland Launcher')
     toast = Toast()

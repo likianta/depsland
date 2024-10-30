@@ -227,7 +227,7 @@ def _upload(
             assert fs.exists(path1)
             return path0
         
-        reldirs = set()
+        reldirs: t.Set[str] = set()
         for p in relpaths:
             if p.startswith('../'):
                 reldirs.add('bin')

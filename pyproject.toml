@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.1"
+version = "0.8.2a0"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -11,8 +11,8 @@ python = "^3.8"
 argsense = "^0.5.8"
 # argsense = { version = "^0.5.9a0", source = "likianta-host" }
 conflore = "^0.2.0"
-lk-logger = "^6.0.0"
-# lk-logger = { version = "^6.0.0", source = "likianta-host" }
+# lk-logger = "^6.0.0"
+lk-logger = { version = "^6.0.1a0", source = "likianta-host" }
 lk-utils = "^3.0.0"
 # lk-utils = { version = "^3.0.0", source = "likianta-host" }
 oss2 = "^2.18.3"  # DELETE
@@ -20,8 +20,8 @@ pip = "^24.0.0"
 pipgrip = "^0.10.13"
 poetry = "^1.8.3"
 psutil = "^6.0.0"
-pyapp-window = "^2.1.0"
-# pyapp-window = { version = "^2.1.0", source = "likianta-host" }
+# pyapp-window = "^2.1.0"
+pyapp-window = { version = "^2.1.1a1", source = "likianta-host" }
 # pyyaml = "^6.0.0"
 rich = "^13.7.0"
 semver = "^3.0.2"
@@ -48,9 +48,15 @@ numpy = { version = "^2.0.0", python = ">=3.9" }  # <- streamlit
 pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
 
 # --- sidework
+dash = "^2.17.1"
+feffery-antd-components = "^0.3.9"
+feffery-dash-utils = "*"
 icnsutil = "*"  # <- sidework/image_converter.py
 pillow = "*"  # <- sidework/image_converter.py
+st-ant-tree = "*"
+streamlit-nested-layout = { version = "*", python = "!=3.9.7" }
 streamlit-swift = { version = "^0.1.0a1", source = "likianta-host" }
+# streamlit-tree-select = "*"
 
 [tool.poetry.scripts]
 depsland = 'depsland.__main__:_run_cli'
@@ -76,3 +82,6 @@ ignored_redundant_packages = [
     "poetry",
     "pyportable_runtime",
 ]
+
+[tool.ruff]
+line-length = 80

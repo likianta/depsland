@@ -1,12 +1,12 @@
 import os
+import shlex
+import sys
 import typing as t
 from collections import namedtuple
 from functools import cache
-from os.path import exists
-from textwrap import dedent
-from time import sleep
 
 from lk_utils import fs
+from lk_utils.textwrap import dedent
 
 from .. import normalization as norm
 from ..depsolver import T as T0
@@ -71,21 +71,29 @@ class T(T0):
     Launcher0 = t.TypedDict(
         'Launcher0',
         {
-            'target'           : AnyPath,
-            'type'             : t.Literal['executable', 'module', 'package'],
+            'command'          : t.Union[str, list],
             'icon'             : AnyPath,
-            #   the origin icon could be: empty, a relpath, or an abspath.
-            'args'             : t.List[t.Any],
-            'kwargs'           : t.Dict[str, t.Any],
+            #   icon could be: empty, a relpath, or an abspath.
+            'show_console'     : bool,
             'enable_cli'       : bool,
             'add_to_desktop'   : bool,
             'add_to_start_menu': bool,
+        },
+        total=False,
+    )
+    Launcher1 = t.TypedDict(
+        'Launcher1',
+        {
+            'command'          : str,
+            'icon'             : RelPath,
+            #   icon could be: empty or relpath. but not be abspath.
+            #   FIXME: why we use relpath?
             'show_console'     : bool,
+            'enable_cli'       : bool,
+            'add_to_desktop'   : bool,
+            'add_to_start_menu': bool,
         },
     )
-    Launcher1 = Launcher0
-    #   same with Launcher0 but 'target' and 'icon' are RelPath.
-    #   FIXME: why we use relpath?
     
     Experiments0 = t.TypedDict(
         'Experiments0',
@@ -388,7 +396,7 @@ class Manifest:
     @staticmethod
     def _precheck_manifest(manifest: T.Manifest0) -> None:
         # assert required keys
-        required_keys = ('appid', 'name', 'version', 'assets')
+        required_keys = ('appid', 'name', 'version', 'assets', 'launcher')
         assert all(x in manifest for x in required_keys), (
             'the required keys are not complete',
             required_keys,
@@ -396,7 +404,7 @@ class Manifest:
         )
         
         assert norm.check_name_normalized(manifest['appid']), (
-            'the appid should be lowercase and only contains alphanumber and '
+            'the appid should be lowercase and only contain alphanumber and '
             'underscore.'
         )
         
@@ -406,54 +414,27 @@ class Manifest:
             'no "../" in your assets keys.'
         )
         
-        launcher: T.Launcher1 = manifest['launcher']
-        target = launcher['target']
-        assert target, 'field `launcher.target` cannot be empty!'
-        assert not target.startswith('../'), (
-            (
-                'manifest should be put at the root of project, and there '
-                'shall be no "../*" in your script path.'
-            ),
-            target,
-        )
-        
-        # TODO: currently we don't support auto deduce launcher type.
-        assert launcher['type'], (
-            'you must set `launcher.type` apparently. depsland does not '
-            'support auto deducing it yet.'
-        )
-        assert launcher['type'] in ('executable', 'module', 'package')
+        launcher: T.Launcher0 = manifest['launcher']
+        assert launcher['command'], 'field `launcher.command` cannot be empty!'
+        if (
+            '<python>' not in launcher['command'] and
+            'python' in launcher['command']
+        ):
+            raise Exception(
+                'should use "<python>" instead of "python" '
+                'in your launcher command'
+            )
     
     @staticmethod
     def _postcheck_manifest(manifest: T.Manifest1) -> None:
         launcher: T.Launcher1 = manifest['launcher']
-        
-        # check script
-        target_path = '{}/{}'.format(
-            manifest['start_directory'], launcher['target']
-        )
-        target_type = launcher['type']
-        try:
-            if target_type == 'module':
-                assert target_path.endswith('.py')
-                assert exists(target_path)
-            elif target_type == 'package':
-                assert os.path.isdir(target_path)
-                assert exists('{}/__init__.py'.format(target_path))
-                assert exists('{}/__main__.py'.format(target_path))
-            else:
-                assert exists(target_path)
-        except AssertionError as e:
-            raise Exception(
-                'the target is not found in your file system', target_path
-            ) from e
         
         # check icon
         if launcher['icon']:
             icon_path = '{}/{}'.format(
                 manifest['start_directory'], launcher['icon']
             )
-            assert exists(icon_path)
+            assert fs.exists(icon_path)
             
             assert icon_path.endswith('.ico'), (
                 'make sure the icon file is ".ico" format. if you have other '
@@ -469,27 +450,29 @@ class Manifest:
                     pass
                 else:
                     print(
-                        dedent('''
+                        dedent(
+                            '''
                             the launcher icon is not added to your assets list.
-                            you may stop current progress right now, and
+                            you may stop current progress right now, and -
                             re-check your manifest file.
-                            (if you confirm that the icon is added, it may be a
-                            bug from depsland.)
-                        '''),
-                        ':v3',
+                            (if you confirm that the icon is added, it may be -
+                            a bug from depsland.)
+                            ''',
+                            join_sep='-'
+                        ),
+                        ':fv6',
                     )
-                    sleep(1)
+                    if input(
+                        'press "Y" to continue, or other key to stop: '
+                    ) != 'Y':
+                        sys.exit()
             
             # TODO: check icon size and give suggestions (the icon is suggested
             #  128x128 or above.)
         
-        if kwargs := launcher['kwargs']:
-            assert all(' ' not in k for k in kwargs)
-            # TODO: shall we check `'-' not in k`?
-        
         if launcher['add_to_start_menu']:
             print(
-                ':v3',
+                ':v6',
                 '`launcher.add_to_start_menu` is not tested yet. this is an '
                 'experimental feature.',
             )
@@ -544,7 +527,7 @@ class Manifest:
             else:
                 abspath = fs.normpath(f'{start_directory}/{path}')
                 relpath = fs.normpath(path)
-            if not exists(abspath):
+            if not fs.exists(abspath):
                 raise FileNotFoundError(
                     'please check the path you defined in manifest does exist',
                     path
@@ -569,52 +552,34 @@ class Manifest:
         launcher0: T.Launcher0, start_directory: T.AbsPath
     ) -> T.Launcher1:
         out: T.Launcher1 = {
-            'target'           : '',
-            'type'             : '',  # noqa
+            'command'          : '',
             'icon'             : '',
-            'args'             : [],
-            'kwargs'           : {},
+            'show_console'     : True,
             'enable_cli'       : False,
             'add_to_desktop'   : False,
             'add_to_start_menu': False,
-            'show_console'     : True,
         }
-        out.update(launcher0)  # noqa
         
-        # noinspection PyTypedDict
-        def normalize_paths() -> None:
-            for k in ('target', 'icon'):
-                if v := out[k]:
-                    if os.path.isabs(v):
-                        out[k] = fs.relpath(v, start_directory)
-                    else:
-                        out[k] = fs.normpath(v)
+        if isinstance(launcher0['command'], str):
+            out['command'] = launcher0['command']
+        else:
+            out['command'] = shlex.join(launcher0['command'])
         
-        # noinspection PyUnusedLocal,PyTypedDict
-        def deduce_type() -> None:
-            if out['target'].endswith('.py'):
-                out['type'] = 'module'
-            elif out['target'] and (
-                d := os.path.isdir(
-                    '{}/{}'.format(start_directory, out['target'])
-                )
-            ):
-                if exists(
-                    '{}/__init__.py'.format(d)
-                ) and exists(
-                    '{}/__main__.py'.format(d)
-                ):  # noqa
-                    out['type'] = 'package'
-                else:
-                    out['type'] = 'executable'
+        if icon := launcher0.get('icon'):
+            if os.path.isabs(icon):
+                out['icon'] = fs.relpath(icon, start_directory)
             else:
-                raise Exception(
-                    'cannot deduce the launcher type!', out['target']
-                )
+                out['icon'] = fs.normpath(icon)
         
-        normalize_paths()
-        if not out['type']:
-            deduce_type()
+        for k in (
+            'show_console', 'enable_cli', 'add_to_desktop', 'add_to_start_menu'
+        ):
+            if k in launcher0:
+                # noinspection PyTypedDict
+                assert isinstance((v := launcher0[k]), bool)
+                # noinspection PyTypedDict
+                out[k] = v
+        
         return out
     
     # -------------------------------------------------------------------------

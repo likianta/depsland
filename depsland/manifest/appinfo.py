@@ -81,32 +81,6 @@ def get_last_released_version(appid: str) -> t.Optional[str]:
     return _quick_read_line(file)
 
 
-def parse_script_info(
-    manifest: T.Manifest,
-) -> t.Tuple[t.Tuple[str, ...], t.Tuple[str, ...], t.Dict[str, t.Any]]:
-    launcher: T.Launcher = manifest['launcher']
-    
-    cwd = manifest['start_directory']
-    src = launcher['target']  # a relpath or a package name
-    
-    command: t.Tuple[str, ...]
-    args: t.Tuple[str, ...]
-    kwargs: t.Dict[str, t.Any]
-    
-    if launcher['type'] == 'executable':
-        command = (f'{cwd}/{src}',)
-    elif launcher['type'] == 'module':
-        command = (paths.python.python, f'{cwd}/{src}')
-    elif launcher['type'] == 'package':
-        command = (paths.python.python, '-m', src)
-    else:
-        raise ValueError(launcher)
-    args = tuple(launcher['args'])
-    kwargs = launcher['kwargs']
-    
-    return command, args, kwargs
-
-
 def _quick_read_line(text_file: str) -> str:
     with open(text_file, 'r', encoding='utf-8') as f:
         for line in f:  # just read the first line

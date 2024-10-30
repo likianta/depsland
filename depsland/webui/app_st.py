@@ -44,7 +44,8 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         placeholder='e.g. "hello_world"'
     )
     
-    cols = st.columns(2)  # main button and a placeholder
+    # main button and a placeholder
+    cols = st.columns(2, vertical_alignment='center')
     prog_bar_container = st.container()  # progress bar
     with cols[0]:
         # TODO: how to disable button when installing?
