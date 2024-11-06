@@ -3,13 +3,11 @@ from os.path import exists
 from subprocess import call
 
 from lk_utils import wait
-from lk_utils import xpath
+from lk_utils import fs
 from lk_utils.subproc import compose_cmd
 
-from .....utils.compat_py38 import substitute_suffix
-
 _is_windows = os.name == 'nt'
-_b2e_exe = xpath('b2e.exe')
+_b2e_exe = fs.xpath('b2e.exe')
 
 
 def bat_2_exe(
@@ -28,7 +26,7 @@ def bat_2_exe(
     if file_o:
         assert file_o.endswith('.exe')
     else:
-        file_o = substitute_suffix(file_i, '.bat', '.exe')
+        file_o = fs.replace_ext(file_i, 'exe')
     if icon:
         assert icon.endswith('.ico')
         assert os.path.exists(icon)

@@ -20,6 +20,7 @@ what does "Hello World.exe" do:
     3. run "python/python.exe -m depsland run hello_world"
         depsland will find the target's location and launch it.
 """
+import lk_logger
 from lk_utils import dump
 from lk_utils import fs
 from lk_utils.textwrap import dedent
@@ -47,10 +48,9 @@ def main(manifest_file: str) -> None:
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
     _relink_pypi(manifest, dir_o)
-    print(':t2s', 'creating launcher...')
-    _create_launcher(manifest, dir_o)
-    _create_updator(manifest, dir_o)
-    print(':t2', 'creating launcher done')
+    with lk_logger.spinner('creating launcher...'):
+        _create_launcher(manifest, dir_o)
+        _create_updator(manifest, dir_o)
     print('see result at {}'.format(dir_o))
 
 

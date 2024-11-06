@@ -2343,12 +2343,12 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "6.0.0"
+version = "6.0.2a2"
 description = "Python print with source map and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_logger-6.0.0-py3-none-any.whl", hash = "sha256:6972895ce15c4651cda4373f1f220c925c57edea2a8938c124dda7600f422a0f"},
+    {file = "lk_logger-6.0.2a2-py3-none-any.whl", hash = "sha256:293c65e8b99627c9d2f6a7b19465805ec251143ecaa17f68e1b9f1af65490d53"},
 ]
 
 [package.dependencies]
@@ -2359,31 +2359,34 @@ ext = ["svg-ultralight"]
 
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2131"
+reference = "likianta-host"
 
 [[package]]
 name = "lk-utils"
-version = "3.0.0"
+version = "3.0.2a7"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "lk_utils-3.0.0-py3-none-any.whl", hash = "sha256:de4d545e244bf97dfd0cb52f006877965491b1a8429f3cc046e3abfe91342e33"},
+    {file = "lk_utils-3.0.2a7-py3-none-any.whl", hash = "sha256:a4d30e33701eb309257f0a413dd20c72ee978410d288cea376f3bac4bc3432c7"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.8,<0.6.0"
-lk-logger = ">=6.0.0,<7.0.0"
+lk-logger = ">=6.0.2a0,<7.0.0"
 psutil = ">=6.0.0,<7.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
 rich = ">=13.8.0,<14.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
+[package.extras]
+exl = ["openpyxl (==3.0.10)", "pyexcel (>=0.7.0,<0.8.0)", "pyexcel-xlsx (>=0.6.0,<0.7.0)"]
+
 [package.source]
 type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
+url = "http://likianta.pro:2131"
+reference = "likianta-host"
 
 [[package]]
 name = "lxml"
@@ -3257,6 +3260,29 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "patsy"
+version = "0.5.6"
+description = "A Python package for describing statistical models and for building design matrices."
+optional = false
+python-versions = "*"
+files = [
+    {file = "patsy-0.5.6-py2.py3-none-any.whl", hash = "sha256:19056886fd8fa71863fa32f0eb090267f21fb74be00f19f5c70b2e9d76c883c6"},
+    {file = "patsy-0.5.6.tar.gz", hash = "sha256:95c6d47a7222535f84bff7f63d7303f2e297747a598db89cf5c67f0c0c7d2cdb"},
+]
+
+[package.dependencies]
+numpy = ">=1.4"
+six = "*"
+
+[package.extras]
+test = ["pytest", "pytest-cov", "scipy"]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "pefile"
 version = "2024.8.26"
 description = "Python PE parsing module"
@@ -3853,17 +3879,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "2.1.1a0"
+version = "2.1.1b0"
 description = "Launch URL with native window in WebView mode. Multiple backend implementations are supported."
 optional = false
 python-versions = ">=3.8,<4.0"
 files = [
-    {file = "pyapp_window-2.1.1a0-py3-none-any.whl", hash = "sha256:d6dec5c04d5b90ae68b8537388ee4749f0d5db9ece08c52162472dffb56a85c8"},
+    {file = "pyapp_window-2.1.1b0-py3-none-any.whl", hash = "sha256:f12ac573cc38dd9b7f9b0dbd12d411205c40c6b1cb0c26fcf6ae6b293d951868"},
 ]
 
 [package.dependencies]
 argsense = ">=0.5.8,<0.6.0"
-lk-logger = ">=6.0.0,<7.0.0"
+lk-logger = ">=6.0.1,<7.0.0"
 lk-utils = ">=3.0.0,<4.0.0"
 requests = "*"
 toga = [
@@ -4986,6 +5012,53 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "scipy"
+version = "1.13.1"
+description = "Fundamental algorithms for scientific computing in Python"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "scipy-1.13.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:20335853b85e9a49ff7572ab453794298bcf0354d8068c5f6775a0eabf350aca"},
+    {file = "scipy-1.13.1-cp310-cp310-macosx_12_0_arm64.whl", hash = "sha256:d605e9c23906d1994f55ace80e0125c587f96c020037ea6aa98d01b4bd2e222f"},
+    {file = "scipy-1.13.1-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cfa31f1def5c819b19ecc3a8b52d28ffdcc7ed52bb20c9a7589669dd3c250989"},
+    {file = "scipy-1.13.1-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:f26264b282b9da0952a024ae34710c2aff7d27480ee91a2e82b7b7073c24722f"},
+    {file = "scipy-1.13.1-cp310-cp310-musllinux_1_1_x86_64.whl", hash = "sha256:eccfa1906eacc02de42d70ef4aecea45415f5be17e72b61bafcfd329bdc52e94"},
+    {file = "scipy-1.13.1-cp310-cp310-win_amd64.whl", hash = "sha256:2831f0dc9c5ea9edd6e51e6e769b655f08ec6db6e2e10f86ef39bd32eb11da54"},
+    {file = "scipy-1.13.1-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:27e52b09c0d3a1d5b63e1105f24177e544a222b43611aaf5bc44d4a0979e32f9"},
+    {file = "scipy-1.13.1-cp311-cp311-macosx_12_0_arm64.whl", hash = "sha256:54f430b00f0133e2224c3ba42b805bfd0086fe488835effa33fa291561932326"},
+    {file = "scipy-1.13.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:e89369d27f9e7b0884ae559a3a956e77c02114cc60a6058b4e5011572eea9299"},
+    {file = "scipy-1.13.1-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:a78b4b3345f1b6f68a763c6e25c0c9a23a9fd0f39f5f3d200efe8feda560a5fa"},
+    {file = "scipy-1.13.1-cp311-cp311-musllinux_1_1_x86_64.whl", hash = "sha256:45484bee6d65633752c490404513b9ef02475b4284c4cfab0ef946def50b3f59"},
+    {file = "scipy-1.13.1-cp311-cp311-win_amd64.whl", hash = "sha256:5713f62f781eebd8d597eb3f88b8bf9274e79eeabf63afb4a737abc6c84ad37b"},
+    {file = "scipy-1.13.1-cp312-cp312-macosx_10_9_x86_64.whl", hash = "sha256:5d72782f39716b2b3509cd7c33cdc08c96f2f4d2b06d51e52fb45a19ca0c86a1"},
+    {file = "scipy-1.13.1-cp312-cp312-macosx_12_0_arm64.whl", hash = "sha256:017367484ce5498445aade74b1d5ab377acdc65e27095155e448c88497755a5d"},
+    {file = "scipy-1.13.1-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:949ae67db5fa78a86e8fa644b9a6b07252f449dcf74247108c50e1d20d2b4627"},
+    {file = "scipy-1.13.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:de3ade0e53bc1f21358aa74ff4830235d716211d7d077e340c7349bc3542e884"},
+    {file = "scipy-1.13.1-cp312-cp312-musllinux_1_1_x86_64.whl", hash = "sha256:2ac65fb503dad64218c228e2dc2d0a0193f7904747db43014645ae139c8fad16"},
+    {file = "scipy-1.13.1-cp312-cp312-win_amd64.whl", hash = "sha256:cdd7dacfb95fea358916410ec61bbc20440f7860333aee6d882bb8046264e949"},
+    {file = "scipy-1.13.1-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:436bbb42a94a8aeef855d755ce5a465479c721e9d684de76bf61a62e7c2b81d5"},
+    {file = "scipy-1.13.1-cp39-cp39-macosx_12_0_arm64.whl", hash = "sha256:8335549ebbca860c52bf3d02f80784e91a004b71b059e3eea9678ba994796a24"},
+    {file = "scipy-1.13.1-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d533654b7d221a6a97304ab63c41c96473ff04459e404b83275b60aa8f4b7004"},
+    {file = "scipy-1.13.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:637e98dcf185ba7f8e663e122ebf908c4702420477ae52a04f9908707456ba4d"},
+    {file = "scipy-1.13.1-cp39-cp39-musllinux_1_1_x86_64.whl", hash = "sha256:a014c2b3697bde71724244f63de2476925596c24285c7a637364761f8710891c"},
+    {file = "scipy-1.13.1-cp39-cp39-win_amd64.whl", hash = "sha256:392e4ec766654852c25ebad4f64e4e584cf19820b980bc04960bca0b0cd6eaa2"},
+    {file = "scipy-1.13.1.tar.gz", hash = "sha256:095a87a0312b08dfd6a6155cbbd310a8c51800fc931b8c0b84003014b874ed3c"},
+]
+
+[package.dependencies]
+numpy = ">=1.22.4,<2.3"
+
+[package.extras]
+dev = ["cython-lint (>=0.12.2)", "doit (>=0.36.0)", "mypy", "pycodestyle", "pydevtool", "rich-click", "ruff", "types-psutil", "typing_extensions"]
+doc = ["jupyterlite-pyodide-kernel", "jupyterlite-sphinx (>=0.12.0)", "jupytext", "matplotlib (>=3.5)", "myst-nb", "numpydoc", "pooch", "pydata-sphinx-theme (>=0.15.2)", "sphinx (>=5.0.0)", "sphinx-design (>=0.4.0)"]
+test = ["array-api-strict", "asv", "gmpy2", "hypothesis (>=6.30)", "mpmath", "pooch", "pytest", "pytest-cov", "pytest-timeout", "pytest-xdist", "scikit-umfpack", "threadpoolctl"]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "secretstorage"
 version = "3.3.3"
 description = "Python bindings to FreeDesktop.org Secret Service API"
@@ -5162,6 +5235,25 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "st-theme"
+version = "1.2.3"
+description = "A component that returns the active theme of the Streamlit app."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "st-theme-1.2.3.tar.gz", hash = "sha256:ca97aece1a48ded6e83fd742c27cb0851e1bce2100ab4b6c37c7b6e003b65b42"},
+    {file = "st_theme-1.2.3-py3-none-any.whl", hash = "sha256:0a54d9817dd5f8a6d7b0d071b25ae72eacf536c63a5fb97374923938021b1389"},
+]
+
+[package.dependencies]
+streamlit = ">=1.33"
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
 name = "stack-data"
 version = "0.6.3"
 description = "Extract data from python stack frames and tracebacks for informative displays"
@@ -5179,6 +5271,62 @@ pure-eval = "*"
 
 [package.extras]
 tests = ["cython", "littleutils", "pygments", "pytest", "typeguard"]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "statsmodels"
+version = "0.14.4"
+description = "Statistical computations and models for Python"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "statsmodels-0.14.4-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:7a62f1fc9086e4b7ee789a6f66b3c0fc82dd8de1edda1522d30901a0aa45e42b"},
+    {file = "statsmodels-0.14.4-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:46ac7ddefac0c9b7b607eed1d47d11e26fe92a1bc1f4d9af48aeed4e21e87981"},
+    {file = "statsmodels-0.14.4-cp310-cp310-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:2a337b731aa365d09bb0eab6da81446c04fde6c31976b1d8e3d3a911f0f1e07b"},
+    {file = "statsmodels-0.14.4-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:631bb52159117c5da42ba94bd94859276b68cab25dc4cac86475bc24671143bc"},
+    {file = "statsmodels-0.14.4-cp310-cp310-musllinux_1_2_x86_64.whl", hash = "sha256:3bb2e580d382545a65f298589809af29daeb15f9da2eb252af8f79693e618abc"},
+    {file = "statsmodels-0.14.4-cp310-cp310-win_amd64.whl", hash = "sha256:9729642884147ee9db67b5a06a355890663d21f76ed608a56ac2ad98b94d201a"},
+    {file = "statsmodels-0.14.4-cp311-cp311-macosx_10_9_x86_64.whl", hash = "sha256:5ed7e118e6e3e02d6723a079b8c97eaadeed943fa1f7f619f7148dfc7862670f"},
+    {file = "statsmodels-0.14.4-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:f5f537f7d000de4a1708c63400755152b862cd4926bb81a86568e347c19c364b"},
+    {file = "statsmodels-0.14.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:aa74aaa26eaa5012b0a01deeaa8a777595d0835d3d6c7175f2ac65435a7324d2"},
+    {file = "statsmodels-0.14.4-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:e332c2d9b806083d1797231280602340c5c913f90d4caa0213a6a54679ce9331"},
+    {file = "statsmodels-0.14.4-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:d9c8fa28dfd75753d9cf62769ba1fecd7e73a0be187f35cc6f54076f98aa3f3f"},
+    {file = "statsmodels-0.14.4-cp311-cp311-win_amd64.whl", hash = "sha256:a6087ecb0714f7c59eb24c22781491e6f1cfffb660b4740e167625ca4f052056"},
+    {file = "statsmodels-0.14.4-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:5221dba7424cf4f2561b22e9081de85f5bb871228581124a0d1b572708545199"},
+    {file = "statsmodels-0.14.4-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:17672b30c6b98afe2b095591e32d1d66d4372f2651428e433f16a3667f19eabb"},
+    {file = "statsmodels-0.14.4-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:ab5e6312213b8cfb9dca93dd46a0f4dccb856541f91d3306227c3d92f7659245"},
+    {file = "statsmodels-0.14.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:4bbb150620b53133d6cd1c5d14c28a4f85701e6c781d9b689b53681effaa655f"},
+    {file = "statsmodels-0.14.4-cp312-cp312-musllinux_1_2_x86_64.whl", hash = "sha256:bb695c2025d122a101c2aca66d2b78813c321b60d3a7c86bb8ec4467bb53b0f9"},
+    {file = "statsmodels-0.14.4-cp312-cp312-win_amd64.whl", hash = "sha256:7f7917a51766b4e074da283c507a25048ad29a18e527207883d73535e0dc6184"},
+    {file = "statsmodels-0.14.4-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:b5a24f5d2c22852d807d2b42daf3a61740820b28d8381daaf59dcb7055bf1a79"},
+    {file = "statsmodels-0.14.4-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:df4f7864606fa843d7e7c0e6af288f034a2160dba14e6ccc09020a3cf67cb092"},
+    {file = "statsmodels-0.14.4-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:91341cbde9e8bea5fb419a76e09114e221567d03f34ca26e6d67ae2c27d8fe3c"},
+    {file = "statsmodels-0.14.4-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:1322286a7bfdde2790bf72d29698a1b76c20b8423a55bdcd0d457969d0041f72"},
+    {file = "statsmodels-0.14.4-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:e31b95ac603415887c9f0d344cb523889cf779bc52d68e27e2d23c358958fec7"},
+    {file = "statsmodels-0.14.4-cp313-cp313-win_amd64.whl", hash = "sha256:81030108d27aecc7995cac05aa280cf8c6025f6a6119894eef648997936c2dd0"},
+    {file = "statsmodels-0.14.4-cp39-cp39-macosx_10_9_x86_64.whl", hash = "sha256:4793b01b7a5f5424f5a1dbcefc614c83c7608aa2b035f087538253007c339d5d"},
+    {file = "statsmodels-0.14.4-cp39-cp39-macosx_11_0_arm64.whl", hash = "sha256:d330da34f59f1653c5193f9fe3a3a258977c880746db7f155fc33713ea858db5"},
+    {file = "statsmodels-0.14.4-cp39-cp39-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:6e9ddefba1d4e1107c1f20f601b0581421ea3ad9fd75ce3c2ba6a76b6dc4682c"},
+    {file = "statsmodels-0.14.4-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:6f43da7957e00190104c5dd0f661bfc6dfc68b87313e3f9c4dbd5e7d222e0aeb"},
+    {file = "statsmodels-0.14.4-cp39-cp39-win_amd64.whl", hash = "sha256:8286f69a5e1d0e0b366ffed5691140c83d3efc75da6dbf34a3d06e88abfaaab6"},
+    {file = "statsmodels-0.14.4.tar.gz", hash = "sha256:5d69e0f39060dc72c067f9bb6e8033b6dccdb0bae101d76a7ef0bcc94e898b67"},
+]
+
+[package.dependencies]
+numpy = ">=1.22.3,<3"
+packaging = ">=21.3"
+pandas = ">=1.4,<2.1.0 || >2.1.0"
+patsy = ">=0.5.6"
+scipy = ">=1.8,<1.9.2 || >1.9.2"
+
+[package.extras]
+build = ["cython (>=3.0.10)"]
+develop = ["colorama", "cython (>=3.0.10)", "cython (>=3.0.10,<4)", "flake8", "isort", "joblib", "matplotlib (>=3)", "pytest (>=7.3.0,<8)", "pytest-cov", "pytest-randomly", "pytest-xdist", "pywinpty", "setuptools-scm[toml] (>=8.0,<9.0)"]
+docs = ["ipykernel", "jupyter-client", "matplotlib", "nbconvert", "nbformat", "numpydoc", "pandas-datareader", "sphinx"]
 
 [package.source]
 type = "legacy"
@@ -5246,6 +5394,25 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
+name = "streamlit-canary"
+version = "0.1.0a3"
+description = ""
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "streamlit_canary-0.1.0a3-py3-none-any.whl", hash = "sha256:94f652ad14f727e71fdfeecef2d4df865f7f494c87222cca229819b9198b4df6"},
+]
+
+[package.dependencies]
+lk-utils = ">=3.0.2a7,<4.0.0"
+streamlit = {version = ">=1.39.0,<2.0.0", markers = "python_full_version != \"3.9.7\""}
+
+[package.source]
+type = "legacy"
+url = "http://likianta.pro:2131"
+reference = "likianta-host"
+
+[[package]]
 name = "streamlit-card"
 version = "1.0.0"
 description = "A streamlit component, to make UI cards"
@@ -5285,22 +5452,24 @@ reference = "tsinghua"
 
 [[package]]
 name = "streamlit-extras"
-version = "0.4.2"
+version = "0.5.0"
 description = "A library to discover, try, install and share Streamlit extras"
 optional = false
 python-versions = ">=3.8, !=2.7.*, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, !=3.5.*, !=3.6.*, !=3.7.*"
 files = [
-    {file = "streamlit_extras-0.4.2-py3-none-any.whl", hash = "sha256:a7d28c13f167f7c9bccd7344052584575fbbf2452e119c433bc4e5c8a98022a0"},
-    {file = "streamlit_extras-0.4.2.tar.gz", hash = "sha256:483016e54cc25f7217e109dc4c63bc66325d2e0db75ad481df327bed32f3f64f"},
+    {file = "streamlit_extras-0.5.0-py3-none-any.whl", hash = "sha256:84c24088901331db2adbda1ae2787a65ab094a78632af841678aa0f0d58cddfe"},
+    {file = "streamlit_extras-0.5.0.tar.gz", hash = "sha256:031c109c5057d232413249f97f856f64dd63ae6ec160fe39a4107f63d8934433"},
 ]
 
 [package.dependencies]
 entrypoints = ">=0.4"
 htbuilder = ">=0.6.2"
 markdownlit = ">=0.0.5"
+plotly = ">=1.0.0"
 prometheus-client = ">=0.14.0"
 protobuf = "!=3.20.2"
 st-annotated-text = ">=3.0.0"
+st-theme = ">=1.0.1"
 streamlit = ">=1.0.0"
 streamlit-camera-input-live = ">=0.2.0"
 streamlit-card = ">=0.0.4"
@@ -5397,26 +5566,6 @@ streamlit = ">=1.10.0"
 type = "legacy"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
-
-[[package]]
-name = "streamlit-swift"
-version = "0.1.0a1"
-description = ""
-optional = false
-python-versions = ">=3.8,<4.0"
-files = [
-    {file = "streamlit_swift-0.1.0a1-py3-none-any.whl", hash = "sha256:7ba275c0779adfbc76ae38ade1cf161d73a5aadc5453e49e068989e46c92f9d3"},
-]
-
-[package.dependencies]
-lk-utils = ">=3.0.0a0,<4.0.0"
-numpy = {version = ">=2.0.0,<3.0.0", markers = "python_version >= \"3.9\" and python_version < \"4.0\""}
-streamlit = {version = ">=1.38.0,<2.0.0", markers = "python_full_version != \"3.9.7\""}
-
-[package.source]
-type = "legacy"
-url = "http://likianta.pro:2131"
-reference = "likianta-host"
 
 [[package]]
 name = "streamlit-toggle-switch"
@@ -6363,4 +6512,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "db5261e7a75759b563eca4f03616236f106ce9b3f00ac2cc7fda2efb8b559e56"
+content-hash = "87cf20b3bf96808d06975516a9862372b8406b2c100f4574f392f2e3e5e8f6e1"

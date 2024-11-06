@@ -1,7 +1,4 @@
-from . import compat_py38
 from . import ziptool
-from .compat_py38 import remove_suffix
-from .compat_py38 import substitute_suffix
 from .fs import make_temp_dir
 from .fs import get_content_hash
 from .fs import get_file_hash

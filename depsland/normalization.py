@@ -160,9 +160,7 @@ def normalize_verspecs(
 
 def split_dirname_of_dist_info(dirname: str) -> t.Tuple[T.Name, T.Version]:
     # e.g. 'qmlease-3.1.0a15.dist-info' -> ('qmlease', '3.1.0a15')
-    from .utils.compat_py38 import remove_suffix
-    
-    dirname = remove_suffix(dirname, '.dist-info')
+    dirname = dirname.replace('.dist-info', '')
     name, version = dirname.split('-')
     name = normalize_name(name)
     return name, version
@@ -175,11 +173,9 @@ def split_filename_of_package(filename: str) -> t.Tuple[T.Name, T.Version]:
         'lk-logger-4.0.7.tar.gz' -> ('lk_logger', '4.0.7')
         'aliyun-python-sdk-2.2.0.zip' -> ('aliyun_python_sdk', '2.2.0')
     """
-    from .utils.compat_py38 import remove_suffix
-    
     for ext in ('.whl', '.tar.gz', '.zip'):
         if filename.endswith(ext):
-            barename = remove_suffix(filename, ext)
+            barename = filename[:-len(ext)]
             break
     else:
         raise ValueError(filename)

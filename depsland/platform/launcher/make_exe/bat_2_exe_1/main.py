@@ -1,15 +1,11 @@
 import os
 
-from lk_utils import dump
-from lk_utils import load
+from lk_utils import fs
 from lk_utils import run_cmd_args
-from lk_utils import xpath
-
-from .....utils.compat_py38 import substitute_suffix
 
 _is_windows = os.name == 'nt'
-_template_exe = xpath('template_static.exe')
-_rcedit_exe = xpath('rcedit.exe')
+_template_exe = fs.xpath('template_static.exe')
+_rcedit_exe = fs.xpath('rcedit.exe')
 
 
 # noinspection PyUnusedLocal
@@ -25,7 +21,7 @@ def bat_2_exe(
     if file_o:
         assert file_o.endswith('.exe')
     else:
-        file_o = substitute_suffix(file_i, '.bat', '.exe')
+        file_o = fs.replace_ext(file_i, 'exe')
     if icon:
         assert icon.endswith('.ico')
         assert os.path.exists(icon)
@@ -40,9 +36,12 @@ def bat_2_exe(
         if uac_admin:
             elevate_privilege(file_o)
     elif any((icon, uac_admin)):
-        print('[yellow dim]adding icon and/or elevating exe privilege are only '
-              'available on windows. (if you are using macos/linux, this '
-              'warning can be ignored.)[/]', ':pr')
+        print(
+            ':pv5',
+            'adding icon and/or elevating exe privilege are only available on '
+            'windows. '
+            '(if you are using macos/linux, this warning can be ignored.)',
+        )
     
     return file_o
 
@@ -65,7 +64,7 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     https://github.com/silvandeleemput/gen-exe
     https://blog.csdn.net/qq981378640/article/details/52980741
     """
-    command = ' && '.join(load(file_bat).splitlines()).strip()
+    command = ' && '.join(fs.load(file_bat).splitlines()).strip()
     command = command.replace('%~dp0', '{EXE_DIR}').replace('%cd%', '{EXE_DIR}')
     #   backup note:
     #       unc path prefix '\\?\<a_very_long_absolute_local_path>'
@@ -88,7 +87,7 @@ def _bat_2_exe(file_bat: str, file_exe: str, show_console: bool = True) -> None:
     command += '\0' * (259 - len(command)) + ('1' if show_console else '0')
     encoded_command = command.encode('ascii')
     
-    template: bytes = load(_template_exe, type='binary')
+    template: bytes = fs.load(_template_exe, type='binary')
     output = template.replace(b'X' * 259 + b'1', encoded_command)
-    print('add command to exe', command)
-    dump(output, file_exe, type='binary')
+    print('add command to exe', command, ':v')
+    fs.dump(output, file_exe, type='binary')
