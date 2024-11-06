@@ -14,10 +14,15 @@ entries:
   <root>/chore/venv/toga_winforms/__init__.py: toga-winforms
 ignores:
   - ipython
+  - matplotlib
+  - numpy
+  - pandas
   - pil
+  - plotly
   - pyside6
   - qmlease
   - qtpy
+  - statsmodel
 export:
   module_graphs: '*'
   spec_files: []

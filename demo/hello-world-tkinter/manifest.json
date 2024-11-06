@@ -1,17 +1,14 @@
 {
     "appid": "hello_world_tkinter",
     "name": "Hello World (Tkinter)",
-    "version": "0.2.8",
+    "version": "0.3.0",
     "assets": {
         "main.py": "all"
     },
     "dependencies": "poetry.lock",
     "launcher": {
-        "target": "main.py",
-        "type": "module",
+        "command": "<python> main.py listbox",
         "icon": "",
-        "args": ["listbox"],
-        "kwargs": {},
         "enable_cli": false,
         "add_to_desktop": true,
         "add_to_start_menu": false,
@@ -20,5 +17,5 @@
     "experiments": {
         "package_provider": "oss"
     },
-    "depsland_version": "0.8.1"
+    "depsland_version": "0.8.2"
 }

@@ -74,8 +74,10 @@ def run_app(
             )
     
     command = '{} {}'.format(
-        manifest['launcher']['command'].replace('<python>', sys.executable),
-        args_2_cargs(*args, **kwargs)
+        manifest['launcher']['command'].replace(
+            '<python>', '"{}"'.format(sys.executable.replace('\\', '/'))
+        ),
+        shlex.join(args_2_cargs(*args, **kwargs))
     ).strip()
     print(':v', command)
     # lk_logger.unload()

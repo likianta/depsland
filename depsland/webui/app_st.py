@@ -42,7 +42,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         'Input an appid to install',
         default_appid,
         placeholder='e.g. "hello_world"'
-    )
+    ).replace('-', '_')
     
     # main button and a placeholder
     cols = st.columns(2, vertical_alignment='center')

@@ -38,12 +38,17 @@ def minify_dependencies() -> None:
     print(x, ':v')
     
     # postfix
-    fs.remove(f'{x}/venv/numpy')
+    # related: [./_tree_shaking_modules.yaml : ignores]
     fs.remove(f'{x}/venv/numpy.libs')
-    fs.remove(f'{x}/venv/pandas')
-    fs.make_dir(f'{x}/venv/numpy')
-    fs.make_dir(f'{x}/venv/pandas')
-    fs.dump('', f'{x}/venv/numpy/__init__.py')
-    fs.dump('', f'{x}/venv/pandas/__init__.py')
+    _make_empty_package(f'{x}/venv/matplotlib')
+    _make_empty_package(f'{x}/venv/numpy')
+    _make_empty_package(f'{x}/venv/pandas')
     
     fs.move(f'{x}/venv', 'chore/minified_site_packages', True)
+
+
+def _make_empty_package(path) -> None:
+    if fs.exists(path):
+        fs.remove(path)
+    fs.make_dir(path)
+    fs.dump('', f'{path}/__init__.py')
