@@ -205,22 +205,20 @@ def launch_gui(
 
 
 @cli.cmd()
-def init(
-    target: str = '.',
-    app_name: str = '',
-    force_create: bool = False,
-    **kwargs,
-) -> None:
+def init(target: str = '.', app_name: str = '') -> None:
     """
     create a "manifest.json" file in project directory.
     
     kwargs:
-        target (-t): target directory.
+        target (-t): a directory or file path to generate manifest file at.
+            if a directory is given, will create a "manifest.json" file under -
+            this directory.
+            if a file is given, make sure it's a '.json' file and should not -
+            exist (otherwise it will be overwritten).
         app_name (-n): if not given, will use directory name as app name.
-        force_create (-f):
     """
     manifest_file = _get_manifest_path(target, ensure_exists=False)
-    api.init(manifest_file, app_name, force_create, **kwargs)
+    api.init(manifest_file, app_name)
 
 
 @cli.cmd()

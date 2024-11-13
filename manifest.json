@@ -35,7 +35,7 @@
         "show_console": false
     },
     "experiments": {
-        "package_provider": "pypi"
+        "package_provider": "oss"
     },
     "depsland_version": "0.8.2"
 }

@@ -244,15 +244,12 @@ class Manifest:
             'assets'          : {},
             'dependencies'    : {},
             'launcher'        : {
-                'target'           : '',
-                'type'             : '',
+                'command'          : '',
                 'icon'             : '',
-                'args'             : [],
-                'kwargs'           : {},
+                'show_console'     : True,
                 'enable_cli'       : False,
                 'add_to_desktop'   : True,
                 'add_to_start_menu': False,
-                'show_console'     : True,
             },
             'experiments'     : {
                 'calculate_dir_hash': False,
