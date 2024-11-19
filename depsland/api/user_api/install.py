@@ -425,16 +425,16 @@ def _create_launchers(manifest: T.Manifest) -> None:
         #         uac_admin=True,
         #     )
         # create debug launcher
-        exe_file = '{}/{}/{}/{} (Debug).exe'.format(
+        dbg_exe_file = '{}/{}/{}/{} (Debug).exe'.format(
             paths.project.apps,
             manifest['appid'],
             manifest['version'],
             manifest['name'],
         )
-        fs.copy_file(paths.build.depsland_runapp_debug_exe, exe_file)
+        fs.copy_file(paths.build.depsland_runapp_debug_exe, dbg_exe_file)
         if x := manifest['launcher']['icon']:
             add_icon_to_exe(
-                exe_file, '{}/{}'.format(manifest.start_directory, x)
+                dbg_exe_file, '{}/{}'.format(manifest.start_directory, x)
             )
         
         if launcher['enable_cli']:
