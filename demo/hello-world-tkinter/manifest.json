@@ -1,13 +1,13 @@
 {
     "appid": "hello_world_tkinter",
     "name": "Hello World (Tkinter)",
-    "version": "0.3.0",
+    "version": "0.4.1",
     "assets": {
         "main.py": "all"
     },
     "dependencies": "poetry.lock",
     "launcher": {
-        "command": "<python> main.py listbox",
+        "command": "python main.py listbox",
         "icon": "",
         "enable_cli": false,
         "add_to_desktop": true,

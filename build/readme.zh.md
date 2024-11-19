@@ -7,51 +7,26 @@
 在 `./exe` 目录下, 每个 bat 文件, 都必须有一个同名的 exe 文件. 如下:
 
 ```
-depsland/build/exe
-|- depsland.bat
-|- depsland.exe
-|- desktop.bat
-|- desktop.exe
-|- ...
+depsland
+|- build
+    |- exe
+        |- depsland-cli.bat
+        |- depsland-cli.exe
+        |- depsland-gui.bat
+        |- depsland-gui.exe
+        |- depsland-gui-debug.bat
+        |- depsland-gui-debug.exe
+        |- depsland-runapp.bat
+        |- depsland-runapp.exe
+        |- depsland-runapp-console.bat
+        |- depsland-runapp-console.exe
+        |- depsland-runapp-debug.bat
+        |- depsland-runapp-debug.exe
 ```
 
 如果发现有缺少 exe 文件的情况, 或者 bat 的内容发生了改变, 则需要使用 bat-2-exe 工具生成新的 exe.
 
-你需要一台 windows 电脑, 在命令行完成:
-
-```sh
-# 查看帮助
-py build/build.py bat-2-exe -h
-
-# 生成命令行工具
-py build/build.py bat-2-exe build/exe/depsland.bat
-#   会在与 bat 同一目录下生成同名的 exe 文件.
-
-# 生成桌面启动器 (UAC 标识)
-py build/build.py bat-2-exe build/exe/desktop.bat -u
-
-# ... 更多命令见附录 - 常用命令备忘.
-```
-
-关于 depsland 及几个别名的解释:
-
-- depsland: 命令行工具, 无 UAC 标识, 有控制台窗口
-
-    适合在命令行使用. 使用者可选择普通命令行或管理员身份启动的命令行.
-
-- depsland-sui: "sui" 指 super user interface, 有 UAC 标识, 有控制台窗口
-
-    适合其他 no-GUI 程序调用, 显示控制台.
-
-- depsland-suw: "suw" 指 super user windowless, 有 UAC 标识, 无控制台窗口
-
-    适合其他 GUI 程序调用.
-
-关联代码 (备忘):
-
-- `build/build.py : def full_build : cmt copy files`
-- `build/setup_wizard/wizard.py : def wind_up`
-- `depsland/api/dev_api/publish.py : def main`
+你需要一台 windows 电脑, 在命令行完成. 所有命令见 `build/build_tool/__main__.py : if __name__ == '__main__' : comment`.
 
 ## 打包
 

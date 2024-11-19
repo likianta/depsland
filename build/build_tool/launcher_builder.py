@@ -8,7 +8,7 @@ def bat_2_exe(
     file_i: str,
     show_console: bool = True,
     uac_admin: bool = False,
-    icon: str = fs.xpath('exe/launcher.ico'),
+    icon: str = fs.xpath('../icon/launcher.ico'),
 ) -> None:
     """
     args:
