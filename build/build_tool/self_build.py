@@ -48,14 +48,14 @@ def build_dist(
     # ^ related doc: `wiki/design-tkinking/why-does-dist-standalone-directory
     #   -like-this.md`
     assert not exists(root_o)
-    fs.make_dir(root_o)
+    os.mkdir(root_o)
     
     # -------------------------------------------------------------------------
     
     # make empty dirs
-    os.mkdir(f'{root_o}/apps')
-    os.mkdir(f'{root_o}/apps/.bin')
-    os.mkdir(f'{root_o}/apps/.venv')
+    # os.mkdir(f'{root_o}/apps')
+    # os.mkdir(f'{root_o}/apps/.bin')
+    # os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/chore')
     os.mkdir(f'{root_o}/config')
@@ -79,10 +79,10 @@ def build_dist(
         f'{root_i}/build/exe',
         f'{root_o}/build/exe',
     )
-    fs.copy_file(
-        f'{root_i}/build/exe/depsland-cli.exe',
-        f'{root_o}/apps/.bin/depsland.exe',
-    )
+    # fs.copy_file(
+    #     f'{root_i}/build/exe/depsland-cli.exe',
+    #     f'{root_o}/apps/.bin/depsland.exe',
+    # )
     fs.copy_file(
         f'{root_i}/build/exe/depsland-gui.exe',
         f'{root_o}/Depsland.exe',
@@ -147,8 +147,16 @@ def build_dist(
         )
     
     if pypi_scheme == 'full':
+        fs.make_link(f'{root_i}/apps', f'{root_o}/apps')
         fs.make_link(f'{root_i}/pypi', f'{root_o}/pypi')
     else:  # 'blank'
+        os.mkdir(f'{root_o}/apps')
+        os.mkdir(f'{root_o}/apps/.bin')
+        os.mkdir(f'{root_o}/apps/.venv')
+        fs.copy_file(
+            f'{root_i}/build/exe/depsland-cli.exe',
+            f'{root_o}/apps/.bin/depsland.exe',
+        )
         fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
     
     if _add_python_sdk:

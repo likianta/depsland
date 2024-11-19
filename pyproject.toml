@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.2b0"
+version = "0.8.2b8"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -8,24 +8,24 @@ homepage = "https://github.com/likianta/depsland"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-# argsense = "^0.5.8"
-argsense = { version = "^0.5.9a0", source = "likianta-host" }
+argsense = "^0.5.8"
+# argsense = { version = "^0.5.9a0", source = "likianta-host" }
 conflore = "^0.2.0"
-# lk-logger = "^6.0.0"
-lk-logger = { version = "^6.0.2b0", source = "likianta-host" }
-# lk-utils = "^3.0.0"
-lk-utils = { version = "^3.0.2a7", source = "likianta-host" }
+lk-logger = "^6.0.2"
+# lk-logger = { version = "^6.0.2", source = "likianta-host" }
+lk-utils = "^3.1.0"
+# lk-utils = { version = "^3.0.2b0", source = "likianta-host" }
 oss2 = "^2.18.3"
 pip = "^24.0.0"
-pipgrip = "^0.10.13"
+pipgrip = "^0.10.13"  # DELETE?
 poetry = "^1.8.3"
 psutil = "^6.0.0"
-# pyapp-window = "^2.1.0"
-pyapp-window = { version = "^2.1.1b0", source = "likianta-host" }
+pyapp-window = "^2.1.1"
+# pyapp-window = { version = "^2.1.1", source = "likianta-host" }
 # pyyaml = "^6.0.0"
-rich = "^13.7.0"
+rich = "^13.8.0"
 semver = "^3.0.2"
-streamlit = { version = "^1.39.0", python = "!=3.9.7" }
+streamlit = { version = "^1.40.0", python = "!=3.9.7" }
 streamlit-extras = "^0.5.0"
 # streamlit-scrollable-textbox = "*"
 # toml = { version = "*", python = "<3.11" }
@@ -47,6 +47,7 @@ qmlease = { version = ">=3.0.5a10,<3.1.0", source = "likianta-host" }  # <- demo
 numpy = { version = "^2.0.0", python = ">=3.9" }  # <- streamlit
 pandas = { version = "^2.2.2", python = ">=3.9" }  # <- streamlit
 statsmodels = { version = "^0.14.4", python = ">=3.9" }  # <- plotly
+toga = { version = "^0.4.8", platform = "win32", python = ">=3.9,<3.13" }  # <- pyapp-window
 
 # --- sidework
 dash = "^2.17.1"
@@ -55,7 +56,7 @@ feffery-dash-utils = "*"
 icnsutil = "*"  # <- sidework/image_converter.py
 pillow = "*"  # <- sidework/image_converter.py
 st-ant-tree = "*"
-streamlit-canary = { version = "^0.1.0a3", source = "likianta-host" }
+streamlit-canary = { version = "^0.1.0a9", source = "likianta-host" }
 streamlit-nested-layout = { version = "*", python = "!=3.9.7" }
 # streamlit-tree-select = "*"
 
