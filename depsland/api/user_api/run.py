@@ -74,8 +74,9 @@ def run_app(
             )
     
     command = '{} {}'.format(
+        # FIXME: literally replacing "python" is not reliable.
         manifest['launcher']['command'].replace(
-            '<python>', '"{}"'.format(sys.executable.replace('\\', '/'))
+            'python', '"{}"'.format(sys.executable.replace('\\', '/')), 1
         ),
         shlex.join(args_2_cargs(*args, **kwargs))
     ).strip()

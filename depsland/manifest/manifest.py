@@ -413,13 +413,17 @@ class Manifest:
         
         launcher: T.Launcher0 = manifest['launcher']
         assert launcher['command'], 'field `launcher.command` cannot be empty!'
-        if (
-            '<python>' not in launcher['command'] and
-            'python' in launcher['command']
-        ):
+        if '<python>' in launcher['command']:
+            # print(':v6', '"<python>" is deprecate to use, use just "python"')
+            # if isinstance(launcher['command'], str):
+            #     launcher['command'] = \
+            #         launcher['command'].replace('<python>', 'python')
+            # else:
+            #     assert launcher['command'][0] == '<python>'
+            #     launcher['command'][0] = 'python'
             raise Exception(
-                'should use "<python>" instead of "python" '
-                'in your launcher command'
+                '"<python>" is deprecate to use, use just "python" in your '
+                'launcher command.'
             )
     
     @staticmethod
