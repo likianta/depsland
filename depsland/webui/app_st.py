@@ -2,8 +2,7 @@ if __name__ == '__main__':
     __package__ = 'depsland.webui'
 
 import streamlit as st
-# from lk_logger import parallel_printing
-# from streamlit_extras.row import row as st_row
+import streamlit_nested_layout  # noqa
 
 # from . import bottom_bar
 from . import installed_apps

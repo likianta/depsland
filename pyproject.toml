@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.2b8"
+version = "0.8.2b10"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -27,6 +27,7 @@ rich = "^13.8.0"
 semver = "^3.0.2"
 streamlit = { version = "^1.40.0", python = "!=3.9.7" }
 streamlit-extras = "^0.5.0"
+streamlit-nested-layout = { version = "^0.1.4", python = "!=3.9.7" }
 # streamlit-scrollable-textbox = "*"
 # toml = { version = "*", python = "<3.11" }
 toml = "*"
@@ -57,7 +58,6 @@ icnsutil = "*"  # <- sidework/image_converter.py
 pillow = "*"  # <- sidework/image_converter.py
 st-ant-tree = "*"
 streamlit-canary = { version = "^0.1.0a9", source = "likianta-host" }
-streamlit-nested-layout = { version = "*", python = "!=3.9.7" }
 # streamlit-tree-select = "*"
 
 [tool.poetry.scripts]

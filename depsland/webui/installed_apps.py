@@ -4,7 +4,6 @@ from time import sleep
 import psutil
 import streamlit as st
 from lk_utils import fs
-from streamlit_extras.row import row as st_row
 
 from ..api.user_api import run_app
 from ..paths import apps as app_paths
@@ -67,8 +66,8 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                     key=f'{app_name}:version',
                 )
                 
-                button_row = st_row((9, 2))
-                with button_row.container():
+                subcols = st.columns((7.5, 2.5))
+                with subcols[0]:
                     if is_running:
                         if st.button(
                             ':red[Stop]',
@@ -89,16 +88,27 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                             )
                             session['processes'][app_name] = popen_obj.pid
                             st.rerun()
-                if button_row.button(
-                    '⚙️',  # icon from https://getemoji.com/
-                    key=f'{app_name}:setting'
-                ):
-                    with st.container(border=True):
-                        st.button(
+                with subcols[1]:
+                    with st.popover(
+                        '⚙️',  # https://getemoji.com/
+                        use_container_width=True,
+                    ):
+                        # TODO
+                        if st.button(
+                            ':{}[Remove historical versions]'.format(
+                                'red' if len(vers) > 1 else 'gray'
+                            ),
+                            key=f'{app_name}:remove_history',
+                            disabled=len(vers) == 1,
+                            use_container_width=True,
+                        ):
+                            pass
+                        if st.button(
                             'Add to desktop',
                             key=f'{app_name}:add_to_desktop',
                             use_container_width=True,
-                        )
+                        ):
+                            pass
     if colx >= 0:
         with temp_container:
             if st.button(
