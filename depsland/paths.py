@@ -132,8 +132,7 @@ class Project:
         self.python = f'{self.root}/python'
         self.temp = f'{self.root}/temp'
     
-    @staticmethod
-    def _init_project() -> t.Tuple[str, str]:
+    def _init_project(self) -> t.Tuple[str, str]:
         if exists(x := fs.xpath('../.depsland_project.json')):
             project_info: dict = fs.load(x)
         else:
@@ -171,59 +170,74 @@ class Project:
         # ---------------------------------------------------------------------
         
         if project_mode == 'development':
-            os.environ['LK_LOGGER_FORCE_COLOR'] = '1'
-            return project_root, project_mode
-        
+            self._setup_development_mode()
         elif project_mode == 'package':
-            print(
-                'first time run depsland, init a virtual project root...',
-                ':v2',
-            )
-            
-            # see: `build/build.py:backup_project_resources`
-            root = project_root
-            
-            os.mkdir(f'{root}')
-            os.mkdir(f'{root}/apps')
-            os.mkdir(f'{root}/apps/.bin')
-            os.mkdir(f'{root}/apps/.venv')
-            # os.mkdir(f'{root}/build')  # later
-            # os.mkdir(f'{root}/config')  # later
-            os.mkdir(f'{root}/dist')
-            os.mkdir(f'{root}/oss')
-            os.mkdir(f'{root}/oss/apps')
-            os.mkdir(f'{root}/oss/test')
-            os.mkdir(f'{root}/pypi')
-            os.mkdir(f'{root}/pypi/cache')
-            os.mkdir(f'{root}/pypi/downloads')
-            os.mkdir(f'{root}/pypi/index')
-            os.mkdir(f'{root}/pypi/index/snapdep')
-            os.mkdir(f'{root}/pypi/installed')
-            # os.mkdir(f'{root}/python')  # later
-            # os.mkdir(f'{root}/sidework')  # later
-            os.mkdir(f'{root}/temp')
-            os.mkdir(f'{root}/temp/.self_upgrade')
-            os.mkdir(f'{root}/temp/.unittests')
-            # os.mkdir(f'{root}/unittests')
-            
-            # make link
-            fs.make_link(sys.base_exec_prefix, f'{root}/python')
-            
-            # unzip files
-            from .utils.ziptool import extract_file
-            extract_file(fs.xpath('chore/build.zip'), f'{root}/build')
-            extract_file(fs.xpath('chore/config.zip'), f'{root}/config')
-            extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
-            
-            # init files
-            fs.dump({}, f'{root}/pypi/index/id_2_paths.json')
-            fs.dump({}, f'{root}/pypi/index/name_2_vers.json')
-        
+            self._setup_package_mode(project_root)
         elif project_mode == 'production':
-            # there are two types of folder structure, we use different ways to
-            # init them.
-            if fs.dirname(fs.parent(project_root)).lower() == 'depsland':
-                '''
+            self._setup_production_mode(project_root, project_info)
+        elif project_mode == 'sideboard':
+            self._setup_sideboard_mode(project_root)
+        else:
+            raise ValueError(f'unknown project mode: {project_mode}')
+        
+        project_info['initialized'] = True
+        fs.dump(project_info, fs.xpath('../.depsland_project.json'))
+        
+        return project_root, project_mode
+    
+    @staticmethod
+    def _setup_development_mode() -> None:
+        os.environ['LK_LOGGER_FORCE_COLOR'] = '1'
+        
+    @staticmethod
+    def _setup_package_mode(root: str) -> None:
+        print('first time run depsland, init a virtual project root...', ':v1')
+        
+        # see: `build/build.py:backup_project_resources`
+        os.mkdir(f'{root}')
+        os.mkdir(f'{root}/apps')
+        os.mkdir(f'{root}/apps/.bin')
+        os.mkdir(f'{root}/apps/.venv')
+        # os.mkdir(f'{root}/build')  # later
+        # os.mkdir(f'{root}/config')  # later
+        os.mkdir(f'{root}/dist')
+        os.mkdir(f'{root}/oss')
+        os.mkdir(f'{root}/oss/apps')
+        os.mkdir(f'{root}/oss/test')
+        os.mkdir(f'{root}/pypi')
+        os.mkdir(f'{root}/pypi/cache')
+        os.mkdir(f'{root}/pypi/downloads')
+        os.mkdir(f'{root}/pypi/index')
+        os.mkdir(f'{root}/pypi/index/snapdep')
+        os.mkdir(f'{root}/pypi/installed')
+        # os.mkdir(f'{root}/python')  # later
+        # os.mkdir(f'{root}/sidework')  # later
+        os.mkdir(f'{root}/temp')
+        os.mkdir(f'{root}/temp/.self_upgrade')
+        os.mkdir(f'{root}/temp/.unittests')
+        # os.mkdir(f'{root}/unittests')
+        
+        # make link
+        fs.make_link(sys.base_exec_prefix, f'{root}/python')
+        
+        # unzip files
+        from .utils.ziptool import extract_file
+        extract_file(fs.xpath('chore/build.zip'), f'{root}/build')
+        extract_file(fs.xpath('chore/config.zip'), f'{root}/config')
+        extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
+        
+        # init files
+        fs.dump({}, f'{root}/pypi/index/id_2_paths.json')
+        fs.dump({}, f'{root}/pypi/index/name_2_vers.json')
+        
+    def _setup_production_mode(
+        self, project_root: str, project_info: dict
+    ) -> None:
+        self._fix_blocked_dlls()
+        
+        def build_tree_1(dir0: str, dir1: str) -> None:
+            """
+            tree like:
                 <user-programs>
                     |- depsland                 # dir0
                         |- 0.8.0                # project_root
@@ -233,83 +247,10 @@ class Project:
                             |- .depsland_project.json
                             |- ...
                         |- current              # dir1 (may not exist)
-                '''
-                dir0 = fs.xpath('../..')
-                dir1 = fs.xpath('../../current')
-                if exists(dir1):
-                    # fmt:off
-                    if (
-                        fs.load('{}/.depsland_project.json'.format(dir1))
-                        .get('depsland_version') ==
-                        project_info['depsland_version']
-                        #   this key is set by `build/build.py:full_build`
-                    ):
-                        # note: this should not happen...
-                        # raise Exception(dir1, curr_ver)
-                        return project_root, project_mode
-                    else:
-                        fs.remove(dir1)
-                    # fmt:on
-                assert not exists(dir1)
-                
-                '''
-                create following directories/files:
-                    <user-programs>
-                        |- depsland                 # dir0
-                            |- 0.8.0                # project_root
-                                |- depsland
-                                    |- paths.py     # <- we are here
-                                    |- ...
-                                |- .depsland_project.json
-                                |- Depsland.exe
-                                |- Depsland (Debug).exe
-                                |- ...
-                            |- current              # dir1 (to be created)
-                                # 1. symlink to '0.8.0'
-                            |- Depsland.lnk
-                                # 2. '0.8.0/Depsland.exe'
-                            |- Depsland (Debug).lnk
-                                # 3. '0.8.0/Depsland (Debug).exe'
-                    <desktop>
-                        |- Depsland.lnk
-                                # 4. '<user-programs>/current/Depsland.exe'
-                '''
-                print(
-                    'first time run depsland, init production environment...',
-                    ':v2'
-                )
-                fs.make_link(project_root, dir1)
-                fs.make_shortcut(
-                    f'{dir1}/Depsland.exe',
-                    f'{dir0}/Depsland.lnk',
-                    True
-                )
-                fs.make_shortcut(
-                    f'{dir1}/Depsland (Debug).exe',
-                    f'{dir0}/Depsland (Debug).lnk',
-                    True
-                )
-                fs.make_shortcut(
-                    f'{dir1}/Depsland.exe',
-                    '<desktop>/Depsland.lnk',
-                    True
-                )
-                system.set_environment_variables(dir1)
-            
-            else:
-                '''
-                folder structure likes:
-                    <user-programs>
-                        |- depsland             # project_root
-                            |- depsland
-                                |- paths.py     # <- we are here
-                                |- ...
-                            |- .depsland_project.json
-                            |- ...
-
-                just create desktop shortcut:
-                    <user-programs>
-                        |- depsland             # project_root
+            create following directories/files:
+                <user-programs>
+                    |- depsland                 # dir0
+                        |- 0.8.0                # project_root
                             |- depsland
                                 |- paths.py     # <- we are here
                                 |- ...
@@ -317,67 +258,157 @@ class Project:
                             |- Depsland.exe
                             |- Depsland (Debug).exe
                             |- ...
-                    <desktop>
+                        |- current              # dir1 (to be created)
+                            # 1. symlink to '0.8.0'
                         |- Depsland.lnk
-                            # 1. '<user-programs>/depsland/Depsland.exe'
-                '''
-                fs.make_shortcut(
-                    f'{project_root}/Depsland.exe',
-                    '<desktop>/Depsland.lnk',
-                    True
-                )
-            
-                system.set_environment_variables(project_root)
-            
-            project_info['initialized'] = True
-            fs.dump(project_info, fs.xpath('../.depsland_project.json'))
+                            # 2. '0.8.0/Depsland.exe'
+                        |- Depsland (Debug).lnk
+                            # 3. '0.8.0/Depsland (Debug).exe'
+                <desktop>
+                    |- Depsland.lnk
+                            # 4. '<user-programs>/current/Depsland.exe'
+            """
+            fs.make_link(project_root, dir1)
+            fs.make_shortcut(
+                f'{dir1}/Depsland.exe',
+                f'{dir0}/Depsland.lnk',
+                True
+            )
+            fs.make_shortcut(
+                f'{dir1}/Depsland (Debug).exe',
+                f'{dir0}/Depsland (Debug).lnk',
+                True
+            )
+            fs.make_shortcut(
+                f'{dir1}/Depsland.exe',
+                '<desktop>/Depsland.lnk',
+                True
+            )
         
-        elif project_mode == 'shipboard':
-            '''
-            <user_programs>
-                |- <depsland_bundled_app>
-                    |- source               # project_root
+        def build_tree_2() -> None:
+            """
+            tree like:
+                <user-programs>
+                    |- depsland             # project_root
                         |- depsland
                             |- paths.py     # <- we are here
                             |- ...
                         |- .depsland_project.json
                         |- ...
-                    |- <App Name>.exe
-                    |- <App Name> (Debug).exe
-            '''
+            
+            just create desktop shortcut:
+                <user-programs>
+                    |- depsland             # project_root
+                        |- depsland
+                            |- paths.py     # <- we are here
+                            |- ...
+                        |- .depsland_project.json
+                        |- Depsland.exe
+                        |- Depsland (Debug).exe
+                        |- ...
+                <desktop>
+                    |- Depsland.lnk
+                        # 1. '<user-programs>/depsland/Depsland.exe'
+            """
             fs.make_shortcut(
-                '{}/Depsland.exe'.format(project_root),
+                f'{project_root}/Depsland.exe',
                 '<desktop>/Depsland.lnk',
-                None
+                True
             )
-            
-            print('fix blocked dlls before opening GUI on winforms.')
-            
-            def unblock_dlls(dir: str) -> None:
-                """
-                related: `depsland.api.dev_api.offline_build._init_dist_tree`
-                ref: https://stackoverflow.com/questions/20886450/unblock-a
-                    -file-in-windows-from-a-python-script
-                """
-                for f in fs.findall_files(dir, '.dll'):
-                    zid = os.path.abspath(f.path) + ':Zone.Identifier'
-                    if os.path.isfile(zid):  # check if blocked
-                        print(':v3s', 'unblock', f.relpath)
-                        os.remove(zid)  # unblock then
-            
-            site_packages_dir = fs.xpath('../chore/site_packages')
-            unblock_dlls('{}/pythonnet'.format(site_packages_dir))
-            unblock_dlls('{}/toga_winforms'.format(site_packages_dir))
-            
-            system.set_environment_variables(project_root)
-            
-            project_info['initialized'] = True
-            fs.dump(project_info, fs.xpath('../.depsland_project.json'))
+        
+        # there are two types of folder structure, we use different ways to
+        # init them.
+        if fs.dirname(fs.parent(project_root)).lower() == 'depsland':
+            '''
+            <user-programs>
+                |- depsland                 # dir0
+                    |- 0.8.0                # project_root
+                        |- depsland
+                            |- paths.py     # <- we are here
+                            |- ...
+                        |- .depsland_project.json
+                        |- ...
+                    |- current              # dir1 (may not exist)
+            '''
+            dir0 = fs.xpath('../..')
+            dir1 = fs.xpath('../../current')
+            if exists(dir1):
+                if (
+                    # fmt:off
+                    fs.load('{}/.depsland_project.json'.format(dir1))
+                    .get('depsland_version') == project_info['depsland_version']
+                    #   this key is set by `build/build.py:full_build`
+                    # fmt:on
+                ):
+                    # note: this should not happen...
+                    # -- A
+                    # raise Exception(dir1, curr_ver)
+                    # -- B
+                    # system.set_environment_variables(dir1)
+                    # return
+                    # -- C
+                    print(':v6', 'target tree alraedy built!', dir1)
+                else:
+                    fs.remove(dir1)
+            if not exists(dir1):
+                print(
+                    'first time run depsland, init production environment...',
+                    ':v1'
+                )
+                build_tree_1(dir0, dir1)
+            self._setup_system_environment(dir1)
         
         else:
-            raise Exception(project_mode)
+            build_tree_2()
+            self._setup_system_environment(project_root)
+    
+    def _setup_sideboard_mode(self, project_root: str) -> None:
+        self._fix_blocked_dlls()
+        '''
+        <user_programs>
+            |- <depsland_bundled_app>
+                |- source               # project_root
+                    |- depsland
+                        |- paths.py     # <- we are here
+                        |- ...
+                    |- .depsland_project.json
+                    |- ...
+                |- <App Name>.exe
+                |- <App Name> (Debug).exe
+        '''
+        fs.make_shortcut(
+            '{}/Depsland.exe'.format(project_root),
+            '<desktop>/Depsland.lnk',
+            None
+        )
+        self._setup_system_environment(project_root)
+    
+    # -------------------------------------------------------------------------
+    
+    @staticmethod
+    def _fix_blocked_dlls() -> None:
+        # note: windows only
+        print('fix blocked dlls before opening GUI on winforms.', ':pv1')
         
-        return project_root, project_mode
+        def unblock_dlls(dir: str) -> None:
+            """
+            related: `depsland.api.dev_api.offline_build._init_dist_tree`
+            ref: https://stackoverflow.com/questions/20886450/unblock-a
+                -file-in-windows-from-a-python-script
+            """
+            for f in fs.findall_files(dir, '.dll'):
+                zid = os.path.abspath(f.path) + ':Zone.Identifier'
+                if os.path.isfile(zid):  # check if blocked
+                    print(':v5', 'unblock', f.relpath)
+                    os.remove(zid)  # unblock then
+        
+        site_packages_dir = fs.xpath('../chore/site_packages')
+        unblock_dlls('{}/pythonnet'.format(site_packages_dir))
+        unblock_dlls('{}/toga_winforms'.format(site_packages_dir))
+    
+    @staticmethod
+    def _setup_system_environment(dir: str) -> None:
+        system.set_environment_variables(dir)
 
 
 # -----------------------------------------------------------------------------
