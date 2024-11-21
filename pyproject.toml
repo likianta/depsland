@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.2b10"
+version = "0.8.2"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -14,7 +14,7 @@ conflore = "^0.2.0"
 lk-logger = "^6.0.2"
 # lk-logger = { version = "^6.0.2", source = "likianta-host" }
 lk-utils = "^3.1.0"
-# lk-utils = { version = "^3.0.2b0", source = "likianta-host" }
+# lk-utils = { version = "^3.1.0", source = "likianta-host" }
 oss2 = "^2.18.3"
 pip = "^24.0.0"
 pipgrip = "^0.10.13"  # DELETE?

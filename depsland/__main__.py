@@ -114,7 +114,7 @@ def welcome(confirm_close: bool = False) -> None:
 
 @cli.cmd()
 def launch_gui(
-    port: int = 2028,
+    port: int = 2033,
     _app_token: str = None,
     _run_at_once: t.Optional[bool] = False,
     _native_window: bool = True,
