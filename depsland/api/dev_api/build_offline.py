@@ -21,7 +21,6 @@ what does "Hello World.exe" do:
         depsland will find the target's location and launch it.
 """
 import lk_logger
-from lk_utils import dump
 from lk_utils import fs
 from lk_utils.textwrap import dedent
 
@@ -247,19 +246,24 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
         v['name']: [v['version']]
         for v in manifest['dependencies'].values()
     }
-    dump(id_2_paths, f'{dst_dir}/source/pypi/index/id_2_paths.json')
-    dump(name_2_vers, f'{dst_dir}/source/pypi/index/name_2_vers.json')
+    fs.dump(id_2_paths, f'{dst_dir}/source/pypi/index/id_2_paths.json')
+    fs.dump(name_2_vers, f'{dst_dir}/source/pypi/index/name_2_vers.json')
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    create_launcher(manifest, dir_o=dst_dir, custom_cd='cd source')
+    if x := manifest['launcher']['icon']:
+        icon = '{}/{}'.format(manifest['start_directory'], x)
+    else:
+        icon = '{}/icon/python.ico'.format(proj_paths.build)
+    create_launcher(manifest, dir_o=dst_dir, icon=icon, custom_cd='cd source')
     if sysinfo.SYSTEM == 'windows':
         create_launcher(
             manifest,
             dir_o=dst_dir,
             name=manifest['name'] + ' (Debug).exe',
             debug=True,
-            # keep_bat=True,  # TEST
+            icon=icon,
+            # keep_bat=True,
             # uac_admin=True,
             custom_cd='cd source',
         )
@@ -279,7 +283,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
             python/bin/python3 -m depsland launch-gui {appid}
         ''', join_sep='\\')
         script = template.format(appid=manifest['appid'])
-        dump(script, file_sh)
+        fs.dump(script, file_sh)
     
     elif sysinfo.SYSTEM == 'windows':
         file_bat = f'{dst_dir}/Check Updates.bat'
@@ -293,13 +297,14 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
             .\python\python.exe -m depsland launch-gui --app-token {appid}
         ''')
         script = template.format(appid=manifest['appid'])
-        dump(script, file_bat)
+        fs.dump(script, file_bat)
         bat_2_exe(
             file_bat,
             file_exe,
             icon=(
                 (x := manifest['launcher']['icon']) and
-                '{}/{}'.format(manifest.start_directory, x) or ''
+                '{}/{}'.format(manifest.start_directory, x) or
+                '{}/icon/launcher.ico'.format(proj_paths.build)
             ),
             show_console=False,
             # show_console=False,

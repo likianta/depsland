@@ -8,7 +8,7 @@ def make_exe(
     manifest: T.Manifest,
     file_o: str,
     *,
-    # icon: str = '',
+    icon: str = '',
     debug: bool = False,
     # show_console: bool = True,
     uac_admin: bool = False,
@@ -23,7 +23,7 @@ def make_exe(
         file_bat,
         file_exe,
         icon=(
-            (x := manifest['launcher']['icon']) and
+            icon or (x := manifest['launcher']['icon']) and
             '{}/{}'.format(manifest.start_directory, x) or ''
         ),
         show_console=manifest['launcher']['show_console'] or debug,
