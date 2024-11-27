@@ -86,8 +86,7 @@ class T(T0):
         {
             'command'          : str,
             'icon'             : RelPath,
-            #   icon could be: empty or relpath. but not be abspath.
-            #   FIXME: why we use relpath?
+            #   icon could be: empty or abspath.
             'show_console'     : bool,
             'enable_cli'       : bool,
             'add_to_desktop'   : bool,
@@ -283,6 +282,10 @@ class Manifest:
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
             data1['start_directory'] = self._start_directory
+            if icon_relpath := data1['launcher']['icon']:
+                data1['launcher']['icon'] = '{}/{}'.format(
+                    self._start_directory, icon_relpath
+                )
         else:
             assert self._file.endswith('.json')  # yaml is not implemented yet
             data0: T.Manifest0 = fs.load(self._file)
@@ -340,10 +343,13 @@ class Manifest:
         
         if file.endswith('.pkl'):
             data0['start_directory'] = fs.parent_path(fs.abspath(file))  # noqa
-            #   or set to ''?
         else:
             data0.pop('start_directory')
             data0['assets'] = self._plainify_assets(data1['assets'])
+        if icon_path := data0['launcher']['icon']:
+            data0['launcher']['icon'] = fs.relpath(
+                icon_path, self._start_directory
+            )
         
         fs.dump(data0, file)
     
@@ -431,10 +437,7 @@ class Manifest:
         launcher: T.Launcher1 = manifest['launcher']
         
         # check icon
-        if launcher['icon']:
-            icon_path = '{}/{}'.format(
-                manifest['start_directory'], launcher['icon']
-            )
+        if icon_path := launcher['icon']:
             assert fs.exists(icon_path)
             
             assert icon_path.endswith('.ico'), (
@@ -568,9 +571,9 @@ class Manifest:
         
         if icon := launcher0.get('icon'):
             if os.path.isabs(icon):
-                out['icon'] = fs.relpath(icon, start_directory)
-            else:
                 out['icon'] = fs.normpath(icon)
+            else:
+                out['icon'] = fs.normpath('{}/{}'.format(start_directory, icon))
         
         for k in (
             'show_console', 'enable_cli', 'add_to_desktop', 'add_to_start_menu'

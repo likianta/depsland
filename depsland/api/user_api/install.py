@@ -404,7 +404,7 @@ def _create_launchers(manifest: T.Manifest) -> None:
     else:
         fs.copy_file(paths.build.depsland_runapp_exe, exe_file)
     if x := manifest['launcher']['icon']:
-        add_icon_to_exe(exe_file, '{}/{}'.format(manifest.start_directory, x))
+        add_icon_to_exe(exe_file, x)
     
     if sysinfo.IS_WINDOWS:
         launcher: T.LauncherInfo = manifest['launcher']
@@ -433,9 +433,7 @@ def _create_launchers(manifest: T.Manifest) -> None:
         )
         fs.copy_file(paths.build.depsland_runapp_debug_exe, dbg_exe_file)
         if x := manifest['launcher']['icon']:
-            add_icon_to_exe(
-                dbg_exe_file, '{}/{}'.format(manifest.start_directory, x)
-            )
+            add_icon_to_exe(dbg_exe_file, x)
         
         if launcher['enable_cli']:
             fs.copy_file(exe_file, '{}/{}.exe'.format(

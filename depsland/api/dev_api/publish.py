@@ -90,10 +90,8 @@ def main(
             bat_2_exe(
                 bat_file,
                 fs.replace_ext(bat_file, 'exe'),
-                # icon=paths.build.launcher_icon,
                 icon=(
-                    (x := manifest['launcher']['icon']) and
-                    '{}/{}'.format(manifest.start_directory, x) or
+                    manifest['launcher']['icon'] or
                     paths.build.launcher_icon
                 ),
                 show_console=False,

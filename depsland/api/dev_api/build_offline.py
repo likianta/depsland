@@ -251,10 +251,10 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    if x := manifest['launcher']['icon']:
-        icon = '{}/{}'.format(manifest['start_directory'], x)
-    else:
-        icon = '{}/icon/python.ico'.format(proj_paths.build)
+    icon = (
+        manifest['launcher']['icon'] or
+        '{}/icon/python.ico'.format(proj_paths.build)
+    )
     create_launcher(manifest, dir_o=dst_dir, icon=icon, custom_cd='cd source')
     if sysinfo.SYSTEM == 'windows':
         create_launcher(
@@ -302,8 +302,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
             file_bat,
             file_exe,
             icon=(
-                (x := manifest['launcher']['icon']) and
-                '{}/{}'.format(manifest.start_directory, x) or
+                manifest['launcher']['icon'] or
                 '{}/icon/launcher.ico'.format(proj_paths.build)
             ),
             show_console=False,

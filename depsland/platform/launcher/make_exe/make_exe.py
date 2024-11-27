@@ -22,10 +22,7 @@ def make_exe(
     bat_2_exe(
         file_bat,
         file_exe,
-        icon=(
-            icon or (x := manifest['launcher']['icon']) and
-            '{}/{}'.format(manifest.start_directory, x) or ''
-        ),
+        icon=icon or manifest['launcher']['icon'],
         show_console=manifest['launcher']['show_console'] or debug,
         uac_admin=uac_admin,
     )
