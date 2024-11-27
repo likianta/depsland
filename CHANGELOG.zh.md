@@ -1,5 +1,10 @@
 # Depsland 更新日志
 
+### 0.8.3 (wip)
+
+- 修复后台打印 "阻塞" 的问题
+- 支持在 pyproject.toml 中定义 depsland 配置
+
 ### 0.8.2 (2024-11-21)
 
 - 变更清单 "launcher" 字段的格式

@@ -287,8 +287,18 @@ class Manifest:
                     self._start_directory, icon_relpath
                 )
         else:
-            assert self._file.endswith('.json')  # yaml is not implemented yet
-            data0: T.Manifest0 = fs.load(self._file)
+            data0: T.Manifest0
+            if self._file.endswith(('.json', '.yaml')):
+                data0 = fs.load(self._file)
+            elif fs.basename(self._file) == 'pyproject.toml':
+                data0 = fs.load(self._file)['tool']['depsland']['manifest']
+            elif self._file.endswith('.toml'):
+                try:
+                    data0 = fs.load(self._file)['tool']['depsland']['manifest']
+                except KeyError:
+                    data0 = fs.load(self._file)
+            else:
+                raise Exception('unsupported manifest file format', self._file)
             
             if 'start_directory' in data0:
                 x = data0['start_directory']
@@ -337,19 +347,25 @@ class Manifest:
     def dump_to_file(self, file: T.AnyPath = None) -> None:
         if file is None:
             file = self._file
+        if fs.basename(file) == 'pyproject.toml':
+            # TODO: how to reserve original comments?
+            raise NotImplementedError(file)
         
         data1: T.Manifest1 = self._manifest
         data0: T.Manifest0 = self._manifest.copy()
         
+        # modify `data0` fields
+        if icon_path := data0['launcher']['icon']:
+            data0['launcher']['icon'] = fs.relpath(
+                icon_path, self._start_directory
+            )
         if file.endswith('.pkl'):
             data0['start_directory'] = fs.parent_path(fs.abspath(file))  # noqa
         else:
             data0.pop('start_directory')
             data0['assets'] = self._plainify_assets(data1['assets'])
-        if icon_path := data0['launcher']['icon']:
-            data0['launcher']['icon'] = fs.relpath(
-                icon_path, self._start_directory
-            )
+            if file.endswith('.toml'):
+                data0 = {'tool': {'depsland': {'manifest': data0}}}  # noqa
         
         fs.dump(data0, file)
     

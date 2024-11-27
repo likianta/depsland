@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.2"
+version = "0.8.3b0"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -13,8 +13,8 @@ argsense = "^0.5.8"
 conflore = "^0.2.0"
 lk-logger = "^6.0.2"
 # lk-logger = { version = "^6.0.2", source = "likianta-host" }
-lk-utils = "^3.1.0"
-# lk-utils = { version = "^3.1.0", source = "likianta-host" }
+lk-utils = "^3.1.1"
+# lk-utils = { version = "^3.1.1a0", source = "likianta-host" }
 oss2 = "^2.18.3"
 pip = "^24.0.0"
 pipgrip = "^0.10.13"  # DELETE?
@@ -85,5 +85,50 @@ ignored_redundant_packages = [
     "pyportable_runtime",
 ]
 
+# ---
+
 [tool.ruff]
 line-length = 80
+
+# ---
+
+[tool.depsland.manifest]
+appid = "depsland"
+name = "Depsland Standalone"
+version = "0.8.3b0"
+dependencies = "poetry.lock"
+depsland_version = "0.8.3"
+
+[tool.depsland.manifest.assets]
+"apps/.bin" = "root"
+"apps/.venv" = "root"
+build = "all"
+"chore/pypi_blank" = "all"
+"config/depsland.yaml" = "all"
+depsland = "all"
+dist = "root"
+"dist/standalone" = "root"
+oss = "top_dirs"
+pypi = "top_dirs"
+"pypi/index/snapdep" = "root"
+python = "root"
+temp = "root"
+tests = "root"
+"CHANGELOG.zh.md" = "all"
+"DEVNOTE.md" = "all"
+"manifest.json" = "all"
+"poetry.lock" = "all"
+"README.md" = "all"
+"README.zh.md" = "all"
+"requirements.lock" = "all"
+
+[tool.depsland.manifest.launcher]
+command = "python -m depsland launch-gui"
+icon = "build/icon/launcher.ico"
+enable_cli = true
+add_to_desktop = true
+add_to_start_menu = false
+show_console = false
+
+[tool.depsland.manifest.experiments]
+package_provider = "oss"

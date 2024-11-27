@@ -211,13 +211,17 @@ def init(target: str = '.', app_name: str = '') -> None:
     
     kwargs:
         target (-t): a directory or file path to generate manifest file at.
-            if a directory is given, will create a "manifest.json" file under -
+            if given a directory, will create a "manifest.json" file under -
             this directory.
-            if a file is given, make sure it's a '.json' file and should not -
-            exist (otherwise it will be overwritten).
+            if given a file, the file can be:
+                - a '.json' file, suggest naming as 'manifest.json'.
+                - a '.yaml' file, suggest naming as 'manifest.yaml'.
+                - 'pyproject.toml' file, make sure there is a section named -
+                    '[tool.depsland.manifest]'.
+            be noticed if file exists, will overwrite it.
         app_name (-n): if not given, will use directory name as app name.
     """
-    manifest_file = _get_manifest_path(target, ensure_exists=False)
+    manifest_file = _normalize_manifest_path(target, ensure_exists=False)
     api.init(manifest_file, app_name)
 
 
@@ -234,21 +238,12 @@ def build(
     [dim i](if "dist" not exists, it will be auto created.)[/]
     
     kwargs:
-        manifest (-m): a path to the project directory (suggested) or to a -
-            mainfest file.
-            if project directory is given, will search 'manifest.json' file -
-            under this dir.
-            [red dim]╰─ if no such file found, will raise a FileNotFound -
-            error.[/]
-            if a file is given, it must be '.json' type. depsland will treat -
-            its folder as the project directory.
-            [blue dim]╰─ if a file is given, the file name could be custom. -
-            (we suggest using 'manifest.json' as canondical.)[/]
+        manifest (-m): see `init : [param] target : [docstring]`.
     """
     if offline:
-        api.build_offline(_get_manifest_path(manifest))
+        api.build_offline(_normalize_manifest_path(manifest))
     else:
-        api.build(_get_manifest_path(manifest))
+        api.build(_normalize_manifest_path(manifest))
 
 
 @cli.cmd()
@@ -263,13 +258,13 @@ def publish(
     `~/oss/apps/<appid>/<version>` directory.
     
     kwargs:
-        target (-t):
+        target (-t): see `init : [param] target : [docstring]`.
         full_upload (-f): if true, will upload all assets, ignore the files -
             which may already exist in oss (they all will be overwritten).
             this option is useful if you found the oss server not work properly.
         upload_dependencies (-d):
     """
-    api.publish(_get_manifest_path(target), full_upload, upload_dependencies)
+    api.publish(_normalize_manifest_path(target), full_upload, upload_dependencies)
 
 
 @cli.cmd()
@@ -347,7 +342,7 @@ def show_packages(poetry_file: str, save_result: str = None) -> None:
 @cli.cmd()
 def view_manifest(manifest: str = '.') -> None:
     from .manifest import load_manifest
-    manifest = load_manifest(_get_manifest_path(manifest))
+    manifest = load_manifest(_normalize_manifest_path(manifest))
     print(manifest, ':l')
 
 
@@ -384,22 +379,8 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     return None
 
 
-def _get_manifest_path(target: str, ensure_exists: bool = True) -> str:
-    """ return an abspath to manifest file. """
-    if target.endswith('.json'):
-        out = fs.normpath(target, True)
-    else:
-        assert not os.path.isfile(target)
-        if not os.path.exists(target):
-            os.mkdir(target)
-        out = fs.normpath(f'{target}/manifest.json', True)
-    if ensure_exists:
-        assert exists(out)
-    print(f'manifest file: {out}', ':pv')
-    return out
-
-
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
+    """ get old and new manifests by appid. """
     from .manifest import load_manifest
     from .oss import get_oss_client
     from .utils import make_temp_dir
@@ -431,6 +412,21 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
         manifest_old = None
     
     return manifest_old, manifest_new
+
+
+def _normalize_manifest_path(target: str, ensure_exists: bool = True) -> str:
+    """ return an abspath to manifest file. """
+    if target.endswith(('.json', '.yaml', '.toml')):
+        out = fs.normpath(target, True)
+    else:
+        assert fs.isdir(target)
+        if not fs.exists(target):
+            fs.make_dir(target)
+        out = fs.normpath(f'{target}/manifest.json', True)
+    if ensure_exists:
+        assert exists(out)
+    print(f'manifest file: {out}', ':pv')
+    return out
 
 
 def _run_cli() -> None:
