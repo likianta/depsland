@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "depsland"
-version = "0.8.3b0"
+version = "0.8.3b2"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = ["Likianta <likianta@foxmail.com>"]
@@ -95,7 +95,7 @@ line-length = 80
 [tool.depsland.manifest]
 appid = "depsland"
 name = "Depsland Standalone"
-version = "0.8.3b0"
+version = "0.8.3b2"
 dependencies = "poetry.lock"
 depsland_version = "0.8.3"
 
