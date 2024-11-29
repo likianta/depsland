@@ -192,13 +192,11 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
         else:
             print(
                 'no previous version found, it may be your first time to '
-                f'install "{appid}"'
+                'install "{}"'.format(appid)
             )
             print(
-                '[dim]be noted the first-time installation may consume a '
-                'long time. depsland will try to reduce the consumption in '
-                'the succeeding upgrades/installations.[/]',
-                ':r',
+                'be noted the first-time installation may take a long time',
+                ':v',
             )
             return None
     

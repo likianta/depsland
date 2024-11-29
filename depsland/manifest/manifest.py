@@ -282,7 +282,7 @@ class Manifest:
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
             data1['start_directory'] = self._start_directory
-            if icon_relpath := data1['launcher']['icon']:
+            if icon_relpath := data0['launcher']['icon']:
                 data1['launcher']['icon'] = '{}/{}'.format(
                     self._start_directory, icon_relpath
                 )
@@ -303,9 +303,9 @@ class Manifest:
             if 'start_directory' in data0:
                 x = data0['start_directory']
                 if x.startswith('.'):
-                    self._start_directory = fs.abspath('{}/{}'.format(
-                        fs.parent(self._file), x
-                    ))
+                    self._start_directory = fs.abspath(
+                        '{}/{}'.format(fs.parent(self._file), x)
+                    )
                 else:
                     self._start_directory = fs.abspath(x)
                 print('change `start_directory` to {}'.format(
@@ -355,14 +355,23 @@ class Manifest:
         data0: T.Manifest0 = self._manifest.copy()
         
         # modify `data0` fields
-        if icon_path := data0['launcher']['icon']:
+        # be noticed some of `data0.values()` are list or dict types, which -
+        # should be deep copied if we want to modify their inner items, to -
+        # avoid affecting the original data of `data1`.
+        data0.pop('start_directory')
+        if icon_path := data1['launcher']['icon']:
+            data0['launcher'] = data1['launcher'].copy()  # "deepcopy"
             data0['launcher']['icon'] = fs.relpath(
                 icon_path, self._start_directory
             )
-        if file.endswith('.pkl'):
-            data0['start_directory'] = fs.parent_path(fs.abspath(file))  # noqa
-        else:
-            data0.pop('start_directory')
+            print(
+                file,
+                icon_path,
+                self._start_directory,
+                data0['launcher']['icon'],
+                ':vl'
+            )
+        if not file.endswith('.pkl'):
             data0['assets'] = self._plainify_assets(data1['assets'])
             if file.endswith('.toml'):
                 data0 = {'tool': {'depsland': {'manifest': data0}}}  # noqa
@@ -393,8 +402,11 @@ class Manifest:
     
     @start_directory.setter
     def start_directory(self, path: T.AnyPath) -> None:
-        path = fs.abspath(path)
-        self._start_directory = path
+        old, new = self._start_directory, fs.abspath(path)
+        if x := self._manifest['launcher']['icon']:
+            relpath = fs.relpath(x, old)
+            self._manifest['launcher']['icon'] = '{}/{}'.format(new, relpath)
+        self._start_directory = new
     
     def get(self, item: str) -> t.Any:
         return self._manifest.get(item)  # noqa
@@ -454,7 +466,7 @@ class Manifest:
         
         # check icon
         if icon_path := launcher['icon']:
-            assert fs.exists(icon_path)
+            assert fs.exists(icon_path) and os.path.isabs(icon_path)
             
             assert icon_path.endswith('.ico'), (
                 'make sure the icon file is ".ico" format. if you have other '
@@ -590,6 +602,7 @@ class Manifest:
                 out['icon'] = fs.normpath(icon)
             else:
                 out['icon'] = fs.normpath('{}/{}'.format(start_directory, icon))
+            # print(out['icon'], ':v')
         
         for k in (
             'show_console', 'enable_cli', 'add_to_desktop', 'add_to_start_menu'

@@ -3,11 +3,13 @@ if __name__ == '__main__':
 
 import streamlit as st
 import streamlit_nested_layout  # noqa
+from lk_utils import fs
 
 # from . import bottom_bar
 from . import installed_apps
 from . import progress_bar
 from . import settings
+from .. import paths
 from ..api.user_api.install import install_by_appid
 from ..api.self_api import self_upgrade
 
@@ -49,8 +51,14 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
     with cols[0]:
         # TODO: how to disable button when installing?
         do_install = st.button(
-            'Install', type='primary', disabled=appid == '',
-            use_container_width=True
+            'Install' if appid == ''
+            else 'Install / Upgrade'
+            if fs.exists('{}/{}'.format(paths.apps.root, appid))
+            else 'Install',
+            key='install_app',
+            type='primary',
+            disabled=appid == '',
+            use_container_width=True,
         )
     with cols[1]:
         placeholder = _get_session()['placeholder'] = st.empty()

@@ -26,6 +26,7 @@
 /sidework/doctor/_*
 /sidework/ui_prototype/
 /temp/*
+/test/_config/
 dist/**
 
 __pycache__/

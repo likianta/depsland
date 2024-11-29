@@ -43,6 +43,6 @@ def main() -> None:
                         fs.make_link(file_i, file_o)
                 rebuild_pypi_index(perform_pip_install=True)
     
-    if st.button('Apply settings', type='primary'):
+    if st.button('Apply settings', type='primary', use_container_width=True):
         print(add_to_path, add_to_desktop)
         st.success('Settings applied.')

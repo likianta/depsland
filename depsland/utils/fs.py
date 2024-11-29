@@ -71,7 +71,7 @@ class _TempDirs:
         temp_dir = f'{root}/{random_name}'
         os.mkdir(temp_dir)
         self._dirs.add(temp_dir)
-        print(':vp', f'a temp dir is created ({random_name})')
+        # print(':vp', f'a temp dir is created ({random_name})')
         return temp_dir
     
     def clean_up(self) -> None:

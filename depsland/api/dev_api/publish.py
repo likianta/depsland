@@ -42,7 +42,7 @@ def main(
     
     if upload_dependencies:
         if manifest['experiments']['package_provider'] != 'oss':
-            print(':v3s', 'force change "package_provider" to "oss"')
+            print(':v1', 'force change "package_provider" to "oss"')
             manifest['experiments']['package_provider'] = 'oss'
         # print(manifest['experiments'], ':v')
     else:
@@ -108,7 +108,7 @@ def main(
     )
     
     print(
-        ':t', 'publish done. see snapshot at "<depsland>/apps/{}/{}"'.format(
+        ':tv4', 'publish done. see snapshot at "<depsland>/apps/{}/{}"'.format(
             manifest['appid'], manifest['version']
         )
     )
