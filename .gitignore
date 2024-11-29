@@ -26,9 +26,6 @@
 /sidework/doctor/_*
 /sidework/ui_prototype/
 /temp/*
-/tests/
-/unittests/demo_project/hello-world/manifest.pkl
-/unittests/qmlease-3.0.5a6.zip
 dist/**
 
 __pycache__/
