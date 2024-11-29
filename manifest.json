@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland Standalone",
-    "version": "0.8.3b2",
+    "version": "0.8.3",
     "assets": {
         "apps/.bin": "root",
         "apps/.venv": "root",
@@ -16,7 +16,7 @@
         "pypi/index/snapdep": "root",
         "python": "root",
         "temp": "root",
-        "tests": "root",
+        "test": "root",
         "CHANGELOG.zh.md": "all",
         "DEVNOTE.md": "all",
         "manifest.json": "all",

@@ -364,13 +364,13 @@ class Manifest:
             data0['launcher']['icon'] = fs.relpath(
                 icon_path, self._start_directory
             )
-            print(
-                file,
-                icon_path,
-                self._start_directory,
-                data0['launcher']['icon'],
-                ':vl'
-            )
+            # print(
+            #     file,
+            #     icon_path,
+            #     self._start_directory,
+            #     data0['launcher']['icon'],
+            #     ':vl'
+            # )
         if not file.endswith('.pkl'):
             data0['assets'] = self._plainify_assets(data1['assets'])
             if file.endswith('.toml'):
