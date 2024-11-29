@@ -16,7 +16,6 @@
 /depsland/.project/
 /depsland/webui/assets/
 /depsland/webui/static/
-/dist/**
 /docs/*/*.html
 /lib/
 /oss/**
@@ -28,10 +27,9 @@
 /sidework/ui_prototype/
 /temp/*
 /tests/
-/unittests/demo_project/hello-world/dist/
 /unittests/demo_project/hello-world/manifest.pkl
-/unittests/depsland_run_test/dist/
 /unittests/qmlease-3.0.5a6.zip
+dist/**
 
 __pycache__/
 *.bak.*

@@ -42,24 +42,24 @@ def bump_version(new_ver: str = None) -> str:
     fs.dump(content, 'manifest.json', 'plain')
     
     # -- A
-    # _replace_version(
-    #     'pyproject.toml',
-    #     'version = "{}"'.format(old_ver),
-    #     'version = "{}"'.format(new_ver),
-    # )
+    _replace_version(
+        'pyproject.toml',
+        'version = "{}"'.format(old_ver),
+        'version = "{}"'.format(new_ver),
+    )
     # -- B
-    content: str = fs.load('pyproject.toml', 'plain')
-    content = re.sub(
-        r'\nversion = "{}"'.format(old_ver),
-        '\nversion = "{}"'.format(new_ver),
-        content
-    )
-    content = re.sub(
-        r'\ndepsland_version = ".+"',
-        '\ndepsland_version = "{}"'.format(new_dps_ver),
-        content
-    )
-    fs.dump(content, 'pyproject.toml', 'plain')
+    # content: str = fs.load('pyproject.toml', 'plain')
+    # content = re.sub(
+    #     r'\nversion = "{}"'.format(old_ver),
+    #     '\nversion = "{}"'.format(new_ver),
+    #     content
+    # )
+    # content = re.sub(
+    #     r'\ndepsland_version = ".+"',
+    #     '\ndepsland_version = "{}"'.format(new_dps_ver),
+    #     content
+    # )
+    # fs.dump(content, 'pyproject.toml', 'plain')
     
     return new_ver
 
