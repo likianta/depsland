@@ -97,8 +97,6 @@ class T(T0):
     Experiments0 = t.TypedDict(
         'Experiments0',
         {
-            'calculate_dir_hash': bool,
-            #   see `Manifest._update_assets`
             'package_provider'  : t.Literal['oss', 'pypi'],
         },
         total=False
@@ -251,7 +249,6 @@ class Manifest:
                 'add_to_start_menu': False,
             },
             'experiments'     : {
-                'calculate_dir_hash': False,
                 'package_provider'  : 'pypi',
             },
             'depsland_version': __version__,
@@ -319,20 +316,15 @@ class Manifest:
                 'version'         : data0['version'],
                 'start_directory' : self._start_directory,
                 'assets'          : self._update_assets(
-                    data0.get('assets', {}),
-                    self._start_directory,
-                    data0.get('experiments', {}).get(
-                        'calculate_dir_hash', False
-                    )
+                    data0.get('assets', {}), self._start_directory,
                 ),
                 'dependencies'    : self._update_dependencies(
                     data0.get('dependencies', 'requirements.lock'),
                 ),
                 'launcher'        : self._update_launcher(
-                    data0.get('launcher', {}), self._start_directory
+                    data0.get('launcher', {}), self._start_directory,
                 ),
                 'experiments'     : data0.get('experiments', {
-                    'calculate_dir_hash': False,
                     'package_provider'  : 'pypi',
                 }),
                 'depsland_version': data0.get(
@@ -515,7 +507,7 @@ class Manifest:
     def _update_assets(
         assets0: T.Assets0,
         start_directory: T.AbsPath,
-        calculate_dir_hash: bool = False,
+        calculate_dir_hash: bool = False,  # DELETE
     ) -> T.Assets1:
         """
         varibale abbreviations:
@@ -523,9 +515,6 @@ class Manifest:
             relpath: relative path
             utime: updated time
         """
-        if calculate_dir_hash:
-            print('experimental: enable calculate_dir_hash')
-        
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
                 return get_file_hash(abspath)
