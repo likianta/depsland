@@ -498,7 +498,7 @@ class Config:
     def __init__(self) -> None:
         if x := _Env.CONFIG_ROOT:
             self.root = fs.abspath(x)
-            print(':r', f'[yellow dim]relocate config root to {self.root}[/]')
+            print(':v1', f'relocate config root to {self.root}')
         elif exists(f'{project.root}/config/.redirect'):
             with open(f'{project.root}/config/.redirect', 'r') as f:
                 x = f.read().strip()
@@ -506,7 +506,7 @@ class Config:
                     self.root = fs.normpath(x)
                 else:  # e.g. '../tests/config'
                     self.root = fs.normpath(f'{project.root}/config/{x}')
-            print(':r', f'[yellow dim]relocate config root to {self.root}[/]')
+            print(':v1', f'relocate config root to {self.root}')
         else:
             self.root = f'{project.root}/config'
         
@@ -532,7 +532,7 @@ class PyPI:
     
     def __init__(self) -> None:
         if x := _Env.PYPI_ROOT:
-            print(':r', f'[yellow dim]relocate pypi root to "{x}"[/]')
+            print(':v1', f'relocate pypi root to "{x}"')
             self.root = fs.abspath(x)
         else:
             self.root = f'{project.root}/pypi'

@@ -21,10 +21,10 @@ from . import __path__
 from . import __version__
 from . import api
 from . import paths
+from .depsolver import resolve_dependencies
 from .manifest import T
 from .manifest import get_last_installed_version
 from .normalization import check_name_normalized
-from .depsolver import resolve_dependencies
 
 # fix sys.argv
 if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
@@ -82,30 +82,26 @@ def welcome(confirm_close: bool = False) -> None:
     """
     show welcome message and exit.
     """
-    from rich.markdown import Markdown
-    from textwrap import dedent
     from . import __date__
     from . import __version__
     
     print(
-        ':r1',
-        Markdown(
-            dedent('''
-            # DEPSLAND
-            
-            Depsland is a python apps manager for non-developer users.
-            
-            - Version: {}
-            - Release date: {}
-            - Author: {}
-            - Official site: {}
-            ''').format(
-                __version__,
-                __date__,
-                'Likianta (likianta@foxmail.com)',
-                'https://github.com/likianta/depsland',
-            )
-        ),
+        ':r2',
+        '''
+        # DEPSLAND
+        
+        Depsland is a python apps manager for non-developer users.
+        
+        - Version: {}
+        - Release date: {}
+        - Author: {}
+        - Official site: {}
+        '''.format(
+            __version__,
+            __date__,
+            'Likianta (likianta@foxmail.com)',
+            'https://github.com/likianta/depsland',
+        )
     )
     
     if confirm_close:
@@ -114,7 +110,7 @@ def welcome(confirm_close: bool = False) -> None:
 
 @cli.cmd()
 def launch_gui(
-    port: int = 2033,
+    port: int = 2180,
     _app_token: str = None,
     _run_at_once: t.Optional[bool] = False,
     _native_window: bool = True,
@@ -264,7 +260,9 @@ def publish(
             this option is useful if you found the oss server not work properly.
         upload_dependencies (-d):
     """
-    api.publish(_normalize_manifest_path(target), full_upload, upload_dependencies)
+    api.publish(
+        _normalize_manifest_path(target), full_upload, upload_dependencies
+    )
 
 
 @cli.cmd()
@@ -301,16 +299,58 @@ def uninstall(appid: str, version: str = None) -> None:
     api.uninstall(appid, version)
 
 
-# @cli.cmd()
-# def self_upgrade() -> None:
-#     """
-#     upgrade depsland itself.
-#     """
-#     api.self_upgrade()
+# -----------------------------------------------------------------------------
+
+# cli.add_cmd(api.user_api.run_app, 'run', transport_help=True)
+
+
+@cli.cmd()
+def run(appid: str, version: str = None, *args, **kwargs) -> None:
+    # if 'VIRTURAL_ENV' in os.environ:
+    #     del os.environ['VIRTURAL_ENV']
+    api.user_api.run_app(appid, _version=version, *args, **kwargs)
+
+
+@cli.cmd()
+def runx(
+    appid: str,
+    version: str = None,
+    use_exist: bool = True,
+) -> None:
+    """
+    check app exists, if not, download and install it. then run the application.
+    prerequisite:
+        make sure your network available.
+    """
+    exist = False
+    if fs.exist(x := '{}/{}'.format(paths.apps.root, appid)):
+        if version:
+            if fs.exist('{}/{}'.format(x, version)):
+                exist = True
+        else:
+            if use_exist:
+                assert _get_dir_to_last_installed_version(appid)
+                exist = True
+            else:
+                raise NotImplementedError
+    
+    if not exist:
+        # TODO: show a mini UI to notify user the downloading progress.
+        launch_gui(_app_token=appid, _run_at_once=True)
+        return  # DELETE
+    
+    api.user_api.run_app(appid, _version=version)
+
+
+def _cli() -> None:
+    """
+    this function is for poetry to generate script entry.
+    see also `pyproject.toml : [tool.poetry.scripts]`.
+    """
+    cli.run()
 
 
 # -----------------------------------------------------------------------------
-
 
 @cli.cmd()
 def show(appid: str, version: str = None) -> None:
@@ -345,8 +385,6 @@ def view_manifest(manifest: str = '.') -> None:
     manifest = load_manifest(_normalize_manifest_path(manifest))
     print(manifest, ':l')
 
-
-cli.add_cmd(api.user_api.run_app, 'run', transport_help=True)
 
 # -----------------------------------------------------------------------------
 
@@ -420,7 +458,7 @@ def _normalize_manifest_path(target: str, ensure_exists: bool = True) -> str:
         out = fs.normpath(target, True)
     else:
         assert fs.isdir(target)
-        if not fs.exists(target):
+        if not fs.exist(target):
             fs.make_dir(target)
         out = fs.normpath(f'{target}/manifest.json', True)
     if ensure_exists:
@@ -429,12 +467,8 @@ def _normalize_manifest_path(target: str, ensure_exists: bool = True) -> str:
     return out
 
 
-def _run_cli() -> None:
-    """ this function is for poetry to generate script entry point. """
-    cli.run()
-
-
 if __name__ == '__main__':
     # pox -m depsland -h
     # pox -m depsland launch-gui
+    # pox -m depsland run hello_world_tkinter
     cli.run()
