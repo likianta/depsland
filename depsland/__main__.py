@@ -301,14 +301,14 @@ def uninstall(appid: str, version: str = None) -> None:
 
 # -----------------------------------------------------------------------------
 
-# cli.add_cmd(api.user_api.run_app, 'run', transport_help=True)
+cli.add_cmd(api.user_api.run_app, 'run', transport_help=True)
 
 
-@cli.cmd()
-def run(appid: str, version: str = None, *args, **kwargs) -> None:
-    # if 'VIRTURAL_ENV' in os.environ:
-    #     del os.environ['VIRTURAL_ENV']
-    api.user_api.run_app(appid, _version=version, *args, **kwargs)
+# @cli.cmd()
+# def run(appid: str = None, version: str = None, *args, **kwargs) -> None:
+#     # if 'VIRTURAL_ENV' in os.environ:
+#     #     del os.environ['VIRTURAL_ENV']
+#     api.user_api.run_app(appid, _version=version, *args, **kwargs)
 
 
 @cli.cmd()

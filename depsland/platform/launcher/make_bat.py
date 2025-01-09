@@ -35,7 +35,8 @@ def make_bat(
     #     appid=manifest['appid'],
     #     version=manifest['version'],
     # )
-    script = dedent(r'''
+    script = dedent(
+        r'''
         {echo_off}
         cd /d %~dp0
         {cd}
@@ -43,11 +44,12 @@ def make_bat(
         set "PYTHONUTF8=1"
         .\python\python.exe -m depsland run {appid}
         {pause}
-    '''.format(
-        echo_off='' if debug else '@echo off',
-        cd=custom_cd or 'cd ../../../',
-        appid=manifest['appid'],
-        pause='pause' if debug else '',
-    ))
+        '''.format(
+            echo_off='' if debug else '@echo off',
+            cd=custom_cd or 'cd ../../../',
+            appid=manifest['appid'],
+            pause='pause' if debug else '',
+        )
+    )
     dump(script, file_o)
     return file_o

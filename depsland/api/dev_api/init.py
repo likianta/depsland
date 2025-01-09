@@ -1,5 +1,6 @@
 import os
 import typing as t
+from random import randint
 
 from lk_utils import fs
 
@@ -32,8 +33,11 @@ def init(
     dirname = fs.dirname(dir_o)
     if appname == '':
         appname = dirname.replace('-', ' ').replace('_', ' ').title()
-    appid = appname.replace(' ', '_').replace('-', '_').lower()
-    print(':v2f2', appname, appid)
+    appid = '{}_0x{:04x}'.format(
+        appname.replace(' ', '_').replace('-', '_').lower(),
+        randint(0, 0xFFFF)
+    )
+    print(':v2', appname, appid)
     
     manifest = init_user_manifest(appname, appid, init_version)
     fs.dump(manifest, file_o)

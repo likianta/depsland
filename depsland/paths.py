@@ -400,7 +400,12 @@ class Project:
                 zid = os.path.abspath(f.path) + ':Zone.Identifier'
                 if os.path.isfile(zid):  # check if blocked
                     print(':v5', 'unblock', f.relpath)
-                    os.remove(zid)  # unblock then
+                    try:
+                        os.remove(zid)  # unblock then
+                    except WindowsError:
+                        # FIXME: some computers may raise [WinError 2] the -
+                        #   system cannot find the file specified.
+                        pass
         
         site_packages_dir = fs.xpath('../chore/site_packages')
         unblock_dlls('{}/pythonnet'.format(site_packages_dir))

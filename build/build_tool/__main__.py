@@ -18,7 +18,7 @@ def build_depsland_standalone(
     **kwargs
 ) -> None:
     """
-    kwargs:
+    params:
         new_version (-v):
         minify_deps (-m):
     """
