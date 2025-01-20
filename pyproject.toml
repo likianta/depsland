@@ -1,47 +1,79 @@
-[tool.poetry]
+[project]
 name = "depsland"
 version = "0.9.0a14"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
-authors = ["Likianta <likianta@foxmail.com>"]
+authors = [{ name = "likianta", email = "likianta@foxmail.com" }]
 homepage = "https://github.com/likianta/depsland"
+# readme = "README.md"
+packages = [{ include = "depsland" }]
+requires-python = ">=3.8"
+dependencies = [
+    "argsense >=0.6.4b1,<1.0.0",
+    "conflore >=0.2.0",
+    "lk-logger >=6.0.3",
+    "lk-utils >=3.1.3a2",
+    "oss2 >=2.18.3",
+    "pip >=24.0.0",
+    "pipgrip >=0.10.13",  # DELETE?
+    "poetry >=1.8.5,<2.0.0",
+    "psutil >=6.0.0",
+    "pyapp-window >=2.2.0a11",
+    "rich >=13.9.0",
+    "semver >=3.0.2",
+    "streamlit >=1.40.0; python_version != '3.9.7'",
+    "streamlit-extras >=0.5.0",
+    "streamlit-nested-layout >=0.1.4; python_version != '3.9.7'",
+    "toml >=0.10.0",
+    "windows-toasts >=1.0.0; sys_platform == 'win32'",
+]
+
+[project.scripts]
+depsland = 'depsland.__main__:_cli'
 
 [tool.poetry.dependencies]
 python = "^3.8"
-# argsense = "^0.5.8"
-argsense = { version = "^0.6.4b1", source = "likianta-host" }
-conflore = "^0.2.0"
-lk-logger = "^6.0.3"
-# lk-logger = { version = "^6.0.2", source = "likianta-host" }
-# lk-utils = "^3.1.1"
-lk-utils = { version = "^3.1.3a2", source = "likianta-host" }
-oss2 = "^2.18.3"
-pip = "^24.0.0"
-pipgrip = "^0.10.13"  # DELETE?
-poetry = "^1.8.5"
-psutil = "^6.0.0"
-# pyapp-window = "^2.1.1"
-pyapp-window = { version = "^2.2.0a11", source = "likianta-host" }
-# pyyaml = "^6.0.0"
-rich = "^13.8.0"
-semver = "^3.0.2"
-streamlit = { version = "^1.40.0", python = "!=3.9.7" }
-streamlit-extras = "^0.5.0"
-streamlit-nested-layout = { version = "^0.1.4", python = "!=3.9.7" }
-# toml = { version = "^0.10.0", python = "<3.11" }
-toml = "^0.10.0"
-windows-toasts = { version = "^1.0.0", platform = "win32" }
+argsense = { source = "likianta" }
+lk-logger = { source = "likianta" }
+lk-utils = { source = "likianta" }
+pinkrain = { source = "likianta" }
+pyapp-window = { source = "likianta" }
+qmlease = { source = "likianta" }
+streamlit-canary = { source = "likianta" }
+
+# [tool.poetry.group.dev]
+# dependencies = [
+#     "ipython >=8.31.0; python_version >= '3.12'",
+#     "pinkrain >=0.0.0a23",
+#     "pyinstaller >=6.10.0; python_version == '3.12'",
+#     # --- demo
+#     "pyside6 >=6.6.0,<6.7.0; python_version >= '3.10' and python_version < '3.13'",
+#     "pysimplegui >=5.0.7",
+#     "qmlease >=3.0.5a11,<3.1.0",
+#     # --- indirect deps
+#     "numpy >=2.2.0; python_version >= '3.10'",
+#     "statsmodels >=0.14.4; python_version >= '3.9'",
+#     "toga >=0.4.8; python_version >= '3.10'",
+#     # --- sidework
+#     "dash >=2.17.1",
+#     "feffery-antd-components >=0.3.12",
+#     "feffery-dash-utils >=0.1.4",
+#     "icnsutil >=1.1.0",
+#     "pillow >=11.0.0; python_version >= '3.12'",
+#     "st-ant-tree >=0.0.13",
+#     "streamlit-canary >=0.1.0a14",
+# ]
 
 [tool.poetry.group.dev.dependencies]
 ipython = { version = "^8.31.0", python = "^3.12" }
 # nuitka = "^2.3.11"
-pinkrain = { version = "^0.0.0a23", source = "likianta-host" }
+pinkrain = { version = "^0.0.0a23", source = "likianta" }
 pyinstaller = { version = "^6.10.0", python = "==3.12" }
 
 # --- demo
 pyside6 = { version = ">=6.6.0,<6.7.0", python = ">=3.10,<3.13" }  # <- demo/hello-world-gui
 pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
-qmlease = { version = ">=3.0.5a11,<3.1.0", source = "likianta-host" }  # <- demo/hello-world-gui
+qmlease = { version = ">=3.0.5a11,<3.1.0", source = "likianta" }  # <- demo/hello-world-gui
 
 # --- experiments
 # st-tailwind = { version = "^1.0.5", python = ">=3.9.10,<4.0" }
@@ -59,11 +91,8 @@ feffery-dash-utils = "^0.1.4"
 icnsutil = "^1.1.0"  # <- sidework/image_converter.py
 pillow = { version = "^11.0.0", python = "^3.12" }  # <- sidework/image_converter.py
 st-ant-tree = "^0.0.13"
-streamlit-canary = { version = "^0.1.0a14", source = "likianta-host" }  # TODO: publish to PyPI, but rename to ...
+streamlit-canary = { version = "^0.1.0a14", source = "likianta" }  # TODO: publish to PyPI, but rename to ...
 # streamlit-tree-select = "^0.0.5"
-
-[tool.poetry.scripts]
-depsland = 'depsland.__main__:_cli'
 
 [[tool.poetry.source]]
 name = "tsinghua"
@@ -71,23 +100,10 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 priority = "primary"
 
 [[tool.poetry.source]]
-name = "likianta-host"
+name = "likianta"
 url = "http://likianta.pro:2131/"
 priority = "supplemental"
 
 [build-system]
-requires = ["poetry"]
-build-backend = "poetry.masonry.api"
-
-[tool.poetry-extensions]
-ignored_redundant_packages = [
-    "pip",
-    "pipgrip",
-    "poetry",
-    "pyportable_runtime",
-]
-
-# ---
-
-[tool.ruff]
-line-length = 80
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
