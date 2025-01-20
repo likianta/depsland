@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "play-in-ipython"
+version = "0.1.0"
+description = ""
+authors = ["likianta <likianta@foxmail.com>"]
+# readme = "README.md"
+packages = [{ include = "play_in_ipython" }]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+ipython = "^8.30.0"
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+priority = "primary"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

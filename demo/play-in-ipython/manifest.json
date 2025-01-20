@@ -1,0 +1,21 @@
+{
+    "appid": "play_in_ipython_0x6404",
+    "name": "IPython Play",
+    "version": "0.1.0a3",
+    "assets": {
+        "play.py": "all"
+    },
+    "dependencies": "poetry.lock",
+    "launcher": {
+        "command": "python play.py",
+        "icon": "",
+        "show_console": true,
+        "enable_cli": false,
+        "add_to_desktop": true,
+        "add_to_start_menu": false
+    },
+    "experiments": {
+        "package_provider": "oss"
+    },
+    "depsland_version": "0.9.0"
+}
