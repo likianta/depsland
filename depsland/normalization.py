@@ -31,10 +31,10 @@ class VersionSpec:
     #     self.version = version
     #     self.comparator = comparator
     
-    def __str__(self):
+    def __str__(self) -> str:
         return self.full_spec
     
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f'VersionSpec[{self.full_spec}]'
     
     @property
@@ -102,6 +102,7 @@ def normalize_verspecs(
     """
     e.g.
         '4.5.3'         ->  <spec of '==4.5.3'>
+        '^4.5.3'        ->  <spec of '>=4.5.3,<5.0.0'>
         '>=4.5.0'       ->  <spec of '>=4.5.0'>
         '>=4.5,<5.0'    ->  <spec of '>=4.5.0,<5.0.0'>
         '==4.*'         ->  <spec of '>=4.0,<5.0'>
@@ -113,13 +114,19 @@ def normalize_verspecs(
     if not raw_verspec:
         yield VersionSpec(name, '', '')
         return
+    if raw_verspec.startswith('^'):
+        assert ',' not in raw_verspec
+        raw_verspec = '>={},<{}.0.0'.format(
+            raw_verspec[1:],
+            int(raw_verspec[1:].split('.')[0]) + 1
+        )
     
     from .verspec import semver_parse
     
-    pattern_to_split_comp_and_ver = re.compile(r'([<>=!~]*)(.+)')
+    pattern_of_comp_and_ver = re.compile(r'([<>=!~]*)(.+)')
     
     for part in raw_verspec.split(','):
-        comp, ver = pattern_to_split_comp_and_ver.search(part).groups()
+        comp, ver = pattern_of_comp_and_ver.search(part).groups()
         if comp == '':
             comp = '=='
         

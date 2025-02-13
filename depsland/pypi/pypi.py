@@ -4,6 +4,7 @@ import typing as t
 from lk_utils import fs
 
 from .index import Index
+from .index import index
 from .index import T as T0
 from .pip import Pip
 from .pip import pip as _default_pip
@@ -25,7 +26,7 @@ class LocalPyPI:
     pip: Pip
     
     def __init__(self, pip: Pip = _default_pip) -> None:
-        self.index = Index()
+        self.index = index
         self.pip = pip
         self.update_index = self.index.update_index
     
