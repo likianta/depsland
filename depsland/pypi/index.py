@@ -126,3 +126,6 @@ class Index:
             fs.dump(self.name_2_vers, pypi_paths.name_2_vers)
             self._changed.clear()
             print('saved pypi indexes')
+
+
+index = Index()
