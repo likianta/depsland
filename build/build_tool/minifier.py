@@ -4,7 +4,7 @@ from lk_utils import run_cmd_args
 from depsland.utils import make_temp_dir
 from .poetry import poetry
 
-abspath = lambda x: fs.xpath(x, True)  # noqa
+abspath = lambda x: fs.xpath(x)  # noqa
 
 
 def minify_dependencies() -> None:

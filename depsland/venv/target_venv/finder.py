@@ -40,6 +40,7 @@ def get_library_root(working_root: str) -> T.LibraryPath:
             (*_poetry, 'env', 'info'),
             ('--path', '--no-ansi'),
             ('--directory', working_root),
+            cwd=working_root,
         )
     )
     print(venv_root)
@@ -95,6 +96,7 @@ def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
             _poetry,
             ('show', '-T', '--no-ansi'),
             ('--directory', working_root),
+            cwd=working_root,
         ).splitlines(),
     )
 
@@ -104,6 +106,7 @@ def _get_top_names_by_poetry_2(working_root: str) -> t.Iterator[T.PackageName]:
         _poetry,
         ('show', '-t', '--no-dev', '--no-ansi'),
         ('--directory', working_root),
+        cwd=working_root,
     )
     re_pkg_name = re.compile(r'^[-\w]+')
     for line in content.splitlines():

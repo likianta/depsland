@@ -101,9 +101,9 @@ def _divide_ownerships(
 
 def _init_dirs(root_dir: T.AbsPath, paths: t.Iterable[T.RelPath]) -> None:
     dirs_to_be_created = set(fs.parent_path(x) for x in paths)
-    print(dirs_to_be_created, ':lv')
     if '.' in dirs_to_be_created:
         dirs_to_be_created.remove('.')
+    print(sorted(dirs_to_be_created), ':lv')
     for relpath in sorted(dirs_to_be_created):
         abspath = f'{root_dir}/{relpath}'
         fs.make_dirs(abspath)

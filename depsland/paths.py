@@ -155,9 +155,8 @@ class Project:
         
         project_mode = project_info['project_mode']
         project_root = (
-            fs.xpath('.project', force_abspath=True)
-            if project_mode == 'package' else
-            fs.xpath('..', force_abspath=True)
+            fs.xpath('.project') if project_mode == 'package' else
+            fs.xpath('..')
         )
         initialized = (
             True if project_mode == 'development' else

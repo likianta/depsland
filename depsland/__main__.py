@@ -74,7 +74,7 @@ def about() -> None:
 
 @cli.cmd()
 def self_location() -> None:
-    print('[green b u]{}[/]'.format(fs.xpath('.', True)), ':s1r')
+    print('[green b u]{}[/]'.format(fs.xpath('.')), ':s1r')
 
 
 @cli.cmd()
@@ -301,7 +301,7 @@ def uninstall(appid: str, version: str = None) -> None:
 
 # -----------------------------------------------------------------------------
 
-cli.add_cmd(api.user_api.run_app, 'run', transport_help=True)
+cli.add_cmd(api.user_api.run_app, 'run', transfer_help=True)
 
 
 # @cli.cmd()

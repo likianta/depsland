@@ -1,6 +1,6 @@
 # 使用独立版 Python
 
-> 注: 以下命令行示例中, 使用 `pox` 表示 `poetry run python`. 请参考 `DEVNOTE.md` 了解在此文之前应做的事情.
+> 注: 以下命令行示例中, 使用 `pox` 表示 `poetry run python`.
 
 ## 下载
 
@@ -39,11 +39,3 @@
 pox build/init.py download-requirements
 pox build/init.py make-site-packages
 ```
-
----
-
-## PySide6 Lite
-
-> 注意: 目前仅支持 windows.
-
-使用 qmlease 项目下的 `sidework/pyside_package_tailor` 生成一个 "pyside6_lite" (文件夹), 将它复制到 site-packages 下.

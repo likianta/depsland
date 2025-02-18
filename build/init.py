@@ -1,61 +1,63 @@
 """
 see DEVNOTE.md
 """
+import os
 import sys
 
 from argsense import cli
-
 from lk_utils import fs
-
-from depsland import pypi
-from depsland.depsolver import resolve_dependencies
+from lk_utils import run_cmd_args
 
 
 @cli.cmd()
 def help_me_choose_python(
-    platform: str = sys.platform,
-    arch: str = 'x86_64',  # 'aarch64', 'x86_64'
+    platform: str = sys.platform, arch: str = 'amd64'
 ) -> None:
     """
     homepage: https://github.com/indygreg/python-build-standalone/releases
+    
+    params:
+        platform: darwin | linux | win32
+        arch: amd64 | arm64
+    
     note: do not choose "msvc-static" or "linux-musl" version.
     """
     match platform:
         case 'darwin':
-            if arch == 'aarch64':
-                link = (
-                    'https://github.com/indygreg/python-build-standalone/'
-                    'releases/download/20240415/cpython-3.12.3+20240415-'
-                    'aarch64-apple-darwin-install_only.tar.gz'
-                )
-            else:
+            if arch == 'amd64':
                 link = (
                     'https://github.com/indygreg/python-build-standalone/'
                     'releases/download/20240415/cpython-3.12.3+20240415-'
                     'x86_64-apple-darwin-install_only.tar.gz'
                 )
-        case 'linux':
-            if arch == 'aarch64':
+            else:
                 link = (
                     'https://github.com/indygreg/python-build-standalone/'
                     'releases/download/20240415/cpython-3.12.3+20240415-'
-                    'aarch64-unknown-linux-gnu-install_only.tar.gz'
+                    'aarch64-apple-darwin-install_only.tar.gz'
                 )
-            else:
+        case 'linux':
+            if arch == 'amd64':
                 link = (
                     'https://github.com/indygreg/python-build-standalone/'
                     'releases/download/20240415/cpython-3.12.3+20240415-'
                     'x86_64-unknown-linux-gnu-install_only.tar.gz'
                 )
-        case 'win32':
-            if arch == 'aarch64':
-                raise Exception(platform, arch)
             else:
+                link = (
+                    'https://github.com/indygreg/python-build-standalone/'
+                    'releases/download/20240415/cpython-3.12.3+20240415-'
+                    'aarch64-unknown-linux-gnu-install_only.tar.gz'
+                )
+        case 'win32':
+            if arch == 'amd64':
                 link = (
                     'https://github.com/indygreg/python-build-standalone/'
                     'releases/download/20240415/cpython-3.12.3+20240415-'
                     'x86_64-pc-windows-msvc-install_only.tar.gz'
                 )
+            else:
+                raise Exception(platform, arch)
         case _:
             raise Exception(platform, arch)
     print('please manually download python standalone from:')
@@ -82,6 +84,13 @@ def make_site_packages(
     target_dir: str = 'chore/site_packages',
     remove_exists: bool = False
 ) -> None:
+    """
+    prerequisite:
+        pox sidework/merge_external_venv_to_local_pypi.py .
+    """
+    from depsland import pypi
+    from depsland.depsolver import resolve_dependencies
+    
     if remove_exists and fs.exists(target_dir):
         fs.remove_tree(target_dir)
     if not fs.exists(target_dir):
@@ -94,15 +103,54 @@ def make_site_packages(
 
 
 @cli.cmd()
-def make_minified_site_packages(dir_i: str) -> None:
-    dir_o = 'chore/minified_site_packages'
-    fs.remove(dir_o)
-    fs.make_link(dir_i, dir_o)
-    fs.copy_file('chore/.gitkeep', f'{dir_o}/.gitkeep')
+def make_minified_site_packages(
+    tree_shaking_project_path: str = fs.xpath('../../python-tree-shaking')
+) -> None:
+    from depsland.utils import make_temp_dir
+    
+    os.environ.pop('VIRTUAL_ENV')
+    
+    run_cmd_args(
+        ('poetry', 'run', 'python', '-m', 'tree_shaking'),
+        (
+            'build-module-graphs',
+            fs.xpath('build_tool/_tree_shaking_model.yaml')
+        ),
+        cwd=tree_shaking_project_path,
+        verbose=True,
+        force_term_color=True,
+    )
+    
+    run_cmd_args(
+        ('poetry', 'run', 'python', '-m', 'tree_shaking'),
+        (
+            'dump-tree',
+            fs.xpath('build_tool/_tree_shaking_model.yaml'),
+            x := make_temp_dir()
+        ),
+        cwd=tree_shaking_project_path,
+        verbose=True,
+        force_term_color=True,
+    )
+    print(x, ':v')
+    
+    # postfix
+    fs.remove(f'{x}/venv/numpy.libs')
+    _make_empty_package(f'{x}/venv/matplotlib')
+    _make_empty_package(f'{x}/venv/numpy')
+    _make_empty_package(f'{x}/venv/pandas')
+    
+    fs.move(f'{x}/venv', 'chore/minified_site_packages', True)
+
+
+def _make_empty_package(path) -> None:
+    fs.remove(path)
+    fs.make_dir(path)
+    fs.dump('', f'{path}/__init__.py')
 
 
 if __name__ == '__main__':
     # pox build/init.py help-me-choose-python
     # pox build/init.py make-site-packages --remove-exists
-    # pox build/init.py make-minified-site-packages <dir_i>
+    # pox build/init.py make-minified-site-packages
     cli.run()

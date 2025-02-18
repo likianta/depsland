@@ -2,49 +2,80 @@
 
 ## Init Project
 
-1. poetry
-
-    here are poetry commands alias for my personal use:
-
-    ```yaml
-    po: poetry
-    por: poetry run
-    pox: poetry run python
-    ```
+1.  install dependencies
 
     ```sh
-    # make venv
-    po install --no-root
+    cd <depsland>
+    poetry env use <python_3.12>
+    poetry install --no-root
     ```
 
-2. python standalone version
+2.  python standalone version
 
-    download from python standalone releases: https://github.com/indygreg/python-build-standalone/releases
-
-    currently we choose 3.12 version.
-
-    more details to see `python/README.zh.md`.
-
-3. a self pypi folder
+    download from python standalone releases: 
+    https://github.com/indygreg/python-build-standalone/releases
+    
+    ps: help to get direct download link:
 
     ```sh
-    # download packages
-    pox build/init.py download-requirements
+    poetry run python build/init.py help-me-choose-python
+    ```
 
+    **currently we use python 3.12.**
+
+    more details see `python/README.zh.md`.
+
+3.  self pypi folder
+
+    if you have an old depsland project on another pc, you can copy its 
+    `<depsland>/pypi` folder and overwrite here.
+
+    otherwise create empty indexes by command:
+
+    ```sh
+    # init "pypi" folder
+    poetry run python build/init.py init-pypi-blank pypi
+    
     # build pypi index
-    pox build/init.py rebuild-pypi-index
+    poetry run python build/init.py rebuild-pypi-index
     ```
 
-3. make site-packages folder
+3.  make site-packages folder
 
     ```sh
-    pox build/init.py make-site-packages --remove-exists
+    # if poetry.lock is updated, run:
+    poetry run python sidework/merge_external_venv_to_local_pypi.py .
+    
+    poetry run python build/init.py make-site-packages --remove-exists
     ```
+
+5.  setup external project "python-tree-shaking"
+
+    ```sh
+    git clone <python_tree_shaking_project>
+    cd python-tree-shaking
+    poetry env use <python_3.12>
+    poetry install --no-root
+    
+    cd <depsland_project>
+    poetry run python -m lk_utils mklink <poetry_venv_site_packages> chore/venv
+    poetry run python build/init.py make-minified-site-packages
+    ```
+
+## Misc
+
+if you are using pycharm as your IDE, mark the following folders excluded:
+
+- chore
+- dist
+- pypi
+- python
+- temp
 
 ## Run Depsland GUI
 
 ```sh
-pox -m depsland launch-gui
+poetry run python -m depsland launch-gui
 ```
 
 if app crashed on windows, should manually kill the process:
@@ -60,16 +91,18 @@ taskkill /F /PID <pid>
 
 first make sure poetry has synced `poetry.lock` file.
 
-use script from https://github.com/likianta/poetry-extensions to lock requirements:
+use script from https://github.com/likianta/poetry-extensions to lock 
+requirements:
 
 ```sh
 git clone <poetry_extensions_repo>
 cd <poetry_extensions_repo>
-# po install --no-root
-pox poxtry_extensions/poetry_export.py <depsland_project>
+# poetry install --no-root
+poetry run python poxtry_extensions/poetry_export.py <depsland_project>
 ```
 
-it generates/updates `<depsland_project>/requirements.lock` file, which is used for `build/init.py:download_requirements`.
+it generates/updates `<depsland_project>/requirements.lock` file, which is used 
+for `build/init.py:download_requirements`.
 
 ## Build Depsland As Standalone Application
 
@@ -98,5 +131,5 @@ then run the following command:
 ```nushell
 # tell depsland to redirect config to custom path
 $env.DEPSLAND_CONFIG_ROOT = 'tests/config'
-pox build/build.py full-build ailyun -p blank
+poetry run python build/build.py full-build ailyun -p blank
 ```

@@ -21,6 +21,9 @@ def build_depsland_standalone(
     params:
         new_version (-v):
         minify_deps (-m):
+        **kwargs:
+            oss_scheme (-o): aliyun | local
+            pypi_scheme (-p): blank | full
     """
     new_version = bump_version(new_version)
     if minify_deps:

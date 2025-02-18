@@ -52,6 +52,7 @@ def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
     all_pkgs = _get_all_packages(poetry_data)
     all_pkgs = _flatten_dependencies(
         {k: tuple(v) for k, v in all_pkgs},
+        pyproj_data['project']['name'] if 'project' in pyproj_data else
         pyproj_data['tool']['poetry']['name']
     )
     top_names = _get_top_package_names(pyproj_root, pyproj_data)
