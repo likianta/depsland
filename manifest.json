@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland Standalone",
-    "version": "0.9.0a18",
+    "version": "0.9.0a19",
     "assets": {
         "apps/.bin": "root",
         "apps/.venv": "root",
@@ -37,5 +37,5 @@
     "experiments": {
         "package_provider": "oss"
     },
-    "depsland_version": "0.9.0a18"
+    "depsland_version": "0.9.0a19"
 }

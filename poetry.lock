@@ -465,14 +465,14 @@ reference = "tsinghua"
 
 [[package]]
 name = "argsense"
-version = "0.7.0"
+version = "0.7.1a0"
 description = "New command line interface based on Rich library."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 markers = "python_version >= \"3.12\" or python_version <= \"3.11\""
 files = [
-    {file = "argsense-0.7.0-py3-none-any.whl", hash = "sha256:bd01d4084c776fd5493f43de86108562438a209b95a829254efc70541f1c649b"},
+    {file = "argsense-0.7.1a0-py3-none-any.whl", hash = "sha256:79faa2d736732ccc28cadf572d75a8c6c06f2db2f86fd5a1b4fece3153d415e8"},
 ]
 
 [package.dependencies]
@@ -7753,4 +7753,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "7fb7db956570a51b9dc58f1c2d7c28eb9a818ef1455b11538b9d4aa3efdb4786"
+content-hash = "0c1f1e7c7a8248e07b6fb7d25ef70968a1c672ccae3981a1e7030dc49a5acff2"

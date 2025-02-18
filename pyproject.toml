@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.9.0a18"
+version = "0.9.0a19"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "likianta", email = "likianta@foxmail.com" }]
@@ -15,7 +15,7 @@ depsland = 'depsland.__main__:_cli'
 
 [tool.poetry.dependencies]
 python = "^3.8"
-argsense = { version = "^0.7.0", source = "likianta" }
+argsense = { version = "^0.7.1a0", source = "likianta" }
 conflore = "^0.2.0"
 lk-logger = { version = "^6.0.5b0", source = "likianta" }
 lk-utils = { version = "^3.1.3b0", source = "likianta" }
@@ -27,7 +27,7 @@ poetry = [
     { version = "<2.0.0", python = "<3.9" },
 ]
 psutil = "^6.0.0"
-pyapp-window = { version = "^2.2.0a11", source = "likianta" }
+pyapp-window = { version = "^2.2.0a12", source = "likianta" }
 rich = "^13.9.0"
 semver = "^3.0.2"
 streamlit = [

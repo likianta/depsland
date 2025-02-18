@@ -22,7 +22,7 @@ def _get_session() -> dict:
     return st.session_state[__name__]
 
 
-def main(default_appid: str = '', _run_at_once: bool = False) -> None:
+def setup_ui(default_appid: str = '', _run_at_once: bool = False) -> None:
     # row = st_row((7, 3))
     # with row.container():
     #     st.title('Depsland AppManager')
@@ -88,5 +88,18 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
 
 
 if __name__ == '__main__':
-    # strun 3001 depsland/webui/app_st.py
-    main('hello_world')
+    # strun 2180 depsland/webui/app.py
+    # setup_ui('hello_world')
+    
+    from argsense import cli
+    
+    @cli.cmd()
+    def main(app_token: str, run_at_once: bool = False) -> None:
+        # print(':v', app_token, run_at_once)
+        if app_token and fs.isfile(app_token):
+            app_token = fs.abspath(app_token)
+            if run_at_once is None:
+                run_at_once = True
+        setup_ui(app_token, run_at_once)
+
+    cli.run(main)

@@ -1,1 +1,1 @@
-from .app import main as setup_ui
+from .app import setup_ui
