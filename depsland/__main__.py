@@ -211,7 +211,7 @@ def publish(
     if you configured a local oss server, it will generate assets to -
     `~/oss/apps/<appid>/<version>` directory.
     
-    kwargs:
+    params:
         target (-t): see `init : [param] target : [docstring]`.
         full_upload (-f): if true, will upload all assets, ignore the files -
             which may already exist in oss (they all will be overwritten).

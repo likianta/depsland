@@ -34,6 +34,38 @@ def build_depsland_standalone(
 cli.add_cmd(_b2e, 'bat-2-exe')
 
 
+@cli.cmd()
+def rebuild_all_executebles(switches: str = '111111') -> None:
+    iter_ = iter(switches)
+    if next(iter_) == '1':
+        _b2e('build/exe/depsland-cli.bat',
+             show_console=True,
+             uac_admin=False)
+    if next(iter_) == '1':
+        _b2e('build/exe/depsland-gui.bat',
+             show_console=False,
+             uac_admin=False)
+    if next(iter_) == '1':
+        _b2e('build/exe/depsland-gui-debug.bat',
+             show_console=True,
+             uac_admin=True)
+    if next(iter_) == '1':
+        _b2e('build/exe/depsland-runapp.bat',
+             show_console=False,
+             uac_admin=False,
+             icon='build/icon/python.ico')
+    if next(iter_) == '1':
+        _b2e('build/exe/depsland-runapp-console.bat',
+             show_console=True,
+             uac_admin=False,
+             icon='build/icon/python.ico')
+    if next(iter_) == '1':
+        _b2e('build/exe/depsland-runapp-debug.bat',
+             show_console=True,
+             uac_admin=True,
+             icon='build/icon/python.ico')
+
+
 # @cli.cmd()
 # def bat_2_exe(*bat_files: str, **kwargs) -> None:
 #     for f in bat_files:

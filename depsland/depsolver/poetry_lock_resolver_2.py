@@ -60,6 +60,7 @@ def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
     tiled_pkgs = _get_tiled_packages(fs.parent(poetry_file))
     top_pkgs = _filter_invalid_markers(top_pkgs, dict(tiled_pkgs))
     tiled_pkgs = _flatten_packages(top_pkgs)
+    breakpoint()
     
     pkgs_info = _fill_packages_info(pyproj_root, tuple(tiled_pkgs), poetry_data)
     return dict(pkgs_info)
@@ -91,7 +92,7 @@ def _flatten_dependencies(
         except KeyError as e:
             if e.args[0] == ignored_current_project_name:
                 print(
-                    ':v3s',
+                    ':v5',
                     'ignore a key error for "{}" since it is the project name'
                     .format(ignored_current_project_name)
                 )
@@ -117,6 +118,7 @@ def _get_top_package_names(
         (sys.executable, '-m', 'poetry'),
         ('show', '-t', '--no-ansi'),
         ('--directory', working_root),
+        cwd=working_root,
     )
     # print(':v', content, content.count('\n'))
     pattern = re.compile(r'^[-\w]+')
@@ -146,6 +148,7 @@ def _get_tiled_packages(
         (sys.executable, '-m', 'poetry'),
         ('show', '--no-ansi'),
         ('--directory', working_root),
+        cwd=working_root
     )
     pattern = re.compile(r'([^ ]+) +(?:\(!\) )?([^ ]+)')
     for line in content.splitlines():

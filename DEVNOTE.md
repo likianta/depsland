@@ -66,8 +66,10 @@
 
 if you are using pycharm as your IDE, mark the following folders excluded:
 
+- apps
 - chore
 - dist
+- oss
 - pypi
 - python
 - temp

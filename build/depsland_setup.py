@@ -31,7 +31,7 @@ else:
 
 @cli.cmd()
 def main(do_replace_site_packages=True):
-    dir_i = fs.xpath('..', True)
+    dir_i = fs.xpath('..')
     dir_o = _choose_target_dir()
     
     if not exists(dir_o):

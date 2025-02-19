@@ -192,6 +192,7 @@ class LibraryIndexer:
                 _poetry,
                 ('show', '-t', '--no-dev', '--no-ansi'),
                 ('--directory', self.working_root),
+                cwd=self.working_root,
             )
             
             re_lv0 = re.compile(r'^[-\w]+')

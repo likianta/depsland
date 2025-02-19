@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.9.0a19"
+version = "0.9.0a20"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "likianta", email = "likianta@foxmail.com" }]
@@ -15,10 +15,10 @@ depsland = 'depsland.__main__:_cli'
 
 [tool.poetry.dependencies]
 python = "^3.8"
-argsense = { version = "^0.7.1a0", source = "likianta" }
+argsense = { version = "^0.7.1a1", source = "likianta" }
 conflore = "^0.2.0"
-lk-logger = { version = "^6.0.5b0", source = "likianta" }
-lk-utils = { version = "^3.1.3b0", source = "likianta" }
+lk-logger = { version = "^6.0.5b1", source = "likianta" }
+lk-utils = { version = "^3.1.3", source = "likianta" }
 oss2 = "^2.18.3"
 pip = "^24.0.0"
 pipgrip = "^0.10.13"  # DELETE?

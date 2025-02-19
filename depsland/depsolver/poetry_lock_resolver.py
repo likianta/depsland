@@ -78,6 +78,7 @@ def _get_tiled_dict(poetry_lock_file: str) -> T.Name2Id:
         (sys.executable, '-m', 'poetry', 'install'),
         ('--no-root', '--dry-run', '--no-ansi'),
         ('-C', fs.parent(poetry_lock_file)),
+        cwd=fs.parent(poetry_lock_file),
     )
     ''' examples:
         Installing dependencies from lock file

@@ -11,10 +11,8 @@ def bat_2_exe(
     icon: str = fs.xpath('../icon/launcher.ico'),
 ) -> None:
     """
-    args:
+    params:
         file_i: the file is ".bat" file, which is under ~/build/exe folder.
-
-    kwargs:
         show_console (-c):
         uac_admin (-u):
     """

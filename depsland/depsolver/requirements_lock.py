@@ -164,6 +164,7 @@ def _get_valid_package_names(
             (sys.executable, '-m', 'poetry'),
             ('show', '--no-ansi'),
             ('--directory', working_root),
+            cwd=working_root,
         )
         pattern = re.compile(r'[^ ]+')
         for line in content.splitlines():
