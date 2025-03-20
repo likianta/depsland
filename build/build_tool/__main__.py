@@ -1,5 +1,6 @@
 if __name__ == '__main__':
     __package__ = 'build_tool'
+    
     from lk_utils.importer import load_package
     load_package('build/build_tool')
 
@@ -9,6 +10,8 @@ from .launcher_builder import bat_2_exe as _b2e
 from .minifier import minify_dependencies
 from .self_build import build_dist
 from .version_bump import bump_version
+
+cli.add_cmd(bump_version)
 
 
 @cli.cmd()
@@ -64,13 +67,6 @@ def rebuild_all_executebles(switches: str = '111111') -> None:
              show_console=True,
              uac_admin=True,
              icon='build/icon/python.ico')
-
-
-# @cli.cmd()
-# def bat_2_exe(*bat_files: str, **kwargs) -> None:
-#     for f in bat_files:
-#         print(f, ':iv2')
-#         _b2e(f, **kwargs)
 
 
 if __name__ == '__main__':

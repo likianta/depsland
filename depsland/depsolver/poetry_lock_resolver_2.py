@@ -60,7 +60,7 @@ def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
     tiled_pkgs = _get_tiled_packages(fs.parent(poetry_file))
     top_pkgs = _filter_invalid_markers(top_pkgs, dict(tiled_pkgs))
     tiled_pkgs = _flatten_packages(top_pkgs)
-    breakpoint()
+    # breakpoint()
     
     pkgs_info = _fill_packages_info(pyproj_root, tuple(tiled_pkgs), poetry_data)
     return dict(pkgs_info)

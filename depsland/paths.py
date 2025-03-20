@@ -174,8 +174,8 @@ class Project:
             self._setup_package_mode(project_root)
         elif project_mode == 'production':
             self._setup_production_mode(project_root, project_info)
-        elif project_mode == 'sideboard':
-            self._setup_sideboard_mode(project_root)
+        elif project_mode == 'shipboard':
+            self._setup_shipboard_mode(project_root)
         else:
             raise ValueError(f'unknown project mode: {project_mode}')
         
@@ -361,7 +361,7 @@ class Project:
             build_tree_2()
             self._setup_system_environment(project_root)
     
-    def _setup_sideboard_mode(self, project_root: str) -> None:
+    def _setup_shipboard_mode(self, project_root: str) -> None:
         self._fix_blocked_dlls()
         '''
         <user_programs>

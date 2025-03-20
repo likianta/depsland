@@ -10,8 +10,8 @@ def bump_version(new_ver: str = None) -> str:
     old_ver = depsland.__version__
     if new_ver is None:
         new_ver = depsland.verspec.minorly_bump_version(old_ver)
-    new_dps_ver = re.match(r'(.+)([ab]\d+)?$', new_ver).group(1)
-    print('{} -> {}'.format(old_ver, new_ver), ':r2')
+    new_dps_ver = re.match(r'(\d+\.\d+\.\d+)([ab]\d+)?$', new_ver).group(1)
+    print('{} -> {} ({})'.format(old_ver, new_ver, new_dps_ver), ':r2')
     
     _replace_version(
         'depsland/__init__.py',

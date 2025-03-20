@@ -47,9 +47,9 @@ def main(manifest_file: str) -> None:
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
     _relink_pypi(manifest, dir_o)
-    with lk_logger.spinner('creating launcher...'):
-        _create_launcher(manifest, dir_o)
-        _create_updator(manifest, dir_o)
+    # with lk_logger.spinner('creating launcher...'):
+    _create_launcher(manifest, dir_o)
+    _create_updator(manifest, dir_o)
     print('see result at {}'.format(dir_o))
 
 
@@ -143,7 +143,7 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
     )
     # TEST
     fs.copy_file(
-        f'{root_i}/tests/config/depsland.yaml',
+        f'{root_i}/test/_config/depsland.yaml',
         f'{root_o}/source/config/depsland.yaml'
     )
     
@@ -272,7 +272,8 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
 def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
     if sysinfo.SYSTEM == 'darwin' or sysinfo.SYSTEM == 'linux':
         file_sh = f'{dst_dir}/Check Updates.sh'
-        template = dedent('''
+        template = dedent(
+            '''
             # cd to current dir
             # https://stackoverflow.com/a/246128
             CURR_DIR=$( cd -- "$( dirname -- "${{BASH_SOURCE[0]}}" )" &> \\
@@ -281,21 +282,25 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
             
             export PYTHONPATH=.
             python/bin/python3 -m depsland launch-gui {appid}
-        ''', join_sep='\\')
+            ''',
+            join_sep='\\'
+        )
         script = template.format(appid=manifest['appid'])
         fs.dump(script, file_sh)
     
     elif sysinfo.SYSTEM == 'windows':
         file_bat = f'{dst_dir}/Check Updates.bat'
         file_exe = f'{dst_dir}/Check Updates.exe'
-        template = dedent(r'''
+        template = dedent(
+            r'''
             @echo off
             cd /d %~dp0
             cd source
             set "PYTHONPATH=.;chore/site_packages"
             set "PYTHONUTF8=1"
             .\python\python.exe -m depsland launch-gui --app-token {appid}
-        ''')
+            '''
+        )
         script = template.format(appid=manifest['appid'])
         fs.dump(script, file_bat)
         bat_2_exe(
