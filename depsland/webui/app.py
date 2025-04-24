@@ -65,26 +65,28 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
     
     if appid and (_run_at_once or do_install):
         with prog_bar_container:
-            prog_callback = progress_bar.make_progress_bar()
-        with placeholder:
-            with st.spinner(f'Installing "{appid}"...'):
-                # logger = bottom_bar.get_logger()
-                # logger.clear()
-                # with parallel_printing(logger):
-                #     # progress_bar.play_demo()  # TEST
-                #     if appid == 'depsland':
-                #         self_upgrade()
-                #         st.warning('Please restart the app to see the changes.')
-                #     else:
-                #         install_by_appid(appid)
-                #     prog_callback()
-                
-                if appid == 'depsland':
-                    self_upgrade()
-                    st.warning('Please restart the app to see the changes.')
-                else:
-                    install_by_appid(appid)
-                prog_callback()
+            with progress_bar.progress_bar():
+                with placeholder:
+                    with st.spinner(f'Installing "{appid}"...'):
+                        # logger = bottom_bar.get_logger()
+                        # logger.clear()
+                        # with parallel_printing(logger):
+                        #     # progress_bar.play_demo()  # TEST
+                        #     if appid == 'depsland':
+                        #         self_upgrade()
+                        #         st.warning(
+                        #           'Please restart the app to see the changes.'
+                        #         )
+                        #     else:
+                        #         install_by_appid(appid)
+                        
+                        if appid == 'depsland':
+                            self_upgrade()
+                            st.warning(
+                                'Please restart the app to see the changes.'
+                            )
+                        else:
+                            install_by_appid(appid)
 
 
 if __name__ == '__main__':

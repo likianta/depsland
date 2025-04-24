@@ -17,7 +17,7 @@ def compare_version(v0: str, comp: str, v1: str, _patch: bool = True) -> bool:
     if _patch:
         v0, v1 = map(_minor_fix_version_form, (v0, v1))
     r: int = semver.compare(v0, v1)  # -1, 0, 1
-    return eval(f'r {comp} 0', {'r': r})
+    return eval(f'{r} {comp} 0')
 
 
 def find_all_eligible_versions(

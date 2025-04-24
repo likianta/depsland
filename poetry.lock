@@ -451,26 +451,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-name = "anytree"
-version = "2.12.1"
-description = "Powerful and Lightweight Python Tree Data Structure with various plugins"
-optional = false
-python-versions = ">=3.7.2,<4"
-groups = ["main"]
-files = [
-    {file = "anytree-2.12.1-py3-none-any.whl", hash = "sha256:5ea9e61caf96db1e5b3d0a914378d2cd83c269dfce1fb8242ce96589fa3382f0"},
-    {file = "anytree-2.12.1.tar.gz", hash = "sha256:244def434ccf31b668ed282954e5d315b4e066c4940b94aff4a7962d85947830"},
-]
-
-[package.dependencies]
-six = "*"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
 name = "appnope"
 version = "0.1.4"
 description = "Disable App Nap on macOS >= 10.9"
@@ -999,6 +979,7 @@ files = [
     {file = "click-8.1.8-py3-none-any.whl", hash = "sha256:63c132bbbed01578a06712a2d1f497bb62d9c1c0d329b7903a866228027263b2"},
     {file = "click-8.1.8.tar.gz", hash = "sha256:ed53c9d8990d83c2a27deae68e4ee337473f6330c040a31d4225c9574d16096a"},
 ]
+markers = {main = "python_full_version != \"3.9.7\""}
 
 [package.dependencies]
 colorama = {version = "*", markers = "platform_system == \"Windows\""}
@@ -1040,7 +1021,7 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-markers = {main = "os_name == \"nt\" or platform_system == \"Windows\"", dev = "platform_system == \"Windows\" or sys_platform == \"win32\""}
+markers = {main = "os_name == \"nt\" or platform_system == \"Windows\" and python_full_version != \"3.9.7\"", dev = "platform_system == \"Windows\" or sys_platform == \"win32\""}
 
 [package.source]
 type = "legacy"
@@ -4691,31 +4672,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-name = "pipgrip"
-version = "0.10.14"
-description = "Lightweight pip dependency resolver with deptree preview functionality based on the PubGrub algorithm"
-optional = false
-python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
-groups = ["main"]
-files = [
-    {file = "pipgrip-0.10.14-py2.py3-none-any.whl", hash = "sha256:cb4e2c30c1f8ea45abcb6565fcd8b2adfd94c047044c8c87eeaa424750512eef"},
-    {file = "pipgrip-0.10.14.tar.gz", hash = "sha256:f99791cbe4819f4477237b3487bc8f69258236058f3093c5ccdfd9b157405308"},
-]
-
-[package.dependencies]
-anytree = ">=2.4.1"
-click = ">=7"
-packaging = ">=17"
-pip = {version = ">=22.2", markers = "python_version > \"3.6\""}
-setuptools = ">=38.3"
-wheel = "*"
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
 name = "pkginfo"
 version = "1.12.0"
 description = "Query metadata from sdists / bdists / installed packages."
@@ -6708,7 +6664,7 @@ version = "75.3.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev"]
+groups = ["dev"]
 files = [
     {file = "setuptools-75.3.0-py3-none-any.whl", hash = "sha256:f2504966861356aa38616760c0f66568e535562374995367b4e69c7143cf6bcd"},
     {file = "setuptools-75.3.0.tar.gz", hash = "sha256:fba5dd4d766e97be1b1681d98712680ae8f2f26d7881245f2ce9e40714f1a686"},
@@ -7155,18 +7111,19 @@ reference = "tsinghua"
 
 [[package]]
 name = "streamlit-canary"
-version = "0.1.0a21"
-description = ""
+version = "0.1.0b3"
+description = "LK-flavored Streamlit enhancements."
 optional = false
 python-versions = ">=3.8,<4.0"
-groups = ["dev"]
+groups = ["main"]
 files = [
-    {file = "streamlit_canary-0.1.0a21-py3-none-any.whl", hash = "sha256:f09e9beadee04c0bb07a181a00d003a6f1a30ad1b2bae9e63931529c87c908fd"},
+    {file = "streamlit_canary-0.1.0b3-py3-none-any.whl", hash = "sha256:c04c4df11906f1b8c860d7aba92687d3dbdda759e0b6ddfd6abd41bece33588b"},
 ]
 
 [package.dependencies]
-argsense = ">=0.7.1"
+argsense = ">=0.7.2"
 lk-utils = ">=3.1.3,<4.0.0"
+pyapp-window = ">=2.2.0b3,<3.0.0"
 streamlit = [
     {version = ">=1.40.0,<2.0.0", markers = "python_version >= \"3.8\" and python_full_version != \"3.9.7\" and python_version < \"3.10\""},
     {version = ">=1.44.0,<2.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""},
@@ -8314,26 +8271,6 @@ url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 reference = "tsinghua"
 
 [[package]]
-name = "wheel"
-version = "0.45.1"
-description = "A built-package format for Python"
-optional = false
-python-versions = ">=3.8"
-groups = ["main"]
-files = [
-    {file = "wheel-0.45.1-py3-none-any.whl", hash = "sha256:708e7481cc80179af0e556bbf0cc00b8444c7321e2700b8d8580231d13017248"},
-    {file = "wheel-0.45.1.tar.gz", hash = "sha256:661e1abd9198507b1409a20c02106d9670b2576e916d58f520316666abca6729"},
-]
-
-[package.extras]
-test = ["pytest (>=6.0.0)", "setuptools (>=65)"]
-
-[package.source]
-type = "legacy"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-reference = "tsinghua"
-
-[[package]]
 name = "windows-toasts"
 version = "1.0.2"
 description = "Python library used to send toast notifications on Windows machines"
@@ -8816,4 +8753,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "9f049722932ff4dec5c95ac14b32959d3acc831bece12d56712d4c4f8921509b"
+content-hash = "7cd8ac91541dd506a474c2762488648471dd20ab22917218c16d7b4bf1d71d73"

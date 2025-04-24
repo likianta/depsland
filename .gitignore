@@ -6,16 +6,13 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
-/chore/*.7z
-/chore/*.zip
-/chore/minified_site_packages/*
-/chore/site_packages
-/chore/venv
+/chore/*
 /config/.redirect
 /config/auto_saved.pkl
 /deleted/
 /demo/*/dist/
 /depsland/.project/
+/depsland/assets/*
 /depsland/webui/assets/
 /depsland/webui/static/
 /docs/*/*.html
@@ -38,6 +35,9 @@ dist/**
 .DS_Store
 
 !**/.gitkeep
+!/depsland/assets/*.ico
+!/depsland/assets/*.md
+!/depsland/assets/*.png
 !/dist/
 !/dist/standalone/
 !/oss/apps/

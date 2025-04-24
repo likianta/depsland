@@ -10,10 +10,8 @@ if 2:
 import sys
 import typing as t
 
-import pyapp_window
 from argsense import CommandLineInterface
 from lk_utils import fs
-from lk_utils import run_cmd_args
 
 from . import __path__
 from . import __version__
@@ -130,34 +128,18 @@ def launch_gui(
             for `false` example, see `./api/dev_api/offline_build.py : -
             _create_updator()`
     """
-    run_cmd_args(
-        (
-            sys.executable, '-m', 'streamlit',
-            'run', 'depsland/webui/app.py',
-        ),
-        (
-            '--browser.gatherUsageStats', 'false',
-            '--global.developmentMode', 'false',
-            '--runner.magicEnabled', 'false',
-            '--server.headless', 'true',
-            '--server.port', port,
-        ),
-        (
-            '--',
+    import streamlit_canary as sc
+    sc.run(
+        title='Depsland Appstore',
+        target='depsland/webui/app.py',
+        extra_args=(
             _app_token or ':empty',
             ':true' if _run_at_once else ':false'
         ),
-        blocking=False,
-        verbose=True,
-        force_term_color=True,
-    )
-    
-    pyapp_window.open_window(
-        title='Depsland Appstore',
         port=port,
+        show_window=True,
         size=(1200, 2000),
         icon=paths.build.launcher_icon,
-        blocking=True,
     )
 
 
@@ -277,11 +259,7 @@ cli.add_cmd(api.user_api.run_app, 'run', transfer_help=True)
 
 
 @cli
-def runx(
-    appid: str,
-    version: str = None,
-    use_exist: bool = True,
-) -> None:
+def runx(appid: str, version: str = None, use_exist: bool = True) -> None:
     """
     check app exists, if not, download and install it. then run the application.
     prerequisite:
@@ -299,12 +277,20 @@ def runx(
             else:
                 raise NotImplementedError
     
-    if not exist:
-        # TODO: show a mini UI to notify user the downloading progress.
-        launch_gui(_app_token=appid, _run_at_once=True)
-        return  # DELETE
-    
-    api.user_api.run_app(appid, _version=version)
+    if exist:
+        api.user_api.run_app(appid, _version=version)
+    else:
+        # show a mini UI to notify user the installation progress.
+        import streamlit_canary as sc
+        sc.run(
+            title='Depsland Setup Wizard',
+            icon=paths.build.launcher_icon,
+            target=fs.xpath('webui/setup_wizard/app.py'),
+            extra_args=(appid,),
+            port=2181,
+            show_window=True,
+            size=(1010, 700),
+        )
 
 
 def _cli() -> None:

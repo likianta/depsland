@@ -33,9 +33,11 @@ class T(T0):
 
 
 # Signal[stage, total, current, text]
-#   `total` and `current` are 1-based.
-#   `text`: we currently use lower-case descriptive text. the ui side may need -
-#   to convert it to a more user-friendly format.
+#   stage: see T.ProgressStage
+#   total: 1-based counter.
+#   current: same like `total`.
+#   text: we currently use lower-cased descriptive text.
+#       the ui side may need to convert it to a more user-friendly format.
 progress_updated = Signal(str, int, int, str)  # used by ui side
 
 
@@ -126,7 +128,7 @@ def _install(
     dir_m = make_temp_dir()
     
     if custom_oss_root:
-        print('use local oss server', ':v2')
+        print('use local oss server', ':v1')
         oss = get_oss_client(manifest_new['appid'], server='local')
         oss.path.root = custom_oss_root
     else:
@@ -136,7 +138,7 @@ def _install(
     package_resolver = pypi
     if x := manifest_new.get('experiments'):
         if x.get('package_provider') == 'oss':
-            print(':v3s', 'experimental feature: use oss as package provider')
+            print(':v1', 'experimental feature: use oss as package provider')
             package_resolver = oss
     
     _install_files(manifest_new, manifest_old, oss, dir_m)
@@ -160,6 +162,7 @@ def _check_update(manifest_new: T.Manifest, manifest_old: T.Manifest) -> bool:
 
 
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
+    """ check if version upgradale. """
     return compare_version(new['version'], '>', old['version'])
 
 
