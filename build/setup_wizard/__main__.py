@@ -23,11 +23,11 @@ def main(test_path: bool = False, hot_reload: bool = False) -> None:
     from .wizard import wizard
     
     if test_path:
-        dir_i = xpath(f'../../dist/depsland-setup-{depsland_version}', True)
+        dir_i = xpath(f'../../dist/depsland-setup-{depsland_version}')
         assert exists(dir_i), dir_i
         print(f'you are running in test mode, the path is "{dir_i}"')
     else:
-        dir_i = xpath('../../', True)
+        dir_i = xpath('../../')
     dir_o = ''
     
     page1 = Page1()

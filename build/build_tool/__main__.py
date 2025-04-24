@@ -77,7 +77,7 @@ if __name__ == '__main__':
     #   --oss-scheme aliyun
     #       prerequisites:
     #           1. set environment variable:
-    #               $env.DEPSLAND_CONFIG_ROOT = 'tests/config'
+    #               $env.DEPSLAND_CONFIG_ROOT = 'test/_config'
     #           2. make sure poetry.lock is latest.
     # pox build/build_tool/__main__.py build-depsland-standalone -M
     #   --oss-scheme aliyun --pypi-scheme full
