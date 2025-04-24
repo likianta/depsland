@@ -16,8 +16,7 @@ class T:
         'auto',
         'pyproject.toml',
         'requirements.txt',
-        # TODO: 'poetry.lock', 'pipfile.lock', 'requirements.lock', \
-        #   'requirements.yaml'.
+        # TODO: 'poetry.lock', 'requirements.lock', 'requirements.yaml'.
     ]
     LibraryPath = str
     PackageName = str
@@ -29,6 +28,7 @@ class T:
 def get_library_root(working_root: str) -> T.LibraryPath:
     """
     find venv root (the "site-packages" folder) by `poetry env` command.
+    FIXME: poetry env is very unreliable!
     """
     from ...platform.system_info import IS_WINDOWS
     
@@ -37,13 +37,13 @@ def get_library_root(working_root: str) -> T.LibraryPath:
         del os.environ['VIRTUAL_ENV']
     venv_root = fs.normpath(
         run_cmd_args(
-            (*_poetry, 'env', 'info'),
-            ('--path', '--no-ansi'),
-            ('--directory', working_root),
+            _poetry, 'env', 'info', '--path', '--no-ansi',
+            '--directory', working_root,
             cwd=working_root,
         )
     )
     print(venv_root)
+    assert venv_root.endswith('py3.12')
     
     if IS_WINDOWS:
         out = '{}/Lib/site-packages'.format(venv_root)
@@ -87,8 +87,8 @@ def get_top_package_names_by_poetry(
 
 
 def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
-    # FIXME: there is a bug (?) that it may not show all top names if some \
-    #   packages have custom urls. please use `_get_top_names_by_poetry_2` as \
+    # FIXME: there is a bug (?) that it may not show all top names if some -
+    #   packages have custom urls. please use `_get_top_names_by_poetry_2` as -
     #   a workaround.
     yield from map(
         normalize_name,

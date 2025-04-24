@@ -29,14 +29,15 @@
 /sidework/ui_prototype/
 /temp/*
 /test/_config/
-dist/**
 
 __pycache__/
+dist/**
+
 *.bak.*
 *.bak[0123456789].*
 .DS_Store
-*.bak.*
 
+!**/.gitkeep
 !/dist/
 !/dist/standalone/
 !/oss/apps/
@@ -46,4 +47,3 @@ __pycache__/
 !/python/README.zh.md
 !/pypi/*/
 !/pypi/index/snapdep/
-!**/.gitkeep
