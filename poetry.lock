@@ -309,13 +309,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "airmise"
-version = "0.3.0a9"
+version = "0.3.0a17"
 description = "The native experience of calling remote functions, like local ones."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "airmise-0.3.0a9-py3-none-any.whl", hash = "sha256:8d7a60fdb940244a1f20069547edc4db7230c0b839baf3fccfaa7a840e262e90"},
+    {file = "airmise-0.3.0a17-py3-none-any.whl", hash = "sha256:261ba15444cc1852c40e7e3918f25177289674e7069facba5319d280406a1b08"},
 ]
 
 [package.dependencies]
@@ -323,9 +323,9 @@ aiohttp = [
     {version = ">=3.10", markers = "python_version >= \"3.9\" and python_version < \"4.0\""},
     {version = ">=3.10.6,<4.0.0", markers = "python_version == \"3.8\""},
 ]
-argsense = ">=0.7.1,<0.8.0"
+argsense = ">=0.7.2"
 lk-logger = ">=6.0.5,<7.0.0"
-lk-utils = ">=3.1.3,<4.0.0"
+lk-utils = ">=3.2.0b1,<4.0.0"
 websocket-client = ">=1.8.0,<2.0.0"
 
 [package.source]
@@ -448,7 +448,7 @@ description = "Disable App Nap on macOS >= 10.9"
 optional = false
 python-versions = ">=3.6"
 groups = ["dev"]
-markers = "(platform_system == \"Darwin\" or sys_platform == \"darwin\") and python_version < \"3.13\" and (platform_system == \"Darwin\" or python_version == \"3.8\")"
+markers = "platform_system == \"Darwin\" or sys_platform == \"darwin\" and python_version < \"3.9\""
 files = [
     {file = "appnope-0.1.4-py2.py3-none-any.whl", hash = "sha256:502575ee11cd7a28c0205f379b525beefebab9d161b7c964670864014ed7213c"},
     {file = "appnope-0.1.4.tar.gz", hash = "sha256:1de3860566df9caf38f01f86f65e0e13e379af54f9e4bee1e66b48f2efffd1ee"},
@@ -461,13 +461,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "argsense"
-version = "0.7.1"
+version = "1.0.0a1"
 description = "New command line interface based on Rich library."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "argsense-0.7.1-py3-none-any.whl", hash = "sha256:632d5d5e52bc8c85356fe3e1f8193c4ae4352dc044fc77761d1822058aa5d720"},
+    {file = "argsense-1.0.0a1-py3-none-any.whl", hash = "sha256:521eb953e8db9478d94ce9eaa37c1ae693e5354c63f3df4b6ab6d8416fd7fb23"},
 ]
 
 [package.dependencies]
@@ -554,7 +554,7 @@ description = "Specifications for callback functions passed in to an API"
 optional = false
 python-versions = "*"
 groups = ["dev"]
-markers = "python_version == \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "backcall-0.2.0-py2.py3-none-any.whl", hash = "sha256:fbbce6a29f263178a1f7915c1940bde0ec2b2a967566fe1c65c1dfb7422bd255"},
     {file = "backcall-0.2.0.tar.gz", hash = "sha256:5cbdbf27be5e7cfadb448baf0aa95508f91f2bbc6c6437cd9cd06e2a4c215e1e"},
@@ -821,7 +821,7 @@ files = [
     {file = "cffi-1.17.1-cp39-cp39-win_amd64.whl", hash = "sha256:d016c76bdd850f3c626af19b0542c9677ba156e4ee4fccfdd7848803533ef662"},
     {file = "cffi-1.17.1.tar.gz", hash = "sha256:1c39c6016c32bc48dd54561950ebd6836e1670f2ae46128f67cf49e789c52824"},
 ]
-markers = {main = "platform_python_implementation != \"PyPy\" or (sys_platform == \"darwin\" or sys_platform == \"win32\") and python_version < \"3.14\" or sys_platform == \"darwin\"", dev = "sys_platform == \"win32\" and python_version < \"3.14\" or implementation_name == \"pypy\" and python_version < \"3.13\""}
+markers = {main = "platform_python_implementation != \"PyPy\" or (sys_platform == \"darwin\" or sys_platform == \"win32\") and python_version < \"3.14\" or sys_platform == \"darwin\"", dev = "sys_platform == \"win32\" and python_version < \"3.14\" or implementation_name == \"pypy\""}
 
 [package.dependencies]
 pycparser = "*"
@@ -1011,7 +1011,7 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-markers = {main = "os_name == \"nt\" or platform_system == \"Windows\"", dev = "sys_platform == \"win32\" or platform_system == \"Windows\""}
+markers = {main = "os_name == \"nt\" or platform_system == \"Windows\"", dev = "platform_system == \"Windows\" or sys_platform == \"win32\""}
 
 [package.source]
 type = "legacy"
@@ -1025,7 +1025,6 @@ description = "Jupyter Python Comm implementation, for usage in ipykernel, xeus-
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
     {file = "comm-0.2.2-py3-none-any.whl", hash = "sha256:e6fb86cb70ff661ee8c9c14e7d36d6de3b4066f1441be4063df9c5009f0a64d3"},
     {file = "comm-0.2.2.tar.gz", hash = "sha256:3fd7a84065306e07bea1773df6eb8282de51ba82f77c72f9c85716ab11fe980e"},
@@ -1361,7 +1360,6 @@ description = "An implementation of the Debug Adapter Protocol for Python"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
     {file = "debugpy-1.8.12-cp310-cp310-macosx_14_0_x86_64.whl", hash = "sha256:a2ba7ffe58efeae5b8fad1165357edfe01464f9aef25e814e891ec690e7dd82a"},
     {file = "debugpy-1.8.12-cp310-cp310-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:cbbd4149c4fc5e7d508ece083e78c17442ee13b0e69bfa6bd63003e486770f45"},
@@ -2236,7 +2234,6 @@ description = "IPython Kernel for Jupyter"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
     {file = "ipykernel-6.29.5-py3-none-any.whl", hash = "sha256:afdb66ba5aa354b09b91379bac28ae4afebbb30e8b39510c9690afb7a10421b5"},
     {file = "ipykernel-6.29.5.tar.gz", hash = "sha256:f093a22c4a40f8828f8e330a9c297cb93dcab13bd9678ded6de8e5cf81c56215"},
@@ -2276,7 +2273,7 @@ description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version == \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "ipython-8.12.3-py3-none-any.whl", hash = "sha256:b0340d46a933d27c657b211a329d0be23793c36595acf9e6ef4164bc01a1804c"},
     {file = "ipython-8.12.3.tar.gz", hash = "sha256:3910c4b54543c2ad73d06579aa771041b7d5707b033bd488669b4cf544e3b363"},
@@ -2366,7 +2363,7 @@ description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.10"
 groups = ["dev"]
-markers = "python_version == \"3.10\" or python_version == \"3.11\""
+markers = "python_version == \"3.10\""
 files = [
     {file = "ipython-8.32.0-py3-none-any.whl", hash = "sha256:cae85b0c61eff1fc48b0a8002de5958b6528fa9c8defb1894da63f42613708aa"},
     {file = "ipython-8.32.0.tar.gz", hash = "sha256:be2c91895b0b9ea7ba49d33b23e2040c352b33eb6a519cca7ce6e0c743444251"},
@@ -2411,7 +2408,7 @@ description = "IPython: Productive Interactive Computing"
 optional = false
 python-versions = ">=3.11"
 groups = ["dev"]
-markers = "python_version >= \"3.12\""
+markers = "python_version >= \"3.11\""
 files = [
     {file = "ipython-9.0.2-py3-none-any.whl", hash = "sha256:143ef3ea6fb1e1bffb4c74b114051de653ffb7737a3f7ab1670e657ca6ae8c44"},
     {file = "ipython-9.0.2.tar.gz", hash = "sha256:ec7b479e3e5656bf4f58c652c120494df1820f4f28f522fb7ca09e213c2aab52"},
@@ -2428,6 +2425,7 @@ prompt_toolkit = ">=3.0.41,<3.1.0"
 pygments = ">=2.4.0"
 stack_data = "*"
 traitlets = ">=5.13.0"
+typing_extensions = {version = ">=4.6", markers = "python_version < \"3.12\""}
 
 [package.extras]
 all = ["ipython[doc,matplotlib,test,test-extra]"]
@@ -2449,7 +2447,7 @@ description = "Defines a variety of Pygments lexers for highlighting IPython cod
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version >= \"3.12\""
+markers = "python_version >= \"3.11\""
 files = [
     {file = "ipython_pygments_lexers-1.1.1-py3-none-any.whl", hash = "sha256:a9462224a505ade19a605f71f8fa63c2048833ce50abc86768a0d81d876dc81c"},
     {file = "ipython_pygments_lexers-1.1.1.tar.gz", hash = "sha256:09c0138009e56b6854f9535736f4171d855c8c08a563a0dcd8022f78355c7e81"},
@@ -2705,7 +2703,6 @@ description = "Jupyter protocol implementation and client libraries"
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
     {file = "jupyter_client-8.6.3-py3-none-any.whl", hash = "sha256:e8a19cc986cc45905ac3362915f410f3af85424b4c0905e94fa5f2cb08e8f23f"},
     {file = "jupyter_client-8.6.3.tar.gz", hash = "sha256:35b3a0947c4a6e9d589eb97d7d4cd5e90f910ee73101611f01283732bd6d9419"},
@@ -2735,7 +2732,6 @@ description = "Jupyter terminal console"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
     {file = "jupyter_console-6.6.3-py3-none-any.whl", hash = "sha256:309d33409fcc92ffdad25f0bcdf9a4a9daa61b6f341177570fdac03de5352485"},
     {file = "jupyter_console-6.6.3.tar.gz", hash = "sha256:566a4bf31c87adbfadf22cdf846e3069b59a71ed5da71d6ba4d8aaad14a53539"},
@@ -2766,7 +2762,6 @@ description = "Jupyter core package. A base package on which Jupyter projects re
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
     {file = "jupyter_core-5.7.2-py3-none-any.whl", hash = "sha256:4f7315d2f6b4bcf2e3e7cb6e46772eba760ae459cd1f59d29eb57b0a01bd7409"},
     {file = "jupyter_core-5.7.2.tar.gz", hash = "sha256:aa5f8d32bbf6b431ac830496da7392035d6f61b4f54872f15c4bd2a9c3f536d9"},
@@ -2990,7 +2985,7 @@ description = "A concrete syntax tree with AST-like properties for Python 3.5, 3
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
+markers = "python_version == \"3.9\" or python_version == \"3.10\" or python_version == \"3.11\" or python_version == \"3.12\" or python_version == \"3.8\""
 files = [
     {file = "libcst-1.1.0-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:63f75656fd733dc20354c46253fde3cf155613e37643c3eaf6f8818e95b7a3d1"},
     {file = "libcst-1.1.0-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:8ae11eb1ea55a16dc0cdc61b41b29ac347da70fec14cc4381248e141ee2fbe6c"},
@@ -3062,24 +3057,25 @@ reference = "likianta"
 
 [[package]]
 name = "lk-utils"
-version = "3.2.0a2"
+version = "3.2.0b7"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8,<4.0"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.2.0a2-py3-none-any.whl", hash = "sha256:7e11509cb439f7974aade07fba53167b90604c0b7dfc5d36086d19767f728d33"},
+    {file = "lk_utils-3.2.0b7-py3-none-any.whl", hash = "sha256:1fd687010d88d5ee02c304677d9c805b729dc4b3c9785bd964c4c1d1fb09c9fd"},
 ]
 
 [package.dependencies]
-argsense = ">=0.7.0"
-lk-logger = ">=6.0.4,<7.0.0"
+argsense = ">=0.7.1"
+lk-logger = ">=6.0.5,<7.0.0"
 psutil = ">=6.0.0,<7.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
 rich = ">=13.9.0,<14.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.extras]
+all = ["ipython (<9.0.0) ; python_version >= \"3.8\" and python_version < \"3.11\"", "ipython (>=9.0.0,<10.0.0) ; python_version >= \"3.11\" and python_version < \"4.0\"", "xlrd (==1.2.0)", "xlsxwriter (>=3.2.0,<4.0.0)"]
 exl = ["xlrd (==1.2.0)", "xlsxwriter (>=3.2.0,<4.0.0)"]
 
 [package.source]
@@ -3746,7 +3742,7 @@ description = "Type system extensions for programs checked with the mypy type ch
 optional = false
 python-versions = ">=3.5"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
+markers = "python_version == \"3.9\" or python_version == \"3.10\" or python_version == \"3.11\" or python_version == \"3.12\" or python_version == \"3.8\""
 files = [
     {file = "mypy_extensions-1.0.0-py3-none-any.whl", hash = "sha256:4392f6c0eb8a5668a69e23d168ffa70f0be9ccfd32b5cc2d26a34ae5b844552d"},
     {file = "mypy_extensions-1.0.0.tar.gz", hash = "sha256:75dbf8955dc00442a438fc4d0666508a9a97b6bd41aa2f0ffe9d2f2725af0782"},
@@ -4261,7 +4257,7 @@ files = [
     {file = "pexpect-4.9.0-py2.py3-none-any.whl", hash = "sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523"},
     {file = "pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f"},
 ]
-markers = {main = "python_version < \"3.9\"", dev = "sys_platform != \"win32\" and (python_version == \"3.9\" or sys_platform != \"win32\" and sys_platform != \"emscripten\" or python_version == \"3.8\")"}
+markers = {main = "python_version < \"3.9\"", dev = "sys_platform != \"win32\" and python_version <= \"3.9\" or sys_platform != \"win32\" and sys_platform != \"emscripten\""}
 
 [package.dependencies]
 ptyprocess = ">=0.5"
@@ -4278,7 +4274,7 @@ description = "Tiny 'shelve'-like database with concurrency support"
 optional = false
 python-versions = "*"
 groups = ["dev"]
-markers = "python_version == \"3.8\""
+markers = "python_version < \"3.9\""
 files = [
     {file = "pickleshare-0.7.5-py2.py3-none-any.whl", hash = "sha256:9649af414d74d4df115d5d718f82acb59c9d418196b7b4290ed47a12ce62df56"},
     {file = "pickleshare-0.7.5.tar.gz", hash = "sha256:87683d47965c1da65cdacaf31c8441d12b8044cdec9aca500cd78fc2c683afca"},
@@ -4490,13 +4486,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "pinkrain"
-version = "0.0.0a28"
+version = "0.0.0a29"
 description = ""
 optional = false
 python-versions = ">=3.8,<4.0"
 groups = ["dev"]
 files = [
-    {file = "pinkrain-0.0.0a28-py3-none-any.whl", hash = "sha256:e49f99e82dd94e735a5a175b0fc9d85796958e94680099e22578f7da869cbf2a"},
+    {file = "pinkrain-0.0.0a29-py3-none-any.whl", hash = "sha256:0bd8cfe5a679c8724d471024545f0483657d662acb82b914e2b20f1888872523"},
 ]
 
 [package.dependencies]
@@ -4504,15 +4500,15 @@ aiohttp = [
     {version = ">=3.10", markers = "python_version >= \"3.9\" and python_version < \"4.0\""},
     {version = ">=3.10,<4.0", markers = "python_version < \"3.9\""},
 ]
-airmise = ">=0.3.0a8,<0.4.0"
-argsense = ">=0.7.1,<0.8.0"
-brython = {version = ">=3.12,<4.0", markers = "python_version >= \"3.12\" and python_version < \"4.0\""}
+airmise = ">=0.3.0a16,<0.4.0"
+argsense = ">=1.0.0a1,<2.0.0"
+brython = {version = ">=3.13,<4.0", markers = "python_version >= \"3.12\" and python_version < \"4.0\""}
 fake-typing = ">=0.1.3,<0.2.0"
 libcst = {version = ">=1.0.1,<2.0.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\""}
-lk-logger = ">=6.0.5,<7.0.0"
-lk-utils = ">=3.1.3,<4.0.0"
+lk-logger = ">=6.0.6a0,<7.0.0"
+lk-utils = ">=3.2.0b2,<4.0.0"
 pyapp-window = ">=2.2.0b2,<3.0.0"
-remote-ipython = {version = ">=1.0.0b2,<2.0.0", markers = "python_version >= \"3.8\" and python_version < \"3.13\""}
+remote-ipython = ">=1.0.0b10,<2.0.0"
 watchdog = [
     {version = ">=5.0.0", markers = "python_version >= \"3.9\" and python_version < \"4.0\""},
     {version = ">=4.0.0,<5.0.0", markers = "python_version == \"3.8\""},
@@ -4614,7 +4610,6 @@ files = [
     {file = "platformdirs-4.3.6-py3-none-any.whl", hash = "sha256:73e575e1408ab8103900836b97580d5307456908a03e92031bab39e4554cc3fb"},
     {file = "platformdirs-4.3.6.tar.gz", hash = "sha256:357fb2acbc885b0419afd3ce3ed34564c13c9b95c89360cd9563f73aa5e2b907"},
 ]
-markers = {dev = "python_version < \"3.13\""}
 
 [package.extras]
 docs = ["furo (>=2024.8.6)", "proselint (>=0.14)", "sphinx (>=8.0.2)", "sphinx-autodoc-typehints (>=2.4)"]
@@ -5159,7 +5154,7 @@ files = [
     {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
     {file = "ptyprocess-0.7.0.tar.gz", hash = "sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220"},
 ]
-markers = {main = "python_version < \"3.9\"", dev = "sys_platform != \"win32\" and (python_version == \"3.9\" or sys_platform != \"win32\" and sys_platform != \"emscripten\" or python_version == \"3.8\")"}
+markers = {main = "python_version < \"3.9\"", dev = "sys_platform != \"win32\" and python_version <= \"3.9\" or sys_platform != \"win32\" and sys_platform != \"emscripten\""}
 
 [package.source]
 type = "legacy"
@@ -5188,17 +5183,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyapp-window"
-version = "2.2.0b2"
+version = "2.2.0b3"
 description = "Launching URL with native window in WebView mode."
 optional = false
 python-versions = ">=3.8,<4.0"
 groups = ["main", "dev"]
 files = [
-    {file = "pyapp_window-2.2.0b2-py3-none-any.whl", hash = "sha256:231c47906f6b6a8c279c0c80ba904b9d3d89ff0d4c7818292e24069df7151f0f"},
+    {file = "pyapp_window-2.2.0b3-py3-none-any.whl", hash = "sha256:2e93467360165c51c4e67014521a9dd609050a5dcc2409012f05c223466140be"},
 ]
 
 [package.dependencies]
-argsense = ">=0.7.1,<0.8.0"
+argsense = ">=0.7.1"
 lk-logger = ">=6.0.5,<7.0.0"
 lk-utils = ">=3.1.3,<4.0.0"
 pythonnet = {version = ">=3.0.5,<4.0.0", markers = "python_version < \"3.14\" and sys_platform == \"win32\""}
@@ -5341,7 +5336,7 @@ files = [
     {file = "pycparser-2.22-py3-none-any.whl", hash = "sha256:c3702b6d3dd8c7abc1afa565d7e63d53a1d0bd86cdc24edd75470f4de499cfcc"},
     {file = "pycparser-2.22.tar.gz", hash = "sha256:491c8be9c040f5390f5bf44a5b07752bd07f56edf992381b05c701439eec10f6"},
 ]
-markers = {main = "platform_python_implementation != \"PyPy\" or (sys_platform == \"darwin\" or sys_platform == \"win32\") and python_version < \"3.14\" or sys_platform == \"darwin\"", dev = "sys_platform == \"win32\" and python_version < \"3.14\" or implementation_name == \"pypy\" and python_version < \"3.13\""}
+markers = {main = "platform_python_implementation != \"PyPy\" or (sys_platform == \"darwin\" or sys_platform == \"win32\") and python_version < \"3.14\" or sys_platform == \"darwin\"", dev = "sys_platform == \"win32\" and python_version < \"3.14\" or implementation_name == \"pypy\""}
 
 [package.source]
 type = "legacy"
@@ -5771,7 +5766,7 @@ description = "Python for Window Extensions"
 optional = false
 python-versions = "*"
 groups = ["dev"]
-markers = "sys_platform == \"win32\" and platform_python_implementation != \"PyPy\" and python_version < \"3.13\" or python_full_version == \"3.9.7\" and platform_system == \"Windows\""
+markers = "sys_platform == \"win32\" and platform_python_implementation != \"PyPy\" or python_full_version == \"3.9.7\" and platform_system == \"Windows\""
 files = [
     {file = "pywin32-308-cp310-cp310-win32.whl", hash = "sha256:796ff4426437896550d2981b9c2ac0ffd75238ad9ea2d3bfa67a1abd546d262e"},
     {file = "pywin32-308-cp310-cp310-win_amd64.whl", hash = "sha256:4fc888c59b3c0bef905ce7eb7e2106a07712015ea1c8234b703a088d46110e8e"},
@@ -5891,7 +5886,6 @@ description = "Python bindings for 0MQ"
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
     {file = "pyzmq-26.2.1-cp310-cp310-macosx_10_15_universal2.whl", hash = "sha256:f39d1227e8256d19899d953e6e19ed2ccb689102e6d85e024da5acf410f301eb"},
     {file = "pyzmq-26.2.1-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:a23948554c692df95daed595fdd3b76b420a4939d7a8a28d6d7dea9711878641"},
@@ -6014,17 +6008,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "qmlease"
-version = "3.0.5a13"
+version = "3.0.5a14"
 description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
 optional = false
 python-versions = ">=3.8,<4.0"
 groups = ["dev"]
 files = [
-    {file = "qmlease-3.0.5a13-py3-none-any.whl", hash = "sha256:363fdd85426a8473d2d5f7793d822370fce1bbf5637fbdba36af1061b8b8309f"},
+    {file = "qmlease-3.0.5a14-py3-none-any.whl", hash = "sha256:8ac9ac9c4f442d9b9321371f2c1b8142bfaa8d706293719cc2bde2955a249066"},
 ]
 
 [package.dependencies]
-argsense = ">=0.7.1,<0.8.0"
+argsense = ">=0.7.1"
 lk-logger = ">=6.0.5,<7.0.0"
 lk-utils = ">=3.2.0a1,<4.0.0"
 qtpy = ">=2.4.3,<3.0.0"
@@ -6208,23 +6202,22 @@ reference = "tsinghua"
 
 [[package]]
 name = "remote-ipython"
-version = "1.0.0b3"
+version = "1.0.0b11"
 description = ""
 optional = false
 python-versions = ">=3.8,<4.0"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
 files = [
-    {file = "remote_ipython-1.0.0b3-py3-none-any.whl", hash = "sha256:bcc789e569367ed05d91bcaad798686785e4cead1bbb01375c554a9c04d44205"},
+    {file = "remote_ipython-1.0.0b11-py3-none-any.whl", hash = "sha256:c49c8840230aced9d375157ba2c84f0b00e5b3453ad1805c0ec87da5e11835c5"},
 ]
 
 [package.dependencies]
-ipykernel = ">=6.27.1,<7.0.0"
+argsense = ">=0.7.1"
+ipykernel = ">=6.29.5,<7.0.0"
 ipython = ">=8.12.0"
 jupyter-console = ">=6.6.3,<7.0.0"
 lk-logger = ">=6.0.5,<7.0.0"
-lk-utils = ">=3.1.3,<4.0.0"
-prompt-toolkit = ">=3.0.41,<4.0.0"
+prompt-toolkit = ">=3.0.50,<4.0.0"
 
 [package.source]
 type = "legacy"
@@ -6901,15 +6894,15 @@ reference = "tsinghua"
 
 [[package]]
 name = "streamlit"
-version = "1.43.2"
+version = "1.44.1"
 description = "A faster way to build and share data apps"
 optional = false
 python-versions = ">=3.9, !=3.9.7"
 groups = ["main", "dev"]
 markers = "python_version >= \"3.9\" and python_full_version != \"3.9.7\""
 files = [
-    {file = "streamlit-1.43.2-py2.py3-none-any.whl", hash = "sha256:c773ff70e8dd14066e49ba4b36740e4d36b0c534624f49abcc73b75389bf9420"},
-    {file = "streamlit-1.43.2.tar.gz", hash = "sha256:f3afa2af637d00154c6a4c560d2fde256d7dc8cc1f32a53cf20570c0967841bc"},
+    {file = "streamlit-1.44.1-py3-none-any.whl", hash = "sha256:9fe355f58b11f4eb71e74f115ce1f38c4c9eaff2733e6bcffb510ac1298a5990"},
+    {file = "streamlit-1.44.1.tar.gz", hash = "sha256:c6914ed6d5b76870b461510476806db370f36425ae0e6654d227c988288198d3"},
 ]
 
 [package.dependencies]
@@ -6988,21 +6981,21 @@ reference = "tsinghua"
 
 [[package]]
 name = "streamlit-canary"
-version = "0.1.0a20"
+version = "0.1.0a21"
 description = ""
 optional = false
 python-versions = ">=3.8,<4.0"
 groups = ["dev"]
 files = [
-    {file = "streamlit_canary-0.1.0a20-py3-none-any.whl", hash = "sha256:d0ef4ac60e9f6f88393c4f2591b46e6cf837155d95bf83e156f08fda6200fec4"},
+    {file = "streamlit_canary-0.1.0a21-py3-none-any.whl", hash = "sha256:f09e9beadee04c0bb07a181a00d003a6f1a30ad1b2bae9e63931529c87c908fd"},
 ]
 
 [package.dependencies]
-argsense = ">=0.7.1,<0.8.0"
+argsense = ">=0.7.1"
 lk-utils = ">=3.1.3,<4.0.0"
 streamlit = [
     {version = ">=1.40.0,<2.0.0", markers = "python_version >= \"3.8\" and python_full_version != \"3.9.7\" and python_version < \"3.10\""},
-    {version = ">=1.43.0,<2.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""},
+    {version = ">=1.44.0,<2.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""},
 ]
 
 [package.source]
@@ -7836,7 +7829,7 @@ description = "Runtime inspection utilities for typing module."
 optional = false
 python-versions = "*"
 groups = ["dev"]
-markers = "python_version < \"3.13\""
+markers = "python_version == \"3.9\" or python_version == \"3.10\" or python_version == \"3.11\" or python_version == \"3.12\" or python_version == \"3.8\""
 files = [
     {file = "typing_inspect-0.9.0-py3-none-any.whl", hash = "sha256:9ee6fc59062311ef8547596ab6b955e1b8aa46242d854bfc78f4f6b0eff35f9f"},
     {file = "typing_inspect-0.9.0.tar.gz", hash = "sha256:b23fc42ff6f6ef6954e4852c1fb512cdd18dbea03134f91f856a95ccc9461f78"},
@@ -8530,4 +8523,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "54b37cd563366d103921c847942d0da2481ac41531327ab6c1717f0b967d99d5"
+content-hash = "aaf5d42c86e8b4cf0b8eba83b08d4983b70d86afbed3da7cb148e75a8443953c"

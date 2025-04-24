@@ -6,9 +6,10 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
+/chore/*.7z
 /chore/*.zip
 /chore/minified_site_packages/*
-/chore/site_packages/*
+/chore/site_packages
 /chore/venv
 /config/.redirect
 /config/auto_saved.pkl

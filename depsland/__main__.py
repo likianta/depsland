@@ -37,7 +37,10 @@ print(
 )
 
 
-@cli.cmd()
+# -----------------------------------------------------------------------------
+# depsland intro
+
+@cli
 def about() -> None:
     """
     show basic information about depsland.
@@ -70,12 +73,12 @@ def about() -> None:
     print(':rs1', '[magenta]located at [u]{}[/][/]'.format(__path__[0]))
 
 
-@cli.cmd()
+@cli
 def self_location() -> None:
     print('[green b u]{}[/]'.format(fs.xpath('.')), ':s1r')
 
 
-@cli.cmd()
+@cli
 def welcome(confirm_close: bool = False) -> None:
     """
     show welcome message and exit.
@@ -106,7 +109,10 @@ def welcome(confirm_close: bool = False) -> None:
         input('press enter to close window...')
 
 
-@cli.cmd()
+# -----------------------------------------------------------------------------
+# depsland ui
+
+@cli
 def launch_gui(
     port: int = 2180,
     _app_token: str = None,
@@ -115,7 +121,7 @@ def launch_gui(
     """
     launch depsland gui.
     
-    kwargs:
+    params:
         _app_token: an appid or a path to a manifest file.
             if given, the app will launch and instantly install it.
         _run_at_once:
@@ -156,14 +162,14 @@ def launch_gui(
 
 
 # -----------------------------------------------------------------------------
-# ordered by lifecycle
+# development process (ordered by lifecycle)
 
-@cli.cmd()
+@cli
 def init(target: str = '.', app_name: str = '') -> None:
     """
     create a "manifest.json" file in project directory.
     
-    kwargs:
+    params:
         target (-t): a directory or file path to generate manifest file at.
             if given a directory, will create a "manifest.json" file under -
             this directory.
@@ -179,7 +185,7 @@ def init(target: str = '.', app_name: str = '') -> None:
     api.init(manifest_file, app_name)
 
 
-@cli.cmd()
+@cli
 def build(
     manifest: str = '.',
     offline: bool = False,
@@ -191,7 +197,7 @@ def build(
     the build result is stored in "dist" directory.
     [dim i](if "dist" not exists, it will be auto created.)[/]
     
-    kwargs:
+    params:
         manifest (-m): see `init : [param] target : [docstring]`.
     """
     if offline:
@@ -200,7 +206,7 @@ def build(
         api.build(_normalize_manifest_path(manifest))
 
 
-@cli.cmd()
+@cli
 def publish(
     target: str = '.',
     full_upload: bool = False,
@@ -223,12 +229,12 @@ def publish(
     )
 
 
-@cli.cmd()
+@cli
 def install(appid: str, upgrade: bool = True, reinstall: bool = False) -> None:
     """
     install an app from oss by querying appid.
     
-    kwargs:
+    params:
         upgrade (-u):
         reinstall (-r):
     """
@@ -236,7 +242,7 @@ def install(appid: str, upgrade: bool = True, reinstall: bool = False) -> None:
     api.install_by_appid(appid, upgrade, reinstall)
 
 
-@cli.cmd()
+@cli
 def upgrade(appid: str) -> None:
     """
     upgrade an app from oss by querying appid.
@@ -244,7 +250,7 @@ def upgrade(appid: str) -> None:
     api.install_by_appid(appid, upgrade=True, reinstall=False)
 
 
-@cli.cmd()
+@cli
 def uninstall(appid: str, version: str = None) -> None:
     """
     uninstall an application.
@@ -258,18 +264,19 @@ def uninstall(appid: str, version: str = None) -> None:
 
 
 # -----------------------------------------------------------------------------
+# launch application
 
 cli.add_cmd(api.user_api.run_app, 'run', transfer_help=True)
 
 
-# @cli.cmd()
+# @cli
 # def run(appid: str = None, version: str = None, *args, **kwargs) -> None:
 #     # if 'VIRTURAL_ENV' in os.environ:
 #     #     del os.environ['VIRTURAL_ENV']
 #     api.user_api.run_app(appid, _version=version, *args, **kwargs)
 
 
-@cli.cmd()
+@cli
 def runx(
     appid: str,
     version: str = None,
@@ -309,8 +316,40 @@ def _cli() -> None:
 
 
 # -----------------------------------------------------------------------------
+# view application
 
-@cli.cmd()
+
+@cli
+def list_apps() -> None:
+    """
+    list installed apps.
+    """
+    rows = [('index', 'app name', 'appid', 'version')]
+    i = 0
+    for d in fs.find_dirs(paths.project.apps):
+        if not d.name.startswith('.'):
+            if fs.exist(x := f'{d.path}/.inst_history'):
+                latest_version = None
+                with open(x, 'r', encoding='utf-8') as f:
+                    for first_line in f.readlines():
+                        latest_version = first_line.strip()
+                        break
+                assert latest_version
+                i += 1
+                rows.append((
+                    str(i),
+                    fs.load('{}/{}/manifest.pkl'.format(
+                        d.path, latest_version))['name'],
+                    d.name,
+                    latest_version,
+                ))
+    if len(rows) > 1:
+        print(rows, ':r2')
+    else:
+        print('there is no installed apps in "{}"'.format(paths.project.apps))
+
+
+@cli
 def show(appid: str, version: str = None) -> None:
     """
     show manifest of an app.
@@ -324,35 +363,33 @@ def show(appid: str, version: str = None) -> None:
     print(manifest, ':l')
 
 
-@cli.cmd()
-def show_packages(poetry_file: str, save_result: str = None) -> None:
-    pkgs = resolve_dependencies('poetry.lock', fs.parent(poetry_file))
-    rows = [('index', 'name', 'version', 'files count')]
-    indx = 0
-    for name, info in pkgs.items():
-        indx += 1
-        rows.append((indx, name, info['version'], len(info['files'])))
-    print(rows, ':r2')
-    if save_result:
-        fs.dump(pkgs, save_result)
-
-
-@cli.cmd()
+@cli
 def view_manifest(manifest: str = '.') -> None:
     from .manifest import load_manifest
     manifest = load_manifest(_normalize_manifest_path(manifest))
     print(manifest, ':l')
 
 
-# -----------------------------------------------------------------------------
+@cli
+def show_packages(poetry_file: str, save_result: str = None) -> None:
+    pkgs = resolve_dependencies('poetry.lock', fs.parent(poetry_file))
+    rows = [('index', 'name', 'version', 'files count')]
+    indx = 0
+    for name, info in pkgs.items():
+        indx += 1
+        # noinspection PyTypeChecker
+        rows.append((indx, name, info['version'], len(info['files'])))
+    print(rows, ':r2')
+    if save_result:
+        fs.dump(pkgs, save_result)
 
 
-@cli.cmd()
+@cli
 def get_package_size(
     name: str, version: str = None, include_dependencies: bool = False
 ) -> None:
     """
-    kwargs:
+    params:
         include_dependencies (-d):
     """
     from .pypi import insight
@@ -360,7 +397,7 @@ def get_package_size(
 
 
 # -----------------------------------------------------------------------------
-
+# misc
 
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
     from .verspec import compare_version
