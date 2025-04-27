@@ -20,6 +20,7 @@ from . import paths
 from .depsolver import resolve_dependencies
 from .manifest import T
 from .manifest import get_last_installed_version
+from .manifest import load_manifest
 from .normalization import check_name_normalized
 
 # fix sys.argv
@@ -43,32 +44,12 @@ def about() -> None:
     """
     show basic information about depsland.
     """
-    # ref: the rich text (with gradient color) effect is copied from
-    #   likianta/lk-logger project.
-    from random import choice
-    
-    from lk_logger.control import _blend_text  # noqa
-    
     from . import __date__
     from . import __path__
     from . import __version__
-    
-    color_pairs_group = (
-        ('#0a87ee', '#9294f0'),  # calm blue -> light blue
-        ('#2d34f1', '#9294f0'),  # ocean blue -> light blue
-        ('#ed3b3b', '#d08bf3'),  # rose red -> violet
-        ('#f38cfd', '#d08bf3'),  # light magenta -> violet
-        ('#f47fa4', '#f49364'),  # cold sandy -> camel tan
-    )
-    
-    color_pair = choice(color_pairs_group)
-    colorful_title = _blend_text(
-        '♥ depsland v{} ♥'.format(__version__), color_pair
-    )
-    print(f'[b]{colorful_title}[/]', ':rs1')
-    
-    print(':rs1', '[cyan]released at [u]{}[/][/]'.format(__date__))
-    print(':rs1', '[magenta]located at [u]{}[/][/]'.format(__path__[0]))
+    print(':rs1', '[red b]♥ depsland [u]v{}[/] ♥[/]'.format(__version__))
+    print(':rs1', '  [cyan]released at [u]{}[/][/]'.format(__date__))
+    print(':rs1', '  [magenta]located  at [u]{}[/][/]'.format(__path__[0]))
 
 
 @cli
@@ -259,34 +240,56 @@ cli.add_cmd(api.user_api.run_app, 'run', transfer_help=True)
 
 
 @cli
-def runx(appid: str, version: str = None, use_exist: bool = True) -> None:
+def runx(
+    appid: str,
+    version: str = None,
+    use_exist: bool = True,
+    *,
+    dry_run: bool = False,
+) -> None:
     """
     check app exists, if not, download and install it. then run the application.
     prerequisite:
         make sure your network available.
     """
-    exist = False
+    app_exists = False
+    ver_exists = False
     if fs.exist(x := '{}/{}'.format(paths.apps.root, appid)):
+        app_exists = True
         if version:
             if fs.exist('{}/{}'.format(x, version)):
-                exist = True
+                ver_exists = True
         else:
             if use_exist:
                 assert _get_dir_to_last_installed_version(appid)
-                exist = True
+                ver_exists = True
             else:
                 raise NotImplementedError
     
-    if exist:
+    if app_exists and ver_exists:
         api.user_api.run_app(appid, _version=version)
     else:
+        m: T.Manifest
+        if app_exists:
+            x = _get_dir_to_last_installed_version(appid)
+            m = load_manifest(f'{x}/manifest.pkl')
+        else:
+            _, m = _get_manifests(appid)
+            # FIXME: what if `m['version'] > version`?
+        
         # show a mini UI to notify user the installation progress.
         import streamlit_canary as sc
         sc.run(
             title='Depsland Setup Wizard',
             icon=paths.build.launcher_icon,
             target=fs.xpath('webui/setup_wizard/app.py'),
-            extra_args=(appid,),
+            extra_args=(
+                m['name'],
+                m['appid'],
+                ':empty',  # TODO: description
+                '--dry-run' if dry_run else '--not-dry-run',
+                # ':true' if dry_run else ':false',
+            ),
             port=2181,
             show_window=True,
             size=(1010, 700),
@@ -340,7 +343,6 @@ def show(appid: str, version: str = None) -> None:
     """
     show manifest of an app.
     """
-    from .manifest import load_manifest
     if version is None:
         version = get_last_installed_version(appid)
     assert version is not None
@@ -351,7 +353,6 @@ def show(appid: str, version: str = None) -> None:
 
 @cli
 def view_manifest(manifest: str = '.') -> None:
-    from .manifest import load_manifest
     manifest = load_manifest(_normalize_manifest_path(manifest))
     print(manifest, ':l')
 
@@ -400,7 +401,6 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
 
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     """ get old and new manifests by appid. """
-    from .manifest import load_manifest
     from .oss import get_oss_client
     from .utils import make_temp_dir
     
