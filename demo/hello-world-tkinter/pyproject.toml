@@ -1,20 +1,25 @@
 [tool.poetry]
 name = "hello-world-tkinter"
-version = "0.3.0"
+version = "0.3.2"
 description = ""
 authors = ["Likianta <likianta@foxmail.com>"]
 # readme = "README.md"
-packages = [{ include = "hello_world_tkinter" }]
+# packages = [{ include = "hello_world_tkinter" }]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-argsense = "^0.7.2"
+argsense = { version = "^1.0.0a1", source = "likianta" }
 pysimplegui = "^5.0.8"
 
 [[tool.poetry.source]]
 name = "tsinghua"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
 priority = "primary"
+
+[[tool.poetry.source]]
+name = "likianta"
+url = "http://47.102.108.149:2131/"
+priority = "supplemental"
 
 [build-system]
 requires = ["poetry-core"]

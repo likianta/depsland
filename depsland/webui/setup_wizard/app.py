@@ -1,6 +1,7 @@
 if __name__ == '__main__':
     __package__ = 'depsland.webui.setup_wizard'
 
+import sys
 import typing as t
 
 import streamlit as st
@@ -23,10 +24,12 @@ def main(
     description: str = None,
     dry_run: bool = False
 ) -> None:
-    import sys
     print(app_name, appid, dry_run, sys.argv, sys.orig_argv, ':lv')
     
-    st.title(f'Installing :blue[{app_name}]...')
+    if not _state['finished']:
+        st.title(f'Installing :blue[{app_name}]...')
+    else:
+        st.title(app_name)
     
     with st.sidebar:
         st.image('chore/setup_wizard_logo.png')
@@ -48,15 +51,32 @@ def main(
                 install_by_appid(appid)
             _state['finished'] = True
         else:
-            st.success('Installation done.')
+            # st.success('Installation done.')
+            st.success(
+                'Installation done.\n\n'
+                'You can now close this window and restart the same app again, '
+                'there will launch the installed app instead of wizard.'
+            )
     
-    # TODO
     with st_bottom_bar():
-        cols = iter(st.columns(2))
-        with next(cols):
-            sc.long_button('Finish')
-        with next(cols):
-            sc.long_button('Finish and run', type='primary')
+        # TODO
+        # cols = iter(st.columns(2))
+        # with next(cols):
+        #     if sc.long_button('Finish'):
+        #         sc.kill()
+        # with next(cols):
+        #     if sc.long_button('Finish and run', type='primary'):
+        #         proc = run_cmd_args(
+        #             sys.executable, '-m', 'depsland', 'run', appid,
+        #             verbose=True, blocking=False, force_term_color=True,
+        #         )
+        #         atexit.unregister(proc.kill)
+        #         sc.kill(except_pids=(proc.pid,))
+
+        if sc.long_button(
+            'Finish', type='primary', help='Click to close this window.'
+        ):
+            sc.kill()
 
 
 def _play_demo() -> None:

@@ -1,7 +1,7 @@
 {
     "appid": "hello_world_tkinter",
     "name": "Hello World (GUI)",
-    "version": "0.4.5",
+    "version": "0.4.9",
     "assets": {
         "main.py": "all"
     },

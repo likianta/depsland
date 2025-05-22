@@ -3,7 +3,7 @@ import tkinter as tk
 from argsense import cli
 
 
-@cli.cmd()
+@cli
 def hello_world() -> None:
     """
     minimal tkinter demo app.
@@ -15,7 +15,7 @@ def hello_world() -> None:
     root.mainloop()
 
 
-@cli.cmd()
+@cli
 def listbox() -> None:
     # root = tk.Tk()
     # scrollbar = tk.Scrollbar(root)
