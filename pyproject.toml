@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.9.0a29"
+version = "0.9.0a36"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -16,28 +16,31 @@ depsland = 'depsland.__main__:_cli'
 [tool.poetry.dependencies]
 python = "^3.8"
 argsense = { version = "^1.0.0a1", source = "likianta" }
-conflore = "^0.2.0"
-lk-logger = { version = "^6.0.6a0", source = "likianta" }
-lk-utils = { version = "^3.2.0b7", source = "likianta" }
-oss2 = "^2.18.3"
-pip = "^25.0.1"
+conflore = { version = "^0.2.2b2", source = "likianta" }
+lk-logger = { version = "^6.0.6a1", source = "likianta" }
+lk-utils = { version = "^3.3.0a12", source = "likianta" }
+oss2 = "^2.19.1"
+pip = [
+    { version = "^25.1.1", python = "^3.9" },
+    { version = "^24.0.0", python = "<3.9" },
+]
 # pipgrip = "^0.10.14"
 poetry = [
     { version = "^2.1.2", python = "^3.9" },
     { version = "<2.0.0", python = "<3.9" },
 ]
-psutil = "^6.0.0"
+psutil = "^7.0.0"
 # pyapp-window = { version = "^2.2.0b3", source = "likianta" }
 rich = "^13.9.0"
 semver = "^3.0.4"
 streamlit = [
     { version = "^1.40.0", python = ">=3.8,<3.10,!=3.9.7" },
-    { version = "^1.44.0", python = ">=3.10,<4.0" },
+    { version = "^1.45.0", python = ">=3.10,<4.0" },
 ]
-streamlit-canary = { version = "^0.1.0b3", source = "likianta" }
+streamlit-canary = { version = "^0.1.0b5", source = "likianta" }
 streamlit-extras = { version = "^0.6.0", python = "!=3.9.7" }
 streamlit-nested-layout = { version = "^0.1.4", python = "!=3.9.7" }
-toml = "^0.10.0"
+toml = { version = "^0.10.0", python = "<3.11" }
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]
@@ -45,12 +48,13 @@ ipython = { version = "^9.0.0", python = "^3.12" }
 # nuitka = "^2.3.11"
 pinkrain = { version = "^0.0.0a29", source = "likianta" }
 pyinstaller = { version = "^6.12.0", python = "==3.12" }
+tree-shaking = { version = "^0.1.0a0", python = "^3.12", source = "likianta" }
 
 # --- demo
 freesimplegui = "^5.1.0"
 pyside6 = { version = "^6.8.2", python = ">=3.12,<3.14" }  # <- demo/hello-world-gui
 # pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
-qmlease = { version = ">=3.0.5a14,<3.1.0", source = "likianta" }  # <- demo/hello-world-gui
+qmlease = { version = ">=3.0.5a15,<3.1.0", source = "likianta" }  # <- demo/hello-world-gui
 
 # --- experiments
 # st-tailwind = { version = "^1.0.5", python = ">=3.9.10,<4.0" }

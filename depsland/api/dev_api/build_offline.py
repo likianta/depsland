@@ -121,12 +121,8 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
         f'{root_i}/chore/pypi_blank',
         f'{root_o}/source/pypi'
     )
-    # fs.make_link(
-    #     f'{root_i}/chore/site_packages',
-    #     f'{root_o}/source/chore/site_packages'
-    # )
     fs.make_link(
-        f'{root_i}/chore/minified_site_packages',
+        f'{root_i}/chore/site_packages',
         f'{root_o}/source/chore/site_packages'
     )
     fs.make_link(

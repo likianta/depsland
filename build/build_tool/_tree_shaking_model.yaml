@@ -8,6 +8,8 @@ search_paths:
 entries:
   <root>/depsland/__init__.py: depsland
   <root>/depsland/__main__.py: depsland-main
+  <root>/depsland/webui/app.py: depsland-webui-main
+  <root>/depsland/webui/setup_wizard/app.py: depsland-webui-wizard
   <root>/chore/venv/streamlit/__init__.py: streamlit
   <root>/chore/venv/streamlit/__main__.py: streamlit-main
   <root>/chore/venv/streamlit_extras/__init__.py: streamlit-extras

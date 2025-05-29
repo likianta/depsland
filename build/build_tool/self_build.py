@@ -95,18 +95,10 @@ def build_dist(
         f'{root_i}/build/icon',
         f'{root_o}/build/icon',
     )
-    # fs.copy_tree(
-    #     f'{root_i}/build/setup_wizard',
-    #     f'{root_o}/build/setup_wizard',
-    # )
     fs.make_link(
         f'{root_i}/chore/pypi_blank',
         f'{root_o}/chore/pypi_blank',
     )
-    # fs.copy_tree(
-    #     f'{root_i}/depsland',
-    #     f'{root_o}/depsland',
-    # )
     fs.make_link(
         f'{root_i}/depsland',
         f'{root_o}/depsland',
@@ -160,12 +152,8 @@ def build_dist(
         fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
     
     if _add_python_sdk:
-        # fs.make_link(
-        #     f'{root_i}/chore/site_packages',
-        #     f'{root_o}/chore/site_packages',
-        # )
         fs.make_link(
-            f'{root_i}/chore/minified_site_packages',
+            f'{root_i}/chore/site_packages',
             f'{root_o}/chore/site_packages',
         )
         fs.make_link(

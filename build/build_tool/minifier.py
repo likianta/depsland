@@ -1,8 +1,6 @@
+import tree_shaking
 from lk_utils import fs
 from lk_utils import run_cmd_args
-
-from depsland.utils import make_temp_dir
-from .poetry import poetry
 
 
 def minify_dependencies() -> None:
@@ -18,35 +16,21 @@ def minify_dependencies() -> None:
             )
         )
     
-    print('build module graphs')
-    poetry.run(
-        'python', '-m', 'tree_shaking', 'build-module-graphs',
-        fs.xpath('_tree_shaking_model.yaml'),
-        cwd=fs.xpath('../../../python-tree-shaking'),
-    )
-    
-    print('build tree')
-    poetry.run(
-        'python', '-m', 'tree_shaking', 'dump-tree',
-        fs.xpath('_tree_shaking_model.yaml'),
-        # x := abspath('../../temp/{}'.format(timestamp('ymd-hns'))),
-        x := make_temp_dir(),
-        cwd=fs.xpath('../../../python-tree-shaking'),
-    )
-    print(x, ':v')
+    root = 'chore/_temp_minified_site_packages'
+    tree_shaking.build_module_graphs(fs.xpath('_tree_shaking_model.yaml'))
+    tree_shaking.dump_tree(fs.xpath('_tree_shaking_model.yaml'), root)
     
     # postfix
-    # related: [./_tree_shaking_modules.yaml : ignores]
-    fs.remove(f'{x}/venv/numpy.libs')
-    _make_empty_package(f'{x}/venv/matplotlib')
-    _make_empty_package(f'{x}/venv/numpy')
-    _make_empty_package(f'{x}/venv/pandas')
-    
-    fs.move(f'{x}/venv', 'chore/minified_site_packages', True)
+    # related: "./_tree_shaking_modules.yaml : ignores"
+    fs.remove(f'{root}/venv/numpy.libs')
+    _make_empty_package(f'{root}/venv/matplotlib')
+    _make_empty_package(f'{root}/venv/numpy')
+    _make_empty_package(f'{root}/venv/pandas')
+    fs.make_link(f'{root}/venv', 'chore/site_packages')
 
 
-def _make_empty_package(path) -> None:
-    if fs.exists(path):
-        fs.remove(path)
+def _make_empty_package(path: str) -> None:
+    if fs.exist(path):
+        fs.remove_tree(path)
     fs.make_dir(path)
     fs.dump('', f'{path}/__init__.py')
