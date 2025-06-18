@@ -470,17 +470,17 @@ reference = "tsinghua"
 
 [[package]]
 name = "argsense"
-version = "1.0.0a1"
+version = "1.0.1b0"
 description = "New command line interface based on Rich library."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "argsense-1.0.0a1-py3-none-any.whl", hash = "sha256:521eb953e8db9478d94ce9eaa37c1ae693e5354c63f3df4b6ab6d8416fd7fb23"},
+    {file = "argsense-1.0.1b0-py3-none-any.whl", hash = "sha256:70012e9137444aa934293e4c4271a27794c520f2ba4a6bdde2cf9dceaa88afbe"},
 ]
 
 [package.dependencies]
-lk-logger = ">=6.0.4,<7.0.0"
+lk-logger = ">=6.0.5,<7.0.0"
 rich = ">=13.9.0,<14.0.0"
 
 [package.extras]
@@ -5755,23 +5755,24 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyside6"
-version = "6.8.2.1"
+version = "6.9.1"
 description = "Python bindings for the Qt cross-platform application and UI framework"
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["dev"]
 markers = "python_version >= \"3.12\" and python_version < \"3.14\""
 files = [
-    {file = "PySide6-6.8.2.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:3fcb551729f235475b2abe7d919027de54a65d850e744f60716f890202273720"},
-    {file = "PySide6-6.8.2.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:23d2a1a77b25459a049c4276b4e0bbfb375b73d3921061b1a16bcfa64e1fe517"},
-    {file = "PySide6-6.8.2.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:bfefa80a93db06dc64c0e7beef0377c9b8ca51e007cfc34575defe065af893b6"},
-    {file = "PySide6-6.8.2.1-cp39-abi3-win_amd64.whl", hash = "sha256:92361e41727910e3560ea5ba494fabecc76cd20892c9fcb2ced07619081c4e65"},
+    {file = "PySide6-6.9.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:f843ef39970a2f79757810fffd7b8e93ac42a3de9ea62f2a03648cde57648aed"},
+    {file = "PySide6-6.9.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:db44ac08b8f7ac1b421bc1c6a44200d03f08d80dc7b3f68dfdb1684f30f41c17"},
+    {file = "PySide6-6.9.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:531a6e67c429b045674d57fe9864b711eb59e4cded753c2640982e368fd468d1"},
+    {file = "PySide6-6.9.1-cp39-abi3-win_amd64.whl", hash = "sha256:c82dbb7d32bbdd465e01059174f71bddc97de152ab71bded3f1907c40f9a5f16"},
+    {file = "PySide6-6.9.1-cp39-abi3-win_arm64.whl", hash = "sha256:1525d63dc6dc425b8c2dc5bc01a8cb1d67530401449f3a3490c09a14c095b9f9"},
 ]
 
 [package.dependencies]
-PySide6-Addons = "6.8.2.1"
-PySide6-Essentials = "6.8.2.1"
-shiboken6 = "6.8.2.1"
+PySide6-Addons = "6.9.1"
+PySide6-Essentials = "6.9.1"
+shiboken6 = "6.9.1"
 
 [package.source]
 type = "legacy"
@@ -5780,22 +5781,23 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyside6-addons"
-version = "6.8.2.1"
+version = "6.9.1"
 description = "Python bindings for the Qt cross-platform application and UI framework (Addons)"
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["dev"]
 markers = "python_version >= \"3.12\" and python_version < \"3.14\""
 files = [
-    {file = "PySide6_Addons-6.8.2.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:5558816018042fecd0d782111ced529585a23ea9a010b518f8495764f578a01f"},
-    {file = "PySide6_Addons-6.8.2.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:f3d85e676851ada8238bc76ebfacbee738fc0b35b3bc15c9765dd107b8ee6ec4"},
-    {file = "PySide6_Addons-6.8.2.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:d904179f16deeca4ba440b4ef78e8d54df2b994b46784ad9d53b741082f3b2a7"},
-    {file = "PySide6_Addons-6.8.2.1-cp39-abi3-win_amd64.whl", hash = "sha256:c761cc45022aa79d8419e671e7fb34a4a3e5b3826f1e68fcb819bd6e3a387fbb"},
+    {file = "PySide6_Addons-6.9.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:7be0708fa89715c282541fca47e2ba97c0c8d2886e0236ef994b2dd8f52aacdd"},
+    {file = "PySide6_Addons-6.9.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:da7869b02e3599d26546fad582db4656060786bc5ec8ece5ec9ee8aa8b42371c"},
+    {file = "PySide6_Addons-6.9.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:53fd08c8152b6ba8c435458afd189835ba905793a5077a2bb0b1b11222b375d4"},
+    {file = "PySide6_Addons-6.9.1-cp39-abi3-win_amd64.whl", hash = "sha256:cd93a3a5e3886cd958f3a5acc7c061c24f10a394ce9f4ce657ac394544ca7ec2"},
+    {file = "PySide6_Addons-6.9.1-cp39-abi3-win_arm64.whl", hash = "sha256:4f589631bdceb518080ae9c9fa288e64f092cd5bebe25adc8ad89e8eadd4db29"},
 ]
 
 [package.dependencies]
-PySide6-Essentials = "6.8.2.1"
-shiboken6 = "6.8.2.1"
+PySide6-Essentials = "6.9.1"
+shiboken6 = "6.9.1"
 
 [package.source]
 type = "legacy"
@@ -5804,21 +5806,22 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyside6-essentials"
-version = "6.8.2.1"
+version = "6.9.1"
 description = "Python bindings for the Qt cross-platform application and UI framework (Essentials)"
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["dev"]
 markers = "python_version >= \"3.12\" and python_version < \"3.14\""
 files = [
-    {file = "PySide6_Essentials-6.8.2.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:ae5cc48f7e9a08e73e3ec2387ce245c8150e620b8d5a87548ebd4b8e3aeae49b"},
-    {file = "PySide6_Essentials-6.8.2.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:5ab31e5395a4724102edd6e8ff980fa3f7cde2aa79050763a1dcc30bb914195a"},
-    {file = "PySide6_Essentials-6.8.2.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:7aed46f91d44399b4c713cf7387f5fb6f0114413fbcdbde493a528fb8e19f6ed"},
-    {file = "PySide6_Essentials-6.8.2.1-cp39-abi3-win_amd64.whl", hash = "sha256:18de224f09108998d194e60f2fb8a1e86367dd525dd8a6192598e80e6ada649e"},
+    {file = "PySide6_Essentials-6.9.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:ed43435a70e018e1c22efcaf34a9430b83cfcad716dba661b03de21c13322fab"},
+    {file = "PySide6_Essentials-6.9.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:e5da48883f006c6206ef85874db74ddebcdf69b0281bd4f1642b1c5ac1d54aea"},
+    {file = "PySide6_Essentials-6.9.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:e46a2801c9c6098025515fd0af6c594b9e9c951842f68b8f6f3da9858b9b26c2"},
+    {file = "PySide6_Essentials-6.9.1-cp39-abi3-win_amd64.whl", hash = "sha256:ad1ac94011492dba33051bc33db1c76a7d6f815a81c01422cb6220273b369145"},
+    {file = "PySide6_Essentials-6.9.1-cp39-abi3-win_arm64.whl", hash = "sha256:35c2c2bb4a88db74d11e638cf917524ff35785883f10b439ead07960a5733aa4"},
 ]
 
 [package.dependencies]
-shiboken6 = "6.8.2.1"
+shiboken6 = "6.9.1"
 
 [package.source]
 type = "legacy"
@@ -6134,21 +6137,23 @@ reference = "tsinghua"
 
 [[package]]
 name = "qmlease"
-version = "3.0.5a15"
+version = "3.1.0a29"
 description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "qmlease-3.0.5a15-py3-none-any.whl", hash = "sha256:3b70ae3d74d005587947a35596a985b504f4c4b937e511e8b9ae8b9741f50b7d"},
+    {file = "qmlease-3.1.0a29-py3-none-any.whl", hash = "sha256:8f9df9ac5330d76089a293a440d7e9f1f1fd64d00aaa75d948d570fa06505753"},
 ]
 
 [package.dependencies]
-argsense = ">=1.0.0a1,<2.0.0"
-lk-logger = ">=6.0.5,<7.0.0"
-lk-utils = ">=3.3.0a4,<4.0.0"
+argsense = ">=1.0.1b0,<2.0.0"
+lk-logger = ">=6.0.6a1,<7.0.0"
+lk-utils = ">=3.3.0a12,<4.0.0"
 qtpy = ">=2.4.3,<3.0.0"
-typing-extensions = ">=4.12.2,<5.0.0"
+
+[package.extras]
+ui = ["pyside6"]
 
 [package.source]
 type = "legacy"
@@ -6717,17 +6722,18 @@ reference = "tsinghua"
 
 [[package]]
 name = "shiboken6"
-version = "6.8.2.1"
+version = "6.9.1"
 description = "Python/C++ bindings helper module"
 optional = false
 python-versions = "<3.14,>=3.9"
 groups = ["dev"]
 markers = "python_version >= \"3.12\" and python_version < \"3.14\""
 files = [
-    {file = "shiboken6-6.8.2.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:d3dedeb3732ecfc920c9f97da769c0022a1c3bda99346a9eba56fbf093deaa75"},
-    {file = "shiboken6-6.8.2.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:c83e90056f13d0872cc4d2b7bf60b6d6e3b1b172f1f91910c0ba5b641af01758"},
-    {file = "shiboken6-6.8.2.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:8592401423acc693f51dbbfae5e7493cc3ed6738be79daaf90afa07f4da5bb25"},
-    {file = "shiboken6-6.8.2.1-cp39-abi3-win_amd64.whl", hash = "sha256:1b751d47b759762b7ca31bad278d52eca4105d3028880d93979261ebbfba810c"},
+    {file = "shiboken6-6.9.1-cp39-abi3-macosx_12_0_universal2.whl", hash = "sha256:40e92afc88da06b5100c56b761e59837ff282166e9531268f3d910b6128e621e"},
+    {file = "shiboken6-6.9.1-cp39-abi3-manylinux_2_28_x86_64.whl", hash = "sha256:efcdfa8655d34aaf8d7a0c7724def3440bd46db02f5ad3b1785db5f6ccb0a8ff"},
+    {file = "shiboken6-6.9.1-cp39-abi3-manylinux_2_39_aarch64.whl", hash = "sha256:efcf75d48a29ae072d0bf54b3cd5a59ae91bb6b3ab7459e17c769355486c2e0b"},
+    {file = "shiboken6-6.9.1-cp39-abi3-win_amd64.whl", hash = "sha256:209ccf02c135bd70321143dcbc5023ae0c056aa4850a845955dd2f9b2ff280a9"},
+    {file = "shiboken6-6.9.1-cp39-abi3-win_arm64.whl", hash = "sha256:2a39997ce275ced7853defc89d3a1f19a11c90991ac6eef3435a69bb0b7ff1de"},
 ]
 
 [package.source]
@@ -7936,19 +7942,19 @@ reference = "tsinghua"
 
 [[package]]
 name = "tree-shaking"
-version = "0.1.0a0"
+version = "0.1.1"
 description = "Python tree-shaking for dependencies to reduce the size of packaging."
 optional = false
 python-versions = ">=3.12"
 groups = ["dev"]
 markers = "python_version >= \"3.12\""
 files = [
-    {file = "tree_shaking-0.1.0a0-py3-none-any.whl", hash = "sha256:3aed0c03ceb89313e336fefc916d4497e2be69fccae23b3ed7c58eeef6ae674b"},
+    {file = "tree_shaking-0.1.1-py3-none-any.whl", hash = "sha256:461e3e00f00395e56faa651080cafb28e534b62bbbc7118597c76e2c892ea894"},
 ]
 
 [package.dependencies]
-argsense = ">=1.0.0a1,<2.0.0"
-lk-utils = ">=3.3.0a12,<4.0.0"
+argsense = ">=1.0.0,<2.0.0"
+lk-utils = ">=3.2.0,<4.0.0"
 
 [package.source]
 type = "legacy"
@@ -8789,4 +8795,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "afffa3fe922f0f41ec3a0080b75f37accf0e1f6e44bc77fc0b84356666448e6f"
+content-hash = "12a27f2044b91a9453e4283543ac0b79d620b382d796f579db2f352c158f66f2"

@@ -1,12 +1,10 @@
 import os
 import shlex
-import sys
 import typing as t
 from collections import namedtuple
 from functools import cache
 
 from lk_utils import fs
-from lk_utils.textwrap import dedent
 
 from .. import normalization as norm
 from ..depsolver import T as T0
@@ -72,8 +70,7 @@ class T(T0):
         'Launcher0',
         {
             'command'          : t.Union[str, list],
-            'icon'             : AnyPath,
-            #   icon could be: empty, a relpath, or an abspath.
+            'icon'             : AnyPath,  # empty, relpath, or abspath.
             'show_console'     : bool,
             'enable_cli'       : bool,
             'add_to_desktop'   : bool,
@@ -85,8 +82,7 @@ class T(T0):
         'Launcher1',
         {
             'command'          : str,
-            'icon'             : RelPath,
-            #   icon could be: empty or abspath.
+            'icon'             : AbsPath,  # abspath or empty
             'show_console'     : bool,
             'enable_cli'       : bool,
             'add_to_desktop'   : bool,
@@ -106,16 +102,18 @@ class T(T0):
     # -------------------------------------------------------------------------
     
     # Manifest0: original manifest
-    #   this is a json-compatible dict. it is either made by user or dumped by
-    #   `dump_manifest` function (when caller passes a '.json' file param to
-    #   it).
+    #   this is a json-compatible dict. it is either made by user or dumped by -
+    #   `dump_manifest` function (when caller passes a '.json' file param to it).
     Manifest0 = t.TypedDict(
         'Manifest0',
+        # note: not all keys are required, check details in -
+        # `Manifest._precheck_manifest`.
         {
             'appid'           : str,
             'name'            : str,
             'version'         : str,
-            'start_directory' : AnyPath,  # optional
+            'start_directory' : AnyPath,
+            'readme'          : AnyPath,
             'assets'          : Assets0,
             'dependencies'    : Dependencies0,
             'launcher'        : Launcher0,
@@ -126,8 +124,8 @@ class T(T0):
     )
     
     # Manifest1: standard manifest
-    #   this is core and unified data structure for program to use. it is
-    #   loaded from a '.pkl' file, or parsed from a '.json' file by
+    #   this is core and unified data structure for program to use. it is -
+    #   loaded from a '.pkl' file, or parsed from a '.json' file by -
     #   `Manifest.load_from_file`.
     #   the differences between Manifest0 and Manifest1 are:
     #       1. ~1 has an unified path form (all must be abspath).
@@ -140,6 +138,7 @@ class T(T0):
             'name'            : str,
             'version'         : str,
             'start_directory' : AbsPath,
+            'readme'          : AbsPath,  # abspath or empty
             'assets'          : Assets1,
             'dependencies'    : Dependencies1,
             'launcher'        : Launcher1,
@@ -238,6 +237,7 @@ class Manifest:
             'name'            : appname,
             'version'         : '0.0.0',
             'start_directory' : '',
+            'readme'          : '',
             'assets'          : {},
             'dependencies'    : {},
             'launcher'        : {
@@ -279,9 +279,13 @@ class Manifest:
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
             data1['start_directory'] = self._start_directory
-            if icon_relpath := data0['launcher']['icon']:
+            if relpath := data0['readme']:
+                data1['readme'] = '{}/{}'.format(
+                    self._start_directory, relpath
+                )
+            if relpath := data0['launcher']['icon']:
                 data1['launcher']['icon'] = '{}/{}'.format(
-                    self._start_directory, icon_relpath
+                    self._start_directory, relpath
                 )
         else:
             data0: T.Manifest0
@@ -291,6 +295,7 @@ class Manifest:
                 data0 = fs.load(self._file)['tool']['depsland']['manifest']
             elif self._file.endswith('.toml'):
                 try:
+                    # noinspection PyUnusedLocal
                     data0 = fs.load(self._file)['tool']['depsland']['manifest']
                 except KeyError:
                     data0 = fs.load(self._file)
@@ -308,6 +313,10 @@ class Manifest:
                 print('change `start_directory` to {}'.format(
                     self._start_directory
                 ))
+            if data0.get('readme'):
+                data0['assets'][data0['readme']] = 'all'
+            if data0['launcher'].get('icon'):
+                data0['assets'][data0['launcher']['icon']] = 'all'
             
             self._precheck_manifest(data0)
             data1 = {
@@ -315,14 +324,17 @@ class Manifest:
                 'name'            : data0['name'],
                 'version'         : data0['version'],
                 'start_directory' : self._start_directory,
+                'readme'          : self._update_readme_file(
+                    data0.get('readme', '')
+                ),
                 'assets'          : self._update_assets(
-                    data0.get('assets', {}), self._start_directory,
+                    data0['assets'], self._start_directory,
                 ),
                 'dependencies'    : self._update_dependencies(
                     data0.get('dependencies', 'requirements.lock'),
                 ),
                 'launcher'        : self._update_launcher(
-                    data0.get('launcher', {}), self._start_directory,
+                    data0['launcher'], self._start_directory,
                 ),
                 'experiments'     : data0.get('experiments', {
                     'package_provider'  : 'pypi',
@@ -351,10 +363,14 @@ class Manifest:
         # should be deep copied if we want to modify their inner items, to -
         # avoid affecting the original data of `data1`.
         data0.pop('start_directory')
-        if icon_path := data1['launcher']['icon']:
+        if abspath := data1['readme']:
+            data0['readme'] = fs.relpath(
+                abspath, self._start_directory
+            )
+        if abspath := data1['launcher']['icon']:
             data0['launcher'] = data1['launcher'].copy()  # "deepcopy"
             data0['launcher']['icon'] = fs.relpath(
-                icon_path, self._start_directory
+                abspath, self._start_directory
             )
             # print(
             #     file,
@@ -431,6 +447,17 @@ class Manifest:
             'underscore.'
         )
         
+        if manifest.get('readme'):
+            assert '.' in fs.filename(manifest['readme']), (
+                'there should be a file extension in your readme file name.'
+                # otherwise it maybe a directory or, we cannot make a proper -
+                # name for it in installation stage.
+                # see also:
+                #   - `self._postcheck_manifest`
+                #   - `/depsland/api/dev_api/build_offline.py:_create_launcher`
+                #   - `/depsland/api/user_api/install.py:_create_launchers`
+            )
+        
         assert manifest['assets'], 'field `assets` cannot be empty!'
         assert all(not x.startswith('../') for x in manifest['assets']), (
             'manifest should be put at the root of project, and there shall be '
@@ -454,47 +481,18 @@ class Manifest:
     
     @staticmethod
     def _postcheck_manifest(manifest: T.Manifest1) -> None:
-        launcher: T.Launcher1 = manifest['launcher']
-        
-        # check icon
-        if icon_path := launcher['icon']:
-            assert fs.exists(icon_path) and os.path.isabs(icon_path)
-            
+        if manifest['readme']:
+            assert fs.isfile(manifest['readme'])
+        if icon_path := manifest['launcher']['icon']:
+            # assert fs.exist(icon_path) and os.path.isabs(icon_path)
             assert icon_path.endswith('.ico'), (
                 'make sure the icon file is ".ico" format. if you have other '
                 'file type, please use a online converter (for example '
                 'https://findicons.com/convert) to get one.'
             )
-            
-            icon_relpath = fs.relpath(icon_path, manifest['start_directory'])
-            try:
-                assert icon_relpath.startswith(tuple(manifest['assets'].keys()))
-            except AssertionError:
-                if '' in manifest['assets']:
-                    pass
-                else:
-                    print(
-                        dedent(
-                            '''
-                            the launcher icon is not added to your assets list.
-                            you may stop current progress right now, and -
-                            re-check your manifest file.
-                            (if you confirm that the icon is added, it may be -
-                            a bug from depsland.)
-                            ''',
-                            join_sep='-'
-                        ),
-                        ':fv6',
-                    )
-                    if input(
-                        'press "Y" to continue, or other key to stop: '
-                    ) != 'Y':
-                        sys.exit()
-            
             # TODO: check icon size and give suggestions (the icon is suggested
             #  128x128 or above.)
-        
-        if launcher['add_to_start_menu']:
+        if manifest['launcher']['add_to_start_menu']:
             print(
                 ':v6',
                 '`launcher.add_to_start_menu` is not tested yet. this is an '
@@ -505,9 +503,7 @@ class Manifest:
     
     @staticmethod
     def _update_assets(
-        assets0: T.Assets0,
-        start_directory: T.AbsPath,
-        calculate_dir_hash: bool = False,  # DELETE
+        assets0: T.Assets0, start_directory: T.AbsPath,
     ) -> T.Assets1:
         """
         varibale abbreviations:
@@ -518,15 +514,15 @@ class Manifest:
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
                 return get_file_hash(abspath)
-            if calculate_dir_hash:
-                meta_info = []
-                for d in fs.findall_dirs(abspath):
-                    meta_info.append('dir:{}'.format(d.relpath))
-                for f in fs.findall_files(abspath):
-                    meta_info.append('file:{}:{}'.format(
-                        f.relpath, os.path.getsize(f.path)
-                    ))
-                return get_content_hash('\n'.join(meta_info))
+            # if calculate_dir_hash:
+            #     meta_info = []
+            #     for d in fs.findall_dirs(abspath):
+            #         meta_info.append('dir:{}'.format(d.relpath))
+            #     for f in fs.findall_files(abspath):
+            #         meta_info.append('file:{}:{}'.format(
+            #             f.relpath, os.path.getsize(f.path)
+            #         ))
+            #     return get_content_hash('\n'.join(meta_info))
             return ''
         
         def generate_utime(abspath: str, scheme: str) -> int:
@@ -604,6 +600,16 @@ class Manifest:
         
         return out
     
+    def _update_readme_file(self, readme: T.AbsPath) -> T.AbsPath:
+        if readme:
+            if os.path.isabs(readme):
+                out = fs.normpath(readme)
+            else:
+                out = fs.normpath(f'{self._start_directory}/{readme}')
+            assert fs.real_exist(out)
+            return out
+        return ''
+    
     # -------------------------------------------------------------------------
     
     @staticmethod
@@ -616,7 +622,7 @@ class Manifest:
 
 # -----------------------------------------------------------------------------
 
-
+# noinspection PyTypeChecker
 def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
     """
     ref: docs/devnote/assets-diff-strategy.zh.md
@@ -659,6 +665,7 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             yield 'ignore', key1, (info0, info1)
 
 
+# noinspection PyTypeChecker
 def _diff_dependencies(new: T.Packages, old: T.Packages) -> T.DependenciesDiff:
     info0: T.PackageInfo
     info1: T.PackageInfo

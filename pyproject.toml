@@ -1,10 +1,9 @@
 [project]
 name = "depsland"
-version = "0.9.0a36"
+version = "0.9.0b0"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
-homepage = "https://github.com/likianta/depsland"
 # readme = "README.md"
 packages = [{ include = "depsland" }]
 requires-python = ">=3.8"
@@ -12,6 +11,9 @@ dynamic = ["dependencies"]
 
 [project.scripts]
 depsland = 'depsland.__main__:_cli'
+
+[project.urls]
+homepage = "https://github.com/likianta/depsland"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -48,13 +50,13 @@ ipython = { version = "^9.0.0", python = "^3.12" }
 # nuitka = "^2.3.11"
 pinkrain = { version = "^0.0.0a29", source = "likianta" }
 pyinstaller = { version = "^6.12.0", python = "==3.12" }
-tree-shaking = { version = "^0.1.0a0", python = "^3.12", source = "likianta" }
+tree-shaking = { version = "^0.1.1", python = "^3.12", source = "likianta" }
 
 # --- demo
 freesimplegui = "^5.1.0"
-pyside6 = { version = "^6.8.2", python = ">=3.12,<3.14" }  # <- demo/hello-world-gui
+pyside6 = { version = "^6.9.0", python = ">=3.12,<3.14" }  # <- demo/hello-world-gui
 # pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
-qmlease = { version = ">=3.0.5a15,<3.1.0", source = "likianta" }  # <- demo/hello-world-gui
+qmlease = { version = "^3.1.0a29", source = "likianta" }  # <- demo/hello-world-gui
 
 # --- experiments
 # st-tailwind = { version = "^1.0.5", python = ">=3.9.10,<4.0" }

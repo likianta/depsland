@@ -222,15 +222,16 @@ def _install_files(
     _root00 = fs.parent(root0)
     _root10 = fs.parent(root1)
     
+    # noinspection PyUnusedLocal
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.
         assert not o.startswith(i + '/')
         print('{} -> {}'.format(fs.relpath(i, _root00), fs.relpath(o, _root10)))
-        # TODO: shall we use `fs.move` to make it faster?
-        if t == 'file':
-            fs.copy_file(i, o, True)
-        else:
-            fs.copy_tree(i, o, True)
+        fs.make_link(i, o, True)
+        # if t == 'file':
+        #     fs.copy_file(i, o, True)
+        # else:
+        #     fs.copy_tree(i, o, True)
     
     def download_from_oss(i: str, m: str, o: str) -> None:
         print(fs.relpath(o, _root10))
@@ -453,6 +454,18 @@ def _create_launchers(manifest: T.Manifest) -> None:
                 exe_file, '{}/{}.exe'.format(
                     paths.system.start_menu, manifest['name']
                 )
+            )
+    
+    if paths.project.project_mode == 'shipboard':
+        # ref: `/depsland/paths.py:Project:_setup_shipboard_mode`
+        if manifest['readme']:
+            fs.make_link(
+                manifest['readme'],
+                '{}/README.{}'.format(
+                    fs.parent(paths.project.root),
+                    fs.split(manifest['readme'], 3)[2]
+                ),
+                True
             )
 
 

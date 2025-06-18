@@ -1,7 +1,8 @@
 {
     "appid": "depsland",
     "name": "Depsland Standalone",
-    "version": "0.9.0a29",
+    "version": "0.9.0b0",
+    "readme": "",
     "assets": {
         "apps/.bin": "root",
         "apps/.venv": "root",

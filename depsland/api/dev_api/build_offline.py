@@ -263,6 +263,10 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
             # uac_admin=True,
             custom_cd='cd source',
         )
+    if manifest['readme']:
+        fs.make_link(manifest['readme'], '{}/README.{}'.format(
+            dst_dir, fs.split(manifest['readme'], 3)[2]
+        ))
 
 
 def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO

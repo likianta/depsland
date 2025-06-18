@@ -2,7 +2,6 @@ import os
 from os.path import exists
 from subprocess import call
 
-import lk_logger
 from lk_utils import wait
 from lk_utils import fs
 from lk_utils.subproc import compose_cmd
@@ -62,7 +61,6 @@ def _bat_2_exe(
     ))
     
     # wait exe generated
-    with lk_logger.spinner('wait for converting bat to exe...'):
-        for _ in wait(5, 0.1):
-            if exists(file_exe):
-                break
+    for _ in wait(5, 0.1):
+        if exists(file_exe):
+            break
