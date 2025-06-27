@@ -103,10 +103,10 @@ def build_dist(
         f'{root_i}/depsland',
         f'{root_o}/depsland',
     )
-    fs.copy_tree(
-        f'{root_i}/sidework',
-        f'{root_o}/sidework',
-    )
+    # fs.copy_tree(
+    #     f'{root_i}/sidework',
+    #     f'{root_o}/sidework',
+    # )
     # fs.copy_file(
     #     f'{root_i}/.depsland_project.json',
     #     f'{root_o}/.depsland_project.json',

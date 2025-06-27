@@ -6,6 +6,7 @@ if __name__ == '__main__':
 
 from argsense import cli
 
+from .launcher_builder import add_icon_to_exe
 from .launcher_builder import bat_2_exe as _b2e
 from .minifier import minify_dependencies
 from .self_build import build_dist
@@ -34,7 +35,8 @@ def build_depsland_standalone(
     build_dist(version=new_version, **kwargs)
 
 
-cli.add_cmd(_b2e, 'bat-2-exe')
+cli.add_cmd(add_icon_to_exe, 'add-icon-to-exe')
+cli.add_cmd(_b2e, 'bat-to-exe')
 
 
 @cli.cmd()
@@ -82,16 +84,16 @@ if __name__ == '__main__':
     # pox build/build_tool/__main__.py build-depsland-standalone -M
     #   --oss-scheme aliyun --pypi-scheme full
     
-    # pox build/build_tool/__main__.py bat-2-exe
+    # pox build/build_tool/__main__.py bat-to-exe
     #   build/exe/depsland-cli.bat -c -U
-    # pox build/build_tool/__main__.py bat-2-exe
+    # pox build/build_tool/__main__.py bat-to-exe
     #   build/exe/depsland-gui.bat -C -U
-    # pox build/build_tool/__main__.py bat-2-exe
+    # pox build/build_tool/__main__.py bat-to-exe
     #   build/exe/depsland-gui-debug.bat -c -u
-    # pox build/build_tool/__main__.py bat-2-exe
+    # pox build/build_tool/__main__.py bat-to-exe
     #   build/exe/depsland-runapp.bat -C -U --icon build/icon/python.ico
-    # pox build/build_tool/__main__.py bat-2-exe
+    # pox build/build_tool/__main__.py bat-to-exe
     #   build/exe/depsland-runapp-console.bat -c -U --icon build/icon/python.ico
-    # pox build/build_tool/__main__.py bat-2-exe
+    # pox build/build_tool/__main__.py bat-to-exe
     #   build/exe/depsland-runapp-debug.bat -c -u --icon build/icon/python.ico
     cli.run()

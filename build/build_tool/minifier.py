@@ -22,11 +22,13 @@ def minify_dependencies() -> None:
     
     # postfix
     # related: "./_tree_shaking_modules.yaml : ignores"
-    fs.remove(f'{root}/venv/numpy.libs')
-    _make_empty_package(f'{root}/venv/matplotlib')
-    _make_empty_package(f'{root}/venv/numpy')
-    _make_empty_package(f'{root}/venv/pandas')
-    fs.make_link(f'{root}/venv', 'chore/site_packages')
+    # fs.remove(f'{root}/venv/numpy.libs')
+    # _make_empty_package(f'{root}/venv/matplotlib')
+    # _make_empty_package(f'{root}/venv/numpy')
+    # _make_empty_package(f'{root}/venv/pandas')
+    
+    if not fs.exist('chore/site_packages'):
+        fs.make_link(f'{root}/venv', 'chore/site_packages')
 
 
 def _make_empty_package(path: str) -> None:

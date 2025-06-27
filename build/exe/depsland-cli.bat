@@ -1,5 +1,7 @@
 @echo off
+cd /d %~dp0
+cd ../../
 set "PYTHONBREAKPOINT=0"
-set "PYTHONPATH=%DEPSLAND%"
+set "PYTHONPATH=.;chore/site_packages"
 set "PYTHONUTF8=1"
-"%DEPSLAND%\python\python.exe" -m depsland %*
+.\python\python.exe -m depsland %*

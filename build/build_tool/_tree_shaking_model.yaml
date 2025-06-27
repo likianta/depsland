@@ -1,19 +1,16 @@
-# how to use:
-#   py -m tree_shaking batch-dump-module-graphs examples/depsland_modules.yaml
-#   py -m tree_shaking build-tree examples/depsland_modules.yaml <output_dir>
 root: ../../
 search_paths:
   - <root>
   - <root>/chore/venv
 entries:
-  <root>/depsland/__init__.py: depsland
-  <root>/depsland/__main__.py: depsland-main
-  <root>/depsland/webui/app.py: depsland-webui-main
-  <root>/depsland/webui/setup_wizard/app.py: depsland-webui-wizard
-  <root>/chore/venv/streamlit/__init__.py: streamlit
-  <root>/chore/venv/streamlit/__main__.py: streamlit-main
-  <root>/chore/venv/streamlit_extras/__init__.py: streamlit-extras
-  <root>/chore/venv/toga_winforms/__init__.py: toga-winforms
+  - <root>/depsland/__init__.py
+  - <root>/depsland/__main__.py
+  - <root>/depsland/webui/app.py
+  - <root>/depsland/webui/setup_wizard/app.py
+  - <root>/chore/venv/streamlit/__init__.py
+  - <root>/chore/venv/streamlit/__main__.py
+  - <root>/chore/venv/streamlit_extras/__init__.py
+  - <root>/chore/venv/toga_winforms/__init__.py
 ignores:
   - ipython
   - matplotlib
@@ -25,10 +22,3 @@ ignores:
   - qmlease
   - qtpy
   - statsmodel
-export:
-  module_graphs: '*'
-  spec_files: []
-  # spec_files:
-  #   # - <root>/build/
-  #   - <root>/depsland/
-  #   # - <root>/README.md

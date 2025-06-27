@@ -279,7 +279,7 @@ class Manifest:
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
             data1['start_directory'] = self._start_directory
-            if relpath := data0['readme']:
+            if relpath := data0.get('readme'):
                 data1['readme'] = '{}/{}'.format(
                     self._start_directory, relpath
                 )

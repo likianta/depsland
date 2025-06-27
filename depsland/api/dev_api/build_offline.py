@@ -20,7 +20,6 @@ what does "Hello World.exe" do:
     3. run "python/python.exe -m depsland run hello_world"
         depsland will find the target's location and launch it.
 """
-import lk_logger
 from lk_utils import fs
 from lk_utils.textwrap import dedent
 
@@ -133,10 +132,10 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
         f'{root_i}/python',
         f'{root_o}/source/python'
     )
-    fs.make_link(
-        f'{root_i}/sidework',
-        f'{root_o}/source/sidework'
-    )
+    # fs.make_link(
+    #     f'{root_i}/sidework',
+    #     f'{root_o}/source/sidework'
+    # )
     # TEST
     fs.copy_file(
         f'{root_i}/test/_config/depsland.yaml',

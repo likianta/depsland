@@ -98,7 +98,7 @@ def normalize_name(raw_name: T.RawName) -> T.Name:
 
 def normalize_verspecs(
     name: T.Name, raw_verspec: T.RawVersionSpec
-) -> t.Iterator[T.VersionSpec]:
+) -> t.Iterator[VersionSpec]:
     """
     e.g.
         '4.5.3'         ->  <spec of '==4.5.3'>

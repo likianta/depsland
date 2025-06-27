@@ -19,7 +19,7 @@ def self_upgrade() -> str:
     fs.remove_file(f'{dir_o}/Depsland Standalone (Debug).exe')
     fs.copy_file(
         f'{dir_o}/build/exe/depsland-cli.exe',
-        f'{dir_o}/apps/.bin/Depsland.exe',
+        f'{dir_o}/apps/.bin/depsland.exe',
         True
     )
     fs.copy_file(

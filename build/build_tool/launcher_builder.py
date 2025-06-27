@@ -1,6 +1,7 @@
 from lk_utils import fs
 
-from depsland import bat_2_exe as _b2e
+from depsland.platform.launcher.make_exe \
+    import add_icon_to_exe as _add_icon_to_exe
 from depsland.platform.launcher.make_exe.bat_2_exe_2 import bat_2_exe as _b2e2
 
 
@@ -30,3 +31,12 @@ def bat_2_exe(
         show_console=show_console,
         uac_admin=uac_admin,
     )
+
+
+def add_icon_to_exe(file_exe, file_ico, file_out: str = None) -> str:
+    if file_out is not None:
+        fs.copy_file(file_exe, file_out)
+    else:
+        file_out = file_exe
+    _add_icon_to_exe(file_out, file_ico)
+    return file_out
