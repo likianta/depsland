@@ -33,7 +33,7 @@ def build_dist(
                 if you want to partially release, or try to package a minimal -
                 version, use `pypi_scheme='blank'` with `_add_python_sdk=False`.
     """
-    if fs.exists('depsland/.project'):
+    if fs.exist('depsland/.project'):
         raise Exception('please remove "depsland/.project" to continue.')
     
     # checks

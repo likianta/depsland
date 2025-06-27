@@ -58,7 +58,7 @@ class LocalPyPI:
             path = '{}/{}'.format(
                 pypi_paths.downloads, fs.basename(path).lower()
             )
-            assert fs.exists(path), path
+            assert fs.exist(path), path
             if _auto_save_index:
                 self.index.add_to_index(path, 0)
             return path
@@ -72,7 +72,7 @@ class LocalPyPI:
         assert path.endswith(('.tar.gz', '.whl', '.zip')), path
         src_path = path
         dst_path = self.get_install_path(pkg_id)
-        if not fs.exists(dst_path):
+        if not fs.exist(dst_path):
             fs.make_dirs(dst_path)
         try:
             self.pip.install(src_path, dst_path, no_dependency=True)
@@ -104,7 +104,7 @@ class LocalPyPI:
             pkg_id = f'{name}-{version}'
             print(pkg_id, ':i2v2s')
             dst_path = self.get_install_path(pkg_id)
-            if fs.exists(dst_path):
+            if fs.exist(dst_path):
                 yield pkg_id, dst_path, False
             else:
                 yield pkg_id, self.install_one(pkg_id, src_path, False), True

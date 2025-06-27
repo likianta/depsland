@@ -28,8 +28,8 @@ def _compress_dependency(
 ) -> str:
     path0 = '{}/{}.zip'.format(paths.pypi.downloads, package_id)
     path1 = '{}/{}/{}'.format(paths.pypi.installed, *package_id.split('-'))
-    if fs.exists(path0):
-        assert fs.exists(path1)
+    if fs.exist(path0):
+        assert fs.exist(path1)
         return path0
     
     reldirs = set()

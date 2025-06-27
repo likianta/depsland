@@ -13,7 +13,7 @@ def find() -> None:
             record_file = '{}/{}/{}.dist-info/RECORD'.format(
                 paths.pypi.root, p1, id
             )
-            if not fs.exists(record_file):
+            if not fs.exist(record_file):
                 print('record not found', id, record_file)
                 continue
             relpath_files = analyze_records(record_file)

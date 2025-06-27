@@ -127,7 +127,7 @@ def list_installed_apps() -> t.Iterator[t.Tuple[str, t.List[str]]]:
     for d in fs.find_dirs(app_paths.root):
         if d.name.startswith('.'):
             continue
-        if fs.exists(x := f'{d.path}/.inst_history'):
+        if fs.exist(x := f'{d.path}/.inst_history'):
             history = fs.load(x).splitlines()
             yield d.name, history
 

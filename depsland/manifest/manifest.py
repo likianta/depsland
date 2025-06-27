@@ -544,7 +544,7 @@ class Manifest:
             else:
                 abspath = fs.normpath(f'{start_directory}/{path}')
                 relpath = fs.normpath(path)
-            if not fs.exists(abspath):
+            if not fs.exist(abspath):
                 raise FileNotFoundError(
                     'please check the path you defined in manifest does exist',
                     path

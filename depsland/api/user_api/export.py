@@ -20,7 +20,7 @@ def export_application(
     if root_o is None:
         root_o = make_temp_dir()
     dir_o = '{}/{}-{}'.format(root_o, appid, version)
-    assert not fs.exists(dir_o)
+    assert not fs.exist(dir_o)
     fs.make_dir(dir_o)
     
     manifest_file = '{}/{}/{}/manifest.pkl'.format(

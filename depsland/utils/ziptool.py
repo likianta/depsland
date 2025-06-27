@@ -18,7 +18,7 @@ def compress_dir(
     """
     ref: https://likianta.blog.csdn.net/article/details/126710855
     """
-    if fs.exists(file_o):
+    if fs.exist(file_o):
         if not _overwrite(file_o, overwrite):
             return file_o
     if top_name is None:
@@ -33,7 +33,7 @@ def compress_dir(
 
 
 def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
-    if fs.exists(file_o):
+    if fs.exist(file_o):
         if not _overwrite(file_o, overwrite):
             return file_o
     if file_o.endswith('.fzip'):  # trick: just rename file_i to file_o
@@ -45,8 +45,8 @@ def compress_file(file_i: str, file_o: str, overwrite: bool = None) -> str:
 
 
 def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
-    # print(file_i, path_o, overwrite, fs.exists(path_o), ':lv')
-    if fs.exists(path_o):
+    # print(file_i, path_o, overwrite, fs.exist(path_o), ':lv')
+    if fs.exist(path_o):
         if not _overwrite(path_o, overwrite):
             return path_o
     
@@ -82,7 +82,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
                     ':vspr',
                 )
                 dir_m = f'{dir_o}_tmp'
-                assert not fs.exists(dir_m)
+                assert not fs.exist(dir_m)
                 os.rename(dir_o, dir_m)
                 shutil.move(f'{dir_m}/{x}', dir_o)
                 shutil.rmtree(dir_m)

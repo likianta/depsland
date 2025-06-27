@@ -52,13 +52,13 @@ def rebuild_index(
         # download path and install path
         down_path = f.path
         inst_path = '{}/{}/{}'.format(pypi_paths.installed, name, ver)
-        if not fs.exists(inst_path):
+        if not fs.exist(inst_path):
             if perform_pip_install:
                 pypi.install_one(id, down_path, False)
             else:
                 print('package not installed', id, down_path, inst_path, ':lv4')
                 sys.exit(1)
-        assert fs.exists(inst_path)
+        assert fs.exist(inst_path)
         id_2_paths[id] = (
             fs.relpath(down_path, pypi_paths.root),
             fs.relpath(inst_path, pypi_paths.root),

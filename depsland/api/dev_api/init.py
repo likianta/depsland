@@ -27,7 +27,7 @@ def init(
 ) -> None:
     file_o = fs.normpath(manifest_file, True)
     dir_o = fs.parent(file_o)
-    if not fs.exists(dir_o):
+    if not fs.exist(dir_o):
         os.mkdir(dir_o)
     
     dirname = fs.dirname(dir_o)

@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.9.0b0"
+version = "0.9.0b3"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -19,8 +19,8 @@ homepage = "https://github.com/likianta/depsland"
 python = "^3.8"
 argsense = { version = "^1.0.0a1", source = "likianta" }
 conflore = { version = "^0.2.2b2", source = "likianta" }
-lk-logger = { version = "^6.0.6a1", source = "likianta" }
-lk-utils = { version = "^3.3.0a12", source = "likianta" }
+lk-logger = { version = "^6.0.6", source = "likianta" }
+lk-utils = { version = "^3.3.0a15", source = "likianta" }
 oss2 = "^2.19.1"
 pip = [
     { version = "^25.1.1", python = "^3.9" },

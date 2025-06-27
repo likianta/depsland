@@ -55,7 +55,7 @@ def install_local(
 ) -> str:
     m1 = load_manifest(manifest_file)
     
-    if fs.exists(d := '{}/.oss'.format(m1['start_directory'])):
+    if fs.exist(d := '{}/.oss'.format(m1['start_directory'])):
         custom_oss_root = d
     else:
         custom_oss_root = None
@@ -169,7 +169,7 @@ def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     if last_ver := get_last_installed_version(appid):
         dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
-        assert fs.exists(dir_), dir_
+        assert fs.exist(dir_), dir_
         return dir_
     return None
 

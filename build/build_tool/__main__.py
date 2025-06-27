@@ -15,7 +15,7 @@ from .version_bump import bump_version
 cli.add_cmd(bump_version)
 
 
-@cli.cmd()
+@cli
 def build_depsland_standalone(
     new_version: str = None,
     minify_deps: bool = False,
@@ -39,7 +39,7 @@ cli.add_cmd(add_icon_to_exe, 'add-icon-to-exe')
 cli.add_cmd(_b2e, 'bat-to-exe')
 
 
-@cli.cmd()
+@cli
 def rebuild_all_executebles(switches: str = '111111') -> None:
     iter_ = iter(switches)
     if next(iter_) == '1':

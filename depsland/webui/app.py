@@ -53,7 +53,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
         do_install = st.button(
             'Install' if appid == ''
             else 'Install / Upgrade'
-            if fs.exists('{}/{}'.format(paths.apps.root, appid))
+            if fs.exist('{}/{}'.format(paths.apps.root, appid))
             else 'Install',
             key='install_app',
             type='primary',

@@ -54,7 +54,7 @@ def resolve_dependencies(
         specfile = None
     lock_file = _get_snapshot_file(specfile or deps0)
     # raise Exception
-    if fs.exists(lock_file):
+    if fs.exist(lock_file):
         return fs.load(lock_file)
     
     print(
@@ -64,7 +64,7 @@ def resolve_dependencies(
     
     if isinstance(deps0, str):  # a file
         # assert deps0 in ('poetry.lock', 'pyproject.toml', 'requirements.lock')
-        assert all(map(fs.exists, (
+        assert all(map(fs.exist, (
             a := f'{proj_dir}/pyproject.toml',
             b := f'{proj_dir}/poetry.lock',
             c := f'{proj_dir}/{deps0}',

@@ -4,7 +4,7 @@ from lk_utils import run_cmd_args
 
 
 def minify_dependencies() -> None:
-    if not fs.exists('chore/venv'):
+    if not fs.exist('chore/venv'):
         raise Exception(
             'please link original venv path to "chore/venv" to continue. the '
             'command is: `python -m lk_utils mklink {}/Lib/site-packages '

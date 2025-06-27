@@ -37,7 +37,7 @@ class AliyunOss(BaseOss):
         self.path = AliyunOssPath(appid)
         self._auth = Auth(access_key, secret_key)
         self._bucket = Bucket(self._auth, endpoint, bucket_name)
-        if fs.exists(self.path.local_manifest):
+        if fs.exist(self.path.local_manifest):
             self._pypi = fs.load(self.path.local_manifest)
         else:
             self._pypi = set()

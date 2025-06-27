@@ -66,7 +66,7 @@ def _find_dist_info_dirs(library_root: T.Path) -> t.Iterator[t.Tuple[str, str]]:
 
 
 def _get_custom_url(pkg_dir: str) -> t.Optional[str]:
-    if fs.exists(f := f'{pkg_dir}/direct_url.json'):
+    if fs.exist(f := f'{pkg_dir}/direct_url.json'):
         data = fs.load(f)
         return data['url']
     return None
@@ -117,7 +117,7 @@ class LibraryIndexer:
             'requirements.txt',
             'requirements.lock',  # TODO: put lock file as first?
         ):
-            if fs.exists(f := f'{self.working_root}/{filename}'):
+            if fs.exist(f := f'{self.working_root}/{filename}'):
                 top_pkg_names = finder.get_top_package_names(f)
                 break
         else:
@@ -165,7 +165,7 @@ class LibraryIndexer:
         url = _get_custom_url(dpath)
         
         record_file = f'{dpath}/RECORD'
-        assert fs.exists(record_file)
+        assert fs.exist(record_file)
         relpaths = set(analyze_records(record_file))
         
         return {
@@ -225,7 +225,7 @@ class LibraryIndexer:
             # print(':i2', 'filling an indirect package', name)
             _, dpath = all_package_references[name]
             metadata_file = f'{dpath}/METADATA'
-            if fs.exists(metadata_file):
+            if fs.exist(metadata_file):
                 for dep_name, verspecs in analyze_metadata(metadata_file):
                     v['dependencies'].append(dep_name)
                     # TODO: check the `verspecs` match existed info in

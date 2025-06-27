@@ -3143,13 +3143,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "lk-logger"
-version = "6.0.6a1"
+version = "6.0.6"
 description = "Python print with source map and varnames."
 optional = false
 python-versions = ">=3.8,<4.0"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_logger-6.0.6a1-py3-none-any.whl", hash = "sha256:621eb9a946a81b5f624df8a1ff9b2f01457bc8f46e31c8f91862c1e91240ac56"},
+    {file = "lk_logger-6.0.6-py3-none-any.whl", hash = "sha256:b3ff112cd8acae488b02f3657ba573733c7871fab28846df29953513de25bae0"},
 ]
 
 [package.dependencies]
@@ -3165,27 +3165,27 @@ reference = "likianta"
 
 [[package]]
 name = "lk-utils"
-version = "3.3.0a12"
+version = "3.3.0a15"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
-python-versions = ">=3.8,<4.0"
+python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.3.0a12-py3-none-any.whl", hash = "sha256:73fb658160995b2503d1d23a928fc845ee405ec7334c581e96bf9c1cb83e7fea"},
+    {file = "lk_utils-3.3.0a15-py3-none-any.whl", hash = "sha256:0dd1a17cf17368adc004438843af557035794c45f7740b4c1ca0536ccc8fe8ad"},
 ]
 
 [package.dependencies]
-argsense = ">=0.7.2"
-lk-logger = ">=6.0.5,<7.0.0"
+argsense = ">=1.0.0,<2.0.0"
+lk-logger = ">=6.0.6,<7.0.0"
 psutil = ">=6.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
 rich = ">=13.9.0,<14.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.extras]
-all = ["ipython (<9.0.0) ; python_version >= \"3.8\" and python_version < \"3.11\"", "ipython (>=9.0.0,<10.0.0) ; python_version >= \"3.11\" and python_version < \"4.0\"", "toml (>=0.10.0,<0.11.0) ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter (>=3.2.0,<4.0.0)"]
-dbg = ["ipython (<9.0.0) ; python_version >= \"3.8\" and python_version < \"3.11\"", "ipython (>=9.0.0,<10.0.0) ; python_version >= \"3.11\" and python_version < \"4.0\""]
-exl = ["xlrd (==1.2.0)", "xlsxwriter (>=3.2.0,<4.0.0)"]
+all = ["ipython", "toml", "xlrd", "xlsxwriter"]
+dbg = ["ipython"]
+exl = ["xlrd", "xlsxwriter"]
 
 [package.source]
 type = "legacy"
@@ -8795,4 +8795,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "12a27f2044b91a9453e4283543ac0b79d620b382d796f579db2f352c158f66f2"
+content-hash = "47a1e075de2024d340f78c0bff909c4ad68aea5e8bfdedd13c4877a6b901c97a"

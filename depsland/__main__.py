@@ -353,7 +353,10 @@ def show(appid: str, version: str = None) -> None:
 
 @cli
 def view_manifest(manifest: str = '.') -> None:
-    manifest = load_manifest(_normalize_manifest_path(manifest))
+    if manifest.endswith('.pkl'):
+        manifest = load_manifest(manifest).model
+    else:
+        manifest = load_manifest(_normalize_manifest_path(manifest))
     print(manifest, ':l')
 
 
@@ -381,6 +384,20 @@ def get_package_size(
     """
     from .pypi import insight
     insight.measure_package_size(name, version, include_dependencies)
+
+
+# -----------------------------------------------------------------------------
+# utilities
+
+@cli
+def open_readme(target: str, scheme: str = 'default', **kwargs) -> None:
+    if scheme == 'default':
+        raise NotImplementedError
+    elif scheme == 'mkdocs_material':
+        assert fs.isdir(target)
+        port = kwargs['port']
+        print('mkdocs server -a 0.0.0.0:{}'.format(port))
+        ...
 
 
 # -----------------------------------------------------------------------------
