@@ -214,7 +214,7 @@ def _upload(
         )
         return zipped_file
     
-    _lib_root = get_library_root(manifest_new.start_directory)
+    _lib_root = get_library_root(manifest_new['start_directory'])
     
     def _compress_dependency(
         package_id: str, relpaths: t.Tuple[str, ...]

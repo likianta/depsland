@@ -63,7 +63,7 @@ def install_local(
     m1.make_tree(d := '{}/{}/{}'.format(
         paths.project.apps, m1['appid'], m1['version']
     ))
-    m1.start_directory = d
+    m1['start_directory'] = d
     
     appid, name = m1['appid'], m1['name']
     if x := _get_dir_to_last_installed_version(appid):
@@ -180,7 +180,7 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
         oss = get_oss_client(appid)
         oss.download(oss.path.manifest, x := f'{tmp_dir}/manifest.pkl')
         manifest_new = load_manifest(x)
-        manifest_new.start_directory = '{}/{}/{}'.format(
+        manifest_new['start_directory'] = '{}/{}/{}'.format(
             paths.project.apps,
             manifest_new['appid'],
             manifest_new['version'],
@@ -458,15 +458,26 @@ def _create_launchers(manifest: T.Manifest) -> None:
     
     if paths.project.project_mode == 'shipboard':
         # ref: `/depsland/paths.py:Project:_setup_shipboard_mode`
-        if manifest['readme']:
-            fs.make_link(
-                manifest['readme'],
-                '{}/README.{}'.format(
-                    fs.parent(paths.project.root),
-                    fs.split(manifest['readme'], 3)[2]
-                ),
-                True
-            )
+        if x := manifest['readme']:
+            print(dict(x), ':v')
+            if x['shortcut']:
+                fs.make_shortcut(
+                    x['file'],
+                    '{}/{}.lnk'.format(
+                        fs.parent(paths.project.root),
+                        x['name'].rsplit('.', 1)[0],
+                    ),
+                    overwrite=True
+                )
+            else:
+                fs.make_link(
+                    x['file'],
+                    '{}/{}'.format(
+                        fs.parent(paths.project.root),
+                        x['name']
+                    ),
+                    overwrite=True
+                )
 
 
 def _save_history(appid: str, version: str) -> None:

@@ -19,6 +19,7 @@ from ..utils import init_target_tree
 class T(T0):
     AbsPath = RelPath = AnyPath = str
     #   the RelPath is relative to manifest file's location.
+    StartDirectory = AbsPath
     
     Scheme0 = t.Literal[
         'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs',  # fmt:skip
@@ -66,6 +67,15 @@ class T(T0):
     Dependencies1 = T0.Packages
     # fmt:on
     
+    Experiments0 = t.TypedDict(
+        'Experiments0',
+        {
+            'package_provider': t.Literal['oss', 'pypi'],
+        },
+        total=False
+    )
+    Experiments1 = Experiments0
+    
     Launcher0 = t.TypedDict(
         'Launcher0',
         {
@@ -82,7 +92,7 @@ class T(T0):
         'Launcher1',
         {
             'command'          : str,
-            'icon'             : AbsPath,  # abspath or empty
+            'icon'             : RelPath,  # relpath or empty
             'show_console'     : bool,
             'enable_cli'       : bool,
             'add_to_desktop'   : bool,
@@ -90,14 +100,12 @@ class T(T0):
         },
     )
     
-    Experiments0 = t.TypedDict(
-        'Experiments0',
-        {
-            'package_provider'  : t.Literal['oss', 'pypi'],
-        },
-        total=False
-    )
-    Experiments1 = Experiments0
+    Readme0 = t.Union[AnyPath, dict]
+    Readme1 = t.TypedDict('Readme1', {
+        'relpath' : RelPath,
+        'name'    : str,
+        'shortcut': bool,
+    })
     
     # -------------------------------------------------------------------------
     
@@ -113,7 +121,7 @@ class T(T0):
             'name'            : str,
             'version'         : str,
             'start_directory' : AnyPath,
-            'readme'          : AnyPath,
+            'readme'          : Readme0,
             'assets'          : Assets0,
             'dependencies'    : Dependencies0,
             'launcher'        : Launcher0,
@@ -137,8 +145,8 @@ class T(T0):
             'appid'           : str,
             'name'            : str,
             'version'         : str,
-            'start_directory' : AbsPath,
-            'readme'          : AbsPath,  # abspath or empty
+            'start_directory' : StartDirectory,
+            'readme'          : t.Optional[Readme1],
             'assets'          : Assets1,
             'dependencies'    : Dependencies1,
             'launcher'        : Launcher1,
@@ -219,25 +227,23 @@ AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
 
 
 class Manifest:
+    """
+    doc: /wiki/docs/design-thinking/manifest-path-format.md
+    """
     _file: T.AbsPath
     _manifest: T.Manifest1
-    _start_directory: T.AbsPath
     
     @classmethod
     def init(cls, appid: str, appname: str) -> 'Manifest':
         from .. import __version__
-        
         self = Manifest()
-        
         self._file = ''
-        self._start_directory = ''
-        
         self._manifest = {
             'appid'           : appid,
             'name'            : appname,
             'version'         : '0.0.0',
             'start_directory' : '',
-            'readme'          : '',
+            'readme'          : None,
             'assets'          : {},
             'dependencies'    : {},
             'launcher'        : {
@@ -253,7 +259,6 @@ class Manifest:
             },
             'depsland_version': __version__,
         }
-        
         return self
     
     @classmethod
@@ -270,7 +275,7 @@ class Manifest:
         
         self = Manifest()
         self._file = fs.abspath(file)
-        self._start_directory = fs.parent(self._file)
+        start_directory = fs.parent(self._file)  # abspath
         
         data0: t.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
@@ -278,15 +283,7 @@ class Manifest:
         if self._file.endswith('.pkl'):
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
-            data1['start_directory'] = self._start_directory
-            if relpath := data0.get('readme'):
-                data1['readme'] = '{}/{}'.format(
-                    self._start_directory, relpath
-                )
-            if relpath := data0['launcher']['icon']:
-                data1['launcher']['icon'] = '{}/{}'.format(
-                    self._start_directory, relpath
-                )
+            data1['start_directory'] = start_directory
         else:
             data0: T.Manifest0
             if self._file.endswith(('.json', '.yaml')):
@@ -305,14 +302,12 @@ class Manifest:
             if 'start_directory' in data0:
                 x = data0['start_directory']
                 if x.startswith('.'):
-                    self._start_directory = fs.abspath(
-                        '{}/{}'.format(fs.parent(self._file), x)
+                    start_directory = fs.normpath(
+                        '{}/{}'.format(start_directory, x)
                     )
                 else:
-                    self._start_directory = fs.abspath(x)
-                print('change `start_directory` to {}'.format(
-                    self._start_directory
-                ))
+                    start_directory = fs.abspath(x)
+                print('change `start_directory` to {}'.format(start_directory))
             if data0.get('readme'):
                 data0['assets'][data0['readme']] = 'all'
             if data0['launcher'].get('icon'):
@@ -323,18 +318,18 @@ class Manifest:
                 'appid'           : data0['appid'],
                 'name'            : data0['name'],
                 'version'         : data0['version'],
-                'start_directory' : self._start_directory,
+                'start_directory' : start_directory,
                 'readme'          : self._update_readme_file(
-                    data0.get('readme', '')
+                    data0.get('readme', None), start_directory
                 ),
                 'assets'          : self._update_assets(
-                    data0['assets'], self._start_directory,
+                    data0['assets'], start_directory
                 ),
                 'dependencies'    : self._update_dependencies(
-                    data0.get('dependencies', 'requirements.lock'),
+                    data0.get('dependencies', None), start_directory
                 ),
                 'launcher'        : self._update_launcher(
-                    data0['launcher'], self._start_directory,
+                    data0['launcher'], start_directory
                 ),
                 'experiments'     : data0.get('experiments', {
                     'package_provider'  : 'pypi',
@@ -363,22 +358,6 @@ class Manifest:
         # should be deep copied if we want to modify their inner items, to -
         # avoid affecting the original data of `data1`.
         data0.pop('start_directory')
-        if abspath := data1['readme']:
-            data0['readme'] = fs.relpath(
-                abspath, self._start_directory
-            )
-        if abspath := data1['launcher']['icon']:
-            data0['launcher'] = data1['launcher'].copy()  # "deepcopy"
-            data0['launcher']['icon'] = fs.relpath(
-                abspath, self._start_directory
-            )
-            # print(
-            #     file,
-            #     icon_path,
-            #     self._start_directory,
-            #     data0['launcher']['icon'],
-            #     ':vl'
-            # )
         if not file.endswith('.pkl'):
             data0['assets'] = self._plainify_assets(data1['assets'])
             if file.endswith('.toml'):
@@ -388,7 +367,7 @@ class Manifest:
     
     def make_tree(self, root: str = None) -> None:
         if not root:
-            root = self.start_directory
+            root = self._manifest['start_directory']
         relpaths = []
         for k, v in self._manifest['assets'].items():
             if v.type == 'dir':
@@ -399,34 +378,85 @@ class Manifest:
         init_target_tree(root, relpaths)
     
     # -------------------------------------------------------------------------
+    # dict-like behavior
     
     @property
     def model(self) -> T.Manifest1:
         return self._manifest
     
-    @property
-    def start_directory(self) -> T.AbsPath:
-        return self._start_directory
+    def get(self, key: str) -> t.Any:
+        if key in self._manifest:
+            return self[key]
+        return None
     
-    @start_directory.setter
-    def start_directory(self, path: T.AnyPath) -> None:
-        old, new = self._start_directory, fs.abspath(path)
-        if x := self._manifest['launcher']['icon']:
-            relpath = fs.relpath(x, old)
-            self._manifest['launcher']['icon'] = '{}/{}'.format(new, relpath)
-        self._start_directory = new
+    def __iter__(self) -> t.Iterator[t.Tuple[str, t.Any]]:
+        yield from self._manifest.items()
     
-    def get(self, item: str) -> t.Any:
-        return self._manifest.get(item)  # noqa
-    
-    def __getitem__(self, item: str) -> t.Any:
-        if item == 'start_directory':
-            return self._start_directory
-        return self._manifest[item]  # noqa
+    def __getitem__(self, key: str) -> t.Any:
+        if key == 'readme':
+            class ReadmeDict:
+                def __init__(
+                    self, data: T.Readme1, start_directory: T.StartDirectory
+                ) -> None:
+                    self._data = data
+                    self._start_directory = start_directory
+                    
+                def __bool__(self) -> bool:
+                    return bool(self._data['relpath'])
+                
+                def __iter__(self) -> t.Iterator[t.Tuple[str, t.Any]]:
+                    yield from self._data.items()
+                
+                def __getitem__(self, key: str) -> t.Union[str, bool]:
+                    if key == 'file':
+                        if x := self._data['relpath']:
+                            return '{}/{}'.format(self._start_directory, x)
+                        else:
+                            return ''
+                    else:
+                        return self._data[key]  # noqa
+                
+                def __setitem__(self, key: str, value: t.Any) -> None:
+                    raise Exception('cannot modify readme dict', key, value)
+                
+            return ReadmeDict(
+                self._manifest['readme'], self._manifest['start_directory']
+            )
+        
+        elif key == 'launcher':
+            class LauncherDict:
+                def __init__(
+                    self, data: T.Launcher1, start_directory: T.StartDirectory
+                ) -> None:
+                    self._data = data
+                    self._start_directory = start_directory
+                
+                def __iter__(self) -> t.Iterator[t.Tuple[str, t.Any]]:
+                    yield from self._data.items()
+                
+                def __getitem__(self, key: str) -> t.Union[str, bool]:
+                    if key == 'icon':
+                        if x := self._data['icon']:
+                            return '{}/{}'.format(self._start_directory, x)
+                        else:
+                            return ''
+                    else:
+                        return self._data[key]  # noqa
+                    
+                def __setitem__(self, key: str, value: t.Any) -> None:
+                    raise Exception('cannot modify launcher dict', key, value)
+            
+            return LauncherDict(
+                self._manifest['launcher'], self._manifest['start_directory']
+            )
+        
+        else:
+            return self._manifest[key]  # noqa
     
     def __setitem__(self, key: str, value: t.Any) -> None:
         if key == 'start_directory':
-            self.start_directory = value
+            assert os.path.isabs(value) and '\\' in value
+            self._manifest[key] = value
         else:
             raise Exception('cannot modify top field of manifest!', key, value)
     
@@ -503,7 +533,7 @@ class Manifest:
     
     @staticmethod
     def _update_assets(
-        assets0: T.Assets0, start_directory: T.AbsPath,
+        assets0: T.Assets0, start_directory: T.StartDirectory,
     ) -> T.Assets1:
         """
         varibale abbreviations:
@@ -561,12 +591,17 @@ class Manifest:
             )
         return out  # noqa
     
-    def _update_dependencies(self, deps0: T.Dependencies0) -> T.Dependencies1:
-        return resolve_dependencies(deps0, self._start_directory)
-    
     @staticmethod
+    def _update_dependencies(
+        deps0: T.Dependencies0, start_directory: T.StartDirectory
+    ) -> T.Dependencies1:
+        if deps0:
+            return resolve_dependencies(deps0, start_directory)
+        else:
+            return {}
+    
     def _update_launcher(
-        launcher0: T.Launcher0, start_directory: T.AbsPath
+        self, launcher0: T.Launcher0, start_directory: T.StartDirectory
     ) -> T.Launcher1:
         out: T.Launcher1 = {
             'command'          : '',
@@ -583,10 +618,7 @@ class Manifest:
             out['command'] = shlex.join(launcher0['command'])
         
         if icon := launcher0.get('icon'):
-            if os.path.isabs(icon):
-                out['icon'] = fs.normpath(icon)
-            else:
-                out['icon'] = fs.normpath('{}/{}'.format(start_directory, icon))
+            out['icon'] = self._make_relpath(icon, start_directory)
             # print(out['icon'], ':v')
         
         for k in (
@@ -600,17 +632,42 @@ class Manifest:
         
         return out
     
-    def _update_readme_file(self, readme: T.AbsPath) -> T.AbsPath:
+    def _update_readme_file(
+        self, readme: t.Optional[T.Readme0], start_directory: T.StartDirectory
+    ) -> T.Readme1:
+        out: T.Readme1 = {
+            'relpath' : '',
+            'name'    : '',
+            'shortcut': False,
+        }
         if readme:
-            if os.path.isabs(readme):
-                out = fs.normpath(readme)
+            if isinstance(readme, str):
+                out['relpath'] = self._make_relpath(readme, start_directory)
+                out['name'] = fs.basename(readme)
             else:
-                out = fs.normpath(f'{self._start_directory}/{readme}')
-            assert fs.real_exist(out)
-            return out
-        return ''
+                for k in ('file', 'path', 'relpath'):
+                    if k in readme:
+                        out['relpath'] = self._make_relpath(
+                            readme[k], start_directory
+                        )
+                        break
+                else:
+                    raise Exception(readme)
+                out['name'] = fs.basename(
+                    readme.get('name', fs.basename(out['relpath']))
+                )
+                out['shortcut'] = readme.get('shortcut', False)
+        return out
     
     # -------------------------------------------------------------------------
+    
+    @staticmethod
+    def _make_relpath(path: T.AnyPath, base: T.AbsPath) -> T.RelPath:
+        if os.path.isabs(path):
+            assert fs.normpath(path).startswith(base + '/')
+            return fs.relpath(path, base)
+        else:
+            return fs.normpath(path)
     
     @staticmethod
     def _plainify_assets(assets1: T.Assets1) -> T.Assets0:

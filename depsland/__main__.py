@@ -426,7 +426,7 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     oss = get_oss_client(appid)
     oss.download(oss.path.manifest, x := f'{temp_dir}/manifest.pkl')
     manifest_new = load_manifest(x)
-    manifest_new.start_directory = '{}/{}/{}'.format(
+    manifest_new['start_directory'] = '{}/{}/{}'.format(
         paths.project.apps, manifest_new['appid'], manifest_new['version']
     )
     manifest_new.make_tree()
