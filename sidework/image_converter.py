@@ -2,57 +2,34 @@
 readme: wiki/launcher-icon-setting.md
 TODO: support svg.
 """
-import os
-import typing as t
-from functools import wraps
-from types import FunctionType
-
 import icnsutil
+import os
 from PIL import Image
 from argsense import cli
-from lk_utils import fs
-
 from depsland.utils import make_temp_dir
-
-
-class T:
-    Extension = t.Literal['icns', 'ico', 'png']
-    Function = t.TypeVar('Function', bound=FunctionType)
-
-
-def _correct_io(ext: T.Extension) -> t.Callable[[T.Function], T.Function]:
-    def decorator(func: T.Function) -> t.Callable[[str, str], None]:
-        @wraps(func)
-        def wrapper(file_i: str, file_o: str = None) -> None:
-            file_i = fs.normpath(file_i)
-            if not file_o:
-                file_o = fs.replace_ext(file_i, ext)
-            return func(file_i, file_o)
-        
-        return wrapper
-    
-    return t.cast(t.Callable[[T.Function], T.Function], decorator)
+from lk_utils import fs
 
 
 @cli.cmd('all')
 def icns_2_all(file_i: str, name_o: str = None) -> None:
     assert file_i.endswith('.icns')
-    if not name_o: name_o = fs.basename(file_i, False)
-    file_m = icns_2_png(file_i, '{}/{}.png'.format(fs.parent(file_i), name_o))
-    png_2_ico(file_m, '{}/{}.ico'.format(fs.parent(file_i), name_o))
+    a, b, c = fs.split(file_i, 3)
+    if name_o is None: name_o = b
+    file_png = '{}/{}.png'.format(a, name_o)
+    file_ico = '{}/{}.ico'.format(a, name_o)
+    icns_2_png(file_i, file_png)
+    png_2_ico(file_png, file_ico)
 
 
 @cli.cmd('icns-2-ico')
-@_correct_io('ico')
-def icns_2_ico(file_i: str, file_o: str) -> str:
-    file_m = icns_2_png(file_i, '')
-    png_2_ico(file_m, file_o)
+def icns_2_ico(file_i: str, file_o: str = None) -> str:
+    file_m = icns_2_png(file_i)
+    png_2_ico(file_m, file_o or fs.replace_ext(file_i, 'png'))
     fs.remove_file(file_m)
     return file_o
 
 
 @cli.cmd('icns-2-png')
-@_correct_io('png')
 def icns_2_png(file_i: str, file_o: str) -> str:
     """
     https://pypi.org/project/icnsutil/
@@ -67,13 +44,16 @@ def icns_2_png(file_i: str, file_o: str) -> str:
     )
     
     results = os.listdir(x)
-    print(':v', results)
     
+    if file_o is None:
+        file_o = fs.replace_ext(file_i, 'png')
     for possible_name in (
         '256x256.png',
         '256x256@2x.png',
         '512x512.png',
         '512x512@2x.png',
+        '128x128.png',
+        '128x128@2x.png',
     ):
         if possible_name in results:
             print(':v', f'found "{possible_name}" available')
@@ -82,24 +62,17 @@ def icns_2_png(file_i: str, file_o: str) -> str:
     else:
         raise FileNotFoundError(results)
     
-    _print_done(file_o)
     return file_o
 
 
 @cli.cmd('png-2-ico')
-@_correct_io('ico')
 def png_2_ico(file_i: str, file_o: str) -> str:
     """
     https://zhuanlan.zhihu.com/p/345770773
     """
     img = Image.open(file_i).resize((256, 256))
     img.save(file_o, 'ICO')
-    _print_done(file_o)
     return file_o
-
-
-def _print_done(file_o: str) -> None:
-    print(':trpi', f'[green]conversion done. see result at "{file_o}"[/]')
 
 
 if __name__ == '__main__':

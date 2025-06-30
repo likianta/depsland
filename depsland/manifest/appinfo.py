@@ -24,8 +24,10 @@ class T(T0):
         },
     )
     Launcher = T0.Launcher1
-    Manifest = t.cast(t.Union[T0.Manifest1, Manifest], Manifest)
+    Manifest = t.Union[T0.Manifest1, Manifest]
     # Manifest = Manifest
+    # PseudoManifestDict = t.cast(T0.Manifest1, Manifest)
+    PseudoManifestDict = T0.Manifest1
     
     # extra ports for external use
     Scheme = T0.Scheme1
@@ -85,3 +87,5 @@ def _quick_read_line(text_file: str) -> str:
     with open(text_file, 'r', encoding='utf-8') as f:
         for line in f:  # just read the first line
             return line.strip()
+        else:
+            raise Exception

@@ -80,7 +80,7 @@ class T(T0):
         'Launcher0',
         {
             'command'          : t.Union[str, list],
-            'icon'             : AnyPath,  # empty, relpath, or abspath.
+            'icon'             : AnyPath,
             'show_console'     : bool,
             'enable_cli'       : bool,
             'add_to_desktop'   : bool,
@@ -100,11 +100,21 @@ class T(T0):
         },
     )
     
-    Readme0 = t.Union[AnyPath, dict]
+    # occurrences:
+    #   - Manifest._update_readme_file
+    #   - /depsland/api/user_api/install.py : _create_launchers
+    #   - /depsland/api/dev_api/build_offline.py : _create_launcher
+    Readme0 = t.Union[AnyPath, t.TypedDict('Readme0', {
+        'file'      : AnyPath,
+        'name'      : str,
+        'icon'      : AnyPath,
+        'standalone': bool,
+    }, total=False)]
     Readme1 = t.TypedDict('Readme1', {
-        'relpath' : RelPath,
-        'name'    : str,
-        'shortcut': bool,
+        'file'      : RelPath,  # relpath or empty
+        'name'      : str,  # name without extension, prefer title case.
+        'icon'      : RelPath,  # relpath or empty
+        'standalone': bool,  # default true
     })
     
     # -------------------------------------------------------------------------
@@ -146,7 +156,7 @@ class T(T0):
             'name'            : str,
             'version'         : str,
             'start_directory' : StartDirectory,
-            'readme'          : t.Optional[Readme1],
+            'readme'          : Readme1,
             'assets'          : Assets1,
             'dependencies'    : Dependencies1,
             'launcher'        : Launcher1,
@@ -243,7 +253,12 @@ class Manifest:
             'name'            : appname,
             'version'         : '0.0.0',
             'start_directory' : '',
-            'readme'          : None,
+            'readme'          : {
+                'file'      : '',
+                'name'      : '',
+                'icon'      : '',
+                'standalone': True,
+            },
             'assets'          : {},
             'dependencies'    : {},
             'launcher'        : {
@@ -309,7 +324,10 @@ class Manifest:
                     start_directory = fs.abspath(x)
                 print('change `start_directory` to {}'.format(start_directory))
             if data0.get('readme'):
-                data0['assets'][data0['readme']] = 'all'
+                if isinstance(data0['readme'], str):
+                    data0['assets'][data0['readme']] = 'all'
+                elif data0['readme']['file']:
+                    data0['assets'][data0['readme']['file']] = 'all'
             if data0['launcher'].get('icon'):
                 data0['assets'][data0['launcher']['icon']] = 'all'
             
@@ -400,16 +418,16 @@ class Manifest:
                 ) -> None:
                     self._data = data
                     self._start_directory = start_directory
-                    
+                
                 def __bool__(self) -> bool:
-                    return bool(self._data['relpath'])
+                    return bool(self._data['file'])
                 
                 def __iter__(self) -> t.Iterator[t.Tuple[str, t.Any]]:
                     yield from self._data.items()
                 
                 def __getitem__(self, key: str) -> t.Union[str, bool]:
-                    if key == 'file':
-                        if x := self._data['relpath']:
+                    if key == 'file' or key == 'icon':
+                        if x := self._data[key]:
                             return '{}/{}'.format(self._start_directory, x)
                         else:
                             return ''
@@ -418,7 +436,7 @@ class Manifest:
                 
                 def __setitem__(self, key: str, value: t.Any) -> None:
                     raise Exception('cannot modify readme dict', key, value)
-                
+            
             return ReadmeDict(
                 self._manifest['readme'], self._manifest['start_directory']
             )
@@ -478,15 +496,24 @@ class Manifest:
         )
         
         if manifest.get('readme'):
-            assert '.' in fs.filename(manifest['readme']), (
-                'there should be a file extension in your readme file name.'
-                # otherwise it maybe a directory or, we cannot make a proper -
-                # name for it in installation stage.
-                # see also:
-                #   - `self._postcheck_manifest`
-                #   - `/depsland/api/dev_api/build_offline.py:_create_launcher`
-                #   - `/depsland/api/user_api/install.py:_create_launchers`
-            )
+            if isinstance(manifest['readme'], str):
+                readme = manifest['readme']
+            else:
+                if manifest['readme']['name'].endswith((
+                    '.doc', '.docx', '.htm', '.html', '.md', '.mhtml', '.mp4',
+                    '.pdf', '.rst', '.txt', '.wps'
+                )):
+                    raise Exception(
+                        'do not include extension in the `readme:name` field',
+                        manifest['readme']['name']
+                    )
+                readme = manifest['readme']['file']
+            if readme:
+                assert '.' in fs.filename(readme), (
+                    'there should be a file extension in your readme file name.'
+                    # otherwise it maybe a directory or, we cannot make a -
+                    # proper name for it in installation stage.
+                )
         
         assert manifest['assets'], 'field `assets` cannot be empty!'
         assert all(not x.startswith('../') for x in manifest['assets']), (
@@ -511,11 +538,8 @@ class Manifest:
     
     @staticmethod
     def _postcheck_manifest(manifest: T.Manifest1) -> None:
-        if manifest['readme']:
-            assert fs.isfile(manifest['readme'])
-        if icon_path := manifest['launcher']['icon']:
-            # assert fs.exist(icon_path) and os.path.isabs(icon_path)
-            assert icon_path.endswith('.ico'), (
+        if x := manifest['launcher']['icon']:
+            assert x.endswith('.ico'), (
                 'make sure the icon file is ".ico" format. if you have other '
                 'file type, please use a online converter (for example '
                 'https://findicons.com/convert) to get one.'
@@ -525,7 +549,7 @@ class Manifest:
         if manifest['launcher']['add_to_start_menu']:
             print(
                 ':v6',
-                '`launcher.add_to_start_menu` is not tested yet. this is an '
+                '`launcher:add_to_start_menu` is not tested yet. this is an '
                 'experimental feature.',
             )
     
@@ -617,8 +641,8 @@ class Manifest:
         else:
             out['command'] = shlex.join(launcher0['command'])
         
-        if icon := launcher0.get('icon'):
-            out['icon'] = self._make_relpath(icon, start_directory)
+        if launcher0.get('icon'):
+            out['icon'] = self._make_relpath(launcher0['icon'], start_directory)
             # print(out['icon'], ':v')
         
         for k in (
@@ -636,27 +660,26 @@ class Manifest:
         self, readme: t.Optional[T.Readme0], start_directory: T.StartDirectory
     ) -> T.Readme1:
         out: T.Readme1 = {
-            'relpath' : '',
-            'name'    : '',
-            'shortcut': False,
+            'file'      : '',
+            'name'      : '',
+            'icon'      : '',
+            'standalone': True,
         }
         if readme:
             if isinstance(readme, str):
-                out['relpath'] = self._make_relpath(readme, start_directory)
-                out['name'] = fs.basename(readme)
+                out['file'] = self._make_relpath(readme, start_directory)
+                out['name'] = fs.barename(out['file'])
             else:
-                for k in ('file', 'path', 'relpath'):
-                    if k in readme:
-                        out['relpath'] = self._make_relpath(
-                            readme[k], start_directory
+                if readme['file']:
+                    out['file'] = self._make_relpath(
+                        readme['file'], start_directory
+                    )
+                    out['name'] = readme.get('name', fs.barename(out['file']))
+                    out['standalone'] = readme.get('standalone', True)
+                    if readme.get('icon'):
+                        out['icon'] = self._make_relpath(
+                            readme['icon'], start_directory
                         )
-                        break
-                else:
-                    raise Exception(readme)
-                out['name'] = fs.basename(
-                    readme.get('name', fs.basename(out['relpath']))
-                )
-                out['shortcut'] = readme.get('shortcut', False)
         return out
     
     # -------------------------------------------------------------------------

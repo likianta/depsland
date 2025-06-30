@@ -456,28 +456,17 @@ def _create_launchers(manifest: T.Manifest) -> None:
                 )
             )
     
+    # ref: `/depsland/paths.py:Project:_setup_shipboard_mode`
     if paths.project.project_mode == 'shipboard':
-        # ref: `/depsland/paths.py:Project:_setup_shipboard_mode`
-        if x := manifest['readme']:
-            print(dict(x), ':v')
-            if x['shortcut']:
-                fs.make_shortcut(
-                    x['file'],
-                    '{}/{}.lnk'.format(
-                        fs.parent(paths.project.root),
-                        x['name'].rsplit('.', 1)[0],
-                    ),
-                    overwrite=True
-                )
-            else:
-                fs.make_link(
-                    x['file'],
-                    '{}/{}'.format(
-                        fs.parent(paths.project.root),
-                        x['name']
-                    ),
-                    overwrite=True
-                )
+        readme_opener = '{}/{}.exe'.format(
+            fs.parent(paths.project.root), x['name']
+        )
+        if manifest['readme']:
+            if not fs.exist(readme_opener):
+                from ..dev_api.build_offline import create_readme_opener
+                create_readme_opener(manifest, fs.parent(paths.project.root))
+        elif fs.exist(readme_opener):
+            fs.remove(readme_opener)
 
 
 def _save_history(appid: str, version: str) -> None:

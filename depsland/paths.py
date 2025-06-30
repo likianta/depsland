@@ -479,12 +479,10 @@ class Build:
         self.depsland_runapp_debug_exe = \
             f'{self.exe}/depsland-runapp-debug.exe'
         
-        self.launcher_icon = '{}/icon/launcher.{}'.format(
-            self.root,
-            'icns' if sys.platform == 'darwin' else
-            'png' if sys.platform == 'linux' else
-            'ico'
-        )
+        ext = {'darwin': 'icns', 'linux': 'png', 'win32': 'ico'}[sys.platform]
+        self.help_icon = '{}/icon/help.{}'.format(self.root, ext)
+        self.launcher_icon = '{}/icon/launcher.{}'.format(self.root, ext)
+        self.python_icon = '{}/icon/python.{}'.format(self.root, ext)
 
 
 class Config:

@@ -7,6 +7,7 @@ if 2:
     if sys.orig_argv[0].endswith('.exe'):
         os.environ['LK_LOGGER_MODERN_WINDOW'] = '0'
 
+import subprocess
 import sys
 import typing as t
 
@@ -353,11 +354,8 @@ def show(appid: str, version: str = None) -> None:
 
 @cli
 def view_manifest(manifest: str = '.') -> None:
-    if manifest.endswith('.pkl'):
-        manifest = load_manifest(manifest).model
-    else:
-        manifest = load_manifest(_normalize_manifest_path(manifest))
-    print(manifest, ':l')
+    manifest = load_manifest(_normalize_manifest_path(manifest))
+    print(manifest.model, ':l')
 
 
 @cli
@@ -390,14 +388,17 @@ def get_package_size(
 # utilities
 
 @cli
-def open_readme(target: str, scheme: str = 'default', **kwargs) -> None:
-    if scheme == 'default':
-        raise NotImplementedError
-    elif scheme == 'mkdocs_material':
-        assert fs.isdir(target)
-        port = kwargs['port']
-        print('mkdocs server -a 0.0.0.0:{}'.format(port))
-        ...
+def open_readme(appid: str) -> None:
+    assert (x := _get_dir_to_last_installed_version(appid))
+    manifest = load_manifest(f'{x}/manifest.pkl')
+    if sys.platform == 'darwin':
+        subprocess.run(('xdg-open', manifest['readme']['file']))
+    elif sys.platform == 'linux':
+        subprocess.run(('open', manifest['readme']['file']))
+    elif sys.platform == 'win32':
+        os.startfile(manifest['readme']['file'].replace('/', '\\'))
+    else:
+        raise Exception(sys.platform, appid)
 
 
 # -----------------------------------------------------------------------------
@@ -452,7 +453,7 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
 
 def _normalize_manifest_path(target: str, ensure_exists: bool = True) -> str:
     """ return an abspath to manifest file. """
-    if target.endswith(('.json', '.yaml', '.toml')):
+    if target.endswith(('.json', '.yaml', '.toml', '.pkl')):
         out = fs.normpath(target, True)
     else:
         assert fs.isdir(target)

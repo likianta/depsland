@@ -20,15 +20,15 @@ what does "Hello World.exe" do:
     3. run "python/python.exe -m depsland run hello_world"
         depsland will find the target's location and launch it.
 """
+from lk_utils import dedent
 from lk_utils import fs
-from lk_utils.textwrap import dedent
 
+from ... import paths
 from ...manifest import T
 from ...manifest import diff_manifest
 from ...manifest import dump_manifest
 from ...manifest import init_manifest
 from ...manifest import load_manifest
-from ...paths import project as proj_paths
 from ...platform import sysinfo
 from ...platform.launcher import bat_2_exe
 from ...platform.launcher import create_launcher
@@ -59,7 +59,7 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
     """
     from ... import __version__
     
-    root_i = proj_paths.root
+    root_i = paths.project.root
     root_o = dst_dir
     
     appid = manifest['appid']
@@ -246,10 +246,7 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
-    icon = (
-        manifest['launcher']['icon'] or
-        '{}/icon/python.ico'.format(proj_paths.build)
-    )
+    icon = manifest['launcher']['icon'] or paths.build.python_icon
     create_launcher(manifest, dir_o=dst_dir, icon=icon, custom_cd='cd source')
     if sysinfo.SYSTEM == 'windows':
         create_launcher(
@@ -263,9 +260,43 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
             custom_cd='cd source',
         )
     if manifest['readme']:
-        fs.make_link(manifest['readme'], '{}/README.{}'.format(
-            dst_dir, fs.split(manifest['readme'], 3)[2]
-        ))
+        # if x['standalone']:
+        #     fs.make_link(
+        #         manifest['readme']['file'],
+        #         '{}/{}.{}'.format(
+        #             dst_dir,
+        #             manifest['readme']['name'],
+        #             manifest['readme']['file'].rsplit('.', 1)[-1]
+        #         )
+        #     )
+        # else:
+        #     create_readme_opener(manifest, dst_dir)
+        create_readme_opener(manifest, dst_dir)
+
+
+def create_readme_opener(
+    manifest: T.PseudoManifestDict, dst_dir: T.AbsPath
+) -> T.AbsPath:
+    fs.dump(
+        dedent(
+            '''
+            @echo off
+            cd /d %~dp0
+            cd source
+            set "PYTHONPATH=.;chore/site_packages"
+            set "PYTHONUTF8=1"
+            .\\python\\python.exe -m depsland open_readme {appid}
+            '''.format(appid=manifest['appid'])
+        ),
+        x := '{}/open_readme.bat'.format(paths.temp.root)
+    )
+    bat_2_exe(
+        file_bat=x,
+        file_exe=(y := '{}/{}.exe'.format(dst_dir, manifest['readme']['name'])),
+        icon=manifest['readme']['icon'] or paths.build.help_icon,
+        show_console=False,
+    )
+    return y
 
 
 def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
@@ -305,10 +336,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
         bat_2_exe(
             file_bat,
             file_exe,
-            icon=(
-                manifest['launcher']['icon'] or
-                '{}/icon/launcher.ico'.format(proj_paths.build)
-            ),
+            icon=manifest['launcher']['icon'] or paths.build.launcher_icon,
             show_console=False,
             # show_console=False,
             uac_admin=True,
