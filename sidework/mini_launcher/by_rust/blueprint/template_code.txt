@@ -1,0 +1,24 @@
+use std::env;
+use std::process::Command;
+
+fn main() {
+    // check if "DEPSLAND" in the env.
+    match env::var("DEPSLAND") {
+        Ok(val) => {
+            println!("Depsland exists at {}", val);
+            // bring up depsland process
+            // https://stackoverflow.com/a/25574952/9695911
+            Command::new(format!("{val}/apps/.bin/depsland.exe"))
+                .arg("runx")
+                .arg("{hello-world}")
+                .status()
+                .expect("0");
+        },
+        Err(_) => {
+            // download depsland
+            // warning: this is time consuming!
+            println!("Download depsland from the net.");
+            // ...
+        },
+    }
+}

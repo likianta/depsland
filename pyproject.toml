@@ -46,8 +46,8 @@ toml = { version = "^0.10.0", python = "<3.11" }
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]
-ipython = { version = "^9.0.0", python = "^3.12" }
-# nuitka = "^2.3.11"
+ipython = { version = "^9.4.0", python = "^3.12" }
+nuitka = "^2.7.12"
 pinkrain = { version = "^0.0.0a29", source = "likianta" }
 pyinstaller = { version = "^6.12.0", python = "==3.12" }
 tree-shaking = { version = "^0.1.1", python = "^3.12", source = "likianta" }
