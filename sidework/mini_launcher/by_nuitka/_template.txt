@@ -1,9 +1,3 @@
-"""
-to compile:
-    cd sidework/mini_launcher/by_nuitka
-    por nuitka --standalone --onefile main.py
-    # will generate "main.exe" and so on.
-"""
 import os
 import re
 import subprocess
@@ -11,11 +5,14 @@ import sys
 import typing as t
 
 
-def main() -> None:
+def main(
+    appid: str = '<APPID>',
+    version: str = '<VERSION>',
+) -> None:
     if exe := _find_depsland_executeable():
         # print(exe, sys.argv)
         if _check_depsland_version(exe):
-            subprocess.run([exe] + sys.argv[1:])
+            subprocess.run((exe, 'runx', appid, version))
             pass
     else:
         raise NotImplementedError

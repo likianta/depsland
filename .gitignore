@@ -23,7 +23,9 @@
 /python/*
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
-/sidework/mini_launcher/by_nuitka/*
+/sidework/mini_launcher/by_nuitka/main.*/
+/sidework/mini_launcher/by_nuitka/main.exe
+/sidework/mini_launcher/by_nuitka/temp/*
 /sidework/mini_launcher/by_rust/.idea/
 /sidework/mini_launcher/by_rust/target/
 /sidework/mini_launcher/by_rust/test/
@@ -51,4 +53,3 @@ dist/**
 !/python/README.zh.md
 !/pypi/*/
 !/pypi/index/snapdep/
-!/sidework/mini_launcher/by_nuitka/main.py
