@@ -32,6 +32,8 @@
 /sidework/ui_prototype/
 /temp/*
 /test/_config/
+/wiki/docs/.vitepress/cache/
+/wiki/node_modules/
 
 __pycache__/
 dist/**
