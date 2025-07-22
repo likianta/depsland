@@ -1,4 +1,4 @@
-# 为什么 `pypi/index` 中的文件格式是 "json" 而不是 "pkl"
+## 为什么 `pypi/index` 中的文件格式是 "json" 而不是 "pkl"?
 
 在设计中我考虑以下几点:
 
