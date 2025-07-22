@@ -54,7 +54,7 @@ export default withMermaid({
               },
               {
                 text: '自升级功能构想 (已过时)',
-                link: '/devnote/self-upgrade-plan'
+                link: '/devnote/outdated/self-upgrade-plan'
               },
             ]
           }

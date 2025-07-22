@@ -18,11 +18,11 @@
 
     解压后截图:
 
-    ![image-20221102105936272](.assets/intallation.zh/image-20221102105936272.png)
+    ![](../../images/250207-093658-f733a6.png)
 
     安装过程截图:
 
-    ![image-20221102110202270](.assets/intallation.zh/image-20221102110202270.png)
+    ![](../../images/250207-093658-930635.png)
 
     安装完成后, 它将产生以下内容:
 
@@ -32,7 +32,7 @@
 
     3. 在桌面创建 "Depsland.exe" 启动器
 
-        ![image-20221102110657495](.assets/intallation.zh/image-20221102110657495.png)
+        ![](../../images/250207-093658-3dd274.png)
 
 ## 通过 Depsland 安装第三方应用程序
 
