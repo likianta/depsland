@@ -52,15 +52,16 @@ def _bat_2_exe(
     
     call(compose_cmd(
         _b2e_exe,
+        '-admin' if uac_admin else '',
+        '-invisible' if not show_console else '',
+        '-overwrite',
+        '-x64',
         ('-bat', file_bat),
-        ('-save', file_exe),
         ('-icon', icon),
-        ('-invisible' if not show_console else ''),
-        ('-admin' if uac_admin else ''),
-        ('-overwrite', '-x64')
+        ('-save', file_exe),
     ))
     
     # wait exe generated
-    for _ in wait(5, 0.1):
+    for _ in wait(5, 0.05):
         if exists(file_exe):
             break

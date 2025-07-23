@@ -1,7 +1,6 @@
 import os
 import re
 import subprocess
-import sys
 import typing as t
 
 
@@ -9,27 +8,54 @@ def main(
     appid: str = '<APPID>',
     version: str = '<VERSION>',
 ) -> None:
-    if exe := _find_depsland_executeable():
-        # print(exe, sys.argv)
-        if _check_depsland_version(exe):
-            subprocess.run((exe, 'runx', appid, version))
-            pass
+    if root := _find_depsland_root():
+        # print(root, sys.argv)
+        if _check_depsland_version(root):
+            _run_app(root, appid, version)
     else:
         raise NotImplementedError
 
 
+def _find_depsland_root() -> t.Optional[str]:
+    # (A)
+    if x := os.getenv('DEPSLAND'):
+        # print(x)
+        if os.path.exists('{}/apps/.bin/depsland.exe'.format(x)):
+            return x
+    # (B)
+    #   consider that the A method may fail because current session didn't -
+    #   update itself to sync with system environment settings, so we read the -
+    #   registry key directly to get the latest env variable.
+    if os.name == 'nt':
+        import winreg
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            'Environment',
+            0,
+            winreg.KEY_READ
+        )
+        try:
+            value, _ = winreg.QueryValueEx(key, 'DEPSLAND')
+        except FileNotFoundError:
+            value = None
+        finally:
+            winreg.CloseKey(key)
+        if value and os.path.exists(
+            '{}/apps/.bin/depsland.exe'.format(value)
+        ):
+            return value
+    return None
+
+
+# DELETE
 def _find_depsland_executeable() -> t.Optional[str]:
     # (A)
-    # currdir = os.path.normpath('{}/..'.format(__file__))
-    # if os.path.exists(x := '{}/source/apps/.bin/depsland.exe'.format(currdir)):
-    #     return x
-    # (B)
     if x := os.getenv('DEPSLAND'):
         # print(x)
         if os.path.exists(x := '{}/apps/.bin/depsland.exe'.format(x)):
             return x
-    # (C)
-    #   consider that the B method may fail because current session didn't -
+    # (B)
+    #   consider that the A method may fail because current session didn't -
     #   update itself to sync with system environment settings, so we read the -
     #   registry key directly to get the latest env variable.
     if os.name == 'nt':
@@ -51,10 +77,8 @@ def _find_depsland_executeable() -> t.Optional[str]:
     return None
 
 
-def _check_depsland_version(exe_path: str) -> bool:
-    init_file = os.path.normpath(
-        '{}/../../../depsland/__init__.py'.format(exe_path)
-    )
+def _check_depsland_version(depsland_root: str) -> bool:
+    init_file = '{}/depsland/__init__.py'.format(depsland_root)
     with open(init_file, 'r') as f:
         for line in f.readlines():
             if line.startswith('__version__'):
@@ -73,6 +97,17 @@ def _check_depsland_version(exe_path: str) -> bool:
         if ver1 is None or ver1 >= ('b', 5):
             return True
     return False
+
+
+def _run_app(depsland_root: str, appid: str, version: str) -> None:
+    os.environ['PYTHONBREAKPOINT'] = '0'
+    os.environ['PYTHONPATH'] = '.;chore/site_packages'
+    os.environ['PYTHONUTF8'] = '1'
+    print('change working directory to "{}"'.format(depsland_root))
+    os.chdir(depsland_root)
+    subprocess.run(
+        ('.\\python\\python.exe', '-m', 'depsland', 'runx', appid, version)
+    )
 
 
 if __name__ == '__main__':

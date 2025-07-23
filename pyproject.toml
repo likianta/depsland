@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.9.0b5"
+version = "0.9.0b10"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -28,7 +28,7 @@ pip = [
 ]
 # pipgrip = "^0.10.14"
 poetry = [
-    { version = "^2.1.2", python = "^3.9" },
+    { version = "^2.1.3", python = "^3.9" },
     { version = "<2.0.0", python = "<3.9" },
 ]
 psutil = "^7.0.0"
@@ -50,11 +50,11 @@ windows-toasts = { version = "^1.0.0", platform = "win32" }
 ipython = { version = "^9.4.0", python = "^3.12" }
 nuitka = "^2.7.12"
 pinkrain = { version = "^0.0.0a31", source = "likianta" }
-pyinstaller = { version = "^6.12.0", python = "==3.12" }
-tree-shaking = { version = "^0.1.1", python = "^3.12", source = "likianta" }
+# pyinstaller = { version = "^6.14.2", python = "==3.12" }
+tree-shaking = { version = "^0.1.2b1", python = "^3.12", source = "likianta" }
 
 # --- demo
-freesimplegui = "^5.1.0"
+freesimplegui = "^5.2.0.post1"
 pyside6 = { version = "^6.9.1", python = ">=3.12,<3.14" }  # <- demo/hello-world-gui
 # pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
 qmlease = { version = "^3.1.0a36", source = "likianta" }  # <- demo/hello-world-gui
@@ -69,12 +69,13 @@ qmlease = { version = "^3.1.0a36", source = "likianta" }  # <- demo/hello-world-
 # statsmodels = { version = "^0.14.4", python = ">=3.9" }  # <- plotly
 
 # --- sidework
-dash = "^2.17.1"
-feffery-antd-components = "^0.3.12"
-feffery-dash-utils = "^0.1.4"
+# dash = "^3.1.1"
+# dash-mantine-components = "^2.1.0"
+# feffery-antd-components = "^0.3.15"
+# feffery-dash-utils = "^0.2.6"
 icnsutil = "^1.1.0"  # <- sidework/image_converter.py
 pillow = { version = "^11.0.0", python = "^3.12" }  # <- sidework/image_converter.py
-st-ant-tree = "^0.0.13"
+# st-ant-tree = "^0.0.13"
 # streamlit-tree-select = "^0.0.5"
 
 [[tool.poetry.source]]
