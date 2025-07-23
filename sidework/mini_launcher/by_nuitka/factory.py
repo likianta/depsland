@@ -11,7 +11,7 @@ def main(
     file_out: str,
     icon: str = None,
 ) -> None:
-    code_temp: str = fs.load(fs.xpath('_template.txt'), 'plain')
+    code_temp: str = fs.load(fs.xpath('_template.py'), 'plain')
     code_out = (
         code_temp
         .replace('<APPID>', target_appid)

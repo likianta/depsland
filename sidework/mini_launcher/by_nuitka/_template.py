@@ -19,13 +19,36 @@ def main(
 
 
 def _find_depsland_executeable() -> t.Optional[str]:
+    # (A)
     # currdir = os.path.normpath('{}/..'.format(__file__))
     # if os.path.exists(x := '{}/source/apps/.bin/depsland.exe'.format(currdir)):
     #     return x
+    # (B)
     if x := os.getenv('DEPSLAND'):
         # print(x)
-        assert os.path.exists(y := '{}/apps/.bin/depsland.exe'.format(x))
-        return y
+        if os.path.exists(x := '{}/apps/.bin/depsland.exe'.format(x)):
+            return x
+    # (C)
+    #   consider that the B method may fail because current session didn't -
+    #   update itself to sync with system environment settings, so we read the -
+    #   registry key directly to get the latest env variable.
+    if os.name == 'nt':
+        import winreg
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            'Environment',
+            0,
+            winreg.KEY_READ
+        )
+        try:
+            value, _ = winreg.QueryValueEx(key, 'DEPSLAND')
+        except FileNotFoundError:
+            return None
+        else:
+            winreg.CloseKey(key)
+            if os.path.exists(x := '{}/apps/.bin/depsland.exe'.format(value)):
+                return x
+    return None
 
 
 def _check_depsland_version(exe_path: str) -> bool:
