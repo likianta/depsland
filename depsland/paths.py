@@ -392,8 +392,11 @@ class Project:
         def unblock_dlls(dir: str) -> None:
             """
             related: `depsland.api.dev_api.offline_build._init_dist_tree`
-            ref: https://stackoverflow.com/questions/20886450/unblock-a
-                -file-in-windows-from-a-python-script
+            ref:
+                https://stackoverflow.com/questions/20886450/unblock-a-file-in
+                -windows-from-a-python-script
+                https://stackoverflow.com/questions/76214672/failed-to
+                -initialize-python-runtime-dll
             """
             for f in fs.findall_files(dir, '.dll'):
                 zid = os.path.abspath(f.path) + ':Zone.Identifier'

@@ -16,23 +16,30 @@ def minify_dependencies() -> None:
             )
         )
     
-    root = 'chore/_temp_minified_site_packages'
+    temp_root = 'chore/_temp_minified_site_packages'
     tree_shaking.build_module_graphs(fs.xpath('_tree_shaking_model.yaml'))
-    tree_shaking.dump_tree(fs.xpath('_tree_shaking_model.yaml'), root)
+    tree_shaking.dump_tree(fs.xpath('_tree_shaking_model.yaml'), temp_root)
     
     # postfix
     # related: "./_tree_shaking_modules.yaml : ignores"
-    # fs.remove(f'{root}/venv/numpy.libs')
-    # _make_empty_package(f'{root}/venv/matplotlib')
-    # _make_empty_package(f'{root}/venv/numpy')
-    # _make_empty_package(f'{root}/venv/pandas')
+    # fs.remove(f'{temp_root}/venv/numpy.libs')
+    _make_disguised_packages(f'{temp_root}/venv')
     
     if not fs.exist('chore/site_packages'):
-        fs.make_link(f'{root}/venv', 'chore/site_packages')
+        fs.make_link(f'{temp_root}/venv', 'chore/site_packages')
 
 
-def _make_empty_package(path: str) -> None:
-    if fs.exist(path):
-        fs.remove_tree(path)
-    fs.make_dir(path)
-    fs.dump('', f'{path}/__init__.py')
+def _make_disguised_packages(root_o: str) -> None:
+    """
+    doc: /chore/disguised_packages/readme.md
+    """
+    for pkg_name in ('matplotlib', 'numpy', 'pandas'):
+        dir_o = f'{root_o}/{pkg_name}'
+        if fs.exist(dir_o):
+            if fs.islink(dir_o):
+                continue
+            else:
+                raise Exception(dir_o)
+        else:
+            dir_i = f'chore/disguised_packages/{pkg_name}'
+            fs.make_link(dir_i, dir_o)

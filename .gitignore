@@ -1,12 +1,12 @@
 /.idea/
-/apps/*/*
+/apps/**
 /build/fuzzy_workflow.py
 /build/windows_patch/windows-7-sp1-32bit/*.msu
 /build/windows_patch/windows-7-sp1-64bit/*.msu
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
-/chore/*
+/chore/**
 /config/.redirect
 /config/auto_saved.pkl
 /deleted/
@@ -43,6 +43,11 @@ dist/**
 .DS_Store
 
 !**/.gitkeep
+!/apps/.bin/
+!/apps/.venv/
+!/chore/_temp_minified_site_packages/
+!/chore/disguised_packages/
+!/chore/disguised_packages/**
 !/depsland/assets/*.ico
 !/depsland/assets/*.md
 !/depsland/assets/*.png

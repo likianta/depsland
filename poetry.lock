@@ -5707,12 +5707,53 @@ reference = "tsinghua"
 
 [[package]]
 name = "streamlit"
+version = "1.45.1"
+description = "A faster way to build and share data apps"
+optional = false
+python-versions = ">=3.9, !=3.9.7"
+groups = ["main"]
+markers = "python_version >= \"3.10\""
+files = [
+    {file = "streamlit-1.45.1-py3-none-any.whl", hash = "sha256:9ab6951585e9444672dd650850f81767b01bba5d87c8dac9bc2e1c859d6cc254"},
+    {file = "streamlit-1.45.1.tar.gz", hash = "sha256:e37d56c0af5240dbc240976880e81366689c290a559376417246f9b3f51b4217"},
+]
+
+[package.dependencies]
+altair = ">=4.0,<6"
+blinker = ">=1.5.0,<2"
+cachetools = ">=4.0,<6"
+click = ">=7.0,<9"
+gitpython = ">=3.0.7,<3.1.19 || >3.1.19,<4"
+numpy = ">=1.23,<3"
+packaging = ">=20,<25"
+pandas = ">=1.4.0,<3"
+pillow = ">=7.1.0,<12"
+protobuf = ">=3.20,<7"
+pyarrow = ">=7.0"
+pydeck = ">=0.8.0b4,<1"
+requests = ">=2.27,<3"
+tenacity = ">=8.1.0,<10"
+toml = ">=0.10.1,<2"
+tornado = ">=6.0.3,<7"
+typing-extensions = ">=4.4.0,<5"
+watchdog = {version = ">=2.1.5,<7", markers = "platform_system != \"Darwin\""}
+
+[package.extras]
+snowflake = ["snowflake-connector-python (>=3.3.0) ; python_version < \"3.12\"", "snowflake-snowpark-python[modin] (>=1.17.0) ; python_version < \"3.12\""]
+
+[package.source]
+type = "legacy"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+reference = "tsinghua"
+
+[[package]]
+name = "streamlit"
 version = "1.47.0"
 description = "A faster way to build and share data apps"
 optional = false
 python-versions = ">=3.9, !=3.9.7"
 groups = ["main"]
-markers = "python_version >= \"3.9\" and python_full_version != \"3.9.7\""
+markers = "python_version == \"3.9\" and python_full_version != \"3.9.7\""
 files = [
     {file = "streamlit-1.47.0-py3-none-any.whl", hash = "sha256:c10dbfdf832c3fb8e5b62c7a5d1eaaae460dcf332a3a1623f7a072a6303100ee"},
     {file = "streamlit-1.47.0.tar.gz", hash = "sha256:b4ff3b8fa01de1e1dc572930b420897f0870ed2ae44e23a815999b62c0778c30"},
@@ -6605,14 +6646,14 @@ reference = "tsinghua"
 
 [[package]]
 name = "tree-shaking"
-version = "0.1.2b1"
+version = "0.1.3a0"
 description = "Python tree-shaking for dependencies to reduce the size of packaging."
 optional = false
 python-versions = ">=3.12"
 groups = ["dev"]
 markers = "python_version >= \"3.12\""
 files = [
-    {file = "tree_shaking-0.1.2b1-py3-none-any.whl", hash = "sha256:250412402f0d688de3d7c790c5d9d36b85c3006c067927e5a4a2052121510040"},
+    {file = "tree_shaking-0.1.3a0-py3-none-any.whl", hash = "sha256:6391b5f3f3e0614c19d7520d135d7902363db2ba52d368a0c24cd3bcc1f44519"},
 ]
 
 [package.dependencies]
@@ -7167,4 +7208,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "33a094ca8ccc642634553e7644f18246cc4e3184e1761a654b94e5d5afb0086e"
+content-hash = "b81a4a08978d8ba5b03f82a9965b6357683252c2a7edc44d02ed5af0d6172832"
