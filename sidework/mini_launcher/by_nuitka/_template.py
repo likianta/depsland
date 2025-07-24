@@ -1,5 +1,6 @@
 import os
 import re
+import sys
 import subprocess
 import typing as t
 
@@ -9,8 +10,25 @@ def main(
     version: str = '<VERSION>',
 ) -> None:
     if root := _find_depsland_root():
-        # print(root, sys.argv)
         if _check_depsland_version(root):
+            if appid == '<FROM_FILENAME>':
+                # note: sys.argv = [<current_exe_file>]
+                # print(__file__, sys.argv)
+                # 'hello_world-v0.1.0.exe' -> 'hello_world'
+                # 'hello_world-v0.1.0-common.exe' -> 'hello_world'
+                # 'hello_world-v0.1.0-common (2).exe' -> 'hello_world'
+                # 'hello_world-v0.1.0-debug.exe' -> 'hello_world'
+                appid = os.path.basename(sys.argv[0]).split('-')[0]
+            if version == '<FROM_FILENAME>':
+                # 'hello_world-v0.1.0.exe' -> '0.1.0'
+                # 'hello_world-v0.1.0-common.exe' -> '0.1.0'
+                # 'hello_world-v0.1.0-debug.exe' -> '0.1.0'
+                x = os.path.basename(sys.argv[0]).split('-')[1]
+                assert x.startswith('v')
+                if x.endswith('.exe'):
+                    version = x[1:-4]
+                else:
+                    version = x[1:]
             _run_app(root, appid, version)
     else:
         raise NotImplementedError
@@ -19,7 +37,6 @@ def main(
 def _find_depsland_root() -> t.Optional[str]:
     # (A)
     if x := os.getenv('DEPSLAND'):
-        # print(x)
         if os.path.exists('{}/apps/.bin/depsland.exe'.format(x)):
             return x
     # (B)
@@ -105,6 +122,7 @@ def _run_app(depsland_root: str, appid: str, version: str) -> None:
     os.environ['PYTHONUTF8'] = '1'
     print('change working directory to "{}"'.format(depsland_root))
     os.chdir(depsland_root)
+    print('target app: {} v{}'.format(appid, version))
     subprocess.run(
         ('.\\python\\python.exe', '-m', 'depsland', 'runx', appid, version)
     )

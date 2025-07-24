@@ -50,3 +50,14 @@ M --> K;
 end
 ```
 
+## 如何创建迷你启动器
+
+见 `/sidework/mini_launcher/by_nuitka/factory.py`.
+
+```sh
+python sidework/mini_launcher/by_nuitka/factory.py -h
+python sidework/mini_launcher/by_nuitka/factory.py main -h
+python sidework/mini_launcher/by_nuitka/factory.py manifest -h
+...
+```
+
