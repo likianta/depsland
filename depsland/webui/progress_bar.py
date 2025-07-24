@@ -30,7 +30,7 @@ def progress_bar() -> t.Iterator:
         print(':v', msg, f'{prog:.02%}')
         prog_bar.progress(prog, msg)
     
-    yield
+    yield placeholder
     
     # mark done
     prog_bar.progress(1.0, 'Installation done')

@@ -99,6 +99,10 @@ def build_dist(
         f'{root_i}/chore/pypi_blank',
         f'{root_o}/chore/pypi_blank',
     )
+    fs.make_link(  # TEST
+        f'{root_i}/chore/setup_wizard_logo.png',
+        f'{root_o}/chore/setup_wizard_logo.png',
+    )
     fs.make_link(
         f'{root_i}/depsland',
         f'{root_o}/depsland',

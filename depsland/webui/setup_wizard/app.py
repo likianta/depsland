@@ -1,7 +1,6 @@
 if __name__ == '__main__':
     __package__ = 'depsland.webui.setup_wizard'
 
-import sys
 import typing as t
 
 import streamlit as st
@@ -12,9 +11,8 @@ from streamlit_extras.bottom_container import bottom as st_bottom_bar
 from ..progress_bar import progress_bar
 from ...api import install_by_appid
 
-_state = sc.session.init(
-    lambda: {'finished': False}
-)
+if not (_state := sc.session.get_data()):
+    _state.update({'finished': False})
 
 
 @cli
@@ -24,7 +22,7 @@ def main(
     description: str = None,
     dry_run: bool = False
 ) -> None:
-    print(app_name, appid, dry_run, sys.argv, sys.orig_argv, ':lv')
+    # print(app_name, appid, dry_run, sys.argv, sys.orig_argv, ':lv')
     
     if not _state['finished']:
         st.title(f'Installing :blue[{app_name}]...')
@@ -47,15 +45,21 @@ def main(
         _play_demo()
     else:
         if not _state['finished']:
-            with progress_bar():
+            with progress_bar() as placeholder:
                 install_by_appid(appid)
             _state['finished'] = True
+            with placeholder:
+                st.success(
+                    'Installation done.\n\n'
+                    'You can now close this window and restart the same app '
+                    'again, there will launch target app instead of wizard.'
+                )
         else:
             # st.success('Installation done.')
             st.success(
                 'Installation done.\n\n'
                 'You can now close this window and restart the same app again, '
-                'there will launch the installed app instead of wizard.'
+                'there will launch target app instead of wizard.'
             )
     
     with st_bottom_bar():
@@ -111,7 +115,7 @@ if __name__ == '__main__':
     # strun 2181 depsland/webui/setup_wizard/app.py
     #   -- 'Hello World' hello_world 'Demo play installing hello-world app.'
     #   --dry-run
-    # pox -m pyapp_window --port 2181 --size 1010x700
+    # pox -m pyapp_window --port 2181 --size 1340x960
     #   --title 'Depsland Setup Wizard'
     st.set_page_config('Depsland Setup Wizard')
     # main('Hello World', 'hello_world')

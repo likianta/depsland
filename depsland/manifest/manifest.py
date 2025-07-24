@@ -473,7 +473,7 @@ class Manifest:
     
     def __setitem__(self, key: str, value: t.Any) -> None:
         if key == 'start_directory':
-            assert os.path.isabs(value) and '\\' in value
+            assert os.path.isabs(value)
             self._manifest[key] = value
         else:
             raise Exception('cannot modify top field of manifest!', key, value)

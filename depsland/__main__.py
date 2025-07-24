@@ -293,7 +293,7 @@ def runx(
             ),
             port=2181,
             show_window=True,
-            size=(1010, 700),
+            size=(1340, 960),
         )
 
 
@@ -437,14 +437,13 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
         manifest_old = load_manifest(f'{x}/manifest.pkl')
     else:
         print(
-            'no previous version found, it may be your first time to install '
-            f'{appid}'
+            'no previous version found, '
+            'it may be your first time to install {}'.format(appid)
         )
         print(
-            '[dim]be noted the first-time installation may consume a long '
+            'be noted the first-time installation may consume a long '
             'time. depsland will try to reduce the consumption in the '
-            'succeeding upgrades/installations.[/]',
-            ':r',
+            'succeeding upgrades/installations.', ':v'
         )
         manifest_old = None
     
