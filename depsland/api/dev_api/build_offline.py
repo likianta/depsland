@@ -120,6 +120,10 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
         f'{root_i}/chore/pypi_blank',
         f'{root_o}/source/pypi'
     )
+    fs.make_link(  # TEST
+        f'{root_i}/chore/setup_wizard_logo.png',
+        f'{root_o}/source/chore/setup_wizard_logo.png',
+    )
     fs.make_link(
         f'{root_i}/chore/site_packages',
         f'{root_o}/source/chore/site_packages'

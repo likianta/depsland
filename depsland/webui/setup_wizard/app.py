@@ -44,23 +44,18 @@ def main(
     if dry_run:
         _play_demo()
     else:
-        if not _state['finished']:
-            with progress_bar() as placeholder:
-                install_by_appid(appid)
-            _state['finished'] = True
-            with placeholder:
-                st.success(
-                    'Installation done.\n\n'
-                    'You can now close this window and restart the same app '
-                    'again, there will launch target app instead of wizard.'
-                )
-        else:
+        if _state['finished']:
             # st.success('Installation done.')
             st.success(
                 'Installation done.\n\n'
                 'You can now close this window and restart the same app again, '
                 'there will launch target app instead of wizard.'
             )
+        else:
+            with progress_bar():
+                install_by_appid(appid)
+            _state['finished'] = True
+            st.rerun()
     
     with st_bottom_bar():
         # TODO
