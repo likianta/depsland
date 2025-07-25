@@ -133,8 +133,9 @@ class Project:
         self.temp = f'{self.root}/temp'
     
     def _init_project(self) -> t.Tuple[str, str]:
-        if exists(x := fs.xpath('../.depsland_project.json')):
-            project_info: dict = fs.load(x)
+        project_file = fs.xpath('../.depsland_project.json')
+        if exists(project_file):
+            project_info: dict = fs.load(project_file)
         else:
             project_info: dict = {'project_mode': 'package'}
         
@@ -149,20 +150,37 @@ class Project:
             #       `build/build.py : full_build`
             #   'shipboard': ...
             'depsland_version': str,
-            'initialized': bool,
+            'initialized': `<app_path>-<created_time>-<bool>`,
+            #   see doc in /wiki/docs/devnote/how-do-we-check-paths-initialized
+            #   .md
         }
         """
+        
+        def check_initialized() -> bool:
+            if project_mode == 'development':
+                return True
+            elif project_mode == 'package':
+                return exists(project_root)
+            else:
+                if project_info.get('initialized'):
+                    v0: str = project_info['initialized']
+                    if v0.endswith('false'):
+                        return False
+                    else:
+                        v1 = '{}-{}-{}'.format(
+                            project_root, fs.filetime(project_file, 'c'), 'true'
+                        )
+                        return v1 == v0
+                else:
+                    return False
         
         project_mode = project_info['project_mode']
         project_root = (
             fs.xpath('.project') if project_mode == 'package' else
             fs.xpath('..')
         )
-        initialized = (
-            True if project_mode == 'development' else
-            exists(project_root) if project_mode == 'package' else
-            project_info.get('initialized', False)
-        )
+        initialized = check_initialized()
+        
         if initialized:
             return project_root, project_mode
         
@@ -179,8 +197,10 @@ class Project:
         else:
             raise ValueError(f'unknown project mode: {project_mode}')
         
-        project_info['initialized'] = True
-        fs.dump(project_info, fs.xpath('../.depsland_project.json'))
+        project_info['initialized'] = '{}-{}-{}'.format(
+            project_root, fs.filetime(project_file, 'c'), 'true'
+        )
+        fs.dump(project_info, project_file)
         
         return project_root, project_mode
     
