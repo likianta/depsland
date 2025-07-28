@@ -70,7 +70,8 @@ class T(T0):
     Experiments0 = t.TypedDict(
         'Experiments0',
         {
-            'package_provider': t.Literal['oss', 'pypi'],
+            'grind_down_assets_schemes': bool,
+            'package_provider'         : t.Literal['oss', 'pypi'],
         },
         total=False
     )
@@ -341,7 +342,10 @@ class Manifest:
                     data0.get('readme', None), start_directory
                 ),
                 'assets'          : self._update_assets(
-                    data0['assets'], start_directory
+                    data0['assets'],
+                    start_directory,
+                    data0.get('experiments', {})
+                    .get('grind_down_assets_schemes', False)
                 ),
                 'dependencies'    : self._update_dependencies(
                     data0.get('dependencies', None), start_directory
@@ -350,7 +354,8 @@ class Manifest:
                     data0['launcher'], start_directory
                 ),
                 'experiments'     : data0.get('experiments', {
-                    'package_provider'  : 'pypi',
+                    'grind_down_assets_schemes': False,
+                    'package_provider'         : 'pypi',
                 }),
                 'depsland_version': data0.get(
                     'depsland_version', __version__
@@ -557,14 +562,37 @@ class Manifest:
     
     @staticmethod
     def _update_assets(
-        assets0: T.Assets0, start_directory: T.StartDirectory,
+        assets0: T.Assets0,
+        start_directory: T.StartDirectory,
+        fine_grind_schemes: bool = False,
     ) -> T.Assets1:
         """
         varibale abbreviations:
             ftype: file type
-            relpath: relative path
+            rpath or relpath: relative path
             utime: updated time
         """
+        def expand_assets(
+            assets: T.Assets0
+        ) -> t.Iterator[t.Tuple[T.AnyPath, T.Scheme0]]:
+            for path, scheme in assets.items():
+                if scheme.startswith('top'):
+                    if os.path.isabs(path):
+                        abspath = fs.normpath(path)
+                    else:
+                        abspath = fs.normpath(f'{start_directory}/{path}')
+                    if scheme == 'top' or scheme == 'top_dirs':
+                        for d in fs.find_dirs(abspath):
+                            yield d.path, 'all'  # noqa
+                    if scheme == 'top' or scheme == 'top_files':
+                        for f in fs.find_files(abspath):
+                            yield f.path, 'all'  # noqa
+                else:
+                    yield path, scheme
+        
+        if fine_grind_schemes:
+            assets0 = dict(expand_assets(assets0))
+        
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
                 return get_file_hash(abspath)
@@ -585,8 +613,8 @@ class Manifest:
             else:
                 return get_updated_time(abspath, recursive=True)
         
-        def generate_uid(ftype: str, relpath: str) -> str:
-            return get_content_hash(f'{ftype}:{relpath}')
+        def generate_uid(ftype: str, rpath: str) -> str:
+            return get_content_hash(f'{ftype}:{rpath}')
         
         out = {}
         for path, scheme in assets0.items():
