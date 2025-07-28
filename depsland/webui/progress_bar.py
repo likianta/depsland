@@ -9,7 +9,7 @@ from lk_utils import Signal
 
 from ..api.user_api.install import progress_updated
 
-_session: dict = sc.session.init(lambda: {
+_session: dict = sc.session.get_state(callback=lambda: {
     'portion_start': 0.0,
     'portion_end'  : 1.0,
     'progress'     : 0.0,

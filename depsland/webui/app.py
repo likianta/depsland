@@ -2,6 +2,7 @@ if __name__ == '__main__':
     __package__ = 'depsland.webui'
 
 import streamlit as st
+import streamlit_canary as sc
 import streamlit_nested_layout  # noqa
 from lk_utils import fs
 
@@ -13,13 +14,9 @@ from .. import paths
 from ..api.user_api.install import install_by_appid
 from ..api.self_api import self_upgrade
 
-
-def _get_session() -> dict:
-    if __name__ not in st.session_state:
-        st.session_state[__name__] = {
-            'placeholder': None,
-        }
-    return st.session_state[__name__]
+_state = sc.session.get_state(callback=lambda: {
+    'placeholder': None,
+})
 
 
 def setup_ui(default_appid: str = '', _run_at_once: bool = False) -> None:
@@ -32,7 +29,7 @@ def setup_ui(default_appid: str = '', _run_at_once: bool = False) -> None:
     tabs = st.tabs(('Search & Install', 'Settings'))
     with tabs[0]:
         search_bar(default_appid, _run_at_once)
-        installed_apps.main(_get_session()['placeholder'])
+        installed_apps.main(_state['placeholder'])
         # bottom_bar.main()
     with tabs[1]:
         settings.main()
@@ -61,7 +58,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
             use_container_width=True,
         )
     with cols[1]:
-        placeholder = _get_session()['placeholder'] = st.empty()
+        placeholder = _state['placeholder'] = st.empty()
     
     if appid and (_run_at_once or do_install):
         with prog_bar_container:
