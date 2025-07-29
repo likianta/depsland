@@ -21,7 +21,7 @@ class T(T0):
     #   the RelPath is relative to manifest file's location.
     StartDirectory = AbsPath
     
-    Assets0 = t.List[AnyPath]
+    Assets0 = t.List[RelPath]  # all paths must be relative to `start_directory`
     Assets1 = t.Dict[
         RelPath,
         AssetInfo := t.NamedTuple(
@@ -34,8 +34,8 @@ class T(T0):
                 ('utime', int),  # updated time
                 ('hash', str),  # if type is dir, the hash is empty
                 ('uid', str),  # the uid will be used as key to filename in oss.
-            ),
-        ),
+            )
+        )
     ]
     
     # fmt:off
@@ -560,18 +560,18 @@ class Manifest:
         """
         
         def unpack_assets(assets: T.Assets0) -> t.Iterator[
-            t.Tuple[T.AnyPath, T.AssetScheme]
+            t.Tuple[T.RelPath, T.AssetScheme]
         ]:
-            for path in assets:
-                if path.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
-                    path, x = path.rsplit(':', 1)
+            for rpath in assets:
+                if rpath.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
+                    rpath, x = rpath.rsplit(':', 1)
                     scheme = int(x, 2)
                 else:
                     scheme = None
                 
-                # resolve wildcard
-                if path.endswith(('/*', '/*/')):
-                    path0, path1 = path, path.rstrip('/*')
+                # resolve wildcard (very limited support)
+                if rpath.endswith(('/*', '/*/')):
+                    path0, path1 = rpath, rpath.rstrip('/*')
                     
                     fast_finished = False
                     if scheme is None:
@@ -596,9 +596,9 @@ class Manifest:
                         else:
                             dirpath = fs.normpath(f'{start_directory}/{path1}')
                         for d in fs.find_dirs(dirpath):
-                            yield d.path, scheme
+                            yield fs.relpath(d.path, start_directory), scheme
                 else:
-                    yield path, scheme
+                    yield rpath, scheme
         
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
@@ -623,19 +623,14 @@ class Manifest:
             return get_content_hash(f'{ftype}:{rpath}')
         
         out = {}
-        for path, scheme in unpack_assets(assets0):
-            if os.path.isabs(path):
-                abspath = fs.normpath(path)
-                relpath = fs.relpath(path, start_directory)
-            else:
-                abspath = fs.normpath(f'{start_directory}/{path}')
-                relpath = fs.normpath(path)
+        for rpath, scheme in unpack_assets(assets0):
+            abspath = fs.normpath(f'{start_directory}/{rpath}')
+            relpath = '' if rpath == '.' else fs.normpath(rpath)
             if not fs.exist(abspath):
                 raise FileNotFoundError(
                     'please check the path you defined in manifest does exist',
-                    path
+                    rpath
                 )
-            if relpath == '.': relpath = ''
             ftype = 'file' if os.path.isfile(abspath) else 'dir'
             out[relpath] = AssetInfo(
                 type=ftype,
