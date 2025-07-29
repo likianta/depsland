@@ -21,25 +21,16 @@ class T(T0):
     #   the RelPath is relative to manifest file's location.
     StartDirectory = AbsPath
     
-    Scheme0 = t.Literal[
-        'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs',  # fmt:skip
-        ''  # empty str means 'all'  # fmt:skip
-    ]
-    Scheme1 = t.Literal[
-        'root', 'all', 'all_dirs', 'top', 'top_files', 'top_dirs'
-    ]
-    # ^ see also `depsland.api.dev_api.publish._copy_assets`
-    
-    Assets0 = t.Dict[AnyPath, Scheme0]
-    #   anypath: abspath or relpath, '/' or '\\' both allowed.
-    #   scheme: scheme or empty string. if empty string, it means 'all'.
+    Assets0 = t.List[AnyPath]
     Assets1 = t.Dict[
         RelPath,
         AssetInfo := t.NamedTuple(
             'AssetInfo',
             (
                 ('type', t.Literal['file', 'dir']),
-                ('scheme', Scheme1),
+                # see `depsland.api.dev_api.publish._copy_assets`
+                ('scheme', AssetScheme := t.Optional[int]),
+                #   AssetScheme: None | 0b00 | 0b01 | 0b10 | 0b11
                 ('utime', int),  # updated time
                 ('hash', str),  # if type is dir, the hash is empty
                 ('uid', str),  # the uid will be used as key to filename in oss.
@@ -70,8 +61,7 @@ class T(T0):
     Experiments0 = t.TypedDict(
         'Experiments0',
         {
-            'grind_down_assets_schemes': bool,
-            'package_provider'         : t.Literal['oss', 'pypi'],
+            'package_provider': t.Literal['oss', 'pypi'],
         },
         total=False
     )
@@ -342,10 +332,7 @@ class Manifest:
                     data0.get('readme', None), start_directory
                 ),
                 'assets'          : self._update_assets(
-                    data0['assets'],
-                    start_directory,
-                    data0.get('experiments', {})
-                    .get('grind_down_assets_schemes', False)
+                    data0['assets'], start_directory
                 ),
                 'dependencies'    : self._update_dependencies(
                     data0.get('dependencies', None), start_directory
@@ -354,7 +341,6 @@ class Manifest:
                     data0['launcher'], start_directory
                 ),
                 'experiments'     : data0.get('experiments', {
-                    'grind_down_assets_schemes': False,
                     'package_provider'         : 'pypi',
                 }),
                 'depsland_version': data0.get(
@@ -563,36 +549,15 @@ class Manifest:
     
     @staticmethod
     def _update_assets(
-        assets0: T.Assets0,
-        start_directory: T.StartDirectory,
-        fine_grind_schemes: bool = False,
+        assets0: T.Assets0, start_directory: T.StartDirectory
     ) -> T.Assets1:
         """
+        doc: /wiki/topics/manifest-assets-path-forms.md
         varibale abbreviations:
             ftype: file type
             rpath or relpath: relative path
             utime: updated time
         """
-        def expand_assets(
-            assets: T.Assets0
-        ) -> t.Iterator[t.Tuple[T.AnyPath, T.Scheme0]]:
-            for path, scheme in assets.items():
-                if scheme.startswith('top'):
-                    if os.path.isabs(path):
-                        abspath = fs.normpath(path)
-                    else:
-                        abspath = fs.normpath(f'{start_directory}/{path}')
-                    if scheme == 'top' or scheme == 'top_dirs':
-                        for d in fs.find_dirs(abspath):
-                            yield d.path, 'all'  # noqa
-                    if scheme == 'top' or scheme == 'top_files':
-                        for f in fs.find_files(abspath):
-                            yield f.path, 'all'  # noqa
-                else:
-                    yield path, scheme
-        
-        if fine_grind_schemes:
-            assets0 = dict(expand_assets(assets0))
         
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
@@ -608,19 +573,23 @@ class Manifest:
             #     return get_content_hash('\n'.join(meta_info))
             return ''
         
-        def generate_utime(abspath: str, scheme: str) -> int:
-            if scheme in ('root', 'top', 'top_files', 'top_dirs'):
-                return get_updated_time(abspath, recursive=False)
-            else:
-                return get_updated_time(abspath, recursive=True)
+        def generate_utime(abspath: str, scheme: T.AssetScheme) -> int:
+            return get_updated_time(
+                abspath, recursive=scheme is None or scheme == 0b11
+            )
         
         def generate_uid(ftype: str, rpath: str) -> str:
             return get_content_hash(f'{ftype}:{rpath}')
         
         out = {}
-        for path, scheme in assets0.items():
-            if scheme == '':
-                scheme = 'all'
+        scheme: T.AssetScheme
+        for path in assets0:
+            if path.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
+                path, x = path.rsplit(':', 1)
+                scheme = int(x, 2)
+            else:
+                scheme = None
+            
             if os.path.isabs(path):
                 abspath = fs.normpath(path)
                 relpath = fs.relpath(path, start_directory)
@@ -632,13 +601,13 @@ class Manifest:
                     'please check the path you defined in manifest does exist',
                     path
                 )
-            # minor fix relpath
             if relpath == '.': relpath = ''
             ftype = 'file' if os.path.isfile(abspath) else 'dir'
+            
             out[relpath] = AssetInfo(
                 type=ftype,
                 scheme=scheme,
-                utime=generate_utime(abspath, ftype),
+                utime=generate_utime(abspath, scheme),
                 hash=generate_hash(abspath, ftype),
                 uid=generate_uid(ftype, relpath),
             )
@@ -723,9 +692,11 @@ class Manifest:
     
     @staticmethod
     def _plainify_assets(assets1: T.Assets1) -> T.Assets0:
-        out = {}
+        out = []
         for path, info in assets1.items():
-            out[path] = info.scheme
+            if info.scheme is not None:
+                path += ':{:02b}'.format(info.scheme)
+            out.append(path)
         return out
 
 

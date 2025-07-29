@@ -7,26 +7,26 @@
         "file": "wiki/docs/.vitepress/dist/index.html",
         "standalone": false
     },
-    "assets": {
-        "CHANGELOG.zh.md": "all",
-        "apps/.bin": "root",
-        "apps/.venv": "root",
-        "build": "all",
-        "chore/pypi_blank": "all",
-        "config/depsland.yaml": "all",
-        "depsland": "all",
-        "dist": "root",
-        "dist/standalone": "root",
-        "oss": "top_dirs",
-        "pypi": "top_dirs",
-        "pypi/index/snapdep": "root",
-        "python": "root",
-        "temp": "root",
-        "test": "root",
-        "poetry.lock": "all",
-        "requirements.lock": "all",
-        "wiki/docs/.vitepress/dist": "all"
-    },
+    "assets": [
+        "CHANGELOG.zh.md",
+        "apps/.bin:0",
+        "apps/.venv:0",
+        "build",
+        "chore/pypi_blank",
+        "config/depsland.yaml",
+        "depsland",
+        "dist:0",
+        "dist/standalone:0",
+        "oss/*:0",
+        "pypi/*:0",
+        "pypi/index/snapdep:0",
+        "python:0",
+        "temp:0",
+        "test:0",
+        "poetry.lock",
+        "requirements.lock",
+        "wiki/docs/.vitepress/dist"
+    ],
     "dependencies": "",
     "launcher": {
         "command": "python -m depsland launch-gui",
@@ -37,8 +37,7 @@
         "show_console": false
     },
     "experiments": {
-        "grind_down_assets_schemes": false,
         "package_provider": "oss"
     },
-    "depsland_version": "0.9.1"
+    "depsland_version": "0.10.0"
 }

@@ -21,16 +21,13 @@ export default withMermaid({
           {
             text: '话题',
             items: [
-              { text: '迷你启动器', link: '/topics/mini-launcher' }
+              { text: 'Assets 路径格式', link: '/topics/manifest-assets-path-forms' },
+              { text: '迷你启动器', link: '/topics/mini-launcher' },
             ]
           },
           {
             text: '设计思考',
             items: [
-              { 
-                text: 'Dist 目录结构设计', 
-                link: '/design-thinking/why-dist-tree-like-this' 
-              },
               { 
                 text: 'Manifest 路径格式转换', 
                 link: '/design-thinking/manifest-path-format' 

@@ -30,7 +30,7 @@ class T(T0):
     PseudoManifestDict = T0.Manifest1
     
     # extra ports for external use
-    Scheme = T0.Scheme1
+    Scheme = T0.AssetScheme
     UserManifest = T0.Manifest0
 
 

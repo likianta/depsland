@@ -314,35 +314,34 @@ def _copy_assets(
     
     '''
     scheme:
-        all: full copy.
-        all_dirs: create empty dirs, recursively.
-        root: create empty root dir.
-        top: create empty direct subdirs, copy direct files.
-        top_files: copy direct files.
-        top_dirs: create empty direct subdirs.
+        None: full copy.
+        0b00: create empty root dir.
+        0b01: copy direct files.
+        0b10: create empty direct subdirs, copy direct files.
+        0b11: create empty dirs, recursively.
+    see full doc in `/wiki/topics/manifest-assets-path-forms.md`
     '''
     
-    if scheme == 'all':
+    if scheme is None:
         fs.make_link(path_i, dir_o, True)
-    elif scheme == 'all_dirs':
-        fs.clone_tree(path_i, dir_o, True)
-    elif scheme == 'root':
+    elif scheme == 0b00:
         pass
-    elif scheme == 'top':
+    elif scheme == 0b01:
+        for f in fs.find_files(path_i):
+            file_i = f.path
+            file_o = '{}/{}'.format(dir_o, f.name)
+            fs.make_link(file_i, file_o)
+    elif scheme == 0b10:
         for dn in fs.find_dir_names(path_i):
             os.mkdir('{}/{}'.format(dir_o, dn))
         for f in fs.find_files(path_i):
             file_i = f.path
             file_o = '{}/{}'.format(dir_o, f.name)
             fs.make_link(file_i, file_o)
-    elif scheme == 'top_files':
-        for f in fs.find_files(path_i):
-            file_i = f.path
-            file_o = '{}/{}'.format(dir_o, f.name)
-            fs.make_link(file_i, file_o)
-    elif scheme == 'top_dirs':
-        for dn in fs.find_dir_names(path_i):
-            os.mkdir('{}/{}'.format(dir_o, dn))
+    elif scheme == 0b11:
+        fs.clone_tree(path_i, dir_o, True)
+    else:
+        raise Exception(path_i, scheme)
     
     return dir_o
 
