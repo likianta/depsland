@@ -559,6 +559,47 @@ class Manifest:
             utime: updated time
         """
         
+        def unpack_assets(assets: T.Assets0) -> t.Iterator[
+            t.Tuple[T.AnyPath, T.AssetScheme]
+        ]:
+            for path in assets:
+                if path.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
+                    path, x = path.rsplit(':', 1)
+                    scheme = int(x, 2)
+                else:
+                    scheme = None
+                
+                # resolve wildcard
+                if path.endswith(('/*', '/*/')):
+                    path0, path1 = path, path.rstrip('/*')
+                    
+                    fast_finished = False
+                    if scheme is None:
+                        if path0.endswith('/*'):
+                            print(
+                                'glob pattern can be simplified: {} -> {}'
+                                .format(path0, path1), ':v5r2'
+                            )
+                            fast_finished = True
+                    elif scheme == 0b11:
+                        print(
+                            'glob pattern can be simplified: {}:11 -> {}:11'
+                            .format(path0, path1), ':v5r2'
+                        )
+                        fast_finished = True
+                    
+                    if fast_finished:
+                        yield path1, scheme
+                    else:
+                        if os.path.isabs(path1):
+                            dirpath = fs.normpath(path1)
+                        else:
+                            dirpath = fs.normpath(f'{start_directory}/{path1}')
+                        for d in fs.find_dirs(dirpath):
+                            yield d.path, scheme
+                else:
+                    yield path, scheme
+        
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
                 return get_file_hash(abspath)
@@ -582,14 +623,7 @@ class Manifest:
             return get_content_hash(f'{ftype}:{rpath}')
         
         out = {}
-        scheme: T.AssetScheme
-        for path in assets0:
-            if path.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
-                path, x = path.rsplit(':', 1)
-                scheme = int(x, 2)
-            else:
-                scheme = None
-            
+        for path, scheme in unpack_assets(assets0):
             if os.path.isabs(path):
                 abspath = fs.normpath(path)
                 relpath = fs.relpath(path, start_directory)
@@ -603,7 +637,6 @@ class Manifest:
                 )
             if relpath == '.': relpath = ''
             ftype = 'file' if os.path.isfile(abspath) else 'dir'
-            
             out[relpath] = AssetInfo(
                 type=ftype,
                 scheme=scheme,
