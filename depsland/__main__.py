@@ -45,11 +45,9 @@ def about() -> None:
     """
     show basic information about depsland.
     """
-    from . import __date__
     from . import __path__
     from . import __version__
     print(':rs1', '[red b]♥ depsland [u]v{}[/] ♥[/]'.format(__version__))
-    print(':rs1', '  [cyan]released at [u]{}[/][/]'.format(__date__))
     print(':rs1', '  [magenta]located  at [u]{}[/][/]'.format(__path__[0]))
 
 
@@ -63,7 +61,6 @@ def welcome(confirm_close: bool = False) -> None:
     """
     show welcome message and exit.
     """
-    from . import __date__
     from . import __version__
     
     print(
@@ -74,12 +71,10 @@ def welcome(confirm_close: bool = False) -> None:
         Depsland is a python apps manager for non-developer users.
         
         - Version: {}
-        - Release date: {}
         - Author: {}
         - Official site: {}
         '''.format(
             __version__,
-            __date__,
             'Likianta (likianta@foxmail.com)',
             'https://github.com/likianta/depsland',
         )

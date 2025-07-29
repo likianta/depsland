@@ -504,14 +504,15 @@ class Manifest:
             if isinstance(manifest['readme'], str):
                 readme = manifest['readme']
             else:
-                if manifest['readme']['name'].endswith((
-                    '.doc', '.docx', '.htm', '.html', '.md', '.mhtml', '.mp4',
-                    '.pdf', '.rst', '.txt', '.wps'
-                )):
-                    raise Exception(
-                        'do not include extension in the `readme:name` field',
-                        manifest['readme']['name']
-                    )
+                if name := manifest['readme'].get('name'):
+                    if name.endswith((
+                        '.doc', '.docx', '.htm', '.html', '.md', '.mhtml',
+                        '.mp4', '.pdf', '.rst', '.txt', '.wps'
+                    )):
+                        raise Exception(
+                            'do not include extension in the `readme:name` '
+                            'field', manifest['readme']['name']
+                        )
                 readme = manifest['readme']['file']
             if readme:
                 assert '.' in fs.filename(readme), (

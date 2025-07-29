@@ -1,0 +1,24 @@
+{
+    "root": "..",
+    "version_bump": {
+        "places": {
+            "pyproject.toml": "version = \"<VERSION>\""
+        }
+    },
+    "images": {
+        "source-mini": "",
+        "source-full": "",
+        "encrypted-mini": "",
+        "encrypted-full": ""
+    },
+    "encryption_options": {
+        "key": "",
+        "packages": [],
+        "output": ""
+    },
+    "minideps_options": {
+        "tree_shaking_model": "",
+        "output": ""
+    },
+    "post_script": ""
+}

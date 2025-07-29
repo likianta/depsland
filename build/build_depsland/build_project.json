@@ -1,0 +1,27 @@
+{
+    "root": "../../",
+    "version_bump": {
+        "places": {
+            "build/build_depsland/src_max.json": "\"version\": \"<VERSION>\"",
+            "depsland/__init__.py": "__version__ = '<VERSION>'",
+            "pyproject.toml": "version = \"<VERSION>\""
+        }
+    },
+    "images": {
+        "source-mini": "",
+        "source-full": "build/build_depsland/src_max.json",
+        "encrypted-mini": "",
+        "encrypted-full": ""
+    },
+    "encryption_options": {
+        "key": "",
+        "packages": [],
+        "output": ""
+    },
+    "minideps_options": {
+        "tree_shaking_model": "build/build_depsland/tree_shaking_model.yaml",
+        "output": "chore/site_packages"
+    },
+    "# post_script": "build/build_depsland/post_script.py",
+    "post_script": ""
+}

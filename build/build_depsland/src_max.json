@@ -1,9 +1,14 @@
 {
     "appid": "depsland",
     "name": "Depsland Standalone",
-    "version": "0.9.1a0",
-    "readme": "",
+    "version": "0.10.0a0",
+    "start_directory": "../../",
+    "readme": {
+        "file": "wiki/docs/.vitepress/dist/index.html",
+        "standalone": false
+    },
     "assets": {
+        "CHANGELOG.zh.md": "all",
         "apps/.bin": "root",
         "apps/.venv": "root",
         "build": "all",
@@ -18,15 +23,11 @@
         "python": "root",
         "temp": "root",
         "test": "root",
-        "CHANGELOG.zh.md": "all",
-        "DEVNOTE.md": "all",
-        "manifest.json": "all",
         "poetry.lock": "all",
-        "README.md": "all",
-        "README.zh.md": "all",
-        "requirements.lock": "all"
+        "requirements.lock": "all",
+        "wiki/docs/.vitepress/dist": "all"
     },
-    "dependencies": "poetry.lock",
+    "dependencies": "",
     "launcher": {
         "command": "python -m depsland launch-gui",
         "icon": "build/icon/launcher.ico",

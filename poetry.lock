@@ -924,7 +924,7 @@ version = "3.1.2"
 description = "The Cython compiler for writing C extensions in the Python language."
 optional = false
 python-versions = ">=3.8"
-groups = ["dev"]
+groups = ["main", "dev"]
 files = [
     {file = "cython-3.1.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:0f2add8b23cb19da3f546a688cd8f9e0bfc2776715ebf5e283bc3113b03ff008"},
     {file = "cython-3.1.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:0d6248a2ae155ca4c42d7fa6a9a05154d62e695d7736bc17e1b85da6dcc361df"},
@@ -5028,20 +5028,20 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyportable-crypto"
-version = "1.4.0a5"
+version = "1.4.0"
 description = "Crypto plugin for pyportable-installer project."
 optional = false
-python-versions = ">=3.8,<4.0"
-groups = ["dev"]
+python-versions = ">=3.8"
+groups = ["main", "dev"]
 files = [
-    {file = "pyportable_crypto-1.4.0a5-py3-none-any.whl", hash = "sha256:703cc4238e0d905a74755884f57797a037363a2f8c768ff19987adf88672c370"},
+    {file = "pyportable_crypto-1.4.0-py3-none-any.whl", hash = "sha256:244080524c46da577ecbfabb2157734ce526741caa1a45ce77e749e209c8f9d1"},
 ]
 
 [package.dependencies]
-argsense = ">=1.0.0,<2.0.0"
+argsense = ">=1.0.1,<2.0.0"
 cython = ">=3.0.12,<4.0.0"
 lk-logger = ">=6.0.6,<7.0.0"
-lk-utils = ">=3.3.0a15,<4.0.0"
+lk-utils = ">=3.2.1,<4.0.0"
 setuptools = "*"
 
 [package.source]
@@ -5984,7 +5984,7 @@ version = "75.3.2"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.8"
-groups = ["dev"]
+groups = ["main", "dev"]
 markers = "python_version == \"3.8\""
 files = [
     {file = "setuptools-75.3.2-py3-none-any.whl", hash = "sha256:90ab613b6583fc02d5369cbca13ea26ea0e182d1df2d943ee9cbe81d4c61add9"},
@@ -6011,7 +6011,7 @@ version = "80.9.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
-groups = ["dev"]
+groups = ["main", "dev"]
 markers = "python_version >= \"3.9\""
 files = [
     {file = "setuptools-80.9.0-py3-none-any.whl", hash = "sha256:062d34222ad13e0cc312a4c02d73f059e86a4acbfbdea8f8f76b28c99f306922"},
@@ -7171,14 +7171,14 @@ reference = "tsinghua"
 
 [[package]]
 name = "tree-shaking"
-version = "0.1.3"
+version = "0.2.0b0"
 description = "Python tree-shaking for dependencies to reduce the size of packaging."
 optional = false
 python-versions = ">=3.12"
 groups = ["dev"]
 markers = "python_version >= \"3.12\""
 files = [
-    {file = "tree_shaking-0.1.3-py3-none-any.whl", hash = "sha256:75c3aabf2a6890866edadd6085000215dfe6cf895f4de0a1273ca4499a8b9131"},
+    {file = "tree_shaking-0.2.0b0-py3-none-any.whl", hash = "sha256:65a2827d9aa667ecadf478c60af3087005b9532f2381af5d5348a2f62aaeb1af"},
 ]
 
 [package.dependencies]
@@ -8072,4 +8072,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "635c6fc96ae1ba7696d81c53e51bf78695aa6ac6ad9fe1605c8c144c892d5867"
+content-hash = "f88de87cb38d11cc013bec43ce458a3f64b5651dbb5c5fb2b1dfb6f26ba5b12c"

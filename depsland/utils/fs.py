@@ -18,7 +18,7 @@ def get_file_hash(filepath: str) -> str:
     return md5.hexdigest()
 
 
-def get_updated_time(path: str, recursive=False) -> int:
+def get_updated_time(path: str, recursive: bool = False) -> int:
     if os.path.isfile(path):
         return int(os.path.getmtime(path))
     if os.path.islink(path):
