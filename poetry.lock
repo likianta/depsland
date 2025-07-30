@@ -7171,14 +7171,14 @@ reference = "tsinghua"
 
 [[package]]
 name = "tree-shaking"
-version = "0.2.0b0"
+version = "0.2.0b1"
 description = "Python tree-shaking for dependencies to reduce the size of packaging."
 optional = false
 python-versions = ">=3.12"
 groups = ["dev"]
 markers = "python_version >= \"3.12\""
 files = [
-    {file = "tree_shaking-0.2.0b0-py3-none-any.whl", hash = "sha256:65a2827d9aa667ecadf478c60af3087005b9532f2381af5d5348a2f62aaeb1af"},
+    {file = "tree_shaking-0.2.0b1-py3-none-any.whl", hash = "sha256:a119976f324ebe0b2629b172633ef23e7c5f58b353f81cba01631d9e702be776"},
 ]
 
 [package.dependencies]
@@ -8072,4 +8072,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "f88de87cb38d11cc013bec43ce458a3f64b5651dbb5c5fb2b1dfb6f26ba5b12c"
+content-hash = "70e026b553773b4f3468166f1aaf492fee9f1d1f4e061d5458af840470293be4"

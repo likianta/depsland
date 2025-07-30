@@ -281,7 +281,7 @@ class Manifest:
         
         self = Manifest()
         self._file = fs.abspath(file)
-        start_directory = fs.parent(self._file)  # abspath
+        cfg_dir = fs.parent(self._file)  # abspath
         
         data0: t.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
@@ -289,7 +289,7 @@ class Manifest:
         if self._file.endswith('.pkl'):
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
-            data1['start_directory'] = start_directory
+            data1['start_directory'] = cfg_dir
         else:
             data0: T.Manifest0
             if self._file.endswith(('.json', '.yaml')):
@@ -308,19 +308,19 @@ class Manifest:
             if 'start_directory' in data0:
                 x = data0['start_directory']
                 if x.startswith('.'):
-                    start_directory = fs.normpath(
-                        '{}/{}'.format(start_directory, x)
-                    )
+                    start_directory = fs.normpath('{}/{}'.format(cfg_dir, x))
                 else:
                     start_directory = fs.abspath(x)
                 print('change `start_directory` to {}'.format(start_directory))
+            else:
+                start_directory = cfg_dir
             if data0.get('readme'):
-                if isinstance(data0['readme'], str):
-                    data0['assets'][data0['readme']] = 'all'
-                elif data0['readme']['file']:
-                    data0['assets'][data0['readme']['file']] = 'all'
-            if data0['launcher'].get('icon'):
-                data0['assets'][data0['launcher']['icon']] = 'all'
+                if isinstance((x := data0['readme']), str):
+                    data0['assets'].append(x)
+                elif x := data0['readme']['file']:
+                    data0['assets'].append(x)
+            if x := data0['launcher'].get('icon'):
+                data0['assets'].append(x)
             
             self._precheck_manifest(data0)
             data1 = {
@@ -536,8 +536,8 @@ class Manifest:
                 'file type, please use a online converter (for example '
                 'https://findicons.com/convert) to get one.'
             )
-            # TODO: check icon size and give suggestions (the icon is suggested
-            #  128x128 or above.)
+            # TODO: check icon size and give suggestions (the size is -
+            #   suggested 128x128 or higher.)
         if manifest['launcher']['add_to_start_menu']:
             print(
                 ':v6',
@@ -562,6 +562,7 @@ class Manifest:
         def unpack_assets(assets: T.Assets0) -> t.Iterator[
             t.Tuple[T.RelPath, T.AssetScheme]
         ]:
+            scheme: T.AssetScheme
             for rpath in assets:
                 if rpath.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
                     rpath, x = rpath.rsplit(':', 1)
