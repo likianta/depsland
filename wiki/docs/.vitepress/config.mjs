@@ -46,6 +46,10 @@ export default withMermaid({
                 link: '/devnote/upgrade-python-standalone-version'
               },
               {
+                text: '精简 Python 启动器',
+                link: '/devnote/python-embeddable'
+              },
+              {
                 text: '我们是如何验证 Depsland 首次运行的',
                 link: '/devnote/how-do-we-check-paths-initialized'
               },
