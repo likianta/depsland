@@ -8,10 +8,10 @@
         }
     },
     "images": {
-        "source-mini": "",
-        "source-full": "build/build_depsland/src_max.json",
-        "encrypted-mini": "",
-        "encrypted-full": ""
+        "src_max": "build/build_depsland/src_max.json",
+        "src_min": "",
+        "enc_max": "",
+        "enc_min": ""
     },
     "encryption_options": {
         "key": "",

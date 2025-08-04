@@ -6,10 +6,10 @@
         }
     },
     "images": {
-        "source-mini": "",
-        "source-full": "",
-        "encrypted-mini": "",
-        "encrypted-full": ""
+        "src_max": "",
+        "src_min": "",
+        "enc_max": "",
+        "enc_min": ""
     },
     "encryption_options": {
         "key": "",

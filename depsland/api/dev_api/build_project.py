@@ -19,10 +19,10 @@ class T:
             'places': t.Dict[Path, str],
         }),
         'images': t.TypedDict('Images', {
-            'source-mini': Path,
-            'source-full': Path,
-            'encrypted-mini': Path,
-            'encrypted-full': Path,
+            'src_max': Path,
+            'src_min': Path,
+            'enc_max': Path,
+            'enc_min': Path,
         }),
         'encryption_options': t.TypedDict('EncryptionOptions', {
             'key': str,  # a string or `<ENV>` or `<ENV:VARNAME>`
@@ -86,8 +86,8 @@ def build(
     
     # noinspection PyTypedDict
     image_file = config['images']['{}-{}'.format(
-        'encrypted' if encrypt_packages else 'source',
-        'full' if minify_deps else 'mini',
+        'enc' if encrypt_packages else 'src',
+        'max' if minify_deps else 'min',
     )]
     assert image_file
     
@@ -204,7 +204,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
     assert places
     
     images = {}
-    for k in ('source-mini', 'source-full', 'encrypted-mini', 'encrypted-full'):
+    for k in ('src_max', 'src_min', 'enc_max', 'enc_min'):
         # noinspection PyTypedDict
         if x := data0['images'].get(k):
             # noinspection PyTypeChecker
