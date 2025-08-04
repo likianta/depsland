@@ -184,27 +184,24 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
         path_o = f'{root_o}/{relpath}'
         
         # ref: `.publish._copy_assets : match case`
-        if info1.scheme == 'all':
+        if info1.scheme is None:
             fs.make_link(path_i, path_o, True)
-        elif info1.scheme == 'all_dirs':
-            fs.clone_tree(path_i, path_o, True)
-        elif info1.scheme == 'root':
+        elif info1.scheme == 0b00:
             pass
-        elif info1.scheme == 'top':
+        elif info1.scheme == 0b01:
+            for f in fs.find_files(path_i):
+                file_i = f.path
+                file_o = '{}/{}'.format(path_o, f.name)
+                fs.make_link(file_i, file_o)
+        elif info1.scheme == 0b10:
             for dn in fs.find_dir_names(path_i):
                 fs.make_dir('{}/{}'.format(path_o, dn))
             for f in fs.find_files(path_i):
                 file_i = f.path
                 file_o = '{}/{}'.format(path_o, f.name)
                 fs.make_link(file_i, file_o)
-        elif info1.scheme == 'top_files':
-            for f in fs.find_files(path_i):
-                file_i = f.path
-                file_o = '{}/{}'.format(path_o, f.name)
-                fs.make_link(file_i, file_o)
-        elif info1.scheme == 'top_dirs':
-            for dn in fs.find_dir_names(path_i):
-                fs.make_dir('{}/{}'.format(path_o, dn))
+        elif info1.scheme == 0b11:
+            fs.clone_tree(path_i, path_o, True)
         else:
             raise Exception(info1.scheme)
 

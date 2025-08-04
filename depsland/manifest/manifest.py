@@ -562,42 +562,43 @@ class Manifest:
         def unpack_assets(assets: T.Assets0) -> t.Iterator[
             t.Tuple[T.RelPath, T.AssetScheme]
         ]:
+            def resolve_wildcard(
+                rpath: str, scheme: T.AssetScheme
+            ) -> t.Iterator[t.Tuple[T.RelPath, T.AssetScheme]]:
+                path0, path1 = rpath, rpath.rstrip('/*')
+                if scheme is None:
+                    dirpath = fs.normpath('{}/{}'.format(
+                        start_directory, path1
+                    ))
+                    for d in fs.find_dirs(dirpath):
+                        yield fs.relpath(d.path, start_directory), None
+                    if path0.endswith('/*'):
+                        for f in fs.find_files(dirpath):
+                            yield fs.relpath(f.path, start_directory), None
+                elif scheme == 0b11:
+                    print(
+                        'glob pattern can be simplified: {}:11 -> {}:11'
+                        .format(path0, path1), ':v5r2'
+                    )
+                    yield path1, 0b11
+                else:
+                    dirpath = fs.normpath('{}/{}'.format(
+                        start_directory, path1
+                    ))
+                    for d in fs.find_dirs(dirpath):
+                        yield fs.relpath(d.path, start_directory), scheme
+            
             scheme: T.AssetScheme
-            for rpath in assets:
-                if rpath.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
-                    rpath, x = rpath.rsplit(':', 1)
+            for raw_path in assets:
+                if raw_path.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
+                    rpath, x = raw_path.rsplit(':', 1)
                     scheme = int(x, 2)
                 else:
+                    rpath = raw_path
                     scheme = None
                 
-                # resolve wildcard (very limited support)
                 if rpath.endswith(('/*', '/*/')):
-                    path0, path1 = rpath, rpath.rstrip('/*')
-                    
-                    fast_finished = False
-                    if scheme is None:
-                        if path0.endswith('/*'):
-                            print(
-                                'glob pattern can be simplified: {} -> {}'
-                                .format(path0, path1), ':v5r2'
-                            )
-                            fast_finished = True
-                    elif scheme == 0b11:
-                        print(
-                            'glob pattern can be simplified: {}:11 -> {}:11'
-                            .format(path0, path1), ':v5r2'
-                        )
-                        fast_finished = True
-                    
-                    if fast_finished:
-                        yield path1, scheme
-                    else:
-                        if os.path.isabs(path1):
-                            dirpath = fs.normpath(path1)
-                        else:
-                            dirpath = fs.normpath(f'{start_directory}/{path1}')
-                        for d in fs.find_dirs(dirpath):
-                            yield fs.relpath(d.path, start_directory), scheme
+                    yield from resolve_wildcard(rpath, scheme)
                 else:
                     yield rpath, scheme
         
@@ -745,7 +746,7 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             - hash
             - utime
         """
-        if new.scheme == old.scheme == 'root':
+        if new.scheme == old.scheme == 0b00:
             return True
         if new.scheme != old.scheme:
             return False

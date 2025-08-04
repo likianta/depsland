@@ -286,7 +286,7 @@ def _patch_encrypted_packages(
 
 
 if __name__ == '__main__':
-    # pox depsland/api/dev_api/common_build.py -h
+    # pox depsland/api/dev_api/build_project.py -h
     from argsense import cli
     cli.add_cmd(build)
     cli.add_cmd(bump_version)

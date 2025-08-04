@@ -52,12 +52,9 @@ end
 
 ## 如何创建迷你启动器
 
-见 `/sidework/mini_launcher/by_nuitka/factory.py`.
+相关工作见 `/sidework/mini_launcher`.
 
-```sh
-python sidework/mini_launcher/by_nuitka/factory.py -h
-python sidework/mini_launcher/by_nuitka/factory.py main -h
-python sidework/mini_launcher/by_nuitka/factory.py manifest -h
-...
-```
+目前 (2025-07) 我们用的是 nuitka 方案, 但发现编译出来的 exe 体积比较大, 达到 6MB; 接下来考虑用 Rust 或 V 语言重新实现.
+
+更新 (2025-08): V 语言的实现已通过概念验证阶段.
 

@@ -12,7 +12,7 @@
 
 ## 语法设计
 
-`<path>:<scheme>`
+`<path>[:<scheme>]`
 
 - `<path>`
 
