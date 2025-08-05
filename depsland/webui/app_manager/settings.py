@@ -1,8 +1,8 @@
 import streamlit as st
 from lk_utils import fs
 
-from .. import paths
-from ..pypi import rebuild_pypi_index
+from ... import paths
+from ...pypi import rebuild_pypi_index
 
 
 def main() -> None:

@@ -8,7 +8,7 @@ import streamlit_canary as sc
 from argsense import cli
 from streamlit_extras.bottom_container import bottom as st_bottom_bar
 
-from ..progress_bar import progress_bar
+from ..app_manager.progress_bar import progress_bar
 from ...api import install_by_appid
 
 if not (_state := sc.session.get_state()):

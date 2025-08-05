@@ -5,8 +5,8 @@ import psutil
 import streamlit as st
 from lk_utils import fs
 
-from ..api.user_api import run_app
-from ..paths import apps as app_paths
+from ...api.user_api import run_app
+from ...paths import apps as app_paths
 
 
 def _get_session() -> dict:

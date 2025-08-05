@@ -89,7 +89,7 @@ def welcome(confirm_close: bool = False) -> None:
 
 @cli
 def launch_gui(
-    port: int = 2180,
+    port: int = 2182,
     _app_token: str = None,
     _run_at_once: t.Optional[bool] = False,
 ) -> None:
@@ -108,7 +108,7 @@ def launch_gui(
     import streamlit_canary as sc
     sc.run(
         title='Depsland Appstore',
-        target='depsland/webui/app.py',
+        target='depsland/webui/app_manager/app.py',
         extra_args=(
             _app_token or ':empty',
             ':true' if _run_at_once else ':false'
@@ -286,7 +286,7 @@ def runx(
                 '--dry-run' if dry_run else '--not-dry-run',
                 # ':true' if dry_run else ':false',
             ),
-            port=2181,
+            port=2183,
             show_window=True,
             size=(1340, 960),
         )

@@ -1,20 +1,20 @@
 if __name__ == '__main__':
-    __package__ = 'depsland.webui'
+    __package__ = 'depsland.webui.app_manager'
 
 import streamlit as st
 import streamlit_canary as sc
-import streamlit_nested_layout  # noqa
+# import streamlit_nested_layout  # noqa
 from lk_utils import fs
 
 # from . import bottom_bar
 from . import installed_apps
 from . import progress_bar
 from . import settings
-from .. import paths
-from ..api.user_api.install import install_by_appid
-from ..api.self_api import self_upgrade
+from ... import paths
+from ...api.user_api.install import install_by_appid
+from ...api.self_api import self_upgrade
 
-_state = sc.session.get_state(callback=lambda: {
+_state = sc.session.get_state(default=lambda: {
     'placeholder': None,
 })
 

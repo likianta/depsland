@@ -7,9 +7,9 @@ import streamlit as st
 import streamlit_canary as sc
 from lk_utils import Signal
 
-from ..api.user_api.install import progress_updated
+from ...api.user_api.install import progress_updated
 
-_session: dict = sc.session.get_state(callback=lambda: {
+_session: dict = sc.session.get_state(default=lambda: {
     'portion_start': 0.0,
     'portion_end'  : 1.0,
     'progress'     : 0.0,
