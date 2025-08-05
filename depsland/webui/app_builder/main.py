@@ -9,6 +9,7 @@ import typing as t
 from random import randint
 from lk_utils import fs
 from . import assets_picker
+from . import dependency_scheme
 from .i18n import i18n
 
 _state = sc.session.get_state(4, default={
@@ -87,9 +88,11 @@ def main() -> None:
         with row[0]:
             st.text_input(i18n.version, str(ver))
         
-        # with st.expander(i18n.assets_title, expanded=False):
-        #     assets_picker.main(prjdir)
-        assets_picker.main(prjdir)
+        tabs = st.tabs((i18n.assets_title, i18n.deps_scheme, i18n.enc_title))
+        with tabs[0]:
+            assets_picker.main(prjdir)
+        with tabs[1]:
+            dependency_scheme.main(prjdir)
 
 
 def _generate_appid(basename: str) -> str:
