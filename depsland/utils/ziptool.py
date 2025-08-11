@@ -6,8 +6,6 @@ from zipfile import ZipFile
 
 from lk_utils import fs
 
-_IS_WINDOWS = os.name == 'nt'
-
 
 def compress_dir(
     dir_i: str,
@@ -61,12 +59,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
     
     dirname_o = fs.basename(fs.abspath(dir_o))
     with ZipFile(file_i, 'r', compression=ZIP_DEFLATED, compresslevel=7) as z:
-        if _IS_WINDOWS:
-            # avoid path limit error in windows.
-            # ref: docs/devnote/issues-summary-202401.zh.md
-            z.extractall('\\\\?\\' + dir_o.replace('/', '\\'))
-        else:
-            z.extractall(dir_o)
+        z.extractall(_safe_long_path(dir_o))
     
     dlist = tuple(
         x for x in os.listdir(dir_o)
@@ -77,13 +70,12 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
         if fs.isdir(f'{dir_o}/{x}'):
             if x == dirname_o:
                 print(
-                    f'move up sub folder [cyan]({x})[/] to be'
-                    ' parent',
-                    ':vspr',
+                    f'move up sub folder [cyan]({x})[/] to be parent',
+                    ':vpr',
                 )
                 dir_m = f'{dir_o}_tmp'
                 assert not fs.exist(dir_m)
-                os.rename(dir_o, dir_m)
+                shutil.move(dir_o, dir_m)
                 shutil.move(f'{dir_m}/{x}', dir_o)
                 shutil.rmtree(dir_m)
             else:
@@ -97,6 +89,7 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
     return dir_o
 
 
+# noinspection PyTypeChecker
 def _overwrite(target: str, scheme: t.Optional[bool]) -> bool:
     """
     args:
@@ -113,6 +106,7 @@ def _overwrite(target: str, scheme: t.Optional[bool]) -> bool:
     """
     if scheme is None:
         return False
+    # noinspection PySimplifyBooleanCheck
     if scheme is True:
         if os.path.isdir(target):
             shutil.rmtree(target)
@@ -123,5 +117,19 @@ def _overwrite(target: str, scheme: t.Optional[bool]) -> bool:
         else:
             raise Exception(target)
         return True
+    # noinspection PySimplifyBooleanCheck
     if scheme is False:
         raise FileExistsError(target)
+
+
+_IS_WINDOWS = os.name == 'nt'
+
+
+def _safe_long_path(path: str) -> str:
+    """
+    avoid path limit error in windows.
+    ref: docs/devnote/issues-summary-202401.zh.md
+    """
+    if _IS_WINDOWS:
+        return '\\\\?\\' + os.path.abspath(path)
+    return path
