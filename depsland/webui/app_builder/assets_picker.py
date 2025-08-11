@@ -95,8 +95,6 @@ class Tree:
                     'type': 0 | 1,  # 0 for file, 1 for dir
                     'children': {name: xdict, ...},  # only dir has this key.
                     'mounted': bool,  # for file, this value is always True.
-                    'checked': bool,  # DELETE
-                    'expanded': bool,  # only dir has this key.  # DELETE
                 }
         """
         out = {}

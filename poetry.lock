@@ -101,13 +101,13 @@ reference = "tsinghua"
 
 [[package]]
 name = "argsense"
-version = "1.0.1"
+version = "1.1.0"
 description = "New command line interface based on Rich library."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "argsense-1.0.1-py3-none-any.whl", hash = "sha256:a6e6d89d4ccd4eafd43fbd37d8beb72b257c1b9f299c387cca7a0fc44954cc45"},
+    {file = "argsense-1.1.0-py3-none-any.whl", hash = "sha256:227768813b5bcbbe06e2702b2b1184b29b2703bd80d5ae4a8cc06aa39037c3aa"},
 ]
 
 [package.dependencies]
@@ -4276,18 +4276,18 @@ reference = "tsinghua"
 
 [[package]]
 name = "pyportable-crypto"
-version = "1.4.0"
+version = "1.5.0a0"
 description = "Crypto plugin for pyportable-installer project."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "pyportable_crypto-1.4.0-py3-none-any.whl", hash = "sha256:244080524c46da577ecbfabb2157734ce526741caa1a45ce77e749e209c8f9d1"},
+    {file = "pyportable_crypto-1.5.0a0-py3-none-any.whl", hash = "sha256:0d40ba3598d45ea5e9ae6d722d60dbff9f4e8ee763b9f984369a8e09e0551963"},
 ]
 
 [package.dependencies]
-argsense = ">=1.0.1,<2.0.0"
-cython = ">=3.0.12,<4.0.0"
+argsense = ">=1.1.0,<2.0.0"
+cython = ">=3.1.2,<4.0.0"
 lk-logger = ">=6.0.6,<7.0.0"
 lk-utils = ">=3.2.1,<4.0.0"
 setuptools = "*"
@@ -6843,4 +6843,4 @@ reference = "tsinghua"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "2afa32bc1764e3c421648ebe13613dd187963a71049f64c26f2825d3c664fe2d"
+content-hash = "32aaf0a64c687b0f214c9a3fb2e8b5b4935d7980832958bbf38276de689fe97b"

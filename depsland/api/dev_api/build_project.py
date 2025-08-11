@@ -85,7 +85,7 @@ def build(
         )
     
     # noinspection PyTypedDict
-    image_file = config['images']['{}-{}'.format(
+    image_file = config['images']['{}_{}'.format(
         'enc' if encrypt_packages else 'src',
         'max' if minify_deps else 'min',
     )]
@@ -207,8 +207,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
     for k in ('src_max', 'src_min', 'enc_max', 'enc_min'):
         # noinspection PyTypedDict
         if x := data0['images'].get(k):
-            # noinspection PyTypeChecker
-            images[k] = abspath(x)
+            images[k] = abspath(x)  # noqa
         else:
             images[k] = None
     assert any(images.values())

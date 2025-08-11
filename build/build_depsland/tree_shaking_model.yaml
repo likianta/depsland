@@ -5,7 +5,7 @@ search_paths:
 entries:
   - depsland/__init__.py
   - depsland/__main__.py
-  - depsland/webui/app.py
+  - depsland/webui/app_manager/app.py
   - depsland/webui/setup_wizard/app.py
   - chore/.venv/streamlit/__init__.py
   - chore/.venv/streamlit/__main__.py
@@ -23,3 +23,6 @@ ignores:
   - qtpy
   - statsmodel
 sole_export: chore/.venv
+# sole_export:
+#   source: chore/.venv
+#   target: chore/site_packages

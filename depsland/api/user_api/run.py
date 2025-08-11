@@ -97,19 +97,27 @@ def run_app(
             # raise e
             input('press ENTER to exit... ')
         else:
-            _popup_error(
-                'Exception occurred at "{}"!'.format(manifest['name'])
+            _popup_error_2(
+                'Exception occurred in "{}"!'.format(manifest['name'])
             )
 
 
+# DELETE
 def _popup_error(msg: str) -> None:
     """ use tkinter popup to show error message. """
     import tkinter
     from tkinter import messagebox
     root = tkinter.Tk()
     root.withdraw()
-    messagebox.showerror('Error', msg)
+    messagebox.showerror('Depsland Run Failed', msg)
     root.destroy()
+
+
+def _popup_error_2(msg: str) -> None:
+    # https://stackoverflow.com/a/4485736/9695911
+    import ctypes
+    box = ctypes.windll.user32.MessageBoxW
+    box(None, msg, 'Depsland Run Failed', 0)
 
 
 # windows only  # DELETE: the toast sound is annoying for user.

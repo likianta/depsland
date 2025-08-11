@@ -80,6 +80,11 @@ fn compare_version(a &string, b &string) int {
 	} else if a_ver.pre_code > b_ver.pre_code {
 		return 1
 	}
+	if a_ver.pre_num < b_ver.pre_num {
+		return -1
+	} else if a_ver.pre_num > b_ver.pre_num {
+		return 1
+	}
 	return 0
 }
 

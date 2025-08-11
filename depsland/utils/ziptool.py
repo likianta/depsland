@@ -67,9 +67,8 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
                 return True
         return False
     
-    dirname_o = fs.basename(fs.abspath(dir_o))
     with ZipFile(file_i, 'r', compression=ZIP_DEFLATED, compresslevel=7) as z:
-        if is_duplicate_subfolder(z, dirname_o):
+        if is_duplicate_subfolder(z, fs.basename(fs.abspath(dir_o))):
             z.extractall(_safe_long_path(fs.parent(dir_o)))
         else:
             z.extractall(_safe_long_path(dir_o))
