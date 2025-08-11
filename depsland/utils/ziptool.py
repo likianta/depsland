@@ -57,35 +57,23 @@ def extract_file(file_i: str, path_o: str, overwrite: bool = None) -> str:
         # if dir_o.endswith('/.'):
         #     dir_o = dir_o[:-2]
     
+    def is_duplicate_subfolder(zfile: ZipFile, target_name: str) -> bool:
+        top_names = set()
+        for name in zfile.namelist():
+            if name.endswith('/') and '/' not in name[:-1]:
+                top_names.add(name[:-1])
+        if len(top_names) == 1:
+            if top_names.pop() == target_name:
+                return True
+        return False
+    
     dirname_o = fs.basename(fs.abspath(dir_o))
     with ZipFile(file_i, 'r', compression=ZIP_DEFLATED, compresslevel=7) as z:
-        z.extractall(_safe_long_path(dir_o))
+        if is_duplicate_subfolder(z, dirname_o):
+            z.extractall(_safe_long_path(fs.parent(dir_o)))
+        else:
+            z.extractall(_safe_long_path(dir_o))
     
-    dlist = tuple(
-        x for x in os.listdir(dir_o)
-        if x not in ('.DS_Store', '__MACOSX')
-    )
-    if len(dlist) == 1:
-        x = dlist[0]
-        if fs.isdir(f'{dir_o}/{x}'):
-            if x == dirname_o:
-                print(
-                    f'move up sub folder [cyan]({x})[/] to be parent',
-                    ':vpr',
-                )
-                dir_m = f'{dir_o}_tmp'
-                assert not fs.exist(dir_m)
-                shutil.move(dir_o, dir_m)
-                shutil.move(f'{dir_m}/{x}', dir_o)
-                shutil.rmtree(dir_m)
-            else:
-                print(
-                    f'notice there is only one folder [magenta]({x})[/] in '
-                    f'this folder: [yellow]{dir_o}[/]. '
-                    '[dim](we don\'t move up it because its name is not same '
-                    'with its parent.)[/]',
-                    ':r',
-                )
     return dir_o
 
 
