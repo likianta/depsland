@@ -508,6 +508,7 @@ class Manifest:
                 )
         
         assert manifest['assets'], 'field `assets` cannot be empty!'
+        assert isinstance(manifest['assets'], list)
         assert all(not x.startswith('../') for x in manifest['assets']), (
             'manifest should be put at the root of project, and there shall be '
             'no "../" in your assets keys.'

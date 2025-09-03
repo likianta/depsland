@@ -370,7 +370,7 @@ def _install_packages(
             resolve(info)
     
     progress_updated.emit('cleanup', 2, 1, 'linking venv')
-    venv_dir = paths.apps.make_packages(
+    venv_dir = paths.apps.make_venv_dir(
         manifest_new['appid'], manifest_new['version'], clear_exists=True
     )
     if has_new_packages:
@@ -381,7 +381,7 @@ def _install_packages(
             assert (
                 manifest_old['version'] != '0.0.0'
             ), 'cannot do fast linking from a void version'
-            src_dir = paths.apps.get_packages(
+            src_dir = paths.apps.get_venv_dir(
                 manifest_old['appid'], manifest_old['version']
             )
             fs.make_link(src_dir, dst_dir, True)

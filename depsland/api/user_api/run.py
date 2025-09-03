@@ -64,7 +64,7 @@ def run_app(
         'lib',  # frequently used dir
         'src',  # frequently used dir
         manifest['start_directory'],  # app_dir
-        paths.apps.get_packages(appid, version),  # pkg_dir
+        paths.apps.get_venv_dir(appid, version),  # pkg_dir
     ))
     # print(
     #     os.environ['PYTHONPATH'].split(sep),

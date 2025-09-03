@@ -33,7 +33,7 @@ def link_venv(
             dirname_2_name_ids[dname].append(pid)
     if not dirname_2_name_ids:
         print('no package to link to venv', ':p')
-        fs.make_dirs(venv_dir)
+        # fs.make_dirs(venv_dir)
         return
     
     ownership: T.Ownership = {}

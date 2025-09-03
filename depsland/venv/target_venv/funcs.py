@@ -1,6 +1,6 @@
 import typing as t
 
-from lk_utils.textwrap import dedent
+from lk_utils import dedent
 
 from .indexer import T as T0
 

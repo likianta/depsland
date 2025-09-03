@@ -103,7 +103,7 @@ class System:
                 HWND_BROADCAST = 0xFFFF
                 WM_SETTING_CHANGED = 0x1A
                 SMTO_ABORT_IF_HUNG = 0x0002
-                ctypes.windll.user32.SendMessageTimeoutW(
+                ctypes.windll.user32.SendMessageTimeoutW(  # noqa
                     HWND_BROADCAST, WM_SETTING_CHANGED, 0, 'Environment',
                     SMTO_ABORT_IF_HUNG, 1000, ctypes.byref(ctypes.c_long())
                 )
@@ -216,7 +216,6 @@ class Project:
         os.mkdir(f'{root}')
         os.mkdir(f'{root}/apps')
         os.mkdir(f'{root}/apps/.bin')
-        os.mkdir(f'{root}/apps/.venv')
         # os.mkdir(f'{root}/build')  # later
         # os.mkdir(f'{root}/config')  # later
         os.mkdir(f'{root}/dist')
@@ -445,47 +444,41 @@ class Apps:
     def __init__(self) -> None:
         self.root = f'{project.root}/apps'
         self.bin = f'{self.root}/.bin'
-        self.venv = f'{self.root}/.venv'
-        self._distribution_history = f'{self.root}/{{appid}}/.dist_history'
-        self._installation_history = f'{self.root}/{{appid}}/.inst_history'
-        self._venv_packages = f'{self.root}/.venv/{{appid}}/{{version}}'
-        ''' the difference between `_distribution_history` and
-            `_installation_history`:
-            when developer builds or publishes a new version of an app, the
-            dist history will be updated, the inst doesn't.
-            when user installs a new version of an app, the vice versa.
-            this avoids that if a developer plays himself as role of an user,
-            published and installed the same app on the same machine, the
-            incremental-update scheme reported "target version exists" error.
-        '''
+        # abbr: 'dist' means 'distribution', 'inst' means 'installation'.
+        self._dist_history = f'{self.root}/{{appid}}/.dist_history'
+        self._inst_history = f'{self.root}/{{appid}}/.inst_history'
+        #   the difference between `_dist_history` and `_inst_history`:
+        #   when developer builds or publishes a new version of an app, the -
+        #   dist history will be updated, the inst doesn't.
+        #   when user installs a new version of an app, the vice versa.
+        #   this avoids that if a developer plays himself as role of an user, -
+        #   published and installed the same app on the same computer, the -
+        #   incremental-update scheme reported "target version exists" error.
+        self._venv = f'{self.root}/{{appid}}/{{version}}/.venv'
     
     def get_distribution_history(self, appid: str) -> str:
-        return self._distribution_history.format(appid=appid)
+        return self._dist_history.format(appid=appid)
     
     def get_installation_history(self, appid: str) -> str:
-        return self._installation_history.format(appid=appid)
+        return self._inst_history.format(appid=appid)
     
-    def get_packages(self, appid: str, version: str) -> str:
-        return self._venv_packages.format(appid=appid, version=version)
+    def get_venv_dir(self, appid: str, version: str) -> str:
+        return self._venv.format(appid=appid, version=version)
     
-    def make_packages(
+    def make_venv_dir(
         self, appid: str, version: str, clear_exists: bool = False
     ) -> str:
         """
         create or clear a folder for venv packages.
         """
-        packages = self._venv_packages.format(appid=appid, version=version)
-        if exists(d := fs.dirpath(packages)):
-            if exists(packages):
-                if clear_exists:
-                    fs.remove_tree(packages)
-                    os.mkdir(packages)
-            else:
-                os.mkdir(packages)
+        dir_ = self._venv.format(appid=appid, version=version)
+        if exists(dir_):
+            if clear_exists:
+                fs.remove_tree(dir_)
+                fs.make_dir(dir_)
         else:
-            os.mkdir(d)
-            os.mkdir(packages)
-        return packages
+            fs.make_dir(dir_)
+        return dir_
 
 
 class Build:

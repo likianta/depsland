@@ -1,8 +1,8 @@
 """
 for windows only.
 """
+from lk_utils import dedent
 from lk_utils import dump
-from lk_utils.textwrap import dedent
 
 from ...manifest import T
 

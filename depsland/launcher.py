@@ -17,7 +17,7 @@ def run(appid: str, version: str, command: str, error_output='terminal'):
     assert os.path.exists(app_dir)
     
     os.chdir(app_dir)
-    sys.path.insert(0, paths.apps.get_packages(appid, version))
+    sys.path.insert(0, paths.apps.get_venv_dir(appid, version))
     sys.path.insert(0, app_dir)
     
     try:

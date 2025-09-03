@@ -6,7 +6,6 @@ import re
 import tree_shaking
 import typing as t
 from lk_utils import fs
-from lk_utils import timestamp
 from pyportable_crypto import compile_dir
 from pyportable_crypto.cipher_gen import generate_cipher_package
 
@@ -233,13 +232,14 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
     tree_shaking_model = ''
     tree_shaking_output = ''
     if x := data0.get('minideps_options'):
-        tree_shaking_model = abspath(x['tree_shaking_model'])
+        if y := x.get('tree_shaking_model'):
+            tree_shaking_model = abspath(y)
         if y := x.get('output'):
             tree_shaking_output = abspath(y)
-        else:
-            tree_shaking_output = 'temp/tree_shaking_results/{}'.format(
-                timestamp('ymd-hns')
-            )
+        # else:
+        #     tree_shaking_output = 'temp/tree_shaking_results/{}'.format(
+        #         timestamp('ymd-hns')
+        #     )
     
     if x := data0.get('post_script'):
         post_script = abspath(x)
