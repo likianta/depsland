@@ -45,6 +45,7 @@ def add_icon_to_exe(file_exe: str, file_ico: str, file_out: str = None) -> str:
 
 @cli
 def rebuild_all_executebles(switches: str = '111111') -> None:
+    assert len(switches) == 6
     iter_ = iter(switches)
     if next(iter_) == '1':
         bat_2_exe(

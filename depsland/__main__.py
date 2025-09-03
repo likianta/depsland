@@ -6,6 +6,7 @@ if 2:
     import sys
     if sys.orig_argv[0].endswith('.exe'):
         os.environ['LK_LOGGER_MODERN_WINDOW'] = '0'
+        sys.path.append('chore/site_packages')
 
 import subprocess
 import sys

@@ -14,12 +14,8 @@
 
    ```
    python312.zip
-   .
-   ..
-   ../chore/site_packages
    ```
 
 体积优化效果:
 
 Python standalone 体积约 130MB, 使用 embed 体积约 22MB, 经 7z 最大压缩后体积为 9MB.
-

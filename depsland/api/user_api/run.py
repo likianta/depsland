@@ -25,6 +25,10 @@ def run_app(
 ) -> t.Optional[subprocess.Popen]:
     """
     a general launcher to start an installed app.
+    
+    related:
+        /depsland/__main__.py
+        /build/exe/depsland-runapp.bat
     """
     if appid is None:
         assert (
@@ -80,7 +84,7 @@ def run_app(
         ),
         shlex.join(args_2_cargs(*args, **kwargs))
     ).strip()
-    print(':v', command)
+    print(':vs', command)
     # lk_logger.unload()
     try:
         return run_cmd_args(
@@ -116,7 +120,7 @@ def _popup_error(msg: str) -> None:
 def _popup_error_2(msg: str) -> None:
     # https://stackoverflow.com/a/4485736/9695911
     import ctypes
-    box = ctypes.windll.user32.MessageBoxW
+    box = ctypes.windll.user32.MessageBoxW  # noqa
     box(None, msg, 'Depsland Run Failed', 0)
 
 
