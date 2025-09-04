@@ -7,11 +7,9 @@ directory structure (example):
         |= apps
             |= hello_world
                 |= 0.1.0
+                    |= .venv
                     |= src
                         |- main.py
-            |= .venv
-                |= hello_world
-                    |= 0.1.0
         |= python
             |- python.exe
 what does "Hello World.exe" do:
@@ -70,9 +68,6 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
     fs.make_dir(f'{root_o}/source')
     fs.make_dir(f'{root_o}/source/apps')
     fs.make_dir(f'{root_o}/source/apps/.bin')
-    fs.make_dir(f'{root_o}/source/apps/.venv')
-    fs.make_dir(f'{root_o}/source/apps/.venv/{appid}')
-    fs.make_dir(f'{root_o}/source/apps/.venv/{appid}/{version}')
     fs.make_dir(f'{root_o}/source/apps/{appid}')
     fs.make_dir(f'{root_o}/source/apps/{appid}/{version}')
     fs.make_dir(f'{root_o}/source/build')
@@ -215,7 +210,7 @@ def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
     # assert all(pypi.exists(x['id']) for x in manifest['dependencies'].values())
     link_venv(
         (x['id'] for x in manifest['dependencies'].values()),
-        '{}/source/apps/.venv/{}/{}'.format(
+        '{}/source/apps/{}/{}/.venv'.format(
             dst_dir, manifest['appid'], manifest['version']
         )
     )

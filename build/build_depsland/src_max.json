@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland Standalone",
-    "version": "0.10.0a0",
+    "version": "0.10.0b15",
     "start_directory": "../../",
     "readme": {
         "file": "wiki/docs/.vitepress/dist/index.html",
@@ -10,7 +10,6 @@
     "assets": [
         "CHANGELOG.zh.md",
         "apps/.bin:0",
-        "apps/.venv:0",
         "build",
         "chore/pypi_blank",
         "config/depsland.yaml",

@@ -91,7 +91,6 @@ def make_dist(
     # make empty dirs
     # os.mkdir(f'{root_o}/apps')
     # os.mkdir(f'{root_o}/apps/.bin')
-    # os.mkdir(f'{root_o}/apps/.venv')
     os.mkdir(f'{root_o}/build')
     os.mkdir(f'{root_o}/chore')
     os.mkdir(f'{root_o}/config')
@@ -184,7 +183,6 @@ def make_dist(
     else:  # 'blank'
         os.mkdir(f'{root_o}/apps')
         os.mkdir(f'{root_o}/apps/.bin')
-        os.mkdir(f'{root_o}/apps/.venv')
         fs.copy_file(
             f'{root_i}/build/exe/depsland-cli.exe',
             f'{root_o}/apps/.bin/depsland.exe',

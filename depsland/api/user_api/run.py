@@ -58,14 +58,22 @@ def run_app(
     ))
     assert manifest['version'] == version
     os.environ['DEPSLAND'] = paths.project.root
-    sep = ';' if sysinfo.IS_WINDOWS else ':'
-    os.environ['PYTHONPATH'] = sep.join((
-        '.',  # "current" dir
-        'lib',  # frequently used dir
-        'src',  # frequently used dir
-        manifest['start_directory'],  # app_dir
-        paths.apps.get_venv_dir(appid, version),  # pkg_dir
-    ))
+    # note (2025-09-04):
+    #   we don't need the following code (thus they are commented).
+    #   further more explanation:
+    #       the embeddable python interpreter is running in an isolated mode, -
+    #       so it doesn't add cwd to sys.path, also ignores PYTHONPATH setting.
+    #       we have resolved this problem by modifying -
+    #       `/python/python312._pth` file, while the following code won't -
+    #       work, we commented it.
+    # sep = ';' if sysinfo.IS_WINDOWS else ':'
+    # os.environ['PYTHONPATH'] = sep.join((
+    #     '.',  # "current" dir
+    #     'lib',  # frequently used dir
+    #     'src',  # frequently used dir
+    #     manifest['start_directory'],  # app_dir
+    #     paths.apps.get_venv_dir(appid, version),  # pkg_dir
+    # ))
     # print(
     #     os.environ['PYTHONPATH'].split(sep),
     #     os.environ['PATH'].split(sep), ':lv'

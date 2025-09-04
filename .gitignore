@@ -44,7 +44,6 @@ dist/**
 
 !**/.gitkeep
 !/apps/.bin/
-!/apps/.venv/
 !/chore/disguised_packages/
 !/chore/disguised_packages/**
 !/depsland/assets/*.ico
