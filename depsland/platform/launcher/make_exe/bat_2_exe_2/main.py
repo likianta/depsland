@@ -29,7 +29,7 @@ def bat_2_exe(
         file_o = fs.replace_ext(file_i, 'exe')
     if icon:
         assert icon.endswith('.ico')
-        assert os.path.exists(icon)
+        assert os.path.exists(icon), icon
     
     _bat_2_exe(file_i, file_o, icon, show_console, uac_admin)
     

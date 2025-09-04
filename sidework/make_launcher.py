@@ -9,7 +9,7 @@ def bat_2_exe(
     file_i: str,
     show_console: bool = True,
     uac_admin: bool = False,
-    icon: str = 'icon/launcher.ico',
+    icon: str = 'build/icon/launcher.ico',
 ) -> None:
     """
     params:

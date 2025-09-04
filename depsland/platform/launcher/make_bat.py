@@ -12,7 +12,7 @@ def make_bat(
     file_o: str,
     *,
     debug: bool = False,
-    custom_cd: '' = None,  # TEST
+    custom_cd: str = None,  # TEST
 ) -> str:
     assert file_o.endswith('.bat')
     # if debug:
@@ -35,12 +35,13 @@ def make_bat(
     #     appid=manifest['appid'],
     #     version=manifest['version'],
     # )
+    
+    # ref: /build/exe/depsland-runapp.bat
     script = dedent(
         r'''
         {echo_off}
         cd /d %~dp0
         {cd}
-        set "PYTHONPATH=.;chore/site_packages"
         set "PYTHONUTF8=1"
         .\python\python.exe -m depsland run {appid}
         {pause}
@@ -51,5 +52,6 @@ def make_bat(
             pause='pause' if debug else '',
         )
     )
+    
     dump(script, file_o)
     return file_o

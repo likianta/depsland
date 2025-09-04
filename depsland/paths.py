@@ -473,7 +473,7 @@ class Apps:
         """
         dir_ = self._venv.format(appid=appid, version=version)
         if exists(dir_):
-            if clear_exists:
+            if clear_exists and not fs.empty(dir_):
                 fs.remove_tree(dir_)
                 fs.make_dir(dir_)
         else:
