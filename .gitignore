@@ -20,7 +20,7 @@
 /oss/**
 /product/
 /pypi/**
-/python
+/python/*
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
 /sidework/mini_launcher/by_nuitka/temp/*
@@ -57,3 +57,5 @@ dist/**
 !/oss/test/
 !/pypi/*/
 !/pypi/index/snapdep/
+!/python/*._pth
+!/python/sitecustomize.py

@@ -1,3 +1,7 @@
+# import sys
+# from pprint import pprint
+# pprint((__name__, __package__, sys.path))
+
 if 1:
     if not __package__:  # noqa
         __package__ = 'depsland'
@@ -6,7 +10,10 @@ if 2:
     import sys
     if sys.orig_argv[0].endswith('.exe'):
         os.environ['LK_LOGGER_MODERN_WINDOW'] = '0'
+        # sys.path.append('.')
         sys.path.append('chore/site_packages')
+        os.environ['DEPSLAND_SEARCH_PATHS'] = 'chore/site_packages'
+        #   see also `/python/sitecustomize.py`
 
 import subprocess
 import sys
