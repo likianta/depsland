@@ -251,8 +251,6 @@ class Project:
     def _setup_production_mode(
         self, project_root: str, project_info: dict
     ) -> None:
-        self._fix_blocked_dlls()
-        
         def build_tree_1(dir0: str, dir1: str) -> None:
             """
             tree like:
@@ -381,8 +379,7 @@ class Project:
             self._setup_system_environment(project_root)
     
     def _setup_shipboard_mode(self, project_root: str) -> None:
-        self._fix_blocked_dlls()
-        '''
+        """
         <user_programs>
             |- <depsland_bundled_app>
                 |- source               # project_root
@@ -393,44 +390,13 @@ class Project:
                     |- ...
                 |- <App Name>.exe
                 |- <App Name> (Debug).exe
-        '''
+        """
         fs.make_shortcut(
             '{}/Depsland.exe'.format(project_root),
             '<desktop>/Depsland.lnk',
             None
         )
         self._setup_system_environment(project_root)
-    
-    # -------------------------------------------------------------------------
-    
-    @staticmethod
-    def _fix_blocked_dlls() -> None:
-        # note: windows only
-        print('fix blocked dlls before opening GUI on winforms.', ':pv1')
-        
-        def unblock_dlls(dir: str) -> None:
-            """
-            related: `depsland.api.dev_api.offline_build._init_dist_tree`
-            ref:
-                https://stackoverflow.com/questions/20886450/unblock-a-file-in
-                -windows-from-a-python-script
-                https://stackoverflow.com/questions/76214672/failed-to
-                -initialize-python-runtime-dll
-            """
-            for f in fs.findall_files(dir, '.dll'):
-                zid = os.path.abspath(f.path) + ':Zone.Identifier'
-                if os.path.isfile(zid):  # check if blocked
-                    print(':v5', 'unblock', f.relpath)
-                    try:
-                        os.remove(zid)  # unblock then
-                    except WindowsError:
-                        # FIXME: some computers may raise [WinError 2] the -
-                        #   system cannot find the file specified.
-                        pass
-        
-        site_packages_dir = fs.xpath('../chore/site_packages')
-        unblock_dlls('{}/pythonnet'.format(site_packages_dir))
-        unblock_dlls('{}/toga_winforms'.format(site_packages_dir))
     
     @staticmethod
     def _setup_system_environment(dir: str) -> None:
