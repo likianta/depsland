@@ -45,7 +45,8 @@ dist/**
 !**/.gitkeep
 !/apps/.bin/
 !/chore/disguised_packages/
-!/chore/disguised_packages/**
+!/chore/disguised_packages/*/__init__.py
+!/chore/disguised_packages/readme.md
 !/depsland/assets/*.ico
 !/depsland/assets/*.md
 !/depsland/assets/*.png

@@ -3,6 +3,7 @@ import shlex
 import typing as t
 from collections import namedtuple
 from functools import cache
+from types import NoneType
 
 from lk_utils import fs
 
@@ -95,7 +96,7 @@ class T(T0):
     #   - Manifest._update_readme_file
     #   - /depsland/api/user_api/install.py : _create_launchers
     #   - /depsland/api/dev_api/build_offline.py : _create_launcher
-    Readme0 = t.Union[AnyPath, t.TypedDict('Readme0', {
+    Readme0 = t.Union[NoneType, AnyPath, t.TypedDict('Readme0', {
         'file'      : AnyPath,
         'name'      : str,
         'icon'      : AnyPath,

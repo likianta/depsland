@@ -17,8 +17,17 @@
         "output": ""
     },
     "minideps_options": {
-        "tree_shaking_model": "",
-        "output": ""
+        "tree_shaking_model": {
+            "search_paths": [".venv", "."],
+            "entries": [
+                ".venv/streamlit/__main__.py",
+                "run.py"
+            ],
+            "sole_export": {
+                "source": ".venv",
+                "target": ""
+            }
+        }
     },
     "post_script": ""
 }

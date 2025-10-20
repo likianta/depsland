@@ -2,9 +2,9 @@
     "root": "../../",
     "version_bump": {
         "places": {
+            "pyproject.toml": "version = \"<VERSION>\"",
             "build/build_depsland/src_max.json": "\"version\": \"<VERSION>\"",
-            "depsland/__init__.py": "__version__ = '<VERSION>'",
-            "pyproject.toml": "version = \"<VERSION>\""
+            "depsland/__init__.py": "__version__ = '<VERSION>'"
         }
     },
     "images": {
@@ -44,9 +44,11 @@
                 "statsmodel",
                 "statsmodels"
             ],
-            "sole_export": "chore/.venv"
-        },
-        "output": "chore/site_packages"
+            "export": {
+                "source": "chore/.venv",
+                "target": "chore/site_packages"
+            }
+        }
     },
     "# post_script": "build/build_depsland/post_script.py",
     "post_script": ""

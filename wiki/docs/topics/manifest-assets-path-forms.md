@@ -1,6 +1,8 @@
 # 资产清单路径语法格式
 
-## 须覆盖情景
+## 设计目标
+
+须覆盖情景 (以下用 "x" 指代 "某个"):
 
 - x 目录
 - x 目录 (空)
@@ -46,4 +48,73 @@
 | `x/*:1`  | `x/*/:1`, `x/*:01`, `x/*/:01` |                                          |
 | `x/*:10` | `x/*/:10`                     |                                          |
 | `x/*:11` | `x/*/:11`                     | x 目录下的所有文件夹 (空), 等同于 `x:11` |
+
+## 示例
+
+> (引用自 `build/build_depsland/src_max.json`.)
+
+```json
+{
+    "...": "...",
+    "assets": [
+        "CHANGELOG.zh.md",
+        "apps/.bin:0",
+        "build",
+        "chore/pypi_blank",
+        "config/depsland.yaml",
+        "depsland",
+        "dist:0",
+        "dist/standalone:0",
+        "oss/*:0",
+        "pypi/*:0",
+        "pypi/index/snapdep:0",
+        "python:0",
+        "temp:0",
+        "test:0",
+        "poetry.lock",
+        "requirements.lock",
+        "wiki/docs/.vitepress/dist"
+    ]
+}
+```
+
+产生的效果:
+
+```
+<dist>
+|- CHANGELOG.zh.md
+|= apps
+   |= .bin  # empty folder
+|= build
+   |- ...
+|= chore
+   |= pypi_blank
+      |- ...
+|= config
+   |- depsland.yaml
+|= depsland
+   |- ...
+|= dist
+   |= standalone  # empty folder
+|= oss
+   |= ...  # all empty folders
+|= pypi
+   |= ...  # all empty folders
+   |= index
+      |= snapdep  # empty folder
+|= python  # empty folder
+|= temp  # empty folder
+|= test  # empty folder
+|- poetry.lock
+|- requirements.lock
+|= wiki
+   |= docs
+      |= .vitepress
+         |= dist
+            |- ...
+```
+
+## 关联代码
+
+- `depsland/manifest/manifest.py : Manifest : _update_assets`
 

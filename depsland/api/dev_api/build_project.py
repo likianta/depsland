@@ -3,18 +3,23 @@ if __name__ == '__main__':
     
 import os
 import re
+import sys
 import tree_shaking
 import typing as t
 from lk_utils import fs
+from lk_utils import run_cmd_args
 from pyportable_crypto import compile_dir
 from pyportable_crypto.cipher_gen import generate_cipher_package
 
 
 class T:
-    Path = str
+    Path = str  # any path form
     Config = t.TypedDict('Config', {
         'root': Path,
         'version_bump': t.TypedDict('VersionBump', {
+            # the places:keys are order sensitive. the first key will be
+            # treated as primary key.
+            # usually the primary key indicates to "pyproject.toml" file.
             'places': t.Dict[Path, str],
         }),
         'images': t.TypedDict('Images', {
@@ -29,10 +34,24 @@ class T:
             'output': Path,
         }),
         'minideps_options': t.TypedDict('MinidepsOptions', {
-            'tree_shaking_model': Path,
-            'output': Path,
+            'tree_shaking_model': t.Union[
+                Path,
+                t.TypedDict(
+                    'TreeShakingModel',
+                    {
+                        'root': Path,
+                        'search_paths': t.List[Path],
+                        'entries': t.List[Path],
+                        'sole_export': t.TypedDict('SoleExport', {
+                            'source': Path,
+                            'target': Path,
+                        }),
+                    },
+                    total=False
+                )
+            ]
         }),
-        'post_script': Path,
+        'post_script': Path,  # TODO: support passing args.
     })
 
 
@@ -91,10 +110,9 @@ def build(
     assert image_file
     
     if minify_deps == 2:
-        assert all(config['minideps_options'].values())
-        model = config['minideps_options']['tree_shaking_model']
-        tree_shaking.build_module_graphs(model)
-        tree_shaking.dump_tree(model, config['minideps_options']['output'])
+        assert (x := config['minideps_options']['tree_shaking_model'])
+        tree_shaking.build_module_graphs(x)
+        tree_shaking.dump_tree(x)
     
     if encrypt_packages:
         assert all(config['encryption_options'].values())
@@ -119,7 +137,12 @@ def build(
         depsland.api.publish(image_file, upload_dependencies=True)
 
     if config['post_script']:
-        exec(fs.load(config['post_script'], 'plain'))
+        run_cmd_args(
+            sys.executable,
+            config['post_script'],
+            cwd=config['root'],
+            verbose=True,
+        )
     
     return curr_version, new_version
 
@@ -132,20 +155,26 @@ def bump_version(file: T.Path, new_version: str = None) -> None:
     _bump_versions(curr_ver, new_ver, config['version_bump']['places'])
 
 
+# noinspection PyUnusedLocal
 def _bump_versions(
     old_ver: str, new_ver: str, places: t.Dict[T.Path, str]
 ) -> None:
     for k, v in places.items():
         content_r = fs.load(k, 'plain')
-        content_w = content_r.replace(
-            v.replace('<VERSION>', old_ver),
+        # (a) fast but limited
+        # content_w = content_r.replace(
+        #     v.replace('<VERSION>', old_ver),
+        #     v.replace('<VERSION>', new_ver),
+        #     1
+        # )
+        # (b) more flexible
+        content_w = re.sub(
+            v.replace('<VERSION>', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
             v.replace('<VERSION>', new_ver),
+            content_r,
             1
         )
         assert content_w != content_r
-        # content_w = re.sub(
-        #     v, lambda m: m.group(0).replace(m.group(1), new_ver), content
-        # )
         fs.dump(content_w, k, 'plain')
 
 
@@ -191,7 +220,7 @@ def _get_current_version(config: T.Config) -> str:
 def _load_config(file: T.Path, **kwargs) -> T.Config:
     data0: T.Config = fs.load(file)
     
-    root = fs.normpath('{}/{}'.format(fs.parent(file), data0['root']))
+    root = fs.abspath('{}/{}'.format(fs.parent(file), data0['root']))
     
     def abspath(x: str) -> T.Path:
         assert x
@@ -229,17 +258,23 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
         if x['output']:
             encryption_output = abspath(x['output'])
     
-    tree_shaking_model = ''
-    tree_shaking_output = ''
+    tree_shaking_model_path = ''
     if x := data0.get('minideps_options'):
         if y := x.get('tree_shaking_model'):
-            tree_shaking_model = abspath(y)
-        if y := x.get('output'):
-            tree_shaking_output = abspath(y)
-        # else:
-        #     tree_shaking_output = 'temp/tree_shaking_results/{}'.format(
-        #         timestamp('ymd-hns')
-        #     )
+            if isinstance(y, str):
+                tree_shaking_model_path = abspath(y)
+            else:
+                if 'root' in y:
+                    y['root'] = fs.normpath('{}/{}'.format(
+                        fs.parent(file), y['root']
+                    ))
+                else:
+                    y['root'] = root
+                fs.dump(
+                    y, 'temp/tree_shaking_model_for_temp_build_project.yaml'
+                )
+                tree_shaking_model_path = \
+                    'temp/tree_shaking_model_for_temp_build_project.yaml'
     
     if x := data0.get('post_script'):
         post_script = abspath(x)
@@ -258,8 +293,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
             'output': encryption_output,
         },
         'minideps_options': {
-            'tree_shaking_model': tree_shaking_model,
-            'output': tree_shaking_output,
+            'tree_shaking_model': tree_shaking_model_path
         },
         'post_script': post_script,
     }

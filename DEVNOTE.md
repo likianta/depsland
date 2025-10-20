@@ -64,7 +64,8 @@
 
 ## Misc
 
-if you are using pycharm as your IDE, mark the following folders excluded:
+If you are using PyCharm, mark the following folders excluded in case indexing 
+time too long:
 
 - apps
 - chore
@@ -87,6 +88,16 @@ if app crashed on windows, should manually kill the process:
 netstat -ano | find '2028'
 # kill the process
 taskkill /F /PID <pid>
+```
+
+## Serving Wiki
+
+We use VitePress to build Wiki docs.
+
+```shell
+cd wiki
+pnpm run docs:dev
+# then visit http://localhost:5173
 ```
 
 ## Lock Requirements
