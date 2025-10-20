@@ -230,5 +230,5 @@ if __name__ == '__main__':
     # prerequisites:
     #   1. nushell: `$env.DEPSLAND_CONFIG_ROOT = 'test/_config'`
     #   2. make sure poetry.lock is latest.
-    # pox build/build_depsland/main.py -h
+    # pox build/build_depsland/main.py main
     cli.run()

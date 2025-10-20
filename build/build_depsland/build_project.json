@@ -19,7 +19,33 @@
         "output": ""
     },
     "minideps_options": {
-        "tree_shaking_model": "build/build_depsland/tree_shaking_model.yaml",
+        "tree_shaking_model": {
+            "search_paths": [".", "chore/.venv"],
+            "entries": [
+                "depsland/__init__.py",
+                "depsland/__main__.py",
+                "depsland/webui/app_manager/app.py",
+                "depsland/webui/setup_wizard/app.py",
+                "chore/.venv/streamlit/__init__.py",
+                "chore/.venv/streamlit/__main__.py",
+                "chore/.venv/streamlit_extras/__init__.py",
+                "chore/.venv/toga_winforms/__init__.py"
+            ],
+            "ignores": [
+                "ipython",
+                "matplotlib",
+                "numpy",
+                "pandas",
+                "pil",
+                "plotly",
+                "pyside6",
+                "qmlease",
+                "qtpy",
+                "statsmodel",
+                "statsmodels"
+            ],
+            "sole_export": "chore/.venv"
+        },
         "output": "chore/site_packages"
     },
     "# post_script": "build/build_depsland/post_script.py",
