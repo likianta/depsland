@@ -44,7 +44,36 @@ class T:
     Packages = t.Dict[PackageName, PackageInfo]
 
 
+def analyze_dependency_tree(
+    poetry_file: str, ignored_current_project_name: str = None,
+) -> t.Dict[T.PackageId, t.Tuple[T.PackageId, ...]]:
+    poetry_data = fs.load(poetry_file, 'toml')
+    
+    _name_2_ver = {
+        normalize_name(item['name']): item['version']
+        for item in poetry_data['package']
+    }
+    
+    def name_2_id(name: T.PackageName) -> T.PackageId:
+        return '{}-{}'.format(name, _name_2_ver[name])
+    
+    all_pkgs = _get_all_packages(poetry_data)
+    all_pkgs = _flatten_dependencies(
+        {k: tuple(v) for k, v in all_pkgs}, ignored_current_project_name
+    )
+    return {name_2_id(k): tuple(map(name_2_id, v)) for k, v in all_pkgs}
+
+
 def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
+    """
+    return top packages and their dependencies in tiled form.
+    for example:
+        if pyproject.toml declares A and dev:B, A depends on C and D; B depends
+        on C and E.
+        the return data is: {A: InfoA, C: InfoC, D: InfoD}
+            no `B: InfoB` because B is in dev group.
+            no `E: InfoE` because E is only dependant by dev:B.
+    """
     pyproj_root = fs.parent(pyproj_file)
     pyproj_data = fs.load(pyproj_file, 'toml')
     poetry_data = fs.load(poetry_file, 'toml')

@@ -26,10 +26,11 @@ from . import verspec
 from .api import init
 from .api import install
 from .api import publish
+from .depsolver import analyze_dependency_tree
 from .platform import sysinfo
 from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.10.0a0'
+__version__ = '0.10.0b18'
