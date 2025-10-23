@@ -5,9 +5,8 @@ from functools import cache
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
-from .poetry_lock_resolver_2 import resolve_poetry_lock
+from .poetry_lock_resolver import resolve_poetry_lock
 from .requirements_lock import resolve_requirements_lock
-# from .requirements_lock import T as T0
 from .. import paths
 from .. import utils
 from ..normalization import normalize_name

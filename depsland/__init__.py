@@ -16,6 +16,7 @@ if 2:
 
 from . import api
 from . import config
+from . import depsolver
 from . import launcher
 from . import manifest
 from . import paths
@@ -26,11 +27,10 @@ from . import verspec
 from .api import init
 from .api import install
 from .api import publish
-from .depsolver import analyze_dependency_tree
 from .platform import sysinfo
 from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.10.0b18'
+__version__ = '0.10.0b23'

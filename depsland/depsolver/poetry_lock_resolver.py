@@ -45,23 +45,35 @@ class T:
 
 
 def analyze_dependency_tree(
-    poetry_file: str, ignored_current_project_name: str = None,
-) -> t.Dict[T.PackageId, t.Tuple[T.PackageId, ...]]:
+    poetry_file: str, excluded_project_name: str = None,
+) -> t.Dict[
+    T.PackageName,
+    t.Tuple[
+        T.ExactVersion,
+        t.Sequence[t.Tuple[T.PackageName, T.ExactVersion]]
+    ]
+]:
+    """
+    returns: {pkg_name: (version, all_tiled_deps), ...}
+        pkg_name: include all names found in `poetry_file`.
+        all_tiled_deps: ((dep_name, dep_version), ...)
+    """
     poetry_data = fs.load(poetry_file, 'toml')
     
-    _name_2_ver = {
+    all_pkgs = _get_all_packages(poetry_data)
+    all_pkgs = _flatten_dependencies(
+        {k: tuple(v) for k, v in all_pkgs}, excluded_project_name
+    )
+    
+    name_2_ver = {
         normalize_name(item['name']): item['version']
         for item in poetry_data['package']
     }
     
-    def name_2_id(name: T.PackageName) -> T.PackageId:
-        return '{}-{}'.format(name, _name_2_ver[name])
-    
-    all_pkgs = _get_all_packages(poetry_data)
-    all_pkgs = _flatten_dependencies(
-        {k: tuple(v) for k, v in all_pkgs}, ignored_current_project_name
-    )
-    return {name_2_id(k): tuple(map(name_2_id, v)) for k, v in all_pkgs}
+    out = {}
+    for k, v in all_pkgs:
+        out[k] = (name_2_ver[k], tuple((w, name_2_ver[w]) for w in v))
+    return out
 
 
 def resolve_poetry_lock(pyproj_file: str, poetry_file: str) -> T.Packages:
@@ -219,9 +231,8 @@ def _fill_packages_info(
 ) -> t.Iterator[t.Tuple[T.PackageName, T.PackageInfo]]:
     def get_custom_url() -> t.Optional[str]:
         if item['source']['type'] == 'legacy':
-            if item['source']['reference'] in (  # TODO
-                'likianta-host', 'likianta-hosted'
-            ):
+            # FIXME: the url of likianta source may be a "localhost" path.
+            if item['source']['reference'] == 'likianta':
                 return '{}/{}/{}'.format(
                     item['source']['url'],
                     name.replace('_', '-'),

@@ -52,7 +52,10 @@ class T:
 def index_all_package_references(
     library_root: T.Path,
 ) -> t.Iterator[t.Tuple[T.PackageName, t.Tuple[str, T.Path]]]:
-    """this is for quick indexing that is faster than `index_packages`"""
+    """
+    this is for quick indexing that is faster than `index_packages`.
+    yields: (pkg_name, (dir_name, dir_path))
+    """
     # print(library_root, ':vp')
     for dname, dpath in _find_dist_info_dirs(library_root):
         pkg_name, _ = norm.split_dirname_of_dist_info(dname)
