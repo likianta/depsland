@@ -104,8 +104,10 @@ def export(
         out = set()
         for f in relpath_files:
             f = suppress_super_path(f)
-            assert '/' in f
-            out.add(f.rsplit('/', 1)[0])
+            if '/' in f:
+                out.add(f.rsplit('/', 1)[0])
+            else:
+                print(':v6', f)
         return sorted(out)
     
     def suppress_super_path(path: str) -> str:
@@ -128,7 +130,9 @@ def export(
                         pkg_dir, suppress_super_path(relpath)
                     )
                     fs.make_link(file_i, file_o)
-            if compress and not fs.exist(pkg_zip := '{}.zip'.format(pkg_dir)):
+            if compress and not fs.exist(
+                pkg_zip := '{}-{}.zip'.format(pkg_dir, tree[name][0])
+            ):
                 fs.zip_dir(pkg_dir, pkg_zip)
     else:
         all_relpath_files_i = set()

@@ -55,7 +55,7 @@ freesimplegui = "^5.2.0.post1"
 icnsutil = "^1.1.0"  # <- sidework/image_converter.py
 ipython = { version = "^9.6.0", python = "^3.12" }
 lk-logger = { version = "^6.1.0a0", source = "likianta" }
-lk-utils = { version = "^3.4.1a0", source = "likianta" }
+lk-utils = { version = "^3.4.1b1", source = "likianta" }
 matplotlib = { version = "^3.10.5", python = "^3.10" }  # to support numpy 2.x, used by pyinstaller
 nuitka = "^2.8.1"
 pillow = { version = "^11.0.0", python = "^3.12" }  # <- sidework/image_converter.py
