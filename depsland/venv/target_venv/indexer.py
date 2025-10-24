@@ -340,10 +340,18 @@ def analyze_metadata(
 
 def analyze_records(record_file: str) -> t.Iterator[str]:
     """
-    warning: some paths may be inexistent or invalid. use `os.path.isfile` to
-    check them.
+    notice:
+        - the yielt path may start with '../../Scripts', if you don't want to
+          create super paths, you can replace it with './bin'.
+          see related:
+            - sidework/export_deps.py:export:suppress_super_path
+            - sidework/merge_internal_venv_to_local_pypi.py:_compress_dependency
+        - some paths may be inexistent or invalid. use `os.path.isfile` to
+          check them.
     """
     records = fs.load(record_file, 'plain').splitlines()
     for line in records:
         relpath = fs.normpath(line.rsplit(',', 2)[0])
+        # if relpath.startswith('../'):
+        #     assert relpath.startswith('../../Scripts/')
         yield relpath
