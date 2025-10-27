@@ -251,14 +251,19 @@ def _install_files(
         )
         
         if action == 'ignore':
-            path0 = fs.normpath(f'{root0}/{relpath}')
-            path1 = fs.normpath(f'{root1}/{relpath}')
-            if os.path.exists(path0):
-                copy_from_old(path0, path1, info1.type)
+            if info1.scheme == 0b00:
+                if not fs.exist(f'{root1}/{relpath}'):
+                    fs.make_dir(f'{root1}/{relpath}')
                 continue
             else:
-                print('turn ignore to append action')
-                action = 'append'
+                path0 = fs.normpath(f'{root0}/{relpath}')
+                path1 = fs.normpath(f'{root1}/{relpath}')
+                if fs.real_exist(path0):
+                    copy_from_old(path0, path1, info1.type)
+                    continue
+                else:
+                    print('turn ignore to append action')
+                    action = 'append'
         
         if action in ('append', 'update'):
             path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url

@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.10.0"
+version = "0.10.1"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -34,7 +34,8 @@ psutil = "^7.0.0"
 pyportable-crypto = "^1.5.0"
 semver = "^3.0.4"
 streamlit = [
-    { version = "^1.50.0", python = ">=3.10,<4.0" },
+    { version = "^1.51.0", python = ">=3.11,<4.0" },
+    { version = "^1.50.0", python = ">=3.10,<3.11" },
     { version = ">=1.40.0,<1.45.0", python = ">=3.8,<3.10,!=3.9.7" },
 ]
 streamlit-canary = "^0.1.0"
@@ -52,8 +53,8 @@ conflore = { version = "^0.2.2", source = "likianta" }
 freesimplegui = "^5.2.0.post1"
 icnsutil = "^1.1.0"  # <- sidework/image_converter.py
 ipython = { version = "^9.6.0", python = "^3.12" }
-lk-logger = { version = "^6.1.0a0", source = "likianta" }
-lk-utils = { version = "^3.4.1", source = "likianta" }
+lk-logger = { version = ">=6.0.7,<6.1.0", source = "likianta" }
+lk-utils = { version = "^3.4.2b0", source = "likianta" }
 matplotlib = { version = "^3.10.5", python = "^3.10" }  # to support numpy 2.x, used by pyinstaller
 nuitka = "^2.8.1"
 pillow = { version = "^11.0.0", python = "^3.12" }  # <- sidework/image_converter.py
@@ -64,8 +65,8 @@ pyinstrument = "^5.0.3"
 pyportable-crypto = { version = "^1.5.1a0", source = "likianta" }
 pyside6 = { version = "^6.10.0", python = ">=3.12,<3.14" }  # <- demo/hello-world-gui
 # pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
-qmlease = { version = "^3.1.0a41", source = "likianta" }  # <- demo/hello-world-gui
-streamlit-canary = { version = "^0.1.1a3", source = "likianta" }
+qmlease = { version = "^3.1.0a42", source = "likianta" }  # <- demo/hello-world-gui
+streamlit-canary = { version = "^0.1.1a4", source = "likianta" }
 tree-shaking = { version = "^0.2.2", python = "^3.12", source = "likianta" }
 
 [[tool.poetry.source]]

@@ -1,7 +1,7 @@
 {
     "appid": "depsland",
     "name": "Depsland Standalone",
-    "version": "0.10.0",
+    "version": "0.10.1",
     "start_directory": "../../",
     "readme": {
         "file": "wiki/docs/.vitepress/dist/index.html",
@@ -38,5 +38,5 @@
     "experiments": {
         "package_provider": "oss"
     },
-    "depsland_version": "0.10.0"
+    "depsland_version": "0.10.1"
 }

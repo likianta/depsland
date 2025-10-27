@@ -648,7 +648,7 @@ files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
 ]
-markers = {main = "platform_system == \"Windows\" or os_name == \"nt\"", dev = "python_full_version != \"3.9.7\" and platform_system == \"Windows\" or python_version >= \"3.12\" and sys_platform == \"win32\""}
+markers = {main = "os_name == \"nt\" or platform_system == \"Windows\"", dev = "python_full_version != \"3.9.7\" and platform_system == \"Windows\" or python_version >= \"3.12\" and sys_platform == \"win32\""}
 
 [package.source]
 type = "legacy"
@@ -2158,13 +2158,13 @@ reference = "aliyun"
 
 [[package]]
 name = "lk-logger"
-version = "6.1.0a0"
+version = "6.0.7"
 description = "Python print with source map and varnames."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_logger-6.1.0a0-py3-none-any.whl", hash = "sha256:8c1bab8f81a7ec05d8df8fe5891b838a3f98bb2cf9ae60d4176298118b94e943"},
+    {file = "lk_logger-6.0.7-py3-none-any.whl", hash = "sha256:8bbc003240e294849eabea8b29ee3ba3abcdf29459cdbd0625160edb075945a0"},
 ]
 
 [package.dependencies]
@@ -2180,13 +2180,13 @@ reference = "likianta"
 
 [[package]]
 name = "lk-utils"
-version = "3.4.1"
+version = "3.4.2b0"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.4.1-py3-none-any.whl", hash = "sha256:d03f5899dd2802deb88a230835cef1b333ba09b49ccdcb90e28d98a35ae417b6"},
+    {file = "lk_utils-3.4.2b0-py3-none-any.whl", hash = "sha256:315efc57f1754fc8e53e0fee32d465287617a3b7c4c48bccdd1daad8016673b0"},
 ]
 
 [package.dependencies]
@@ -3338,8 +3338,8 @@ markers = {main = "python_version >= \"3.9\"", dev = "python_full_version != \"3
 [package.dependencies]
 numpy = [
     {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
-    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
     {version = ">=1.23.2", markers = "python_version == \"3.11\""},
+    {version = ">=1.22.4", markers = "python_version < \"3.11\""},
 ]
 python-dateutil = ">=2.8.2"
 pytz = ">=2020.1"
@@ -4807,19 +4807,19 @@ reference = "aliyun"
 
 [[package]]
 name = "qmlease"
-version = "3.1.0a41"
+version = "3.1.0a42"
 description = "A flexible toolkit for Python programmer to efficiently develop QML graphical user interface."
 optional = false
 python-versions = ">=3.8"
 groups = ["dev"]
 files = [
-    {file = "qmlease-3.1.0a41-py3-none-any.whl", hash = "sha256:9282082affa5b14199f80513a06467b12cd8cf372f3cc1c2e209c1c987ce7933"},
+    {file = "qmlease-3.1.0a42-py3-none-any.whl", hash = "sha256:0669bdd006155a02018ebaa3451b9f0bf061e7e71f0b590454ed185aaa46ad29"},
 ]
 
 [package.dependencies]
 argsense = ">=1.1.0,<2.0.0"
 fake-typing = ">=0.1.3,<0.2.0"
-lk-logger = ">=6.1.0a0,<7.0.0"
+lk-logger = ">=6.0.7,<7.0.0"
 lk-utils = ">=3.3.0,<4.0.0"
 qtpy = ">=2.4.3,<3.0.0"
 
@@ -5571,15 +5571,15 @@ reference = "aliyun"
 
 [[package]]
 name = "streamlit"
-version = "1.50.0"
+version = "1.51.0"
 description = "A faster way to build and share data apps"
 optional = false
-python-versions = ">=3.9, !=3.9.7"
+python-versions = ">=3.10"
 groups = ["main", "dev"]
 markers = "python_version >= \"3.10\""
 files = [
-    {file = "streamlit-1.50.0-py3-none-any.whl", hash = "sha256:9403b8f94c0a89f80cf679c2fcc803d9a6951e0fba542e7611995de3f67b4bb3"},
-    {file = "streamlit-1.50.0.tar.gz", hash = "sha256:87221d568aac585274a05ef18a378b03df332b93e08103fffcf3cd84d852af46"},
+    {file = "streamlit-1.51.0-py3-none-any.whl", hash = "sha256:4008b029f71401ce54946bb09a6a3e36f4f7652cbb48db701224557738cfda38"},
+    {file = "streamlit-1.51.0.tar.gz", hash = "sha256:1e742a9c0b698f466c6f5bf58d333beda5a1fbe8de660743976791b5c1446ef6"},
 ]
 
 [package.dependencies]
@@ -5591,9 +5591,9 @@ gitpython = ">=3.0.7,<3.1.19 || >3.1.19,<4"
 numpy = ">=1.23,<3"
 packaging = ">=20,<26"
 pandas = ">=1.4.0,<3"
-pillow = ">=7.1.0,<12"
+pillow = ">=7.1.0,<13"
 protobuf = ">=3.20,<7"
-pyarrow = ">=7.0"
+pyarrow = ">=7.0,<22"
 pydeck = ">=0.8.0b4,<1"
 requests = ">=2.27,<3"
 tenacity = ">=8.1.0,<10"
@@ -5663,22 +5663,22 @@ reference = "aliyun"
 
 [[package]]
 name = "streamlit-canary"
-version = "0.1.1a3"
+version = "0.1.1a4"
 description = "LK-flavored Streamlit components."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "streamlit_canary-0.1.1a3-py3-none-any.whl", hash = "sha256:ed5dee13c007f6fe05309cfc5bbbad7a2c230ee60ba448974595605c23d34991"},
+    {file = "streamlit_canary-0.1.1a4-py3-none-any.whl", hash = "sha256:8b43b819ed92f379de53847b4adf35eafe50514c954ce48a9b62d1285ba56768"},
 ]
 
 [package.dependencies]
 argsense = ">=1.0.1,<2.0.0"
-lk-utils = ">=3.2.1,<4.0.0"
+lk-utils = ">=3.4.1,<4.0.0"
 psutil = ">=7.0.0,<8.0.0"
-pyapp-window = ">=2.1.3,<3.0.0"
+pyapp-window = ">=2.1.4,<3.0.0"
 streamlit = [
-    {version = ">=1.45.0,<2.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""},
+    {version = ">=1.50.0,<2.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""},
     {version = ">=1.40.0,<2.0.0", markers = "python_version >= \"3.8\" and python_full_version != \"3.9.7\" and python_version < \"3.10\""},
 ]
 
@@ -7015,4 +7015,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.8"
-content-hash = "e3829495b99277c3cc39e73f4c3e2033c1b4ea6e63ad542d320d3572054abff6"
+content-hash = "e4e0b8b73c868ec6451ca087301eea4c99371c6bd1c4d2d933d16084f7d28555"
