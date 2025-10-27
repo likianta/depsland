@@ -33,4 +33,4 @@ from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.10.0b23'
+__version__ = '0.10.0'

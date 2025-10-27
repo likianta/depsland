@@ -3,30 +3,13 @@ from time import sleep
 
 import psutil
 import streamlit as st
+import streamlit_canary as sc
 from lk_utils import fs
 
 from ...api.user_api import run_app
 from ...paths import apps as app_paths
 
-
-def _get_session() -> dict:
-    if __name__ not in st.session_state:
-        st.session_state[__name__] = {
-            # 'installed_apps': {},
-            'processes': {},  # {appid: pid, ...}
-        }
-        
-        # thread = Thread(
-        #     target=_poll_app_states,
-        #     args=(st.session_state[__name__]['processes'],),
-        #     daemon=True
-        # )
-        # # `add_script_run_ctx` resolves error of accessing `st.session_state` -
-        # # in subthread.
-        # # add_script_run_ctx(thread)
-        # thread.start()
-    
-    return st.session_state[__name__]
+_state = sc.session.get_state(lambda: {'processes': {}})
 
 
 def main(_reusable_placeholder: st.empty = None) -> None:
@@ -41,16 +24,15 @@ def main(_reusable_placeholder: st.empty = None) -> None:
             st.empty()
     
     def check_if_running(app_name: str) -> bool:
-        if app_name in session['processes']:
-            pid = session['processes'][app_name]
+        if app_name in _state['processes']:
+            pid = _state['processes'][app_name]
             if psutil.pid_exists(pid):
                 return True
             else:
-                session['processes'].pop(app_name)
+                _state['processes'].pop(app_name)
         return False
     
     cols = st.columns(2)
-    session = _get_session()
     colx = -1  # column index
     for app_name, vers in list_installed_apps():
         colx += 1
@@ -74,7 +56,7 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                             key=f'{app_name}:stop',
                             use_container_width=True,
                         ):
-                            pid = session['processes'].pop(app_name)
+                            pid = _state['processes'].pop(app_name)
                             _kill_process_tree(pid)
                             st.rerun()
                     else:
@@ -86,7 +68,7 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                             popen_obj = run_app(
                                 app_name, _version=target_ver, _blocking=False
                             )
-                            session['processes'][app_name] = popen_obj.pid
+                            _state['processes'][app_name] = popen_obj.pid
                             st.rerun()
                 with subcols[1]:
                     with st.popover(

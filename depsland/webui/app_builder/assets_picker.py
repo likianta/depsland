@@ -4,7 +4,7 @@ import typing as t
 from lk_utils import fs
 from streamlit_tree_select import tree_select as st_tree_select
 
-_state = sc.session.get_state(15, default={})
+_state = sc.session.get_state(version=16)
 
 
 def main(root: str):

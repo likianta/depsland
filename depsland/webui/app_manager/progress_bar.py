@@ -9,7 +9,7 @@ from lk_utils import Signal
 
 from ...api.user_api.install import progress_updated
 
-_session: dict = sc.session.get_state(default=lambda: {
+_state: dict = sc.session.get_state(default=lambda: {
     'portion_start': 0.0,
     'portion_end'  : 1.0,
     'progress'     : 0.0,
@@ -83,7 +83,7 @@ class ProgressControl:
     def reset(self) -> None:
         print(':d', 'reset progress bar')
         # if delay: sleep(delay)
-        _session.update({
+        _state.update({
             'portion_start': 0.0,
             'portion_end'  : 1.0,
             'progress'     : 0.0,
@@ -92,32 +92,32 @@ class ProgressControl:
         self.updated.emit(0.0, 'Progress reset')
     
     def update_progress(self, count: int, text: str) -> None:
-        _session['progress'] = (
-            _session['portion_start'] +
-            (_session['portion_end'] - _session['portion_start']) *
-            (count / _session['total_count'])
+        _state['progress'] = (
+            _state['portion_start'] +
+            (_state['portion_end'] - _state['portion_start']) *
+            (count / _state['total_count'])
         )
-        self.updated.emit(_session['progress'], '[{}/{}] {}'.format(
-            count, _session['total_count'], text.capitalize()
+        self.updated.emit(_state['progress'], '[{}/{}] {}'.format(
+            count, _state['total_count'], text.capitalize()
         ))
     
     def _change_stage(self, stage: str, total_count: int) -> None:
         if stage == 'assets':
-            _session.update({
+            _state.update({
                 'portion_start': 0.0,
                 'portion_end'  : 0.3,
                 'progress'     : 0.0,
                 'total_count'  : total_count,
             })
         elif stage == 'deps':
-            _session.update({
+            _state.update({
                 'portion_start': 0.3,
                 'portion_end'  : 0.8,
                 'progress'     : 0.0,
                 'total_count'  : total_count,
             })
         elif stage == 'cleanup':
-            _session.update({
+            _state.update({
                 'portion_start': 0.8,
                 'portion_end'  : 0.9,
                 # ^ 1.0 is reserved for 'installation done'. see also -
@@ -128,7 +128,7 @@ class ProgressControl:
         else:
             raise Exception(stage)
         self.updated.emit(
-            _session['portion_start'], f'Stage "{stage}" gets started'
+            _state['portion_start'], f'Stage "{stage}" gets started'
         )
 
 

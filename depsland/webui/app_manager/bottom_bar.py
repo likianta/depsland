@@ -1,15 +1,11 @@
 import streamlit as st
+import streamlit_canary as sc
 from streamlit_extras.bottom_container import bottom as st_bottom_bar
-# from streamlit_scrollable_textbox import scrollableTextbox as st_textbox  # noqa
 
-
-def _get_session() -> dict:
-    if __name__ not in st.session_state:
-        st.session_state[__name__] = {
-            'last_command': '',
-            'logger'      : Logger()
-        }
-    return st.session_state[__name__]
+_state = sc.session.get_state(lambda: {
+    'last_command': '',
+    'logger'      : Logger()
+})
 
 
 def main(expand: bool = False) -> None:
@@ -25,7 +21,7 @@ def main(expand: bool = False) -> None:
 
 
 def _add_output_panel() -> None:
-    logger: Logger = _get_session()['logger']
+    logger: Logger = _state['logger']
     logger.init_widget()
     # _get_session()['logger'].set_widget(
     #     st.text_area(
@@ -37,11 +33,10 @@ def _add_output_panel() -> None:
 
 
 def _add_command_panel() -> None:
-    session = _get_session()
     rows = (st.container(), st.container())
     with rows[1]:
         if st.checkbox('Remember last input', True):
-            value = session['last_command'] or None
+            value = _state['last_command'] or None
         else:
             value = None
     with rows[0]:
@@ -49,14 +44,14 @@ def _add_command_panel() -> None:
             'Command here',
             value=value,
             placeholder=(
-                session['last_command'] or
+                _state['last_command'] or
                 'The command will be executed in the background.'
             ),
             label_visibility='collapsed',
         )
         if code:
             exec(code, globals())
-            session['last_command'] = code
+            _state['last_command'] = code
 
 
 # -----------------------------------------------------------------------------
@@ -100,4 +95,4 @@ class Logger:
 
 
 def get_logger() -> Logger:
-    return _get_session()['logger']
+    return _state['logger']

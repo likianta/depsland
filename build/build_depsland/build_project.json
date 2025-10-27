@@ -20,7 +20,7 @@
     },
     "minideps_options": {
         "tree_shaking_model": {
-            "search_paths": [".", "chore/.venv"],
+            "search_paths": ["chore/.venv", "."],
             "entries": [
                 "depsland/__init__.py",
                 "depsland/__main__.py",

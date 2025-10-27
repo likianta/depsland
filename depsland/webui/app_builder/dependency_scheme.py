@@ -1,10 +1,19 @@
 import streamlit as st
 import streamlit_canary as sc
+import typing as t
 from lk_utils import fs
 from .i18n import i18n
+from ...venv.target_venv import get_library_root
+
+_state = sc.session.get_state(lambda: {
+    'default_venv_dirpath': {}
+})
 
 
-def main(root: str):
+def main(root: str) -> t.Optional[dict]:
+    if root not in _state['default_venv_dirpath']:
+        _state['default_venv_dirpath'][root] = get_library_root(root)
+    
     way = st.radio(
         i18n.deps_scheme_ask,
         (
@@ -24,8 +33,18 @@ def main(root: str):
             pass
         case i18n.deps_scheme_3:
             dir_i = sc.path_input(
-                i18n.deps_venv_ask, parent=root, help=i18n.deps_venv_help
+                i18n.deps_venv_ask,
+                _state['default_venv_dirpath'][root],
+                parent=root,
+                check=2,
+                help=i18n.deps_venv_help
             )
             dir_o = sc.path_input(
                 i18n.deps_output_ask, parent=root
             )
+            if dir_i and dir_o:
+                return {
+                    'mode': 'tree_shaking_dependencies',
+                    'dir_i': dir_i,
+                    'dir_o': dir_o,
+                }

@@ -16,7 +16,7 @@ def bump_version(new_ver: str = None) -> None:
 
 
 @cli
-def main() -> None:
+def main(new_version: str = None) -> None:
     assert fs.exist('chore/.venv'), (
         'please manually link original venv path to "chore/.venv" to continue. '
         'the command is: `python -m lk_utils mklink {}/Lib/site-packages '
@@ -30,6 +30,7 @@ def main() -> None:
     
     old_ver, new_ver = build_project(
         file='build/build_depsland/build_project.json',
+        new_version=new_version,
         minify_deps=2,
         publish=0,
     )

@@ -36,11 +36,11 @@ class Chinese(English):
     ask_project_path = '请输入项目路径'
     assets_title = '资产清单'
     enc_title = '代码加密'
-    deps_output_ask = '输出目录'
+    deps_output_ask = '压缩结果输出目录'
     deps_scheme = '依赖处理'
     deps_scheme_ask = '你想要如何集成 Python 依赖?'
     deps_scheme_0 = '不包含'
-    deps_scheme_1 = '云托管 (poetry.lock)'
+    deps_scheme_1 = '云托管'
     deps_scheme_2 = '直接嵌入 (不推荐)'
     deps_scheme_3 = '压缩后嵌入'
     deps_venv_ask = '请提供虚拟环境目录'
@@ -48,13 +48,8 @@ class Chinese(English):
         '''
         此目录为 "site-packages" 所在的目录, 格式可以是绝对路径, \\
         或相对于项目根目录的相对路径.
-        示例: ".venv/Lib/site-packages", "./chore/packages".
-        注意: 请确保该目录位于项目内! 否则 Depsland 将停止处理. \\
-        如果你的虚拟环境在项目外的目录, 你可以通过以下方式软链接到项目下:
-        ```sh
-        python -m lk_utils mklink <项目外的 site-packages 目录> \\
-        <项目目录>/.my_dependencies
-        ```
+        示例: ".venv/Lib/site-packages", "./chore/my_packages", \\
+        "C:/Users/YourName/.poetry/hello-world-py312/Lib/site-packages".
         '''
     )
     title = 'Depsland 应用构建器'

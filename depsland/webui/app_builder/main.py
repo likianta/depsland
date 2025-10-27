@@ -1,24 +1,23 @@
 if __name__ == '__main__':
     __package__ = 'depsland.webui.app_builder'
 
-# import pyinstrument
 import re
 import streamlit as st
 import streamlit_canary as sc
 import typing as t
 from random import randint
 from lk_utils import fs
+from uuid import uuid1
 from . import assets_picker
 from . import dependency_scheme
 from .i18n import i18n
 
-_state = sc.session.get_state(4, default={
+_state = sc.session.get_state(lambda: {
     # 'project_to_appid': {},
     'appinfo': {}  # {project_dir: {...}, ...}
-})
+}, version=5)
 
 
-# @pyinstrument.profile()
 def main() -> None:
     """
     params:
@@ -98,6 +97,10 @@ def main() -> None:
 def _generate_appid(basename: str) -> str:
     assert re.fullmatch(r'[a-z]\w*[a-z]', basename), basename
     return '{}_0x{:04x}'.format(basename, randint(0, 0xFFFF))
+
+
+def _generate_appid_2() -> str:
+    return uuid1().hex
 
 
 def _titlize(name: str) -> str:
