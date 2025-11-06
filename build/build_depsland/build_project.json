@@ -3,12 +3,50 @@
     "version_bump": {
         "places": {
             "pyproject.toml": "version = \"<VERSION>\"",
-            "build/build_depsland/src_max.json": "\"version\": \"<VERSION>\"",
             "depsland/__init__.py": "__version__ = '<VERSION>'"
         }
     },
     "images": {
-        "src_max": "build/build_depsland/src_max.json",
+        "src_max": {
+            "appid": "depsland",
+            "name": "Depsland Standalone",
+            "readme": {
+                "file": "wiki/docs/.vitepress/dist/index.html",
+                "standalone": false
+            },
+            "assets": [
+                "CHANGELOG.zh.md",
+                "apps/.bin:0",
+                "build",
+                "chore/pypi_blank",
+                "config/depsland.yaml",
+                "depsland",
+                "dist:0",
+                "dist/standalone:0",
+                "oss/*:0",
+                "pypi/*:0",
+                "pypi/index/snapdep:0",
+                "python:0",
+                "temp:0",
+                "test:0",
+                "poetry.lock",
+                "requirements.lock",
+                "wiki/docs/.vitepress/dist"
+            ],
+            "dependencies": "",
+            "launcher": {
+                "command": "python -m depsland launch-gui",
+                "icon": "build/icon/launcher.ico",
+                "enable_cli": true,
+                "add_to_desktop": true,
+                "add_to_start_menu": false,
+                "show_console": false
+            },
+            "experiments": {
+                "package_provider": "oss"
+            },
+            "depsland_version": "0.10.1"
+        },
         "src_min": "",
         "enc_max": "",
         "enc_min": ""
@@ -50,6 +88,5 @@
             }
         }
     },
-    "# post_script": "build/build_depsland/post_script.py",
     "post_script": ""
 }

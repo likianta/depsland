@@ -59,3 +59,4 @@ dist/**
 !/pypi/index/snapdep/
 !/python/*._pth
 !/python/sitecustomize.py
+!/temp/build_project/

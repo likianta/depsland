@@ -23,10 +23,10 @@ class T:
             'places': t.Dict[Path, str],
         }),
         'images': t.TypedDict('Images', {
-            'src_max': Path,
-            'src_min': Path,
-            'enc_max': Path,
-            'enc_min': Path,
+            'src_max': t.Union[Path, dict],
+            'src_min': t.Union[Path, dict],
+            'enc_max': t.Union[Path, dict],
+            'enc_min': t.Union[Path, dict],
         }),
         'encryption_options': t.TypedDict('EncryptionOptions', {
             'key': str,  # a string or `<ENV>` or `<ENV:VARNAME>`
@@ -111,6 +111,7 @@ def build(
     
     if minify_deps == 2:
         assert (x := config['minideps_options']['tree_shaking_model'])
+        assert isinstance(x, str)
         tree_shaking.build_module_graphs(x)
         tree_shaking.dump_tree(x)
     
@@ -235,7 +236,25 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
     for k in ('src_max', 'src_min', 'enc_max', 'enc_min'):
         # noinspection PyTypedDict
         if x := data0['images'].get(k):
-            images[k] = abspath(x)  # noqa
+            if isinstance(x, str):
+                images[k] = abspath(x)
+            else:  # dict
+                xdict = x
+                if 'start_directory' in xdict:
+                    if xdict['start_directory'].startswith('..'):
+                        xdict['start_directory'] = fs.normpath('{}/{}'.format(
+                            fs.parent(file), xdict['start_directory']
+                        ))
+                else:
+                    xdict['start_directory'] = root
+                if 'version' not in xdict:
+                    xdict['version'] = fs.load(
+                        '{}/pyproject.toml'.format(root)
+                    )['project']['version']
+                temp_file = 'temp/build_project/{}.json'.format(k)
+                places[temp_file] = '"version": "<VERSION>"'
+                fs.dump(xdict, temp_file)
+                images[k] = temp_file
         else:
             images[k] = None
     assert any(images.values())
@@ -264,17 +283,15 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
             if isinstance(y, str):
                 tree_shaking_model_path = abspath(y)
             else:
-                if 'root' in y:
-                    y['root'] = fs.normpath('{}/{}'.format(
-                        fs.parent(file), y['root']
+                xdict = y
+                if 'root' in xdict:
+                    xdict['root'] = fs.normpath('{}/{}'.format(
+                        fs.parent(file), xdict['root']
                     ))
                 else:
-                    y['root'] = root
-                fs.dump(
-                    y, 'temp/tree_shaking_model_for_temp_build_project.yaml'
-                )
-                tree_shaking_model_path = \
-                    'temp/tree_shaking_model_for_temp_build_project.yaml'
+                    xdict['root'] = root
+                fs.dump(xdict, 'temp/build_project/minideps.yaml')
+                tree_shaking_model_path = 'temp/build_project/minideps.yaml'
     
     if x := data0.get('post_script'):
         post_script = abspath(x)
