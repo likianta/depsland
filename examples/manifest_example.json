@@ -1,0 +1,20 @@
+{
+    "appid": "...",
+    "name": "...",
+    "version": "0.1.0",
+    "start_directory": "..",
+    "assets": [],
+    "dependencies": "",
+    "launcher": {
+        "command": "python ...",
+        "icon": "",
+        "show_console": false,
+        "enable_cli": false,
+        "add_to_desktop": true,
+        "add_to_start_menu": false
+    },
+    "experiments": {
+        "package_provider": "oss"
+    },
+    "depsland_version": "0.10.2"
+}

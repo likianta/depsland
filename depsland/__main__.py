@@ -156,8 +156,7 @@ def init(target: str = '.', app_name: str = '') -> None:
 def build(
     manifest: str = '.',
     offline: bool = False,
-    # gen_exe: bool = True,
-    # target_system: str = sysinfo.SYSTEM,
+    remove_depsland: bool = False,
 ) -> None:
     """
     build your python application based on manifest file.
@@ -165,12 +164,17 @@ def build(
     [dim i](if "dist" not exists, it will be auto created.)[/]
     
     params:
-        manifest (-m): see `init : [param] target : [docstring]`.
+        offline (-o):
+        remove_depsland (-r):
     """
+    manifest = _normalize_manifest_path(manifest)
     if offline:
-        api.build_offline(_normalize_manifest_path(manifest))
+        if remove_depsland:
+            api.build_stripped_offline(manifest)
+        else:
+            api.build_offline(manifest)
     else:
-        api.build(_normalize_manifest_path(manifest))
+        api.build(manifest)
 
 
 @cli
@@ -329,6 +333,7 @@ def list_apps() -> None:
                         break
                 assert latest_version
                 i += 1
+                # noinspection PyTypeChecker
                 rows.append((
                     str(i),
                     fs.load('{}/{}/manifest.pkl'.format(

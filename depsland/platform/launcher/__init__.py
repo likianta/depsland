@@ -1,3 +1,4 @@
+# from .make_bat import make_bat
 from .make_exe import bat_2_exe
 from .make_exe import make_exe
 from .make_launcher import make_launcher as create_launcher
