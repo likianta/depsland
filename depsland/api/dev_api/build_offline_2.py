@@ -92,7 +92,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     icon = manifest['launcher']['icon'] or paths.build.python_icon
     
     script = dedent(
-        r'''
+        '''
         @echo off
         cd /d %~dp0
         cd source
@@ -101,7 +101,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         '''.format(
             manifest['launcher']['command'].replace(
                 'python', '..\\python\\python.exe', 1
-            )
+            ).replace("'", '"')
         )
     )
     fs.dump(script, x := '{}/{}.bat'.format(dst_dir, manifest['name']))
@@ -114,7 +114,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     fs.remove_file(x)
     
     script = dedent(
-        r'''
+        '''
         cd /d %~dp0
         cd source
         set "PYTHONUTF8=1"
@@ -123,7 +123,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         '''.format(
             manifest['launcher']['command'].replace(
                 'python', '..\\python\\python.exe', 1
-            )
+            ).replace("'", '"')
         )
     )
     fs.dump(script, x := '{}/{} (Debug).bat'.format(dst_dir, manifest['name']))
@@ -136,5 +136,5 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     )
     fs.remove_file(x)
     
-    if manifest['readme']:
-        raise NotImplementedError
+    if manifest['readme']:  # TODO
+        print('lite mode does not support creating readme opener yet', ':v8')

@@ -588,9 +588,9 @@ class Temp:
         
         self.enc_max = f'{self._temp_root}/enc_max.json'
         self.enc_min = f'{self._temp_root}/enc_min.json'
-        self.minideps = f'{self._temp_root}/minideps.json'
         self.src_max = f'{self._temp_root}/src_max.json'
         self.src_min = f'{self._temp_root}/src_min.json'
+        self.tree_shaking_model = f'{self._temp_root}/tree_shaking_model.json'
 
 
 system = System()

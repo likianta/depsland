@@ -2,6 +2,6 @@
 # print('setting up customized site')
 import os
 import sys
-sys.path[0:0] = ['.', 'lib', 'src', '.venv']
+sys.path[0:0] = ['.', 'lib', 'src', '.venv', '.depsland/mini_deps']
 if p := os.environ.get('DEPSLAND_SEARCH_PATHS'):
     sys.path.extend(p.split(os.pathsep))

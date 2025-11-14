@@ -64,6 +64,7 @@ def build(
     secret_key: str = None,
     publish: int = 0,
     remain_last_version: bool = False,
+    remove_depsland: bool = False,
 ) -> t.Tuple[str, str]:
     """
     params:
@@ -88,6 +89,7 @@ def build(
             official server.
             tip: if you set `minify_deps` other than 0, we recommend setting -
             this option 1 or 0.
+        remove_depsland (-r):
     """
     config = _load_config(file, secret_key=secret_key)
     
@@ -132,13 +134,14 @@ def build(
     
     if publish == 1:
         import depsland.api
-        # from ..build_offline import main as build_offline
-        depsland.api.build_offline(image_file)
+        if remove_depsland:
+            depsland.api.build_stripped_offline(image_file)
+        else:
+            depsland.api.build_offline(image_file)
     elif publish == 2:
         import depsland.api
-        # from ..publish import main as publish
         depsland.api.publish(image_file, upload_dependencies=True)
-
+    
     if config['post_script']:
         run_cmd_args(
             sys.executable,
@@ -293,8 +296,8 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
                     ))
                 else:
                     xdict['root'] = root
-                fs.dump(xdict, temp_paths.minideps)
-                tree_shaking_model_path = temp_paths.minideps
+                fs.dump(xdict, temp_paths.tree_shaking_model)
+                tree_shaking_model_path = temp_paths.tree_shaking_model
     
     if x := data0.get('post_script'):
         post_script = abspath(x)

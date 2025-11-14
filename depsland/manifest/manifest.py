@@ -58,7 +58,7 @@ class T(T0):
         t.Literal['poetry', 'tree_shaking', 'uv'],
         dict,  # see `tree_shaking.config.T.Config0`
         t.TypedDict('Dependencies0', {
-            'type': t.Literal['poetry', 'tree_shaking', 'uv'],
+            'method': t.Literal['poetry', 'tree_shaking', 'uv'],
             'options': t.Union[
                 t.Literal['poetry.lock', 'uv.lock'],
                 t.TypedDict('TreeShakingOptions', {
@@ -70,8 +70,8 @@ class T(T0):
     # Dependencies1 = t.Optional[t.Tuple[t.Union[T0.Packages, Assets1], int]]
     #   (..., int): type code, 0 or 1. 0 for T0.Packages, 1 for Assets1.
     # Dependencies1 = t.Optional[t.TypedDict('Dependencies1', {
-    #     'type': t.Literal['poetry', 'tree_shaking', 'uv'],
-    #     'data': t.Union[T0.Packages, Assets1]
+    #     'method': t.Literal['poetry', 'tree_shaking', 'uv'],
+    #     'options': t.Union[T0.Packages, Assets1]
     # })]
     Dependencies1 = T0.Packages
     
@@ -339,6 +339,7 @@ class Manifest:
             if x := data0['launcher'].get('icon'):
                 data0['assets'].append(x)
             if data0.get('dependencies'):
+                # FIXME: not recommended
                 def deduce_entry() -> T.RelPath:
                     if isinstance(data0['launcher']['command'], str):
                         x = shlex.split(data0['launcher']['command'])[1]
@@ -350,12 +351,12 @@ class Manifest:
                 if isinstance(data0['dependencies'], str):
                     if data0['dependencies'] == 'tree_shaking':
                         data0['dependencies'] = {
-                            'type': 'tree_shaking',
+                            'method': 'tree_shaking',
                             'options': {
                                 'entries': [deduce_entry()]
                             }
                         }
-                elif data0['dependencies']['type'] == 'tree_shaking':
+                elif data0['dependencies']['method'] == 'tree_shaking':
                     if 'options' in data0['dependencies']:
                         if 'entries' not in data0['dependencies']['options']:
                             data0['dependencies']['options']['entries'] = [
@@ -576,10 +577,10 @@ class Manifest:
                         'poetry', 'tree_shaking', 'uv'
                     )
             else:
-                assert manifest['dependencies']['type'] in (
+                assert manifest['dependencies']['method'] in (
                     'poetry', 'tree_shaking', 'uv'
                 )
-                if manifest['dependencies']['type'] == 'tree_shaking':
+                if manifest['dependencies']['method'] == 'tree_shaking':
                     # assert manifest['dependencies']['options']
                     if 'options' in manifest['dependencies']:
                         assert 'root' not in \
@@ -589,7 +590,7 @@ class Manifest:
                 else:
                     assert 'options' not in manifest['dependencies'] or (
                         manifest['dependencies']['options'] ==
-                        manifest['dependencies']['type'] + '.lock'
+                        manifest['dependencies']['method'] + '.lock'
                     )
         
         launcher: T.Launcher0 = manifest['launcher']
@@ -729,11 +730,11 @@ class Manifest:
         start_directory: T.StartDirectory
     ) -> T.Dependencies1:
         if deps0:
-            type = deps0 if isinstance(deps0, str) else deps0['type']
-            if type == 'poetry':
+            method = deps0 if isinstance(deps0, str) else deps0['method']
+            if method == 'poetry':
                 return resolve_dependencies('poetry.lock', start_directory)
             
-            elif type == 'tree_shaking':
+            elif method == 'tree_shaking':
                 """
                 folder structure:
                     <target_project>
@@ -741,20 +742,28 @@ class Manifest:
                        |= orig_deps
                        |= mini_deps
                        |- tree_shaking_model.json
+                the `<target_project>/.depsland/mini_deps` path will be added
+                to `sys.path` in the runtime, see also `python/sitecustomize.py`
+                for details.
                 """
                 dot_dps_dir = '{}/.depsland'.format(start_directory)
                 print(dot_dps_dir, ':v')
+                orig_deps_dir = '{}/orig_deps'.format(dot_dps_dir)
+                mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
                 mini_deps_cache_file = '{}/{}.pkl'.format(
                     dot_dps_dir,
                     get_file_hash('{}/poetry.lock'.format(start_directory))
                 )
-                orig_deps_dir = '{}/orig_deps'.format(dot_dps_dir)
-                mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
                 
                 if fs.exist(mini_deps_cache_file):
                     assert fs.exist(mini_deps_dir)
                     assets1.update(fs.load(mini_deps_cache_file))
                 else:
+                    if fs.exist(mini_deps_dir):
+                        print('incrementally minify dependencies')
+                    else:
+                        print('first time minify dependencies')
+                    
                     fs.make_dir(dot_dps_dir)
                     fs.make_link(
                         get_library_root(start_directory), orig_deps_dir
