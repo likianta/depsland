@@ -338,6 +338,33 @@ class Manifest:
                     data0['assets'].append(x)
             if x := data0['launcher'].get('icon'):
                 data0['assets'].append(x)
+            if data0.get('dependencies'):
+                def deduce_entry() -> T.RelPath:
+                    if isinstance(data0['launcher']['command'], str):
+                        x = shlex.split(data0['launcher']['command'])[1]
+                    else:
+                        x = data0['launcher']['command'][1]
+                    assert x.endswith('.py')
+                    return x
+                
+                if isinstance(data0['dependencies'], str):
+                    if data0['dependencies'] == 'tree_shaking':
+                        data0['dependencies'] = {
+                            'type': 'tree_shaking',
+                            'options': {
+                                'entries': [deduce_entry()]
+                            }
+                        }
+                elif data0['dependencies']['type'] == 'tree_shaking':
+                    if 'options' in data0['dependencies']:
+                        if 'entries' not in data0['dependencies']['options']:
+                            data0['dependencies']['options']['entries'] = [
+                                deduce_entry()
+                            ]
+                    else:
+                        data0['dependencies']['options'] = {
+                            'entries': [deduce_entry()]
+                        }
             
             # noinspection PyTypeChecker
             self._precheck_manifest(data0)
@@ -553,9 +580,12 @@ class Manifest:
                     'poetry', 'tree_shaking', 'uv'
                 )
                 if manifest['dependencies']['type'] == 'tree_shaking':
-                    assert manifest['dependencies']['options']
-                    assert 'root' not in manifest['dependencies']['options']
-                    assert 'export' not in manifest['dependencies']['options']
+                    # assert manifest['dependencies']['options']
+                    if 'options' in manifest['dependencies']:
+                        assert 'root' not in \
+                               manifest['dependencies']['options']
+                        assert 'export' not in \
+                               manifest['dependencies']['options']
                 else:
                     assert 'options' not in manifest['dependencies'] or (
                         manifest['dependencies']['options'] ==
@@ -708,17 +738,18 @@ class Manifest:
                 folder structure:
                     <target_project>
                     |= .depsland
-                       |= deps
-                       |= minideps
+                       |= orig_deps
+                       |= mini_deps
                        |- tree_shaking_model.json
                 """
                 dot_dps_dir = '{}/.depsland'.format(start_directory)
+                print(dot_dps_dir, ':v')
                 mini_deps_cache_file = '{}/{}.pkl'.format(
                     dot_dps_dir,
                     get_file_hash('{}/poetry.lock'.format(start_directory))
                 )
-                orig_deps_dir = '{}/deps'.format(dot_dps_dir)
-                mini_deps_dir = '{}/minideps'.format(dot_dps_dir)
+                orig_deps_dir = '{}/orig_deps'.format(dot_dps_dir)
+                mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
                 
                 if fs.exist(mini_deps_cache_file):
                     assert fs.exist(mini_deps_dir)
@@ -729,18 +760,28 @@ class Manifest:
                         get_library_root(start_directory), orig_deps_dir
                     )
                     
+                    # 1/3. get options
+                    # options = (
+                    #     {} if isinstance(deps0, str) else
+                    #     deps0.get('options', {})
+                    # )
                     assert isinstance(deps0, dict)
                     options = deps0['options']
+                    # 2/3. fill options
                     options['root'] = '..'
-                    if 'entries' in options:
-                        if '.depsland/deps' not in options['entries']:
-                            options['entries'].insert(0, '.depsland/deps')
+                    if 'search_paths' in options:
+                        if '.depsland/orig_deps' not in options['search_paths']:
+                            options['search_paths'].insert(
+                                0, '.depsland/orig_deps'
+                            )
                     else:
-                        options['entries'] = ['.depsland/deps', '.']
+                        options['search_paths'] = ['.depsland/orig_deps', '.']
+                    assert options['entries']
                     options['export'] = {
-                        'source': '.depsland/deps',
-                        'target': '.depsland/minideps'
+                        'source': '.depsland/orig_deps',
+                        'target': '.depsland/mini_deps'
                     }
+                    # 3/3. dump options
                     fs.dump(
                         options,
                         model_file := '{}/.depsland/tree_shaking_model.json'
@@ -751,7 +792,7 @@ class Manifest:
                     tree_shaking.dump_tree(model_file)
                     
                     mini_deps_assets_info = self._update_assets(
-                        assets0=['.depsland/minideps/*'],
+                        assets0=['.depsland/mini_deps/*'],
                         start_directory=start_directory,
                     )
                     fs.dump(mini_deps_assets_info, mini_deps_cache_file)

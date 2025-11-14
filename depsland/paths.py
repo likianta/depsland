@@ -1,10 +1,12 @@
 """
 ref: ~/docs/project-structure.md
 """
+import atexit
 import os
 import sys
 import typing as t
 from os.path import exists
+from uuid import uuid1
 
 from lk_utils import fs
 from lk_utils import new_thread
@@ -570,8 +572,25 @@ class Python:
 class Temp:
     def __init__(self) -> None:
         self.root = f'{project.root}/temp'
-        self.self_upgrade = f'{self.root}/.self_upgrade'
-        self.unittests = f'{self.root}/.unittests'
+        
+        self._temp_root = f'{self.root}/{uuid1().hex}'
+        
+        fs.make_dir(self._temp_root)
+        
+        @atexit.register
+        def _cleanup() -> None:
+            print(
+                'remove temp dir',
+                'temp/{}'.format(fs.basename(self._temp_root)),
+                ':v'
+            )
+            fs.remove_tree(self._temp_root)
+        
+        self.enc_max = f'{self._temp_root}/enc_max.json'
+        self.enc_min = f'{self._temp_root}/enc_min.json'
+        self.minideps = f'{self._temp_root}/minideps.json'
+        self.src_max = f'{self._temp_root}/src_max.json'
+        self.src_min = f'{self._temp_root}/src_min.json'
 
 
 system = System()

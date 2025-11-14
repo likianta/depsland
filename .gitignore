@@ -1,4 +1,3 @@
-/.idea/
 /apps/**
 /build/fuzzy_workflow.py
 /build/windows_patch/windows-7-sp1-32bit/*.msu
@@ -26,7 +25,6 @@
 /sidework/doctor/_*
 /sidework/mini_launcher/by_nuitka/temp/*
 /sidework/mini_launcher/by_nuitka_2/
-/sidework/mini_launcher/by_rust/.idea/
 /sidework/mini_launcher/by_rust/target/
 /sidework/mini_launcher/by_rust/test/
 /sidework/mini_launcher/by_v/*.exe
@@ -37,6 +35,8 @@
 /wiki/docs/.vitepress/dist/
 /wiki/node_modules/
 
+.depsland/
+.idea/
 __pycache__/
 dist/**
 
@@ -61,4 +61,3 @@ dist/**
 !/pypi/index/snapdep/
 !/python/*._pth
 !/python/sitecustomize.py
-!/temp/build_project/

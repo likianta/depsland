@@ -10,6 +10,7 @@ from lk_utils import fs
 from lk_utils import run_cmd_args
 from pyportable_crypto import compile_dir
 from pyportable_crypto.cipher_gen import generate_cipher_package
+from ...paths import temp as temp_paths
 
 
 class T:
@@ -103,11 +104,12 @@ def build(
         )
     
     # noinspection PyTypedDict
-    image_file = config['images']['{}_{}'.format(
+    image_file = config['images'][image_key := '{}_{}'.format(
         'enc' if encrypt_packages else 'src',
         'max' if minify_deps else 'min',
     )]
-    assert image_file
+    print(image_key)
+    assert image_file, image_key
     
     if minify_deps == 2:
         assert (x := config['minideps_options']['tree_shaking_model'])
@@ -239,8 +241,9 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
             if isinstance(x, str):
                 images[k] = abspath(x)
             else:  # dict
-                xdict = x
+                xdict: t.Dict[str, t.Any] = x  # noqa
                 if 'start_directory' in xdict:
+                    # noinspection PyUnresolvedReferences
                     if xdict['start_directory'].startswith('..'):
                         xdict['start_directory'] = fs.normpath('{}/{}'.format(
                             fs.parent(file), xdict['start_directory']
@@ -251,7 +254,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
                     xdict['version'] = fs.load(
                         '{}/pyproject.toml'.format(root)
                     )['project']['version']
-                temp_file = 'temp/build_project/{}.json'.format(k)
+                temp_file = getattr(temp_paths, k)
                 places[temp_file] = '"version": "<VERSION>"'
                 fs.dump(xdict, temp_file)
                 images[k] = temp_file
@@ -290,8 +293,8 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
                     ))
                 else:
                     xdict['root'] = root
-                fs.dump(xdict, 'temp/build_project/minideps.yaml')
-                tree_shaking_model_path = 'temp/build_project/minideps.yaml'
+                fs.dump(xdict, temp_paths.minideps)
+                tree_shaking_model_path = temp_paths.minideps
     
     if x := data0.get('post_script'):
         post_script = abspath(x)
