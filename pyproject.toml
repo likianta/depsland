@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.10.2a0"
+version = "0.11.0a1"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -19,11 +19,11 @@ homepage = "https://github.com/likianta/depsland"
 python = "^3.8"
 argsense = "^1.1.0"
 conflore = "^0.2.2"
-lk-logger = "^6.0.6"
-lk-utils = "^3.4.1"
+lk-logger = "^6.0.7"
+lk-utils = "^3.4.2"
 oss2 = "^2.19.1"
 pip = [
-    { version = "^25.2.0", python = "^3.9" },
+    { version = "^25.3.0", python = "^3.9" },
     { version = "^24.0.0", python = "<3.9" },
 ]
 poetry = [
@@ -52,9 +52,9 @@ argsense = { version = "^1.1.1a0", source = "likianta" }
 conflore = { version = "^0.2.2", source = "likianta" }
 freesimplegui = "^5.2.0.post1"
 icnsutil = "^1.1.0"  # <- sidework/image_converter.py
-ipython = { version = "^9.6.0", python = "^3.12" }
+ipython = { version = "^9.7.0", python = "^3.12" }
 lk-logger = { version = ">=6.0.7,<6.1.0", source = "likianta" }
-lk-utils = { version = "^3.4.2b0", source = "likianta" }
+lk-utils = { version = "^3.4.3a1", source = "likianta" }
 matplotlib = { version = "^3.10.5", python = "^3.10" }  # to support numpy 2.x, used by pyinstaller
 nuitka = "^2.8.1"
 pillow = { version = "^11.0.0", python = "^3.12" }  # <- sidework/image_converter.py

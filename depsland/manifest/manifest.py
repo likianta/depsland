@@ -5,6 +5,7 @@ from collections import namedtuple
 from functools import cache
 from types import NoneType
 
+import tree_shaking
 from lk_utils import fs
 
 from .. import normalization as norm
@@ -14,6 +15,7 @@ from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
 from ..utils import init_target_tree
+from ..venv import get_library_root
 
 
 # noinspection PyTypedDict
@@ -39,25 +41,39 @@ class T(T0):
         )
     ]
     
-    # fmt:off
-    Dependencies0 = t.Union[
-        # 1. no dependency
-        None,
-        # 2. a file path, usually 'pyproject.toml', 'requirements.txt', etc.
-        str,
-        # 3. a list of packages. e.g. ['requests', 'numpy>=1.26', ...]
-        t.List[str],
-        # 4. packages with more detailed definitions. e.g.
-        #   {
-        #       'numpy': [
-        #           {'version': '1.26.2', 'platform': 'linux'},
-        #           {'version': '*', 'platform': '!=linux'},
-        #       ], ...
-        #   }
-        t.Dict[str, t.Union[str, dict, list]],
-    ]
+    # Dependencies0 = t.Optional[t.Union[
+    #     t.Literal['poetry.lock', 'uv.lock', 'venv'],
+    #     t.TypedDict('Dependencies0', {
+    #         'source': t.Literal['poetry.lock', 'uv.lock', 'venv'],
+    #         'minify': bool,
+    #     }),
+    #     RelPath,
+    # ]]
+    # Dependencies1 = t.TypedDict('Dependencies1', {
+    #     'source': t.Union[t.Literal['poetry.lock', 'uv.lock', 'venv'], RelPath],
+    #     'minify': bool,
+    #     'result': t.Optional[t.Union[T0.Packages, AbsPath]],
+    # })
+    Dependencies0 = t.Optional[t.Union[
+        t.Literal['poetry', 'tree_shaking', 'uv'],
+        dict,  # see `tree_shaking.config.T.Config0`
+        t.TypedDict('Dependencies0', {
+            'type': t.Literal['poetry', 'tree_shaking', 'uv'],
+            'options': t.Union[
+                t.Literal['poetry.lock', 'uv.lock'],
+                t.TypedDict('TreeShakingOptions', {
+                    'entries': t.List[str]
+                })
+            ]
+        }, total=False)
+    ]]
+    # Dependencies1 = t.Optional[t.Tuple[t.Union[T0.Packages, Assets1], int]]
+    #   (..., int): type code, 0 or 1. 0 for T0.Packages, 1 for Assets1.
+    # Dependencies1 = t.Optional[t.TypedDict('Dependencies1', {
+    #     'type': t.Literal['poetry', 'tree_shaking', 'uv'],
+    #     'data': t.Union[T0.Packages, Assets1]
+    # })]
     Dependencies1 = T0.Packages
-    # fmt:on
     
     Experiments0 = t.TypedDict(
         'Experiments0',
@@ -323,6 +339,7 @@ class Manifest:
             if x := data0['launcher'].get('icon'):
                 data0['assets'].append(x)
             
+            # noinspection PyTypeChecker
             self._precheck_manifest(data0)
             data1 = {
                 'appid'           : data0['appid'],
@@ -332,17 +349,17 @@ class Manifest:
                 'readme'          : self._update_readme_file(
                     data0.get('readme', None), start_directory
                 ),
-                'assets'          : self._update_assets(
+                'assets'          : (assets := self._update_assets(
                     data0['assets'], start_directory
-                ),
+                )),
                 'dependencies'    : self._update_dependencies(
-                    data0.get('dependencies', None), start_directory
+                    data0.get('dependencies'), assets, start_directory
                 ),
                 'launcher'        : self._update_launcher(
                     data0['launcher'], start_directory
                 ),
                 'experiments'     : data0.get('experiments', {
-                    'package_provider'         : 'pypi',
+                    'package_provider': 'pypi',
                 }),
                 'depsland_version': data0.get(
                     'depsland_version', __version__
@@ -515,6 +532,36 @@ class Manifest:
             'no "../" in your assets keys.'
         )
         
+        if manifest.get('dependencies'):
+            if isinstance(manifest['dependencies'], str):
+                if manifest['dependencies'] in ('poetry.lock', 'uv.lock'):
+                    print(
+                        'remove ".lock" from dependencies setting ({} -> {})'
+                        .format(
+                            manifest['dependencies'],
+                            manifest['dependencies'][:-5]
+                        ),
+                        ':v6'
+                    )
+                    manifest['dependencies'] = manifest['dependencies'][:-5]
+                else:
+                    assert manifest['dependencies'] in (
+                        'poetry', 'tree_shaking', 'uv'
+                    )
+            else:
+                assert manifest['dependencies']['type'] in (
+                    'poetry', 'tree_shaking', 'uv'
+                )
+                if manifest['dependencies']['type'] == 'tree_shaking':
+                    assert manifest['dependencies']['options']
+                    assert 'root' not in manifest['dependencies']['options']
+                    assert 'export' not in manifest['dependencies']['options']
+                else:
+                    assert 'options' not in manifest['dependencies'] or (
+                        manifest['dependencies']['options'] ==
+                        manifest['dependencies']['type'] + '.lock'
+                    )
+        
         launcher: T.Launcher0 = manifest['launcher']
         assert launcher['command'], 'field `launcher.command` cannot be empty!'
         if '<python>' in launcher['command']:
@@ -645,14 +692,75 @@ class Manifest:
             )
         return out  # noqa
     
-    @staticmethod
     def _update_dependencies(
-        deps0: T.Dependencies0, start_directory: T.StartDirectory
+        self,
+        deps0: T.Dependencies0,
+        assets1: T.Assets1,
+        start_directory: T.StartDirectory
     ) -> T.Dependencies1:
         if deps0:
-            return resolve_dependencies(deps0, start_directory)
-        else:
-            return {}
+            type = deps0 if isinstance(deps0, str) else deps0['type']
+            if type == 'poetry':
+                return resolve_dependencies('poetry.lock', start_directory)
+            
+            elif type == 'tree_shaking':
+                """
+                folder structure:
+                    <target_project>
+                    |= .depsland
+                       |= deps
+                       |= minideps
+                       |- tree_shaking_model.json
+                """
+                dot_dps_dir = '{}/.depsland'.format(start_directory)
+                mini_deps_cache_file = '{}/{}.pkl'.format(
+                    dot_dps_dir,
+                    get_file_hash('{}/poetry.lock'.format(start_directory))
+                )
+                orig_deps_dir = '{}/deps'.format(dot_dps_dir)
+                mini_deps_dir = '{}/minideps'.format(dot_dps_dir)
+                
+                if fs.exist(mini_deps_cache_file):
+                    assert fs.exist(mini_deps_dir)
+                    assets1.update(fs.load(mini_deps_cache_file))
+                else:
+                    fs.make_dir(dot_dps_dir)
+                    fs.make_link(
+                        get_library_root(start_directory), orig_deps_dir
+                    )
+                    
+                    assert isinstance(deps0, dict)
+                    options = deps0['options']
+                    options['root'] = '..'
+                    if 'entries' in options:
+                        if '.depsland/deps' not in options['entries']:
+                            options['entries'].insert(0, '.depsland/deps')
+                    else:
+                        options['entries'] = ['.depsland/deps', '.']
+                    options['export'] = {
+                        'source': '.depsland/deps',
+                        'target': '.depsland/minideps'
+                    }
+                    fs.dump(
+                        options,
+                        model_file := '{}/.depsland/tree_shaking_model.json'
+                        .format(start_directory)
+                    )
+                    
+                    tree_shaking.build_module_graphs(model_file)
+                    tree_shaking.dump_tree(model_file)
+                    
+                    mini_deps_assets_info = self._update_assets(
+                        assets0=['.depsland/minideps/*'],
+                        start_directory=start_directory,
+                    )
+                    fs.dump(mini_deps_assets_info, mini_deps_cache_file)
+                    assets1.update(mini_deps_assets_info)
+            
+            elif type == 'uv':
+                raise NotImplementedError
+        
+        return {}
     
     def _update_launcher(
         self, launcher0: T.Launcher0, start_directory: T.StartDirectory

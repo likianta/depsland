@@ -6,6 +6,7 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
+/cache/*
 /chore/**
 /config/.redirect
 /config/auto_saved.pkl
@@ -24,6 +25,7 @@
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
 /sidework/mini_launcher/by_nuitka/temp/*
+/sidework/mini_launcher/by_nuitka_2/
 /sidework/mini_launcher/by_rust/.idea/
 /sidework/mini_launcher/by_rust/target/
 /sidework/mini_launcher/by_rust/test/

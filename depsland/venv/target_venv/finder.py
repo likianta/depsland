@@ -1,3 +1,4 @@
+import functools
 import os
 import re
 import sys
@@ -24,7 +25,7 @@ class T:
 
 # -----------------------------------------------------------------------------
 
-
+@functools.cache
 def get_library_root(working_root: str) -> T.LibraryPath:
     """
     find venv root (the "site-packages" folder) by `poetry env` command.
