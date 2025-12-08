@@ -428,18 +428,18 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     """ get old and new manifests by appid. """
     from .oss import get_oss_client
-    from .utils import make_temp_dir
-    
-    temp_dir = make_temp_dir()
     
     oss = get_oss_client(appid)
-    oss.download(oss.path.manifest, x := f'{temp_dir}/manifest.pkl')
-    manifest_new = load_manifest(x)
+    oss.download(oss.path.manifest, paths.temp.manifest_pkl)
+    manifest_new = load_manifest(paths.temp.manifest_pkl)
     manifest_new['start_directory'] = '{}/{}/{}'.format(
         paths.project.apps, manifest_new['appid'], manifest_new['version']
     )
     manifest_new.make_tree()
-    fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
+    fs.move(
+        paths.temp.manifest_pkl,
+        manifest_new['start_directory'] + '/manifest.pkl'
+    )
     
     if x := _get_dir_to_last_installed_version(appid):
         manifest_old = load_manifest(f'{x}/manifest.pkl')

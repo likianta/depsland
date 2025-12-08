@@ -77,7 +77,7 @@ def resolve_dependencies(
     
     elif isinstance(deps0, list):
         raw_requirements = '\n'.join(deps0)
-        dir_m = utils.make_temp_dir()
+        dir_m = paths.temp.make_dir()
         fs.dump(raw_requirements, f'{dir_m}/requirements.txt')
         json_data = run_cmd_args(
             'pipgrip', '--json', '--sort',

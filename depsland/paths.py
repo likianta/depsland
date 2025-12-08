@@ -588,9 +588,23 @@ class Temp:
         
         self.enc_max = f'{self._temp_root}/enc_max.json'
         self.enc_min = f'{self._temp_root}/enc_min.json'
+        self.manifest_pkl = f'{self._temp_root}/manifest.pkl'
+        self.shortcut_vbs = f'{self._temp_root}/shortcut.vbs'
         self.src_max = f'{self._temp_root}/src_max.json'
         self.src_min = f'{self._temp_root}/src_min.json'
         self.tree_shaking_model = f'{self._temp_root}/tree_shaking_model.json'
+    
+    def make_dir(self) -> str:
+        out = '{}/{}'.format(self._temp_root, uuid1().hex)
+        fs.make_dir(out)
+        return out
+    
+    def make_unique_dir(self, dirname: str) -> str:
+        a = '{}/{}'.format(self._temp_root, uuid1().hex)
+        b = '{}/{}'.format(a, dirname)
+        fs.make_dir(a)
+        fs.make_dir(b)
+        return b
 
 
 system = System()

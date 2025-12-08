@@ -1,9 +1,6 @@
-import atexit
 import hashlib
 import os
-import shutil
 import typing as t
-from uuid import uuid1
 
 
 def get_content_hash(content: str) -> str:
@@ -46,34 +43,38 @@ def init_target_tree(root: str, relpath_dirs: t.Iterable[str]) -> None:
         os.makedirs(p, exist_ok=True)
 
 
-class _TempDirs:
-    
-    def __init__(self) -> None:
-        # FIXME: cannot import `paths` here, because it may cause circular -
-        #   import error. (related: `..paths.Project._init_project_root`)
-        # from .. import paths
-        # self._root = paths.project.temp
-        self._dirs = set()
-        atexit.register(self.clean_up)
-    
-    def make_dir(self, root: str = None) -> str:
-        from .. import paths
-        root = root or paths.project.temp
-        # assert os.path.exists(root)
-        random_name = uuid1().hex
-        temp_dir = f'{root}/{random_name}'
-        os.mkdir(temp_dir)
-        self._dirs.add(temp_dir)
-        # print(':vp', f'a temp dir is created ({random_name})')
-        return temp_dir
-    
-    def clean_up(self) -> None:
-        if self._dirs:
-            print(':vs', f'clean up temp created dirs ({len(self._dirs)})')
-            for d in self._dirs:
-                if os.path.exists(d):
-                    shutil.rmtree(d)
+# class _TempDirs:
+#
+#     def __init__(self) -> None:
+#         # FIXME: cannot import `paths` here, because it may cause circular -
+#         #   import error. (related: `..paths.Project._init_project_root`)
+#         # from .. import paths
+#         # self._root = paths.project.temp
+#         self._dirs = set()
+#         atexit.register(self.clean_up)
+#
+#     def make_dir(self, root: str = None) -> str:
+#         from .. import paths
+#         root = root or paths.project.temp
+#         # assert os.path.exists(root)
+#         random_name = uuid1().hex
+#         temp_dir = f'{root}/{random_name}'
+#         os.mkdir(temp_dir)
+#         self._dirs.add(temp_dir)
+#         # print(':vp', f'a temp dir is created ({random_name})')
+#         return temp_dir
+#
+#     def clean_up(self) -> None:
+#         if self._dirs:
+#             print(':vs', f'clean up temp created dirs ({len(self._dirs)})')
+#             for d in self._dirs:
+#                 if os.path.exists(d):
+#                     shutil.rmtree(d)
+#
+#
+# _temp_dirs = _TempDirs()
+# make_temp_dir = _temp_dirs.make_dir
 
-
-_temp_dirs = _TempDirs()
-make_temp_dir = _temp_dirs.make_dir
+def make_temp_dir() -> str:
+    from ..paths import temp
+    return temp.make_dir()

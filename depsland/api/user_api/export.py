@@ -8,7 +8,6 @@ from ...manifest import get_last_installed_version
 from ...manifest import load_manifest
 from ...pypi import pypi
 from ...pypi import rebuild_pypi_index
-from ...utils import make_temp_dir
 
 
 def export_application(
@@ -17,9 +16,7 @@ def export_application(
     assert paths.project.project_mode != ''
     if version is None:
         version = get_last_installed_version(appid)
-    if root_o is None:
-        root_o = make_temp_dir()
-    dir_o = '{}/{}-{}'.format(root_o, appid, version)
+    dir_o = '{}/{}-{}'.format(root_o or paths.temp.make_dir(), appid, version)
     assert not fs.exist(dir_o)
     fs.make_dir(dir_o)
     

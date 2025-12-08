@@ -17,7 +17,6 @@ from ...platform.launcher import bat_2_exe
 from ...platform.system_info import IS_WINDOWS
 from ...pypi import pypi
 from ...utils import init_target_tree
-from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...venv.target_venv import get_library_root
 from ...verspec import compare_version
@@ -132,7 +131,6 @@ def _upload(
     
     root_new = manifest_new['start_directory']  # noqa
     root_old = manifest_old['start_directory']  # noqa
-    temp_dir = make_temp_dir()
     
     oss = get_oss_server(manifest_new['appid'])
     print(oss.path)
@@ -208,7 +206,7 @@ def _upload(
     
     def _compress_asset(info: T.AssetInfo, relpath: str) -> T.Path:
         source_path = fs.normpath(f'{root_new}/{relpath}')
-        temp_path = _copy_assets(source_path, temp_dir, info.scheme)
+        temp_path = _copy_assets(source_path, info.scheme)
         zipped_file = _compress(
             temp_path, temp_path + ('.zip' if info.type == 'dir' else '.fzip')
         )
@@ -296,19 +294,11 @@ def _compress(path_i: T.Path, file_o: T.Path) -> T.Path:
     return file_o
 
 
-def _copy_assets(
-    path_i: T.Path, root_dir_o: T.Path, scheme: T.Scheme
-) -> T.Path:
-    def safe_make_dir(dirname: str) -> str:
-        sub_temp_dir = make_temp_dir(root_dir_o)
-        os.mkdir(out := '{}/{}'.format(sub_temp_dir, dirname))
-        return out
-    
+def _copy_assets(path_i: T.Path, scheme: T.Scheme) -> T.Path:
     if os.path.isdir(path_i):
-        dir_o = safe_make_dir(os.path.basename(path_i))
+        dir_o = paths.temp.make_unique_dir(fs.basename(path_i))
     else:
-        sub_temp_dir = make_temp_dir(root_dir_o)
-        file_o = '{}/{}'.format(sub_temp_dir, os.path.basename(path_i))
+        file_o = '{}/{}'.format(paths.temp.make_dir(), fs.basename(path_i))
         fs.make_link(path_i, file_o)
         return file_o
     

@@ -7,7 +7,7 @@ import streamlit as st
 import streamlit_canary as sc
 from lk_utils import Signal
 
-from ...api.user_api.install import progress_updated
+from ...api.user_api.install import detailed_progress
 
 _state: dict = sc.session.get_state(default=lambda: {
     'portion_start': 0.0,
@@ -73,12 +73,14 @@ class ProgressControl:
         self.updated = Signal(float, str)
         self._last_stage = ''
         
-        @progress_updated
-        def _(stage: str, total: int, curr: int, text: str) -> None:
+        @detailed_progress
+        def _(
+            stage: str, total: int, curr: int, _unused_1, _unused_2, desc: str
+        ) -> None:
             if self._last_stage != stage:
                 self._change_stage(stage, total)
                 self._last_stage = stage
-            self.update_progress(curr, text)
+            self.update_progress(curr, desc)
     
     def reset(self) -> None:
         print(':d', 'reset progress bar')

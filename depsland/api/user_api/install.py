@@ -19,7 +19,6 @@ from ...platform.launcher import create_desktop_shortcut
 from ...platform.launcher.make_exe import add_icon_to_exe
 from ...pypi import pypi
 from ...pypi.pypi import LocalPyPI
-from ...utils import make_temp_dir
 from ...utils import ziptool
 from ...verspec import compare_version
 
@@ -32,13 +31,16 @@ class T(T0):
     ProgressStage = t.Literal['assets', 'deps', 'venv', 'cleanup']
 
 
-# Signal[stage, total, current, text]
-#   stage: see T.ProgressStage
-#   total: 1-based counter.
-#   current: same like `total`.
-#   text: we currently use lower-cased descriptive text.
-#       the ui side may need to convert it to a more user-friendly format.
-progress_updated = Signal(str, int, int, str)  # used by ui side
+simple_progress = Signal(float, str)
+detailed_progress = Signal(T.ProgressStage, int, int, float, float, str)
+#   Signal[
+#       stage,
+#       total_count,  # 1-based.
+#       current_index,
+#       current_progress,  # i.e. (current_index / total_count) * 100%
+#       overall_progress,  # i.e. simple_progress:first_arg
+#       description
+#   ]
 
 
 def install_by_appid(
@@ -125,7 +127,7 @@ def _install(
     manifest_old: T.Manifest,
     custom_oss_root: T.Path = None,
 ) -> None:
-    dir_m = make_temp_dir()
+    dir_m = paths.temp.make_dir()
     
     if custom_oss_root:
         print('use local oss server', ':v1')
@@ -176,7 +178,7 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
 
 def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
     def download_new() -> T.Manifest:
-        tmp_dir = make_temp_dir()
+        tmp_dir = paths.temp.make_dir()
         oss = get_oss_client(appid)
         oss.download(oss.path.manifest, x := f'{tmp_dir}/manifest.pkl')
         manifest_new = load_manifest(x)
@@ -245,8 +247,16 @@ def _install_files(
     
     for action, relpath, (info0, info1) in assets_diff:
         curr_cnt += 1
-        progress_updated.emit(
-            'assets', assets_diff_cnt, curr_cnt,
+        simple_progress.emit(
+            0 + 0.4 * (curr_cnt / assets_diff_cnt),
+            'updating asset "{}" ({})'.format(relpath, action)
+        )
+        detailed_progress.emit(
+            'assets',
+            assets_diff_cnt,
+            curr_cnt,
+            curr_cnt / assets_diff_cnt,
+            0 + 0.4 * (curr_cnt / assets_diff_cnt),
             'updating asset "{}" ({})'.format(relpath, action)
         )
         
@@ -303,11 +313,6 @@ def _install_packages(
     pkg_name: T.PackageName
     
     for action, pkg_name, (info0, info1) in deps_diff:
-        # curr_cnt += 1
-        # progress_updated.emit(
-        #     'deps', deps_diff_cnt, curr_cnt,
-        #     'updating "{}" ({})'.format(pkg_name, action)
-        # )
         if action == 'delete':  # this is handled by oss util.
             continue
         pkg_id = info1['id']
@@ -368,13 +373,32 @@ def _install_packages(
             resolve = oss_download_and_install
         
         for i, info in enumerate(tasks_ignitor, 1):
-            progress_updated.emit(
-                'deps', len(tasks_ignitor), i,
+            simple_progress.emit(
+                0.4 + 0.5 * (i / len(tasks_ignitor)),
+                'fetching dependency "{}"'.format(info['id'])
+            )
+            detailed_progress.emit(
+                'deps',
+                len(tasks_ignitor),
+                i,
+                i / len(tasks_ignitor),
+                0.4 + 0.5 * (i / len(tasks_ignitor)),
                 'fetching dependency "{}"'.format(info['id'])
             )
             resolve(info)
     
-    progress_updated.emit('cleanup', 2, 1, 'linking venv')
+    simple_progress.emit(
+        0.9 + 0.1 * (1 / 2),
+        'linking venv'
+    )
+    detailed_progress.emit(
+        'cleanup',
+        2,
+        1,
+        1 / 2,
+        0.9 + 0.1 * (1 / 2),
+        'linking venv'
+    )
     venv_dir = paths.apps.make_venv_dir(
         manifest_new['appid'], manifest_new['version'], clear_exists=True
     )
@@ -398,7 +422,19 @@ def _install_packages(
 
 def _create_launchers(manifest: T.Manifest) -> None:
     print('creating launcher... (this may be slow)')
-    progress_updated.emit('cleanup', 2, 2, 'creating launcher')
+    
+    simple_progress.emit(
+        0.9 + 0.1 * (2 / 2),
+        'creating launcher'
+    )
+    detailed_progress.emit(
+        'cleanup',
+        2,
+        2,
+        2 / 2,
+        0.9 + 0.1 * (2 / 2),
+        'creating launcher'
+    )
     
     exe_file = '{}/{}/{}/{}.exe'.format(
         paths.project.apps,
