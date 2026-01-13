@@ -1,6 +1,7 @@
 import hashlib
 import os
 import typing as t
+from lk_utils import fs
 
 
 def get_content_hash(content: str) -> str:
@@ -26,11 +27,13 @@ def get_updated_time(path: str, recursive: bool = False) -> int:
     if recursive is False or not os.listdir(path):
         return mtime
     else:
-        # https://stackoverflow.com/questions/29685069/get-the-last-modified
-        # -date-of-a-directory-including-subdirectories-using-pytho
-        return max((mtime, max(map(int, map(
-            os.path.getmtime, (root for root, _, _ in os.walk(path))
-        )))))
+        # https://stackoverflow.com/questions/29685069
+        
+        def walk(entrance: str) -> t.Iterator[str]:
+            yield from (x.path for x in fs.findall_dirs(entrance))
+            yield from (x.path for x in fs.findall_files(entrance))
+        
+        return max((mtime, max(map(int, map(os.path.getmtime, walk(path))))))
 
 
 def init_target_tree(root: str, relpath_dirs: t.Iterable[str]) -> None:
