@@ -2,7 +2,7 @@
 
 ### 0.11.0 (wip)
 
-- 构建更加轻量化的独立应用 (No-depsland 版本)
+- 构建更加轻量化的独立应用 (no-depsland 版本)
 - 在 Depsland 中集成依赖优化选项 (tree-shaking)
 
 ### 0.10.1 (2025-11-05)

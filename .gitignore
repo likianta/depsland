@@ -21,8 +21,10 @@
 /product/
 /pypi/**
 /python/*
+/resources/
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
+/sidework/mini_launcher/by_air/build/
 /sidework/mini_launcher/by_nuitka/temp/*
 /sidework/mini_launcher/by_nuitka_2/
 /sidework/mini_launcher/by_rust/target/

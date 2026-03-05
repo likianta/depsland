@@ -45,7 +45,7 @@
             "experiments": {
                 "package_provider": "oss"
             },
-            "depsland_version": "0.10.1"
+            "depsland_version": "0.11.0"
         },
         "src_min": "",
         "enc_max": "",

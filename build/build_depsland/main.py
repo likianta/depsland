@@ -1,11 +1,8 @@
 import os
-import re
 from argsense import cli
 from depsland import paths
 from depsland.api.dev_api import build_project
 from depsland.api.dev_api.build_project import bump_version as _bump_version
-from depsland.manifest import dump_manifest
-from depsland.manifest import load_manifest
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
@@ -37,11 +34,6 @@ def main(new_version: str = None) -> None:
     make_dist(new_ver, 'aliyun')
     
     _make_disguised_packages('chore/site_packages')
-    
-    if not (old_ver.startswith(new_ver) and old_ver[len(new_ver)] in 'ab'):
-        xdict = fs.load('build/build_depsland/src_max.json')
-        xdict['depsland_version'] = re.match(r'\d+\.\d+\.\d+', old_ver).group()
-        fs.dump(xdict, 'build/build_depsland/src_max.json')
 
 
 @cli
@@ -79,7 +71,7 @@ def make_dist(
     
     root_i = paths.project.root
     root_o = (
-        '{dist}/standalone/depsland-{version}-windows'
+        '{dist}/standalone/depsland-{version}'
         .format(dist=paths.project.dist, version=version)
     )
     # ^ related doc: `wiki/design-tkinking/why-does-dist-standalone-directory
@@ -199,14 +191,6 @@ def make_dist(
             f'{root_i}/python',
             f'{root_o}/python',
         )
-    
-    # -------------------------------------------------------------------------
-    
-    # dump manifest
-    dump_manifest(
-        load_manifest(f'{root_i}/build/build_depsland/src_max.json'),
-        f'{root_o}/manifest.pkl',
-    )
     
     print(':t', 'see result at ' + fs.relpath(root_o))
 
