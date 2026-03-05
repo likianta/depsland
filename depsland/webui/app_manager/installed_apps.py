@@ -9,7 +9,7 @@ from lk_utils import fs
 from ...api.user_api import run_app
 from ...paths import apps as app_paths
 
-_state = sc.session.get_state(lambda: {'processes': {}})
+_state = sc.init_state(lambda: {'processes': {}})
 
 
 def main(_reusable_placeholder: st.empty = None) -> None:

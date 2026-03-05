@@ -14,7 +14,7 @@ from ... import paths
 from ...api.user_api.install import install_by_appid
 from ...api.self_api import self_upgrade
 
-_state = sc.session.get_state(default=lambda: {
+_state = sc.init_state(default=lambda: {
     'placeholder': None,
 })
 

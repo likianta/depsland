@@ -2,7 +2,7 @@ import streamlit as st
 import streamlit_canary as sc
 from streamlit_extras.bottom_container import bottom as st_bottom_bar
 
-_state = sc.session.get_state(lambda: {
+_state = sc.init_state(lambda: {
     'last_command': '',
     'logger'      : Logger()
 })

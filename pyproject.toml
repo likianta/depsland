@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.11.0a15"
+version = "0.11.0a16"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -25,6 +25,7 @@ oss2 = "^2.19.1"
 pip = "^25.3.0"
 poetry = "^2.3.2"
 psutil = "^7.0.0"
+pyapp-window = "^2.1.4"
 pyportable-crypto = "^1.5.0"
 semver = "^3.0.4"
 streamlit = "^1.55.0"
@@ -43,15 +44,15 @@ freesimplegui = "^5.2.0.post1"
 icnsutil = "^1.1.0"  # <- sidework/image_converter.py
 ipython = "^9.10.0"
 lk-logger = { version = ">=6.0.7,<6.1.0", source = "likianta" }
-lk-utils = { version = "^3.5.0a11", source = "likianta" }
+lk-utils = { version = "^3.5.0a14", source = "likianta" }
 # matplotlib = { version = "^3.10.5", python = "^3.10" }  # to support numpy 2.x, used by pyinstaller
 nuitka = "^2.8.1"
 pillow = "^11.0.0"  # <- sidework/image_converter.py
 # pinkrain = { version = "^0.0.0a32", source = "likianta" }
-pyapp-window = { version = ">=2.1.4,<2.2.0", source = "likianta" }
+pyapp-window = { version = "^2.2.0b5", source = "likianta" }
 # pyinstaller = { version = "^6.15.0", python = ">=3.12,<3.15" }
 pyinstrument = "^5.0.3"
-pyportable-crypto = { version = "^1.5.1a0", source = "likianta" }
+pyportable-crypto = { version = "^1.5.1a1", source = "likianta" }
 # pyside6 = { version = "^6.10.0", python = ">=3.12,<3.14" }  # <- demo/hello-world-gui
 # pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
 # qmlease = { version = "^3.1.0a42", source = "likianta" }  # <- demo/hello-world-gui

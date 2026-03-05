@@ -5,7 +5,7 @@ from lk_utils import fs
 from .i18n import i18n
 from ...venv.target_venv import get_library_root
 
-_state = sc.session.get_state(lambda: {
+_state = sc.init_state(lambda: {
     'default_venv_dirpath': {}
 })
 

@@ -11,7 +11,7 @@ from streamlit_extras.bottom_container import bottom as st_bottom_bar
 from ..app_manager.progress_bar import progress_bar
 from ...api import install_by_appid
 
-_state = sc.session.get_state(lambda: {
+_state = sc.init_state(lambda: {
     'finished': False,
 })
 

@@ -12,7 +12,7 @@ from . import assets_picker
 from . import dependency_scheme
 from .i18n import i18n
 
-_state = sc.session.get_state(lambda: {
+_state = sc.init_state(lambda: {
     # 'project_to_appid': {},
     'appinfo': {}  # {project_dir: {...}, ...}
 }, version=5)
