@@ -286,7 +286,7 @@ class Project:
                     |- Depsland.lnk
                             # 4. '<user-programs>/current/Depsland.exe'
             """
-            fs.make_link(project_root, dir1)
+            fs.make_link(project_root, dir1, True)
             fs.make_shortcut(
                 f'{dir1}/Depsland.exe',
                 f'{dir0}/Depsland.lnk',

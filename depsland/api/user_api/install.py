@@ -337,8 +337,8 @@ def _install_packages(
         
         def oss_download_and_install(info: T.PackageInfo) -> None:
             if info['id'] in pypi.index.id_2_paths:
-                # this case should always be False in production environment. -
-                # but may be True in development environment.
+                # this case should ALWAYS be False in production environment.
+                # but MAY be True in development environment.
                 return
             resource_path = '{}/{}'.format(_oss.path.pypi, info['id'])
             download_path = '{}/{}.zip'.format(paths.pypi.downloads, info['id'])
@@ -350,7 +350,15 @@ def _install_packages(
             )
             fs.make_dirs('{}/{}'.format(paths.pypi.installed, info['name']))
             
-            _oss.download(resource_path, download_path)
+            if not fs.exist(download_path):
+                # note: if `_oss.download` function raises an exception, the
+                # entire process will terminate abruptly -- typically due to
+                # network instability.
+                # to mitigate this issue, we use this `if` statement to check
+                # before a download, if file is already present, download will
+                # be skipped, thereby avoiding redundant transfers and save much
+                # of time.
+                _oss.download(resource_path, download_path)
             ziptool.extract_file(download_path, install_path, True)
             pypi.index.update_index(info['id'], download_path, install_path)
         
