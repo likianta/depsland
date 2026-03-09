@@ -10,10 +10,6 @@
         "src_max": {
             "appid": "depsland",
             "name": "Depsland Standalone",
-            "readme": {
-                "file": "wiki/docs/.vitepress/dist/index.html",
-                "standalone": false
-            },
             "assets": [
                 "CHANGELOG.zh.md",
                 "apps/.bin:0",
@@ -66,8 +62,7 @@
                 "depsland/webui/setup_wizard/app.py",
                 "chore/.venv/streamlit/__init__.py",
                 "chore/.venv/streamlit/__main__.py",
-                "chore/.venv/streamlit_extras/__init__.py",
-                "chore/.venv/toga_winforms/__init__.py"
+                "chore/.venv/streamlit_extras/__init__.py"
             ],
             "ignores": [
                 "ipython",
