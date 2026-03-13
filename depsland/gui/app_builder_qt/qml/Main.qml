@@ -2,12 +2,18 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QmlEase
-// import MD3
 
 Window {
+    id: root
     title: 'Depsland AppBuilder'
     width: 800
     height: 1400
+
+    property string appName
+    property string appVersion
+    property string projectDir
+
+    signal projectPathSubmit(string path)
 
     ColumnLayout {
         anchors {
@@ -26,10 +32,18 @@ Window {
         spacing: 12
 
         TextInput {
+            id: _project_dir_input
             // Layout.alignment: Qt.AlignHCenter
             Layout.fillWidth: true
             label: 'Please input your project directory'
+            text: root.projectDir
             // outlineColor: pycolor.primary
+//            onEditingFinished: (text) => {
+//                console.log('editing finished', text)
+//            }
+            Component.onCompleted: {
+                this.editingFinished.connect(root.projectPathSubmit)
+            }
         }
         
         RowLayout {
@@ -57,9 +71,11 @@ Window {
             spacing: 12
 
             TextInput {
+                id: _app_name_input
                 // Layout.alignment: Qt.AlignVCenter
                 Layout.fillWidth: true
                 label: 'AppName'
+                text: root.appName
             }
 
             Empty {
@@ -76,6 +92,7 @@ Window {
             TextInput {
                 Layout.fillWidth: true
                 label: 'Version'
+                text: root.appVersion
             }
 
             RadioGroup {
@@ -91,5 +108,9 @@ Window {
                 text: 'Bump version'
             }
         }
+    }
+
+    Component.onCompleted: {
+        py.main.init_ui(this)
     }
 }
