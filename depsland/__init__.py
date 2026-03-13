@@ -23,7 +23,6 @@ from . import paths
 from . import utils
 from . import venv
 from . import verspec
-# from . import webui
 from .api import init
 from .api import install
 from .api import publish
@@ -33,4 +32,4 @@ from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.11.0a5'
+__version__ = '0.11.0b11'

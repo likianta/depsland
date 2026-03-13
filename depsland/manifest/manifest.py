@@ -62,8 +62,9 @@ class T(T0):
             'options': t.Union[
                 t.Literal['poetry.lock', 'uv.lock'],
                 t.TypedDict('TreeShakingOptions', {
+                    'search_paths': t.List[str],
                     'entries': t.List[str]
-                })
+                }, total=False)
             ]
         }, total=False)
     ]]

@@ -13,8 +13,6 @@
 /demo/*/dist/
 /depsland/.project/
 /depsland/assets/*
-/depsland/webui/assets/
-/depsland/webui/static/
 /docs/*/*.html
 /lib/
 /oss/**

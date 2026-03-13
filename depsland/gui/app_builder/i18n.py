@@ -4,10 +4,12 @@ TODO: we may use `gettext` in the future.
 from lk_utils import dedent
 
 
-def _text_block(text: str, soft_wrap: bool = False) -> str:
+def _text_block(text: str) -> str:
     return (
         dedent(text, join_sep='\\')
-        .replace('\n', '  \n' if soft_wrap else '\n\n')
+        .replace('\n\n', '<br>')
+        .replace('\n', '  \n')
+        .replace('<br>', '\n\n')
     )
 
 
@@ -27,17 +29,13 @@ class Chinese(English):
         应用标识码由 Depsland 程序生成, 具有唯一性. 该标识码被用作发布到商店时的识别依据.
         目前, 标识码的格式被设计为一种可读的风格; 未来可能考虑使用 UUID \\
         生成以确保全局唯一性.
-        ''',
-        soft_wrap=True
+        '''
     )
     appid_regenerate = '重新生成'
     appinfo = '应用信息'
     appname = '应用名称'
-    ask_project_path = '请输入项目路径'
-    assets_title = '资产清单'
-    enc_title = '代码加密'
+    ask_proj_path = '请输入项目路径'
     deps_output_ask = '压缩结果输出目录'
-    deps_scheme = '依赖处理'
     deps_scheme_ask = '你想要如何集成 Python 依赖?'
     deps_scheme_0 = '不包含'
     deps_scheme_1 = '云托管'
@@ -48,10 +46,22 @@ class Chinese(English):
         '''
         此目录为 "site-packages" 所在的目录, 格式可以是绝对路径, \\
         或相对于项目根目录的相对路径.
+
         示例: ".venv/Lib/site-packages", "./chore/my_packages", \\
         "C:/Users/YourName/.poetry/hello-world-py312/Lib/site-packages".
         '''
     )
+    filetree_title_left = '文件树'
+    filetree_title_right = '结果预览'
+    proj_desc = _text_block(
+        '''
+        Depsland 应用构建器可将你的 Python 项目打包为独立应用, 并提供 "离线发布", \\
+        "在线升级" 两种安装方式.
+        '''
+    )
+    tab_title_1_assets = '资产清单'
+    tab_title_2_deps_scheme = '依赖处理'
+    tab_title_3_enc = '代码加密'
     title = 'Depsland 应用构建器'
     title_online = 'Depsland 应用构建器 (在线版)'
     version = '版本'

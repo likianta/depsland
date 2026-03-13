@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-    __package__ = 'depsland.webui.app_builder'
+    __package__ = 'depsland.gui.app_builder'
 
 import re
 import streamlit as st
@@ -29,7 +29,9 @@ def main() -> None:
             run in client mode to build their formal productions.
     """
     st.title(i18n.title)
-    if not (prjdir := sc.path_input(i18n.ask_project_path, check=2)):
+    st.markdown(i18n.proj_desc)
+
+    if not (prjdir := sc.path_input(i18n.ask_proj_path, check=2)):
         return
     
     if prjdir not in _state['appinfo']:
@@ -87,7 +89,11 @@ def main() -> None:
         with row[0]:
             st.text_input(i18n.version, str(ver))
         
-        tabs = st.tabs((i18n.assets_title, i18n.deps_scheme, i18n.enc_title))
+        tabs = st.tabs((
+            i18n.tab_title_1_assets, 
+            i18n.tab_title_2_deps_scheme, 
+            i18n.tab_title_3_enc
+        ))
         with tabs[0]:
             assets_picker.main(prjdir)
         with tabs[1]:
@@ -156,5 +162,5 @@ class Version:
 
 
 if __name__ == '__main__':
-    # strun 2180 depsland/webui/app_builder/main.py
+    # strun 2180 depsland/gui/app_builder/app.py
     main()

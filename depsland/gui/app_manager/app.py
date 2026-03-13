@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-    __package__ = 'depsland.webui.app_manager'
+    __package__ = 'depsland.gui.app_manager'
 
 import streamlit as st
 import streamlit_canary as sc
@@ -87,7 +87,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
 
 
 if __name__ == '__main__':
-    # strun 2180 depsland/webui/app.py
+    # strun 2180 depsland/gui/app.py
     # setup_ui('hello_world')
     
     from argsense import cli

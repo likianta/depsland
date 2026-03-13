@@ -116,7 +116,7 @@ def launch_gui(
     import streamlit_canary as sc
     sc.run(
         title='Depsland Appstore',
-        target='depsland/webui/app_manager/app.py',
+        target='depsland/gui/app_manager/app.py',
         extra_args=(
             _app_token or ':empty',
             ':true' if _run_at_once else ':false'
@@ -290,7 +290,7 @@ def runx(
         sc.run(
             title='Depsland Setup Wizard',
             icon=paths.build.launcher_icon,
-            target=fs.xpath('webui/setup_wizard/app.py'),
+            target=fs.xpath('gui/setup_wizard/app.py'),
             extra_args=(
                 m['name'],
                 m['appid'],

@@ -80,10 +80,12 @@ def main(
         if IS_WINDOWS:
             print('generate setup script to dist dir')
             bat_file = f'{dist_dir}/setup.bat'
-            command = dedent(r'''
+            command = dedent(
+                r'''
                 cd /d %~dp0
                 "%DEPSLAND%\depsland-sui.exe" launch-gui manifest.pkl :true
-            ''').strip()
+                '''
+            ).strip()
             fs.dump(command, bat_file)
             
             bat_2_exe(

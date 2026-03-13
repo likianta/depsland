@@ -1,5 +1,5 @@
 if __name__ == '__main__':
-    __package__ = 'depsland.webui.setup_wizard'
+    __package__ = 'depsland.gui.setup_wizard'
 
 import typing as t
 
@@ -108,7 +108,7 @@ def _play_demo() -> None:
 
 
 if __name__ == '__main__':
-    # strun 2181 depsland/webui/setup_wizard/app.py
+    # strun 2181 depsland/gui/setup_wizard/app.py
     #   -- 'Hello World' hello_world 'Demo play installing hello-world app.'
     #   --dry-run
     # pox -m pyapp_window --port 2181 --size 1340x960
