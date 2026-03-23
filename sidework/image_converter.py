@@ -23,14 +23,14 @@ def icns_2_all(file_i: str, name_o: str = None) -> None:
 
 @cli.cmd('icns-2-ico')
 def icns_2_ico(file_i: str, file_o: str = None) -> str:
-    file_m = icns_2_png(file_i)
-    png_2_ico(file_m, file_o or fs.replace_ext(file_i, 'png'))
+    file_m = icns_2_png(file_i, fs.replace_ext(file_i, 'png'))
+    png_2_ico(file_m, file_o or fs.replace_ext(file_i, 'ico'))
     fs.remove_file(file_m)
     return file_o
 
 
 @cli.cmd('icns-2-png')
-def icns_2_png(file_i: str, file_o: str) -> str:
+def icns_2_png(file_i: str, file_o: str = None) -> str:
     """
     https://pypi.org/project/icnsutil/
     https://blog.csdn.net/qq_34146694/article/details/127251404

@@ -6,7 +6,7 @@ from lk_utils import fs
 from lk_utils import run_cmd_args
 
 from ..normalization import normalize_name
-from ..venv.target_venv import get_library_root
+from ..venv.target_venv import get_venv_root
 from ..venv.target_venv.indexer import analyze_records
 from ..venv.target_venv.indexer import index_all_package_references
 
@@ -239,7 +239,7 @@ def _fill_packages_info(
                     item['files'][0]['file']
                 )
     
-    lib_root = get_library_root(pyproj_root)
+    lib_root = get_venv_root(pyproj_root)
     all_pkg_refs = dict(index_all_package_references(lib_root))
     print(pyproj_root, lib_root, len(all_pkg_refs), len(tiled_pkgs), ':l')
     

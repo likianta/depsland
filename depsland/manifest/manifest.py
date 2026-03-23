@@ -15,7 +15,7 @@ from ..utils import get_content_hash
 from ..utils import get_file_hash
 from ..utils import get_updated_time
 from ..utils import init_target_tree
-from ..venv import get_library_root
+from ..venv import get_venv_root
 
 
 # noinspection PyTypedDict
@@ -767,7 +767,7 @@ class Manifest:
                     
                     fs.make_dir(dot_dps_dir)
                     fs.make_link(
-                        get_library_root(start_directory), orig_deps_dir
+                        get_venv_root(start_directory), orig_deps_dir
                     )
                     
                     # 1/3. get options

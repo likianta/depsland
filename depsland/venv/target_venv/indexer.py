@@ -91,7 +91,7 @@ class LibraryIndexer:
         print(':t2s')
         
         self.working_root = working_root
-        self.library_root = finder.get_library_root(working_root)
+        self.library_root = finder.get_venv_root(working_root)
         print(self.library_root)
         
         # self._all_pkg_refs = dict(quick_index_packages(self.library_root))

@@ -8,13 +8,13 @@ from depsland import pypi
 from depsland.depsolver import resolve_dependencies
 from depsland.utils import init_target_tree
 from depsland.utils import ziptool
-from depsland.venv.target_venv import get_library_root
+from depsland.venv.target_venv import get_venv_root
 from lk_utils import fs
 
 
 @cli.cmd()
 def main(external_proj_dir: str) -> None:
-    lib_root = get_library_root(external_proj_dir)
+    lib_root = get_venv_root(external_proj_dir)
     pkgs = resolve_dependencies('poetry.lock', external_proj_dir)
     for info in pkgs.values():
         id = info['id']

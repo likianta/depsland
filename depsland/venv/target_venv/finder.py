@@ -26,10 +26,10 @@ class T:
 # -----------------------------------------------------------------------------
 
 @functools.cache
-def get_library_root(working_root: str) -> T.LibraryPath:
+def get_venv_root(working_root: str) -> T.LibraryPath:
     """
     find venv root (the "site-packages" folder) by `poetry env` command.
-    FIXME: poetry env is very unreliable!
+    FIXME: poetry env is not reliable!
     """
     from ...platform.system_info import IS_WINDOWS
     

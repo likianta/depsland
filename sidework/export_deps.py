@@ -1,6 +1,6 @@
 from argsense import cli
 from depsland.depsolver import analyze_dependency_tree
-from depsland.venv import get_library_root
+from depsland.venv import get_venv_root
 from depsland.venv.target_venv.indexer import analyze_records
 from depsland.venv.target_venv.indexer import index_all_package_references
 from depsland.utils import init_target_tree
@@ -91,7 +91,7 @@ def export(
         all_required_pkg_names.update(x for x, _ in deps)
     del wanted_package_names
     
-    dir_i = get_library_root(fs.parent(poetry_file))
+    dir_i = get_venv_root(fs.parent(poetry_file))
     pkg_name_2_relpaths = {}
     refs = index_all_package_references(dir_i)
     for pkg_name, (dir_name, dir_path) in refs:

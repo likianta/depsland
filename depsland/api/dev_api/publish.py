@@ -18,7 +18,7 @@ from ...platform.system_info import IS_WINDOWS
 from ...pypi import pypi
 from ...utils import init_target_tree
 from ...utils import ziptool
-from ...venv.target_venv import get_library_root
+from ...venv.target_venv import get_venv_root
 from ...verspec import compare_version
 
 
@@ -214,7 +214,7 @@ def _upload(
         )
         return zipped_file
     
-    _lib_root = get_library_root(manifest_new['start_directory'])
+    _lib_root = get_venv_root(manifest_new['start_directory'])
     
     def _compress_dependency(
         package_id: str, relpaths: t.Tuple[str, ...]

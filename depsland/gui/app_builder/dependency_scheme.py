@@ -3,7 +3,7 @@ import streamlit_canary as sc
 import typing as t
 from lk_utils import fs
 from .i18n import i18n
-from ...venv.target_venv import get_library_root
+from ...venv.target_venv import get_venv_root
 
 _state = sc.init_state(lambda: {
     'default_venv_dirpath': {}
@@ -12,7 +12,7 @@ _state = sc.init_state(lambda: {
 
 def main(root: str) -> t.Optional[dict]:
     if root not in _state['default_venv_dirpath']:
-        _state['default_venv_dirpath'][root] = get_library_root(root)
+        _state['default_venv_dirpath'][root] = get_venv_root(root)
     
     way = st.radio(
         i18n.deps_scheme_ask,
