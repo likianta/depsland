@@ -35,7 +35,6 @@ streamlit-extras = { version = "^0.7.8", python = ">=3.12,<3.14" }
 #     { version = "^0.7.8", python = ">=3.12,<3.14" },
 #     { version = "^0.6.0", python = ">=3.14" },
 # ]
-# streamlit-nested-layout = { version = "^0.1.4", python = "!=3.9.7" }
 streamlit-tree-select = "^0.0.5"
 tree-shaking = "^0.2.4"
 windows-toasts = { version = "^1.0.0", platform = "win32" }

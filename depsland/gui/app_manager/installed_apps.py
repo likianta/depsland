@@ -1,4 +1,5 @@
 import typing as t
+from contextlib import AbstractContextManager
 from time import sleep
 
 import psutil
@@ -9,10 +10,14 @@ from lk_utils import fs
 from ...api.user_api import run_app
 from ...paths import apps as app_paths
 
-_state = sc.init_state(lambda: {'processes': {}})
+@sc.init_state
+class State:
+    processes: t.Dict[str, int] = {}
 
 
-def main(_reusable_placeholder: st.empty = None) -> None:
+def main(
+    _reusable_placeholder: t.Optional[AbstractContextManager] = None
+) -> None:
     if _reusable_placeholder:
         with _reusable_placeholder:
             temp_container = st.container()
@@ -24,12 +29,12 @@ def main(_reusable_placeholder: st.empty = None) -> None:
             st.empty()
     
     def check_if_running(app_name: str) -> bool:
-        if app_name in _state['processes']:
-            pid = _state['processes'][app_name]
+        if app_name in State.processes:
+            pid = State.processes[app_name]
             if psutil.pid_exists(pid):
                 return True
             else:
-                _state['processes'].pop(app_name)
+                State.processes.pop(app_name)
         return False
     
     cols = st.columns(2)
@@ -45,7 +50,7 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                 target_ver = st.selectbox(
                     'Version ({})'.format(len(vers)),
                     vers,
-                    key=f'{app_name}:version',
+                    key=f'{app_name}:version:count_{len(vers)}',
                 )
                 
                 subcols = st.columns((7.5, 2.5))
@@ -56,7 +61,7 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                             key=f'{app_name}:stop',
                             use_container_width=True,
                         ):
-                            pid = _state['processes'].pop(app_name)
+                            pid = State.processes.pop(app_name)
                             _kill_process_tree(pid)
                             st.rerun()
                     else:
@@ -68,7 +73,8 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                             popen_obj = run_app(
                                 app_name, _version=target_ver, _blocking=False
                             )
-                            _state['processes'][app_name] = popen_obj.pid
+                            assert popen_obj
+                            State.processes[app_name] = popen_obj.pid
                             st.rerun()
                 with subcols[1]:
                     with st.popover(
@@ -105,12 +111,12 @@ def main(_reusable_placeholder: st.empty = None) -> None:
                 st.rerun()
 
 
-def list_installed_apps() -> t.Iterator[t.Tuple[str, t.List[str]]]:
+def list_installed_apps() -> t.Iterator[t.Tuple[str, t.Tuple[str, ...]]]:
     for d in fs.find_dirs(app_paths.root):
         if d.name.startswith('.'):
             continue
         if fs.exist(x := f'{d.path}/.inst_history'):
-            history = fs.load(x).splitlines()
+            history = tuple(fs.load(x).splitlines())
             yield d.name, history
 
 

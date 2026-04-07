@@ -3,7 +3,7 @@ if __name__ == '__main__':
 
 import streamlit as st
 import streamlit_canary as sc
-# import streamlit_nested_layout  # noqa
+import typing as tp
 from lk_utils import fs
 
 # from . import bottom_bar
@@ -14,9 +14,9 @@ from ... import paths
 from ...api.user_api.install import install_by_appid
 from ...api.self_api import self_upgrade
 
-_state = sc.init_state(default=lambda: {
-    'placeholder': None,
-})
+@sc.init_state
+class State:
+    placeholder_widget: tp.Optional[tp.Any] = None
 
 
 def setup_ui(default_appid: str = '', _run_at_once: bool = False) -> None:
@@ -29,13 +29,14 @@ def setup_ui(default_appid: str = '', _run_at_once: bool = False) -> None:
     tabs = st.tabs(('Search & Install', 'Settings'))
     with tabs[0]:
         search_bar(default_appid, _run_at_once)
-        installed_apps.main(_state['placeholder'])
+        installed_apps.main(State.placeholder_widget)
         # bottom_bar.main()
     with tabs[1]:
         settings.main()
 
 
 def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
+    # noinspection PyUnresolvedReferences
     appid = st.text_input(
         'Input an appid to install',
         default_appid,
@@ -58,7 +59,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
             use_container_width=True,
         )
     with cols[1]:
-        placeholder = _state['placeholder'] = st.empty()
+        placeholder = State.placeholder_widget = st.empty()
     
     if appid and (_run_at_once or do_install):
         with prog_bar_container:
@@ -87,18 +88,18 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
 
 
 if __name__ == '__main__':
-    # strun 2180 depsland/gui/app.py
+    # strun 2180 depsland/gui/app_manager/app.py
     # setup_ui('hello_world')
     
     from argsense import cli
     
-    @cli.cmd()
-    def main(app_token: str, run_at_once: bool = False) -> None:
+    @cli
+    def main(app_token: str, run_at_once: tp.Optional[bool] = False) -> None:
         # print(':v', app_token, run_at_once)
         if app_token and fs.isfile(app_token):
             app_token = fs.abspath(app_token)
             if run_at_once is None:
                 run_at_once = True
-        setup_ui(app_token, run_at_once)
+        setup_ui(app_token, bool(run_at_once))
 
     cli.run(main)
