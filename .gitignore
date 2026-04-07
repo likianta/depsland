@@ -37,6 +37,7 @@
 
 .depsland/
 .idea/
+.web/
 __pycache__/
 dist/**
 

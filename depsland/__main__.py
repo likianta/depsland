@@ -304,9 +304,9 @@ def runx(
         )
 
 
-def _cli() -> None:
+def _cli_entrance() -> None:
     """
-    this function is for poetry to generate script entry.
+    this function is for poetry to generate script entrance.
     see also `pyproject.toml : [tool.poetry.scripts]`.
     """
     cli.run()
