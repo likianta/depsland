@@ -1,6 +1,6 @@
 # Depsland 更新日志
 
-### 0.11.0 (wip)
+### 0.11.0 (2026-04-07)
 
 - 构建更加轻量化的独立应用 (no-depsland 版本)
 - 在 Depsland 中集成依赖优化选项 (tree-shaking)

@@ -14,6 +14,7 @@ def bump_version(new_ver: str = None) -> None:
 
 @cli
 def main(new_version: str = None) -> None:
+    # noinspection PyTypeChecker
     assert fs.exist('chore/.venv'), (
         'please manually link original venv path to "chore/.venv" to continue. '
         'the command is: `python -m lk_utils mklink {}/Lib/site-packages '
@@ -67,6 +68,7 @@ def make_dist(
     
     # checks
     if oss_scheme == 'aliyun':
+        # noinspection PyTypeChecker
         assert fs.exist(os.getenv('DEPSLAND_CONFIG_ROOT'))
     
     root_i = paths.project.root

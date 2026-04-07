@@ -15,6 +15,7 @@ from ...paths import temp as temp_paths
 
 class T:
     Path = str  # any path form
+    # noinspection PyTypedDict,PyTypeHints
     Config = t.TypedDict('Config', {
         'root': Path,
         'version_bump': t.TypedDict('VersionBump', {
@@ -191,6 +192,7 @@ def _deduce_new_version(old: str) -> str:
         0.12.1a9 -> 0.12.1a10
         0.12.1b0 -> 0.12.1b1
     """
+    # noinspection PyUnresolvedReferences
     a, b, c, d = re.match(r'(\d+)\.(\d+)\.(\d+)([ab]\d+)?', old).groups()
     if d is None:
         return f'{a}.{b}.{int(c) + 1}'
@@ -206,15 +208,16 @@ def _encrypt_packages(
         '{}/pyportable_runtime'.format(output_root),
         True,
     )
-    for t in targets:
-        dir_i = t
-        dir_o = '{}/{}'.format(output_root, fs.basename(t))
+    for target in targets:
+        dir_i = target
+        dir_o = '{}/{}'.format(output_root, fs.basename(target))
         compile_dir(dir_i, dir_o, key, add_runtime_package='none')
 
 
 def _get_current_version(config: T.Config) -> str:
     for k, v in config['version_bump']['places'].items():
         content: str = fs.load(k, 'plain')
+        # noinspection PyUnresolvedReferences
         return re.search(
             v.replace('<VERSION>', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
             content
