@@ -1,34 +1,35 @@
 if __name__ == '__main__':
     __package__ = 'depsland.gui.setup_wizard'
 
-import typing as t
-
 import streamlit as st
 import streamlit_canary as sc
+import typing as t
+from airmise import Client as AirClient
 from argsense import cli
-from streamlit_extras.bottom_container import bottom as st_bottom_bar
-
+from streamlit_extras.bottom_container import bottom as bottom_container
 from ..app_manager.progress_bar import progress_bar
 from ...api import install_by_appid
 
-_state = sc.init_state(lambda: {
+state = sc.init_state(lambda: {
+    'air_client': None,
     'finished': False,
 })
-
 
 @cli
 def main(
     app_name: str,
     appid: str,
     description: str = None,
-    dry_run: bool = False
+    dry_run: bool = False,
+    emit_close_event: bool = False,
 ) -> None:
-    # print(app_name, appid, dry_run, sys.argv, sys.orig_argv, ':lv')
+    # print(app_name, appid, dry_run, emit_close_event, ':lv')
+    st.set_page_config('Depsland Setup Wizard')
     
-    if not _state['finished']:
-        st.title(f'Installing :blue[{app_name}]...')
-    else:
-        st.title(app_name)
+    if emit_close_event:
+        if not state['air_client']:
+            state['air_client'] = AirClient(port=2184)
+            state['air_client'].open()
     
     with st.sidebar:
         st.image('chore/setup_wizard_logo.png')
@@ -42,44 +43,39 @@ def main(
             st.divider()
             st.markdown(description)
     
-    if dry_run:
-        _play_demo()
+    if state['finished']:
+        st.title(app_name)
+        st.success(
+            'Installation done.\n\n'
+            'You can now close this window and restart the same app again, '
+            'there will launch target app instead of wizard.'
+        )
+        if emit_close_event:
+            with bottom_container():
+                with st.container(horizontal=True):
+                    if dry_run:
+                        if st.button('Play again'):
+                            state['finished'] = False
+                            st.rerun()
+                    if st.button(
+                        'Finish', type='secondary', width='stretch'
+                    ):
+                        state['air_client'].call('close', False)
+                    if st.button(
+                        'Finish and run', type='primary', width='stretch'
+                    ):
+                        state['air_client'].call('close', True)
     else:
-        if _state['finished']:
-            # st.success('Installation done.')
-            st.success(
-                'Installation done.\n\n'
-                'You can now close this window and restart the same app again, '
-                'there will launch target app instead of wizard.'
-            )
+        st.title(f'Installing :blue[{app_name}]...')
+        if dry_run:
+            _demo_play()
         else:
             with progress_bar():
                 install_by_appid(appid)
-            _state['finished'] = True
-            st.rerun()
-    
-    with st_bottom_bar():
-        # TODO
-        # cols = iter(st.columns(2))
-        # with next(cols):
-        #     if sc.long_button('Finish'):
-        #         sc.kill()
-        # with next(cols):
-        #     if sc.long_button('Finish and run', type='primary'):
-        #         proc = run_cmd_args(
-        #             sys.executable, '-m', 'depsland', 'run', appid,
-        #             verbose=True, blocking=False, force_term_color=True,
-        #         )
-        #         atexit.unregister(proc.kill)
-        #         sc.kill(except_pids=(proc.pid,))
+        state['finished'] = True
+        st.rerun()
 
-        if sc.long_button(
-            'Finish', type='primary', help='Click to close this window.'
-        ):
-            sc.kill()
-
-
-def _play_demo() -> None:
+def _demo_play() -> None:
     from lk_utils import wait
     
     def fake_progress() -> t.Iterator[float]:
@@ -106,13 +102,8 @@ def _play_demo() -> None:
     with part2:
         st.write('Unpacking packages... :green[done]')
 
-
 if __name__ == '__main__':
-    # strun 2181 depsland/gui/setup_wizard/app.py
-    #   -- 'Hello World' hello_world 'Demo play installing hello-world app.'
-    #   --dry-run
-    # pox -m pyapp_window --port 2181 --size 1340x960
-    #   --title 'Depsland Setup Wizard'
-    st.set_page_config('Depsland Setup Wizard')
-    # main('Hello World', 'hello_world')
+    # strun 2183 depsland/gui/setup_wizard/app.py 'Hello World' hello_world
+    #   'Demo play installing hello-world app.' :true
+    # pox -m pyapp_window -p 2183 -s 870x590 -t `Hello World Example`
     cli.run(main)

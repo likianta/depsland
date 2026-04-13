@@ -286,22 +286,8 @@ def runx(
             # FIXME: what if `m['version'] > version`?
         
         # show a mini UI to notify user the installation progress.
-        import streamlit_canary as sc
-        sc.run(
-            title='Depsland Setup Wizard',
-            icon=paths.build.launcher_icon,
-            target=fs.xpath('gui/setup_wizard/app.py'),
-            extra_args=(
-                m['name'],
-                m['appid'],
-                ':empty',  # TODO: description
-                '--dry-run' if dry_run else '--not-dry-run',
-                # ':true' if dry_run else ':false',
-            ),
-            port=2183,
-            show_window=True,
-            size=(1340, 960),
-        )
+        from .gui.setup_wizard import sequential_launch
+        sequential_launch(m['appid'], m['name'], m['version'], dry_run)
 
 
 def _cli_entrance() -> None:
