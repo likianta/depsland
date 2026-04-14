@@ -30,6 +30,7 @@ def main(
         if not state['air_client']:
             state['air_client'] = AirClient(port=2184)
             state['air_client'].open()
+            state['air_client'].call('start')
     
     with st.sidebar:
         st.image('chore/setup_wizard_logo.png')

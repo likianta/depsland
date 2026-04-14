@@ -13,14 +13,16 @@ from time import sleep
 from ... import paths
 
 state = {
+    'frontend_started': False,
+    'frontend_timeout': 20,
     'setup_finished': False,
-    'run_after_setup': False
+    'run_after_setup': False,
 }
 
 def sequential_launch(appid, name, version, dry_run: bool = False):
     run_new_thread(
         air.run_server,
-        {'close': _close_setup_wizard},
+        {'start': _notify_started, 'close': _close_setup_wizard},
         port=2184,
     )
     
@@ -52,12 +54,16 @@ def sequential_launch(appid, name, version, dry_run: bool = False):
             proc_st.kill()
             break
         elif not proc_win.is_alive:
-            print('user closed setup window')
-            assert not state['run_after_setup']
-            proc_st.kill()
-            break
-        else:
-            sleep(1)
+            if state['frontend_started']:
+                print('user closed setup window')
+                assert not state['run_after_setup']
+                proc_st.kill()
+                break
+            else:
+                state['frontend_timeout'] -= 1
+                if state['frontend_timeout'] <= 0:
+                    raise TimeoutError('timeout waiting for opening app window')
+        sleep(1)
     
     air.default_client.close()
     
@@ -75,7 +81,11 @@ def sequential_launch(appid, name, version, dry_run: bool = False):
         if dry_run:
             print('finish without running target application')
 
-def _close_setup_wizard(run_after_setup: bool):
+def _notify_started() -> None:
+    state['frontend_started'] = True
+    print('frontend get started')
+
+def _close_setup_wizard(run_after_setup: bool) -> None:
     state['setup_finished'] = True
     state['run_after_setup'] = run_after_setup
     print(state, ':v2')
