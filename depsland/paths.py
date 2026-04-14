@@ -5,11 +5,10 @@ import atexit
 import os
 import sys
 import typing as t
-from os.path import exists
-from uuid import uuid1
-
 from lk_utils import fs
 from lk_utils import new_thread
+from os.path import exists
+from uuid import uuid1
 
 __all__ = [
     'apps',
@@ -193,7 +192,7 @@ class Project:
         elif project_mode == 'package':
             self._setup_package_mode(project_root)
         elif project_mode == 'production':
-            self._setup_production_mode(project_root, project_info)
+            self._setup_production_mode(project_root)
         elif project_mode == 'shipboard':
             self._setup_shipboard_mode(project_root)
         else:
@@ -250,135 +249,13 @@ class Project:
         fs.dump({}, f'{root}/pypi/index/id_2_paths.json')
         fs.dump({}, f'{root}/pypi/index/name_2_vers.json')
         
-    def _setup_production_mode(
-        self, project_root: str, project_info: dict
-    ) -> None:
-        def build_tree_1(dir0: str, dir1: str) -> None:
-            """
-            tree like:
-                <user-programs>
-                    |- depsland                 # dir0
-                        |- 0.8.0                # project_root
-                            |- depsland
-                                |- paths.py     # <- we are here
-                                |- ...
-                            |- .depsland_project.json
-                            |- ...
-                        |- current              # dir1 (may not exist)
-            create following directories/files:
-                <user-programs>
-                    |- depsland                 # dir0
-                        |- 0.8.0                # project_root
-                            |- depsland
-                                |- paths.py     # <- we are here
-                                |- ...
-                            |- .depsland_project.json
-                            |- Depsland.exe
-                            |- Depsland (Debug).exe
-                            |- ...
-                        |- current              # dir1 (to be created)
-                            # 1. symlink to '0.8.0'
-                        |- Depsland.lnk
-                            # 2. '0.8.0/Depsland.exe'
-                        |- Depsland (Debug).lnk
-                            # 3. '0.8.0/Depsland (Debug).exe'
-                <desktop>
-                    |- Depsland.lnk
-                            # 4. '<user-programs>/current/Depsland.exe'
-            """
-            fs.make_link(project_root, dir1, True)
-            fs.make_shortcut(
-                f'{dir1}/Depsland.exe',
-                f'{dir0}/Depsland.lnk',
-                True
-            )
-            fs.make_shortcut(
-                f'{dir1}/Depsland (Debug).exe',
-                f'{dir0}/Depsland (Debug).lnk',
-                True
-            )
-            fs.make_shortcut(
-                f'{dir1}/Depsland.exe',
-                '<desktop>/Depsland.lnk',
-                True
-            )
-        
-        def build_tree_2() -> None:
-            """
-            tree like:
-                <user-programs>
-                    |- depsland             # project_root
-                        |- depsland
-                            |- paths.py     # <- we are here
-                            |- ...
-                        |- .depsland_project.json
-                        |- ...
-            
-            just create desktop shortcut:
-                <user-programs>
-                    |- depsland             # project_root
-                        |- depsland
-                            |- paths.py     # <- we are here
-                            |- ...
-                        |- .depsland_project.json
-                        |- Depsland.exe
-                        |- Depsland (Debug).exe
-                        |- ...
-                <desktop>
-                    |- Depsland.lnk
-                        # 1. '<user-programs>/depsland/Depsland.exe'
-            """
-            fs.make_shortcut(
-                f'{project_root}/Depsland.exe',
-                '<desktop>/Depsland.lnk',
-                True
-            )
-        
-        # there are two types of folder structure, we use different ways to
-        # init them.
-        if fs.dirname(fs.parent(project_root)).lower() == 'depsland':
-            '''
-            <user-programs>
-                |- depsland                 # dir0
-                    |- 0.8.0                # project_root
-                        |- depsland
-                            |- paths.py     # <- we are here
-                            |- ...
-                        |- .depsland_project.json
-                        |- ...
-                    |- current              # dir1 (may not exist)
-            '''
-            dir0 = fs.xpath('../..')
-            dir1 = fs.xpath('../../current')
-            if exists(dir1):
-                if (
-                    # fmt:off
-                    fs.load('{}/.depsland_project.json'.format(dir1))
-                    .get('depsland_version') == project_info['depsland_version']
-                    #   this key is set by `build/build.py:full_build`
-                    # fmt:on
-                ):
-                    # note: this should not happen...
-                    # -- A
-                    # raise Exception(dir1, curr_ver)
-                    # -- B
-                    # system.set_environment_variables(dir1)
-                    # return
-                    # -- C
-                    print(':v6', 'target tree alraedy built!', dir1)
-                else:
-                    fs.remove(dir1)
-            if not exists(dir1):
-                print(
-                    'first time run depsland, init production environment...',
-                    ':v1'
-                )
-                build_tree_1(dir0, dir1)
-            self._setup_system_environment(dir1)
-        
-        else:
-            build_tree_2()
-            self._setup_system_environment(project_root)
+    def _setup_production_mode(self, project_root: str) -> None:
+        fs.make_shortcut(
+            f'{project_root}/Depsland.exe',
+            '<desktop>/Depsland.lnk',
+            True
+        )
+        self._setup_system_environment(project_root)
     
     def _setup_shipboard_mode(self, project_root: str) -> None:
         """
