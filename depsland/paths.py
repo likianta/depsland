@@ -574,17 +574,19 @@ class Temp:
         self.root = f'{project.root}/temp'
         
         self._temp_root = f'{self.root}/{uuid1().hex}'
+        self._temp_root_created = False
         
-        fs.make_dir(self._temp_root)
+        # fs.make_dir(self._temp_root)
         
         @atexit.register
         def _cleanup() -> None:
-            print(
-                'remove temp dir',
-                'temp/{}'.format(fs.basename(self._temp_root)),
-                ':v'
-            )
-            fs.remove_tree(self._temp_root)
+            if self._temp_root_created:
+                print(
+                    'remove temp dir',
+                    'temp/{}'.format(fs.basename(self._temp_root)),
+                    ':v'
+                )
+                fs.remove_tree(self._temp_root)
         
         self.enc_max = f'{self._temp_root}/enc_max.json'
         self.enc_min = f'{self._temp_root}/enc_min.json'
@@ -595,11 +597,17 @@ class Temp:
         self.tree_shaking_model = f'{self._temp_root}/tree_shaking_model.json'
     
     def make_dir(self) -> str:
+        if not self._temp_root_created:
+            fs.make_dir(self._temp_root)
+            self._temp_root_created = True
         out = '{}/{}'.format(self._temp_root, uuid1().hex)
         fs.make_dir(out)
         return out
     
     def make_unique_dir(self, dirname: str) -> str:
+        if not self._temp_root_created:
+            fs.make_dir(self._temp_root)
+            self._temp_root_created = True
         a = '{}/{}'.format(self._temp_root, uuid1().hex)
         b = '{}/{}'.format(a, dirname)
         fs.make_dir(a)

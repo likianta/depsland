@@ -1906,17 +1906,17 @@ reference = "aliyun"
 
 [[package]]
 name = "lk-utils"
-version = "3.5.3a0"
+version = "3.6.0a1"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.5.3a0-py3-none-any.whl", hash = "sha256:acdd4c23e527bcd8bc61df59099259159dfd506278825c2aced3bf0a89ba2675"},
+    {file = "lk_utils-3.6.0a1-py3-none-any.whl", hash = "sha256:2bd97b85f3233f3bc1aca72e3571946479ad216113ca1c8518c047a0f0b36515"},
 ]
 
 [package.dependencies]
-argsense = ">=1.1.0,<2.0.0"
+argsense = ">=1.1.1,<2.0.0"
 lk-logger = ">=6.0.7,<7.0.0"
 psutil = ">=6.0.0"
 pyyaml = ">=6.0.0,<7.0.0"
@@ -1924,8 +1924,8 @@ rich = ">=14.0.0,<15.0.0"
 typing-extensions = ">=4.0.0,<5.0.0"
 
 [package.extras]
-all = ["ipython", "py7zr ; python_version >= \"3.10\"", "toml ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter"]
-dbg = ["ipython"]
+all = ["ipython (>=9.12.0) ; python_version >= \"3.12\"", "py7zr ; python_version >= \"3.10\"", "toml ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter"]
+dbg = ["ipython (>=9.12.0) ; python_version >= \"3.12\""]
 exl = ["xlrd (==1.2.0)", "xlsxwriter"]
 io = ["toml ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter"]
 tml = ["toml"]
@@ -5865,4 +5865,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "d2508905bba1473352ea3c1656645bb5ef2d1a3a486642b705bc2f476db9a6ae"
+content-hash = "7e880d0967cd7b7312aeb5bf03b3bdbed2edad8a54809cad82bb90ce2dc9cc43"
