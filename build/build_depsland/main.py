@@ -13,7 +13,12 @@ def bump_version(new_ver: str = None) -> None:
 
 
 @cli
-def main(new_version: str = None, compress: bool = True) -> None:
+def main(new_version: str = None, compress: bool = False) -> None:
+    """
+    params:
+        new_version (-v):
+        compress (-z):
+    """
     # noinspection PyTypeChecker
     assert fs.exist('chore/.venv'), (
         'please manually link original venv path to "chore/.venv" to continue. '

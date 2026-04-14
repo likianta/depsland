@@ -237,14 +237,9 @@ def uninstall(appid: str, version: str = None) -> None:
 # -----------------------------------------------------------------------------
 # launch application
 
-cli.add_cmd(api.user_api.run_app, 'run', transfer_help=True)
-
-
-# @cli
-# def run(appid: str = None, version: str = None, *args, **kwargs) -> None:
-#     # if 'VIRTURAL_ENV' in os.environ:
-#     #     del os.environ['VIRTURAL_ENV']
-#     api.user_api.run_app(appid, _version=version, *args, **kwargs)
+@cli.cmd('run', transfer_help=True)
+def run(appid: str, version: str = None, *args, **kwargs) -> None:
+    api.user_api.run_app(appid, _version=version, *args, **kwargs)
 
 
 @cli
