@@ -13,7 +13,7 @@ def bump_version(new_ver: str = None) -> None:
 
 
 @cli
-def main(new_version: str = None) -> None:
+def main(new_version: str = None, compress: bool = True) -> None:
     # noinspection PyTypeChecker
     assert fs.exist('chore/.venv'), (
         'please manually link original venv path to "chore/.venv" to continue. '
@@ -32,10 +32,13 @@ def main(new_version: str = None) -> None:
         minify_deps=2,
         publish=0,
     )
-    make_dist(new_ver, 'aliyun')
     
-    _make_disguised_packages('chore/site_packages')
-
+    dist_dir = make_dist(new_ver, 'aliyun')
+    if compress:
+        dist_file = fs.zip_dir(dist_dir, dist_dir + '.zip', progress=True)
+        print(':t', 'compressed: {} ({})'.format(
+            fs.relpath(dist_file), fs.filesize(dist_file, str)
+        ))
 
 @cli
 def make_dist(
@@ -43,7 +46,7 @@ def make_dist(
     oss_scheme: str,
     pypi_scheme: str = 'blank',
     _add_python_sdk: bool = True,
-) -> None:
+) -> str:
     """
     generate `/dist/standalone/depsland-<version>`.
 
@@ -99,8 +102,7 @@ def make_dist(
     # os.mkdir(f'{root_o}/python')
     # os.mkdir(f'{root_o}/sidework')
     os.mkdir(f'{root_o}/temp')
-    os.mkdir(f'{root_o}/temp/.self_upgrade')
-    os.mkdir(f'{root_o}/temp/.unittests')
+    os.mkdir(f'{root_o}/temp/temp_project')
     
     # -------------------------------------------------------------------------
     
@@ -193,18 +195,22 @@ def make_dist(
             f'{root_i}/python',
             f'{root_o}/python',
         )
-    
-    print(':t', 'see result at ' + fs.relpath(root_o))
+        
+    _make_disguised_packages('chore/site_packages')
+
+    print(':t', 'created distribution: {}'.format(fs.relpath(root_o)))
+    return root_o
 
 
-def _make_disguised_packages(root_o: str) -> None:
+def _make_disguised_packages(site_packages_dir: str) -> None:
     """
     doc: /chore/disguised_packages/readme.md
     """
     for pkg_name in ('matplotlib', 'numpy', 'pandas'):
-        dir_o = f'{root_o}/{pkg_name}'
+        dir_o = f'{site_packages_dir}/{pkg_name}'
         if fs.exist(dir_o):
             if fs.islink(dir_o):
+                print('{} linked'.format(pkg_name), ':v')
                 continue
             else:
                 raise Exception(dir_o)
