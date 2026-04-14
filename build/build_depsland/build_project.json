@@ -60,6 +60,7 @@
                 "depsland/__main__.py",
                 "depsland/gui/app_manager/app.py",
                 "depsland/gui/setup_wizard/app.py",
+                "depsland/gui/setup_wizard/process_manager.py",
                 "chore/.venv/streamlit/__init__.py",
                 "chore/.venv/streamlit/__main__.py",
                 "chore/.venv/streamlit_extras/__init__.py"

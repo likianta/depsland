@@ -573,8 +573,17 @@ class Temp:
     def __init__(self) -> None:
         self.root = f'{project.root}/temp'
         
+        self.temp_project = f'{self.root}/temp_project'
         self._temp_root = f'{self.root}/{uuid1().hex}'
         self._temp_root_created = False
+
+        self.enc_max = f'{self.temp_project}/enc_max.json'
+        self.enc_min = f'{self.temp_project}/enc_min.json'
+        self.manifest_pkl = f'{self.temp_project}/manifest.pkl'
+        self.shortcut_vbs = f'{self.temp_project}/shortcut.vbs'
+        self.src_max = f'{self.temp_project}/src_max.json'
+        self.src_min = f'{self.temp_project}/src_min.json'
+        self.tree_shaking_model = f'{self.temp_project}/tree_shaking_model.json'
         
         # fs.make_dir(self._temp_root)
         
@@ -587,14 +596,6 @@ class Temp:
                     ':v'
                 )
                 fs.remove_tree(self._temp_root)
-        
-        self.enc_max = f'{self._temp_root}/enc_max.json'
-        self.enc_min = f'{self._temp_root}/enc_min.json'
-        self.manifest_pkl = f'{self._temp_root}/manifest.pkl'
-        self.shortcut_vbs = f'{self._temp_root}/shortcut.vbs'
-        self.src_max = f'{self._temp_root}/src_max.json'
-        self.src_min = f'{self._temp_root}/src_min.json'
-        self.tree_shaking_model = f'{self._temp_root}/tree_shaking_model.json'
     
     def make_dir(self) -> str:
         if not self._temp_root_created:

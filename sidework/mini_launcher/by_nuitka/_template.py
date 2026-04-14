@@ -1,51 +1,45 @@
+"""
+note: this script uses only standard libraries.
+we can compile this into general purpose executable binary by nuitka. see
+`./factory.py : build_general_launcher`.
+"""
+import json
 import os
 import re
 import sys
 import subprocess
-import typing as t
+import typing as tp
 
-# print(
-#     __file__,
-#     os.getpid(),
-#     os.getppid(),
-#     sys.argv,
-#     sys.orig_argv,
-#     sys.stdin,
-#     sys.stdin.isatty(),
-# )
+class T:
+    Config = tp.TypedDict('Config', {
+        'appid': str,
+        'name': str,  # DELETE?
+        'version': str,
+        'show_console': bool,
+    })
 
+def _get_config() -> T.Config:
+    # note: do not use `__file__`, use `sys.argv[0]`.
+    #   because:
+    #       sys.argv = [`some/path/to/exe`]
+    #       __file__ = `AppData/Local/Temp/ONEFIL~1/general_launcher_console.py`
+    with open(sys.argv[0], 'rb') as f:
+        raw = f.read()
+    conf_head_idx = raw.rfind(b'__DEPSLAND_CONFIG__')
+    assert conf_head_idx > 0
+    conf_body_idx = conf_head_idx + len(b'__DEPSLAND_CONFIG__')
+    return json.loads(raw[conf_body_idx:].decode('utf-8'))
 
-def main(
-    appid: str = '<APPID>',
-    version: str = '<VERSION>',
-    show_console: bool = '<SHOW_CONSOLE>',
-) -> None:
+def main() -> None:
+    # print(_find_depsland_root(), _get_config())
     if root := _find_depsland_root():
-        if _check_depsland_version(root):
-            if appid == '<FROM_FILENAME>':
-                # note: sys.argv = [<current_exe_file>]
-                # print(__file__, sys.argv)
-                # 'hello_world-v0.1.0.exe' -> 'hello_world'
-                # 'hello_world-v0.1.0-common.exe' -> 'hello_world'
-                # 'hello_world-v0.1.0-common (2).exe' -> 'hello_world'
-                # 'hello_world-v0.1.0-debug.exe' -> 'hello_world'
-                appid = os.path.basename(sys.argv[0]).split('-')[0]
-            if version == '<FROM_FILENAME>':
-                # 'hello_world-v0.1.0.exe' -> '0.1.0'
-                # 'hello_world-v0.1.0-common.exe' -> '0.1.0'
-                # 'hello_world-v0.1.0-debug.exe' -> '0.1.0'
-                x = os.path.basename(sys.argv[0]).split('-')[1]
-                assert x.startswith('v')
-                if x.endswith('.exe'):
-                    version = x[1:-4]
-                else:
-                    version = x[1:]
-            _run_app(root, appid, version, show_console)
-    else:
-        raise NotImplementedError
+        # if _check_depsland_version(root):
+        conf = _get_config()
+        _run_app(root, conf['appid'], conf['version'], conf['show_console'])
+        return
+    raise NotImplementedError
 
-
-def _find_depsland_root() -> t.Optional[str]:
+def _find_depsland_root() -> tp.Optional[str]:
     # (A)
     if x := os.getenv('DEPSLAND'):
         if os.path.exists('{}/apps/.bin/depsland.exe'.format(x)):
@@ -74,7 +68,6 @@ def _find_depsland_root() -> t.Optional[str]:
             return value
     return None
 
-
 def _check_depsland_version(depsland_root: str) -> bool:
     init_file = '{}/depsland/__init__.py'.format(depsland_root)
     with open(init_file, 'r') as f:
@@ -88,14 +81,13 @@ def _check_depsland_version(depsland_root: str) -> bool:
                 break
         else:
             raise Exception
-    if ver0 > (0, 9, 0):
+    if ver0 > (0, 11, 0):
         return True
-    elif ver0 == (0, 9, 0):
+    elif ver0 == (0, 11, 0):
         # noinspection PyTypeChecker
         if ver1 is None or ver1 >= ('b', 16):
             return True
     return False
-
 
 def _run_app(
     depsland_root: str, appid: str, version: str, show_console: bool
@@ -123,7 +115,6 @@ def _run_app(
     subprocess.run(
         (python, '-m', 'depsland', 'runx', appid, version)
     )
-
 
 if __name__ == '__main__':
     main()

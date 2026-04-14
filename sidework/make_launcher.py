@@ -35,6 +35,10 @@ def bat_2_exe(
 
 @cli
 def add_icon_to_exe(file_exe: str, file_ico: str, file_out: str = None) -> str:
+    """
+    params:
+        file_out: if not set, will overwrite inplace.
+    """
     if file_out is not None:
         fs.copy_file(file_exe, file_out)
     else:
