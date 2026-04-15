@@ -24,6 +24,7 @@
                 "pypi/index/snapdep:0",
                 "python:0",
                 "temp:0",
+                "temp/temp_project:0",
                 "test:0",
                 "poetry.lock",
                 "requirements.lock",
@@ -59,8 +60,8 @@
                 "depsland/__init__.py",
                 "depsland/__main__.py",
                 "depsland/gui/app_manager/app.py",
-                "depsland/gui/setup_wizard/app.py",
                 "depsland/gui/setup_wizard/process_manager.py",
+                "depsland/gui/setup_wizard/setup_wizard.py",
                 "chore/.venv/streamlit/__init__.py",
                 "chore/.venv/streamlit/__main__.py",
                 "chore/.venv/streamlit_extras/__init__.py"
@@ -74,9 +75,7 @@
                 "plotly",
                 "pyside6",
                 "qmlease",
-                "qtpy",
-                "statsmodel",
-                "statsmodels"
+                "qtpy"
             ],
             "export": {
                 "source": "chore/.venv",

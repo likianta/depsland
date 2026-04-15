@@ -104,7 +104,7 @@ def _demo_play() -> None:
         st.write('Unpacking packages... :green[done]')
 
 if __name__ == '__main__':
-    # strun 2183 depsland/gui/setup_wizard/app.py 'Hello World' hello_world
-    #   'Demo play installing hello-world app.' :true
+    # strun 2183 depsland/gui/setup_wizard/setup_wizard.py 'Hello World'
+    #   hello_world 'Demo play installing hello-world app.' :true
     # pox -m pyapp_window -p 2183 -s 870x590 -t `Hello World Example`
     cli.run(main)

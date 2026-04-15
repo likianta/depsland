@@ -31,7 +31,7 @@ def sequential_launch(appid, name, version, dry_run: bool = False):
         sc.run(
             title='Depsland Setup Wizard',
             icon=paths.build.launcher_icon,
-            target=fs.xpath('./app.py'),
+            target=fs.xpath('./setup_wizard.py'),
             extra_args=(
                 name,
                 appid,
