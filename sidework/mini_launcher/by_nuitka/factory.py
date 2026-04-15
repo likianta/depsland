@@ -14,7 +14,7 @@ def build_general_launcher() -> None:
     https://chatgpt.com/share/69ddb859-0b78-8321-8407-fc3b8a7d8976
     """
     fs.copy_file(
-        '_template.py',
+        '_general_launcher_template.py',
         temp_file := 'temp/general_launcher_console.py',
         True,
     )
@@ -36,7 +36,7 @@ def build_general_launcher() -> None:
     )
     
     fs.copy_file(
-        fs.xpath('_template.py'),
+        fs.xpath('_general_launcher_template.py'),
         temp_file := 'temp/general_launcher_noconsole.py',
         True,
     )

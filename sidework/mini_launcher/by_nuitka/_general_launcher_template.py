@@ -5,9 +5,8 @@ we can compile this into general purpose executable binary by nuitka. see
 """
 import json
 import os
-import re
-import sys
 import subprocess
+import sys
 import typing as tp
 
 class T:
@@ -67,27 +66,6 @@ def _find_depsland_root() -> tp.Optional[str]:
         ):
             return value
     return None
-
-def _check_depsland_version(depsland_root: str) -> bool:
-    init_file = '{}/depsland/__init__.py'.format(depsland_root)
-    with open(init_file, 'r') as f:
-        for line in f.readlines():
-            if line.startswith('__version__'):
-                # "__version__ = '0.9.0b5'" -> ver0 = (0, 9, 0); ver1 = ('b', 5)
-                m = re.search(r'\'(\d+)\.(\d+)\.(\d+)([ab]\d+)?\'', line)
-                a, b, c, d = m.groups()
-                ver0 = (int(a), int(b), int(c))
-                ver1 = None if d is None else (d[0], int(d[1:]))
-                break
-        else:
-            raise Exception
-    if ver0 > (0, 11, 0):
-        return True
-    elif ver0 == (0, 11, 0):
-        # noinspection PyTypeChecker
-        if ver1 is None or ver1 >= ('b', 16):
-            return True
-    return False
 
 def _run_app(
     depsland_root: str, appid: str, version: str, show_console: bool

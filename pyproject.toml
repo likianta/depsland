@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.11.1a7"
+version = "0.11.1b0"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -17,7 +17,7 @@ homepage = "https://github.com/likianta/depsland"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-airmise = "^2.0.1"
+# airmise = "^3.0.0"  # TODO
 argsense = "^1.1.1"
 conflore = "^0.2.2"
 lk-logger = "^6.0.7"
@@ -30,19 +30,16 @@ pyapp-window = "^2.2.1"
 pyportable-crypto = "^1.5.1"
 semver = "^3.0.4"
 streamlit = "^1.55.0"
+streamlit-arborist = "^0.3.0"
 streamlit-canary = "^0.2.1"
-# streamlit-extras = { version = "^0.7.8", python = ">=3.12,<3.14" }
 streamlit-extras = "^1.4.1"
-# streamlit-extras = [
-#     { version = "^0.7.8", python = ">=3.12,<3.14" },
-#     { version = "^0.6.0", python = ">=3.14" },
-# ]
 streamlit-tree-select = "^0.0.5"
 tree-shaking = "^0.2.4"
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]
-airmise = { version = "^2.0.2a1", source = "likianta" }
+# airmise = { version = "^2.0.2a1", source = "likianta" }
+airmise = { version = "^3.0.0a6", extras = ["frp"], source = "likianta" }
 argsense = { version = "^1.1.1", source = "likianta" }
 conflore = { version = "^0.2.2", source = "likianta" }
 freesimplegui = "^5.2.0.post1"
