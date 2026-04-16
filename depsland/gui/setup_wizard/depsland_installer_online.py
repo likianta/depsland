@@ -3,6 +3,7 @@ import streamlit as st
 import streamlit_canary as sc
 import typing as tp
 from argsense import cli
+from contextlib import contextmanager
 
 @sc.init_state
 class State:
@@ -14,7 +15,7 @@ class State:
     installation_path = ''
     temp_hold_dialog_opened = False
     temp_new_folder_name = ''
-    __version__ = 15
+    __version__ = 18
 
 @cli
 def main(client_public_host, client_public_port: int):
@@ -39,27 +40,32 @@ def main(client_public_host, client_public_port: int):
 
 @st.fragment
 def _ask_folder():
-    with st.container(horizontal=True, vertical_alignment='bottom'):
-        path = st.text_input(
-            'Select folder to install Depsland application',
-            State.installation_path,
-            help='Input an empty folder or an inexisting folder.'
-        )
-        if path:
-            if _aircall('is_valid_installation_path', path):
-                State.depsland_root = path.replace('\\', '/')
-            else:
-                st.warning(
-                    'Please select an **empty** folder or an **inexisting** '
-                    'folder to install.'
-                )
-        # popup st-dialog and show tree view.
-        if (
-            st.button('Browse', width=120) or
-            State.temp_hold_dialog_opened
-        ):
-            State.temp_hold_dialog_opened = False
-            _tree_view()
+    place1 = st.empty()
+    place2 = st.empty()
+    with place1:
+        with st.container(horizontal=True, vertical_alignment='bottom'):
+            path = st.text_input(
+                'Select folder to install Depsland application',
+                State.installation_path,
+                help='Input an empty folder or an inexisting folder.'
+            )
+            if path:
+                if _aircall('is_valid_installation_path', path):
+                    State.installation_path = path.replace('\\', '/')
+                else:
+                    with place2:
+                        st.warning(
+                            'Please select an **empty** folder or an '
+                            '**inexisting** folder to install.'
+                        )
+            
+            # popup st-dialog and show tree view.
+            if (
+                st.button('Browse', width=120) or
+                State.temp_hold_dialog_opened
+            ):
+                State.temp_hold_dialog_opened = False
+                _tree_view()
 
 def _install_depsland(root: str):
     place1 = st.empty()
@@ -68,9 +74,9 @@ def _install_depsland(root: str):
     prog2 = st.progress(0)
     
     with place1:
-        st.markdown('Downloading Depsland.zip from internet... :gray[wait]')
+        st.markdown(':one: Downloading Depsland.zip from internet... :gray[wait]')
     with place2:
-        st.markdown('Unpacking resources... :gray[wait]')
+        st.markdown(':two: Unpacking resources... :gray[wait]')
         
     _airexec(
         '''
@@ -80,44 +86,44 @@ def _install_depsland(root: str):
         root=root
     )
     
-    # @contextmanager
-    # def notify_downloading_status():
-    #     with place1:
-    #         st.markdown(
-    #             'Downloading Depsland.zip from internet... :gray[wait]'
-    #         )
-    #     yield prog1
-    #     with place1:
-    #         st.markdown(
-    #             'Downloading Depsland.zip from internet... :green[done]'
-    #         )
-    #
-    # @contextmanager
-    # def notify_extracting_status():
-    #     with place2:
-    #         st.markdown('Unpacking resources... :gray[wait]')
-    #     yield prog2
-    #     with place2:
-    #         st.markdown('Unpacking resources... :green[done]')
+    @contextmanager
+    def notify_downloading_status():
+        with place1:
+            st.markdown(
+                ':one: Downloading Depsland.zip from internet...'
+            )
+        yield prog1
+        with place1:
+            st.markdown(
+                ':one: Downloading Depsland.zip from internet... :green[done]'
+            )
+
+    @contextmanager
+    def notify_extracting_status():
+        with place2:
+            st.markdown(':two: Unpacking resources...')
+        yield prog2
+        with place2:
+            st.markdown(':two: Unpacking resources... :green[done]')
     
     # TEST
-    for p, t in _aircall(
-        'downloading',
-        'http://172.20.128.100:2019/depsland-0.12.0a1.zip',
-        root + '/depsland-0.12.0a1.zip',
-    ):
-        prog1.progress(p, t)
-    with place1:
-        st.markdown('Downloading Depsland.zip from internet... :green[done]')
+    with notify_downloading_status() as prog:
+        for p, t in _aircall(
+            'downloading',
+            'http://172.20.128.100:2019/depsland-0.12.0a1.zip',
+            root + '/depsland-0.12.0a1.zip',
+        ):
+            print(p, t, ':iv')
+            prog.progress(p, t)
     
-    for p, t in _aircall(
-        'extracting',
-        root + '/depsland-0.12.0a1.zip',
-        root + '/0.12.0a1',
-    ):
-        prog2.progress(p, t)
-    with place2:
-        st.markdown('Unpacking resources... :green[done]')
+    with notify_extracting_status() as prog:
+        for p, t in _aircall(
+            'extracting',
+            root + '/depsland-0.12.0a1.zip',
+            root + '/0.12.0a1',
+        ):
+            print(p, t, ':iv')
+            prog.progress(p, t)
 
 @st.dialog('Choose Setup Location', width='medium')
 def _tree_view():
@@ -190,9 +196,9 @@ def _tree_view():
             def change_dir(dirpath):
                 if dirpath not in State.folders:
                     State.folders[dirpath] = []
-                    State.dirs_index_0 = sorted(State.folders).index(dirpath)
-                    State.temp_hold_dialog_opened = True
-                    st.rerun()
+                State.dirs_index_0 = sorted(State.folders).index(dirpath)
+                State.temp_hold_dialog_opened = True
+                st.rerun()
             
             if do_back:
                 change_dir(currdir.rsplit('/', 1)[0])
@@ -228,14 +234,17 @@ def _init_remote_env():
         from time import sleep
 
         def downloading(url, path):
-            progress = (0.0, '0%')
+            progress = (0.0, '')
             progress_done = False
 
             def _update_progress(prog):
                 nonlocal progress, progress_done
-                progress = (prog.percent, '{} ({:.2%})'.format(
-                    _pretty_size(prog.total), prog.percent
-                ))
+                progress = (
+                    prog.percent,
+                    '{} ({:.2%})'.format(
+                        _pretty_size(prog.total), prog.percent
+                    )
+                )
                 progress_done = prog.percent >= 1
             
             def _pretty_size(value):
@@ -253,6 +262,7 @@ def _init_remote_env():
             while not progress_done:
                 yield progress
                 sleep(0.1)
+            yield (1.0, progress[1])
         
         def extracting(file_zip, folder):
             progress = (0.0, '')
@@ -260,11 +270,14 @@ def _init_remote_env():
 
             def _update_progress(prog):
                 nonlocal progress, progress_done
-                progress = (prog.percent, '[{}/{}] {} ({:.2%})'.format(
-                    prog.index,
-                    prog.total,
-                    prog.text.rsplit('/', 1)[-1]),
-                    prog.percent
+                progress = (
+                    prog.percent,
+                    '[{}/{}] {}'.format(
+                        prog.index,
+                        prog.total,
+                        prog.text.rsplit('/', 1)[-1],
+                        # prog.percent
+                    )
                 )
                 progress_done = prog.percent >= 1
 
@@ -279,6 +292,7 @@ def _init_remote_env():
             while not progress_done:
                 yield progress
                 sleep(0.1)
+            yield (1.0, progress[1])
         
         def get_default_installation_path():
             return os.path.join(os.environ['LOCALAPPDATA'], 'Depsland')

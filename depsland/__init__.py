@@ -32,4 +32,4 @@ from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.11.1a3'
+__version__ = '0.12.0a1'
