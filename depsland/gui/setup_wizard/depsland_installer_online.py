@@ -18,7 +18,16 @@ class State:
     __version__ = 18
 
 @cli
-def main(client_public_host, client_public_port: int):
+def main(
+    client_public_host: str,
+    client_public_port: int,
+    target_appid: str = '',
+    # target_name: str = '',
+    target_version: str = '',
+) -> None:
+    if target_appid:
+        assert target_name and target_version
+    
     if not State.air_client:
         State.air_client = air.Client(client_public_host, client_public_port)
         State.air_client.open()
@@ -29,8 +38,13 @@ def main(client_public_host, client_public_port: int):
     st.title('Online Installing :red[Depsland]')
     
     _ask_folder()
+    
     if st.button('Install', type='primary', width=160):
-        _install_depsland(State.installation_path)
+        depsland_direct_path = _install_depsland(State.installation_path)
+        if target_appid:
+            _install_target_application(
+                depsland_direct_path, target_appid, target_version
+            )
     
     with sc.row('center'):
         if st.button('Refresh remote environment'):
@@ -69,14 +83,16 @@ def _ask_folder():
 
 def _install_depsland(root: str):
     place1 = st.empty()
+    label1 = ':one: Downloading Depsland.zip from internet...'
     prog1 = st.progress(0)
     place2 = st.empty()
+    label2 = ':two: Unpacking resources...'
     prog2 = st.progress(0)
     
     with place1:
-        st.markdown(':one: Downloading Depsland.zip from internet... :gray[wait]')
+        st.markdown(label1 + ' :gray[wait]')
     with place2:
-        st.markdown(':two: Unpacking resources... :gray[wait]')
+        st.markdown(label2 + ' :gray[wait]')
         
     _airexec(
         '''
@@ -89,23 +105,19 @@ def _install_depsland(root: str):
     @contextmanager
     def notify_downloading_status():
         with place1:
-            st.markdown(
-                ':one: Downloading Depsland.zip from internet...'
-            )
+            st.markdown(label1)
         yield prog1
         with place1:
-            st.markdown(
-                ':one: Downloading Depsland.zip from internet... :green[done]'
-            )
+            st.markdown(label1 + ' :green[done]')
 
     @contextmanager
     def notify_extracting_status():
         with place2:
-            st.markdown(':two: Unpacking resources...')
+            st.markdown(label2)
         yield prog2
         with place2:
-            st.markdown(':two: Unpacking resources... :green[done]')
-    
+            st.markdown(label2 + ' :green[done]')
+
     # TEST
     with notify_downloading_status() as prog:
         for p, t in _aircall(
@@ -124,6 +136,111 @@ def _install_depsland(root: str):
         ):
             print(p, t, ':iv')
             prog.progress(p, t)
+    
+    return root + '/0.12.0a1'
+
+def _install_target_application(depsland_root, appid, version):
+    generator = _airexec(
+        '''
+        def run_depsland_install(depsland_root, appid, version):
+            if depsland_root not in sys.path:
+                sys.path.append(depsland_root)
+                sys.path.append(depsland_root + '/chore/site_packages')
+            
+            from depsland.api.user_api import install_by_appid
+            from depsland.api.user_api import install_progress
+            
+            progress = ('', 0.0, '')
+            progress_done = False
+            
+            @install_progress.bind
+            def _update_progress(stage, percent, text):
+                nonlocal progress, progress_done
+                progress = (stage, percent, text)
+                progress_done = stage == 'ending' and percent >= 1
+            
+            run_new_thread(install_by_appid, appid, version)
+            
+            while not progress_done:
+                yield progress
+                sleep(0.1)
+            yield (progress[0], 1.0, progress[1])
+        
+        return run_depsland_install(depsland_root, appid, version)
+        ''',
+        depsland_root=depsland_root,
+        appid=appid,
+        version=version,
+    )
+    
+    # --------------------------------------------------------------------------
+    
+    place1 = st.empty()
+    label1 = ':three: Downloading target application assets...'
+    prog1 = st.progress(0)
+    place2 = st.empty()
+    label2 = ':four: Resolving target application dependencies...'
+    prog2 = st.progress(0)
+    place3 = st.empty()
+    label3 = ':five: Finishing target application...'
+    prog3 = st.progress(0)
+    
+    with place1:
+        st.markdown(label1 + ' :gray[wait]')
+    with place2:
+        st.markdown(label2 + ' :gray[wait]')
+    with place3:
+        st.markdown(label3 + ' :gray[wait]')
+    
+    # @contextmanager
+    # def notify_stage1_status():
+    #     with place1:
+    #         st.markdown(label1)
+    #     yield prog1
+    #     with place1:
+    #         st.markdown(label1 + ' :green[done]')
+    #
+    # @contextmanager
+    # def notify_stage2_status():
+    #     with place2:
+    #         st.markdown(label2)
+    #     yield prog2
+    #     with place2:
+    #         st.markdown(label2 + ' :green[done]')
+    #
+    # @contextmanager
+    # def notify_stage3_status():
+    #     with place3:
+    #         st.markdown(label3)
+    #     yield prog3
+    #     with place3:
+    #         st.markdown(label3 + ' :green[done]')
+    
+    curr_prog = prog1
+    last_stage = ''
+    for stage, percent, text in generator:
+        if last_stage != stage:
+            if stage == 'updating_assets':
+                with place1:
+                    st.markdown(label1)
+                curr_prog = prog1
+            elif stage == 'resolving_dependencies':
+                with place1:
+                    st.markdown(label1 + ' :green[done]')
+                with place2:
+                    st.markdown(label2)
+                curr_prog = prog2
+            else:
+                with place2:
+                    st.markdown(label2 + ' :green[done]')
+                with place3:
+                    st.markdown(label3)
+                curr_prog = prog3
+            last_stage = stage
+        curr_prog.progress(percent, text)
+    else:
+        with place3:
+            st.markdown(label3 + ' :green[done]')
 
 @st.dialog('Choose Setup Location', width='medium')
 def _tree_view():
