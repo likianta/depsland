@@ -56,12 +56,20 @@ def main(
 def _ask_folder():
     place1 = st.empty()
     place2 = st.empty()
+    
+    def _sync_manual_path_setting():
+        State.installation_path = st.session_state[
+            'install_path_input:{}'.format(State.installation_path)
+        ]
+    
     with place1:
         with st.container(horizontal=True, vertical_alignment='bottom'):
             path = st.text_input(
                 'Select folder to install Depsland application',
                 State.installation_path,
-                help='Input an empty folder or an inexisting folder.'
+                key='install_path_input:{}'.format(State.installation_path),
+                on_change=_sync_manual_path_setting,
+                help='Input an empty folder or an inexisting folder.',
             )
             if path:
                 if _aircall('is_valid_installation_path', path):
