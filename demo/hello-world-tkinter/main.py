@@ -1,7 +1,5 @@
 import tkinter as tk
-
 from argsense import cli
-
 
 @cli
 def hello_world() -> None:
@@ -13,7 +11,6 @@ def hello_world() -> None:
     label = tk.Label(root, text="Hello, World!")
     label.pack()
     root.mainloop()
-
 
 @cli
 def listbox() -> None:
@@ -35,7 +32,6 @@ def listbox() -> None:
     box.insert(4, 'Any other')
     box.pack()
     top.mainloop()
-
 
 if __name__ == '__main__':
     # pox demo/hello-world-tkinter/main.py hello-world

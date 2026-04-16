@@ -25,8 +25,8 @@ def main(
     # target_name: str = '',
     target_version: str = '',
 ) -> None:
-    if target_appid:
-        assert target_name and target_version
+    # if target_appid:
+    #     assert target_name and target_version
     
     if not State.air_client:
         State.air_client = air.Client(client_public_host, client_public_port)
@@ -93,7 +93,7 @@ def _install_depsland(root: str):
         st.markdown(label1 + ' :gray[wait]')
     with place2:
         st.markdown(label2 + ' :gray[wait]')
-        
+    
     _airexec(
         '''
         if not fs.exist(root):
@@ -109,6 +109,7 @@ def _install_depsland(root: str):
         yield prog1
         with place1:
             st.markdown(label1 + ' :green[done]')
+        prog1.progress(1.0, 'Depsland downloaded')
 
     @contextmanager
     def notify_extracting_status():
@@ -117,13 +118,14 @@ def _install_depsland(root: str):
         yield prog2
         with place2:
             st.markdown(label2 + ' :green[done]')
+        prog2.progress(1.0, 'Depsland extracted')
 
     # TEST
     with notify_downloading_status() as prog:
         for p, t in _aircall(
             'downloading',
-            'http://172.20.128.100:2019/depsland-0.12.0a1.zip',
-            root + '/depsland-0.12.0a1.zip',
+            'http://172.20.128.100:2019/depsland-0.12.0a2.zip',
+            root + '/depsland-0.12.0a2.zip',
         ):
             print(p, t, ':iv')
             prog.progress(p, t)
@@ -131,21 +133,43 @@ def _install_depsland(root: str):
     with notify_extracting_status() as prog:
         for p, t in _aircall(
             'extracting',
-            root + '/depsland-0.12.0a1.zip',
-            root + '/0.12.0a1',
+            root + '/depsland-0.12.0a2.zip',
+            root + '/0.12.0a2',
         ):
             print(p, t, ':iv')
             prog.progress(p, t)
     
-    return root + '/0.12.0a1'
+    return root + '/0.12.0a2'
 
 def _install_target_application(depsland_root, appid, version):
+    place1 = st.empty()
+    label1 = ':three: Downloading target application assets...'
+    prog1 = st.progress(0)
+    place2 = st.empty()
+    label2 = ':four: Resolving target application dependencies...'
+    prog2 = st.progress(0)
+    place3 = st.empty()
+    label3 = ':five: Finishing target application...'
+    prog3 = st.progress(0)
+    
+    with place1:
+        st.markdown(label1 + ' :gray[wait]')
+    with place2:
+        st.markdown(label2 + ' :gray[wait]')
+    with place3:
+        st.markdown(label3 + ' :gray[wait]')
+    
     generator = _airexec(
         '''
         def run_depsland_install(depsland_root, appid, version):
             if depsland_root not in sys.path:
-                sys.path.append(depsland_root)
-                sys.path.append(depsland_root + '/chore/site_packages')
+                sys.path.insert(0, depsland_root)
+                sys.path.insert(1, depsland_root + '/chore/site_packages')
+            
+            if 'depsland' in sys.modules:
+                sys.modules.pop('depsland')
+            import depsland
+            print(depsland.__path__)
             
             from depsland.api.user_api import install_by_appid
             from depsland.api.user_api import install_progress
@@ -164,7 +188,7 @@ def _install_target_application(depsland_root, appid, version):
             while not progress_done:
                 yield progress
                 sleep(0.1)
-            yield (progress[0], 1.0, progress[1])
+            yield (progress[0], 1.0, progress[2])
         
         return run_depsland_install(depsland_root, appid, version)
         ''',
@@ -172,25 +196,6 @@ def _install_target_application(depsland_root, appid, version):
         appid=appid,
         version=version,
     )
-    
-    # --------------------------------------------------------------------------
-    
-    place1 = st.empty()
-    label1 = ':three: Downloading target application assets...'
-    prog1 = st.progress(0)
-    place2 = st.empty()
-    label2 = ':four: Resolving target application dependencies...'
-    prog2 = st.progress(0)
-    place3 = st.empty()
-    label3 = ':five: Finishing target application...'
-    prog3 = st.progress(0)
-    
-    with place1:
-        st.markdown(label1 + ' :gray[wait]')
-    with place2:
-        st.markdown(label2 + ' :gray[wait]')
-    with place3:
-        st.markdown(label3 + ' :gray[wait]')
     
     # @contextmanager
     # def notify_stage1_status():
@@ -227,12 +232,14 @@ def _install_target_application(depsland_root, appid, version):
             elif stage == 'resolving_dependencies':
                 with place1:
                     st.markdown(label1 + ' :green[done]')
+                prog1.progress(1.0, 'All assets downloaded')
                 with place2:
                     st.markdown(label2)
                 curr_prog = prog2
             else:
                 with place2:
                     st.markdown(label2 + ' :green[done]')
+                prog2.progress(1.0, 'All dependencies resolved')
                 with place3:
                     st.markdown(label3)
                 curr_prog = prog3
@@ -241,6 +248,7 @@ def _install_target_application(depsland_root, appid, version):
     else:
         with place3:
             st.markdown(label3 + ' :green[done]')
+        prog3.progress(1.0, 'Finished miscellaneous stuff')
 
 @st.dialog('Choose Setup Location', width='medium')
 def _tree_view():
@@ -457,6 +465,10 @@ def _refresh_tree_model():
 
 if __name__ == '__main__':
     # 1. see $[./depsland_installer_client_support.py : __main__ : comments]
-    # 2. strun 2185 depsland/gui/setup_wizard/depsland_installer_online.py
+    # 2.a.
+    #   strun 2185 depsland/gui/setup_wizard/depsland_installer_online.py
     #   localhost <client_port>
+    # 2.b.
+    #   strun 2185 depsland/gui/setup_wizard/depsland_installer_online.py
+    #   localhost <client_port> hello_world_tkinter <version>
     cli.run(main)
