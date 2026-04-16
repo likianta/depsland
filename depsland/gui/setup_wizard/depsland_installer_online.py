@@ -29,13 +29,13 @@ def main(client_public_host, client_public_port: int):
     
     _ask_folder()
     if st.button('Install', type='primary', width=160):
-        _install_depsland()
+        _install_depsland(State.installation_path)
     
     with sc.row('center'):
-        if st.button('Test'):
-            st.markdown(':green[{}]'.format(_aircall('test', 'Alice')))
         if st.button('Refresh remote environment'):
             _init_remote_env()
+        if st.button('Test'):
+            st.markdown(':green[{}]'.format(_aircall('test', 'Alice')))
 
 @st.fragment
 def _ask_folder():
@@ -61,35 +61,59 @@ def _ask_folder():
             State.temp_hold_dialog_opened = False
             _tree_view()
 
-def _install_depsland():
+def _install_depsland(root: str):
     place1 = st.empty()
     prog1 = st.progress(0)
     place2 = st.empty()
     prog2 = st.progress(0)
     
     with place1:
-        st.markdown(
-            'Downloading Depsland package from internet... :gray[wait]'
-        )
+        st.markdown('Downloading Depsland.zip from internet... :gray[wait]')
     with place2:
         st.markdown('Unpacking resources... :gray[wait]')
+        
+    _airexec(
+        '''
+        if not fs.exist(root):
+            fs.make_dirs(root)
+        ''',
+        root=root
+    )
+    
+    # @contextmanager
+    # def notify_downloading_status():
+    #     with place1:
+    #         st.markdown(
+    #             'Downloading Depsland.zip from internet... :gray[wait]'
+    #         )
+    #     yield prog1
+    #     with place1:
+    #         st.markdown(
+    #             'Downloading Depsland.zip from internet... :green[done]'
+    #         )
+    #
+    # @contextmanager
+    # def notify_extracting_status():
+    #     with place2:
+    #         st.markdown('Unpacking resources... :gray[wait]')
+    #     yield prog2
+    #     with place2:
+    #         st.markdown('Unpacking resources... :green[done]')
     
     # TEST
     for p, t in _aircall(
         'downloading',
         'http://172.20.128.100:2019/depsland-0.12.0a1.zip',
-        State.depsland_root + '/depsland-0.12.0a1.zip',
+        root + '/depsland-0.12.0a1.zip',
     ):
         prog1.progress(p, t)
     with place1:
-        st.markdown(
-            'Downloading Depsland package from internet... :green[done]'
-        )
-        
+        st.markdown('Downloading Depsland.zip from internet... :green[done]')
+    
     for p, t in _aircall(
         'extracting',
-        State.depsland_root + '/depsland-0.12.0a1.zip',
-        State.depsland_root + '/0.12.0a1',
+        root + '/depsland-0.12.0a1.zip',
+        root + '/0.12.0a1',
     ):
         prog2.progress(p, t)
     with place2:
@@ -112,7 +136,8 @@ def _tree_view():
     with place2:
         with st.container(horizontal=True):
             do_confirm = st.button('Confirm', type='primary')
-            do_check_in = st.button('Check in')
+            do_back = st.button('Back')
+            do_enter = st.button('Enter')
             do_refresh = st.button('Refresh tree')
             if st.button('New folder'):
                 new_folder_name = st.text_input(
@@ -125,7 +150,7 @@ def _tree_view():
                 new_folder_name = State.temp_new_folder_name
                 State.temp_new_folder_name = ''
     
-    with (place1):
+    with place1:
         with st.container():
             currdir = st.selectbox(
                 'Current location',
@@ -161,16 +186,22 @@ def _tree_view():
             with st.container(height=300):
                 target_dirname = st.radio('Select folder', subdirs)
                 result = '{}/{}'.format(currdir, target_dirname)
-                
-            if do_check_in:
-                if result not in State.folders:
-                    State.folders[result] = []
-                    State.dirs_index_0 = sorted(State.folders).index(result)
+            
+            def change_dir(dirpath):
+                if dirpath not in State.folders:
+                    State.folders[dirpath] = []
+                    State.dirs_index_0 = sorted(State.folders).index(dirpath)
                     State.temp_hold_dialog_opened = True
                     st.rerun()
-            a, b = result.rsplit('/', 1)
-            st.markdown('You selected: **{}/:blue[{}]**'.format(a, b))
-        
+            
+            if do_back:
+                change_dir(currdir.rsplit('/', 1)[0])
+            elif do_enter:
+                change_dir(result)
+            else:
+                a, b = result.rsplit('/', 1)
+                st.markdown('You selected: **{}/:blue[{}]**'.format(a, b))
+    
     if do_confirm:
         State.installation_path = (
             result.endswith('/Depsland') and
