@@ -187,13 +187,13 @@ reference = "aliyun"
 
 [[package]]
 name = "airmise"
-version = "3.0.0a6"
+version = "3.0.0a7"
 description = "The native experience of calling remote functions, like local ones."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "airmise-3.0.0a6-py3-none-any.whl", hash = "sha256:4e2556b9b6934d656d5d7d358a0d5ee44bc4a1a80b8b65f25f0abd21f9f2b6c5"},
+    {file = "airmise-3.0.0a7-py3-none-any.whl", hash = "sha256:0b8be6c53d227fdc418b02e878e88141a0b4e94d22b543015454a9efbadcbc9b"},
 ]
 
 [package.dependencies]
@@ -5421,13 +5421,13 @@ reference = "aliyun"
 
 [[package]]
 name = "streamlit-canary"
-version = "0.2.2b0"
+version = "0.2.2b1"
 description = "LK-flavored Streamlit components."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "streamlit_canary-0.2.2b0-py3-none-any.whl", hash = "sha256:2999d234ce8aa874e221a53f170a9f6962145c7e3d03ebbf5adb2f518297675a"},
+    {file = "streamlit_canary-0.2.2b1-py3-none-any.whl", hash = "sha256:2e1fd5b38b5a515cb821acd6785e788d7b2ab3f534c77493a2f37f36c6d77cc1"},
 ]
 
 [package.dependencies]
@@ -6662,4 +6662,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "71610c8f6561bec9d2120a5eac5fd0ed7f6e9aa0be680c6ba3085a9a74881282"
+content-hash = "308d2cf659b0ef84ffd84926174929a02fd91a8c2ce4ac06bed620bcb5a8d59b"
