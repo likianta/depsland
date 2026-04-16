@@ -5400,26 +5400,6 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun"
 
 [[package]]
-name = "streamlit-arborist"
-version = "0.3.0"
-description = "Streamlit component for creating tree views"
-optional = false
-python-versions = ">=3.9"
-groups = ["main"]
-files = [
-    {file = "streamlit_arborist-0.3.0-py3-none-any.whl", hash = "sha256:883fce9fa3a4cac144787d92380a989410c8598aa911b9c5d5536aa095825174"},
-    {file = "streamlit_arborist-0.3.0.tar.gz", hash = "sha256:6f5feb707a1836d459c36c9096b3e4e02eca572d6904f95ee5788fe188e4502f"},
-]
-
-[package.dependencies]
-streamlit = ">=1.36.0"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "aliyun"
-
-[[package]]
 name = "streamlit-canary"
 version = "0.2.2b1"
 description = "LK-flavored Streamlit components."
@@ -5457,26 +5437,6 @@ files = [
 [package.dependencies]
 plotly = ">=5.23.0"
 streamlit = ">=1.54.0"
-
-[package.source]
-type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "aliyun"
-
-[[package]]
-name = "streamlit-tree-select"
-version = "0.0.5"
-description = "A simple and elegant checkbox tree for Streamlit."
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "streamlit-tree-select-0.0.5.tar.gz", hash = "sha256:985f5d4c357c403723fd69d4c4fca38193e0f9105974ec36259c43d9e6b78044"},
-    {file = "streamlit_tree_select-0.0.5-py3-none-any.whl", hash = "sha256:9bfee4d9394fcb0b3e98801cca32f179c85f9f7fdf7005904bf88811f73db05c"},
-]
-
-[package.dependencies]
-streamlit = ">=0.63"
 
 [package.source]
 type = "legacy"
@@ -6662,4 +6622,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "308d2cf659b0ef84ffd84926174929a02fd91a8c2ce4ac06bed620bcb5a8d59b"
+content-hash = "8c5632253c2c1774c40ffdde7dc194fe7d62a3edcbf2f2499579159648208db4"

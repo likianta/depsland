@@ -3,14 +3,18 @@ import streamlit as st
 import streamlit_canary as sc
 import typing as tp
 from argsense import cli
-from streamlit_arborist import tree_view
 
 @sc.init_state
 class State:
     air_client: tp.Optional[air.Client] = None
     depsland_root = ''
-    tree_model = []
-    __version__ = 3
+    dirs_index_0 = 0
+    # dirs_index_1 = 0
+    folders: tp.Dict[str, tp.List[str]] = {}
+    installation_path = ''
+    temp_hold_dialog_opened = False
+    temp_new_folder_name = ''
+    __version__ = 15
 
 @cli
 def main(client_public_host, client_public_port: int):
@@ -18,6 +22,7 @@ def main(client_public_host, client_public_port: int):
         State.air_client = air.Client(client_public_host, client_public_port)
         State.air_client.open()
         _init_remote_env()
+        State.installation_path = _aircall('get_default_installation_path')
     
     st.set_page_config('Online Installing Depsland')
     st.title('Online Installing :red[Depsland]')
@@ -35,23 +40,25 @@ def main(client_public_host, client_public_port: int):
 @st.fragment
 def _ask_folder():
     with st.container(horizontal=True, vertical_alignment='bottom'):
-        default_path = _aircall('get_default_installation_path')
         path = st.text_input(
             'Select folder to install Depsland application',
-            default_path,
-            placeholder=default_path,
+            State.installation_path,
             help='Input an empty folder or an inexisting folder.'
-        ) or default_path
-        if _aircall('is_valid_installation_path', path):
-            State.depsland_root = path.replace('\\', '/')
-        else:
-            st.warning(
-                'Please select an **empty** folder or an **inexisting** folder '
-                'to install.'
-            )
-        
+        )
+        if path:
+            if _aircall('is_valid_installation_path', path):
+                State.depsland_root = path.replace('\\', '/')
+            else:
+                st.warning(
+                    'Please select an **empty** folder or an **inexisting** '
+                    'folder to install.'
+                )
         # popup st-dialog and show tree view.
-        if st.button('Browse', width=120):
+        if (
+            st.button('Browse', width=120) or
+            State.temp_hold_dialog_opened
+        ):
+            State.temp_hold_dialog_opened = False
             _tree_view()
 
 def _install_depsland():
@@ -88,83 +95,97 @@ def _install_depsland():
     with place2:
         st.markdown('Unpacking resources... :green[done]')
 
-@st.dialog('Setup location', width='medium')
+@st.dialog('Choose Setup Location', width='medium')
 def _tree_view():
     """
-    fetch tree model from client side, render it with
-    $[streamlit-arborist @https://github.com/gabriel-msilva/streamlit-arborist].
-
-    ref: https://github.com/gabriel-msilva/streamlit-arborist/blob/main/app/example.py
+    ref: $[lib:streamlib_canary/opener.py:file_dialog_st]
     """
-    if not State.tree_model:
+    if not State.folders:
         _refresh_tree_model()
-
-    if st.button('Refresh tree model'):
-        _refresh_tree_model()
-        
-    result = tree_view(
-        State.tree_model,
-        open_by_default=True,
-    )
-    print(result)
-
-def _refresh_tree_model():
-    with st.spinner('Initializing tree model...'):
-        possible_parent_folders = State.air_client.exec(
-            '''
-            return (
-                os.environ['LOCALAPPDATA'],
-                os.path.abspath(os.path.dirname(sys.argv[0])),
+    
+    place1 = st.empty()
+    place2 = st.empty()
+    
+    def _set_new_folder_name():
+        State.temp_new_folder_name = st.session_state['new_folder_input']
+    
+    with place2:
+        with st.container(horizontal=True):
+            do_confirm = st.button('Confirm', type='primary')
+            do_check_in = st.button('Check in')
+            do_refresh = st.button('Refresh tree')
+            if st.button('New folder'):
+                new_folder_name = st.text_input(
+                    'Input folder name',
+                    label_visibility='collapsed',
+                    key='new_folder_input',
+                    on_change=_set_new_folder_name,
+                )
+            else:
+                new_folder_name = State.temp_new_folder_name
+                State.temp_new_folder_name = ''
+    
+    with (place1):
+        with st.container():
+            currdir = st.selectbox(
+                'Current location',
+                sorted(State.folders.keys()),
+                index=State.dirs_index_0,
             )
-            '''
+            
+            subdirs = State.folders[currdir]
+            if do_refresh:
+                subdirs.clear()
+            if not subdirs:
+                subdirs.extend(_airexec(
+                    'return fs.find_dir_names(folder)', folder=currdir
+                ))
+                
+            if new_folder_name:
+                if new_folder_name in subdirs:
+                    st.toast(
+                        ':red[Failed to create new folder: duplicate name!]',
+                        duration='long'
+                    )
+                else:
+                    _airexec(
+                        'fs.make_dir(path)',
+                        path='{}/{}'.format(currdir, new_folder_name)
+                    )
+                    st.toast(':green[Folder created.]')
+                    subdirs.append(new_folder_name)
+                    subdirs.sort()
+                    State.temp_hold_dialog_opened = True
+                    st.rerun()
+                    
+            with st.container(height=300):
+                target_dirname = st.radio('Select folder', subdirs)
+                result = '{}/{}'.format(currdir, target_dirname)
+                
+            if do_check_in:
+                if result not in State.folders:
+                    State.folders[result] = []
+                    State.dirs_index_0 = sorted(State.folders).index(result)
+                    State.temp_hold_dialog_opened = True
+                    st.rerun()
+            a, b = result.rsplit('/', 1)
+            st.markdown('You selected: **{}/:blue[{}]**'.format(a, b))
+        
+    if do_confirm:
+        State.installation_path = (
+            result.endswith('/Depsland') and
+            result or
+            result + '/Depsland'
         )
-        State.tree_model = State.air_client.exec(
-            '''
-            def get_tree_model(parent_folders):
-                id = 0
-    
-                def recurse(folder, current_depth):
-                    nonlocal id
-                    if current_depth > 3:
-                        return []
-                    out = []
-                    for d in fs.find_dirs(folder):
-                        id += 1
-                        out.append({
-                            'id': str(id),
-                            'name': d.name,
-                            'children': recurse(d.path, current_depth + 1)
-                        })
-                    return out
-    
-                out = []
-                for root in parent_folders:
-                    id += 1
-                    if root == os.environ['LOCALAPPDATA']:
-                        # do not dive into this folder because subfolders
-                        # require promoting privileges.
-                        out.append({
-                            'id': str(id),
-                            'name': root,
-                            'children': []
-                        })
-                    else:
-                        out.append({
-                            'id': str(id),
-                            'name': root,
-                            'children': recurse(root, 0)
-                        })
-                return out
-    
-            return get_tree_model(parent_folders)
-            ''',
-            parent_folders=possible_parent_folders,
-        )
+        st.rerun()
 
 # ------------------------------------------------------------------------------
 
 def _aircall(func_name: str, *args, **kwargs) -> tp.Any:
     return State.air_client.call(func_name, *args, **kwargs)
+
+def _airexec(code, **kwargs):
+    return State.air_client.exec(code, **kwargs)
 
 def _init_remote_env():
     State.air_client.exec(
@@ -237,10 +258,40 @@ def _init_remote_env():
                     return True
                 return False
             return True
-
+        
         return None
         '''
     )
+
+def _refresh_tree_model():
+    parent_folders = _airexec(
+        '''
+        folders = [fs.parent(fs.normpath(os.environ['LOCALAPPDATA']))]
+
+        for root in (
+            fs.parent(fs.parent(fs.abspath(sys.argv[0]))),
+        ):
+            parts = root.split('/')
+            temp_list = []
+            temp_str = parts[0]
+            for p in parts[1:]:
+                temp_str += '/' + p
+                temp_list.append(temp_str)
+            folders.extend(temp_list)
+        
+        for d in os.listdrives():
+            d = d.replace('\\\\', '/')
+            folders.append(d)
+        
+        folders.sort()
+        return folders
+        '''
+    )
+    State.folders.clear()
+    for i, f in enumerate(parent_folders):
+        State.folders[f] = []
+        if f.startswith('C:/') and f.endswith('/AppData'):
+            State.dirs_index_0 = i
 
 if __name__ == '__main__':
     # 1. see $[./depsland_installer_client_support.py : __main__ : comments]

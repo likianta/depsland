@@ -30,10 +30,10 @@ pyapp-window = "^2.2.1"
 pyportable-crypto = "^1.5.1"
 semver = "^3.0.4"
 streamlit = "^1.55.0"
-streamlit-arborist = "^0.3.0"
+# streamlit-arborist = "^0.3.0"
 streamlit-canary = "^0.2.1"
 streamlit-extras = "^1.4.1"
-streamlit-tree-select = "^0.0.5"
+# streamlit-tree-select = "^0.0.5"
 tree-shaking = "^0.2.4"
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
@@ -56,7 +56,7 @@ pyportable-crypto = { version = "^1.5.1", source = "likianta" }
 # pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
 qmlease = { version = "^4.0.0a5", source = "likianta", extras = ["ui"] }
 reflex = "^0.8.28.post1"
-streamlit-canary = { version = "^0.2.2b0", source = "likianta" }
+streamlit-canary = { version = "^0.2.2b1", source = "likianta" }
 tree-shaking = { version = "^0.2.5a3", source = "likianta" }
 
 numpy = "^2.4.4"  # <- streamlit, python 3.14
