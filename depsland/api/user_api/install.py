@@ -1,9 +1,7 @@
 import os
 import typing as t
-
 from lk_utils import Signal
 from lk_utils import fs
-
 from ... import paths
 from ...manifest import T as T0
 from ...manifest import diff_manifest
@@ -22,26 +20,29 @@ from ...pypi.pypi import LocalPyPI
 from ...utils import ziptool
 from ...verspec import compare_version
 
-
 class T(T0):
     LauncherInfo = T0.Launcher  # alias
     Oss = T1.Oss
-    Path = str
     PackageResolver = t.Union[LocalPyPI, T1.Oss]
-    ProgressStage = t.Literal['assets', 'deps', 'venv', 'cleanup']
+    Path = str
+    ProgressStage = t.Literal[
+        'updating_assets',
+        'resolving_dependencies',
+        'ending',
+    ]
+    Progress = t.Union[
+        t.Callable[
+            [
+                ProgressStage,  # stage
+                float,  # percentage (0.0 ~ 1.0)
+                str,  # description
+            ],
+            None
+        ],
+        Signal
+    ]
 
-
-simple_progress = Signal(float, str)
-detailed_progress = Signal(T.ProgressStage, int, int, float, float, str)
-#   Signal[
-#       stage,
-#       total_count,  # 1-based.
-#       current_index,
-#       current_progress,  # i.e. (current_index / total_count) * 100%
-#       overall_progress,  # i.e. simple_progress:first_arg
-#       description
-#   ]
-
+install_progress = t.cast(T.Progress, Signal(T.ProgressStage, float, str))
 
 def install_by_appid(
     appid: str, upgrade: bool = True, reinstall: bool = False
@@ -50,7 +51,6 @@ def install_by_appid(
     if m0 is None:
         m0 = init_manifest(appid, m1['name'])
     return install(m1, m0, upgrade, reinstall)
-
 
 def install_local(
     manifest_file: T.Path, upgrade: bool = True, reinstall: bool = False
@@ -75,10 +75,9 @@ def install_local(
     
     return install(m1, m0, upgrade, reinstall, custom_oss_root)
 
-
 def install(
     manifest_new: T.Manifest,
-    manifest_old: T.Manifest = None,
+    manifest_old: T.Manifest,
     upgrade: bool = True,
     reinstall: bool = False,
     custom_oss_root: T.Path = None,
@@ -121,7 +120,6 @@ def install(
             )
     return manifest_new['start_directory']
 
-
 def _install(
     manifest_new: T.Manifest,
     manifest_old: T.Manifest,
@@ -152,21 +150,17 @@ def _install(
     
     print(':rt', '[green]installation done[/]')
 
-
 # -----------------------------------------------------------------------------
 # callees for `install_by_appid`
-
 
 def _check_update(manifest_new: T.Manifest, manifest_old: T.Manifest) -> bool:
     return compare_version(
         manifest_new['version'], '>', manifest_old['version']
     )
 
-
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
     """ check if version upgradale. """
     return compare_version(new['version'], '>', old['version'])
-
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     if last_ver := get_last_installed_version(appid):
@@ -174,7 +168,6 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
         assert fs.exist(dir_), dir_
         return dir_
     return None
-
 
 def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
     def download_new() -> T.Manifest:
@@ -208,10 +201,8 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
     new, old = download_new(), find_old()
     return new, old
 
-
 # -----------------------------------------------------------------------------
 # callees for main process.
-
 
 def _install_files(
     manifest_new: T.Manifest,
@@ -247,17 +238,12 @@ def _install_files(
     
     for action, relpath, (info0, info1) in assets_diff:
         curr_cnt += 1
-        simple_progress.emit(
-            0 + 0.4 * (curr_cnt / assets_diff_cnt),
-            'updating asset "{}" ({})'.format(relpath, action)
-        )
-        detailed_progress.emit(
-            'assets',
-            assets_diff_cnt,
-            curr_cnt,
+        install_progress.emit(
+            'updating_assets',
             curr_cnt / assets_diff_cnt,
-            0 + 0.4 * (curr_cnt / assets_diff_cnt),
-            'updating asset "{}" ({})'.format(relpath, action)
+            '[{}/{}] Updating asset "{}" ({})'.format(
+                curr_cnt, assets_diff_cnt, relpath, action
+            )
         )
         
         if action == 'ignore':
@@ -286,7 +272,6 @@ def _install_files(
             )
             path_o = fs.normpath(f'{root1}/{relpath}')  # a file or a directory
             download_from_oss(path_i, path_m, path_o)
-
 
 def _install_packages(
     manifest_new: T.Manifest,
@@ -381,32 +366,16 @@ def _install_packages(
             resolve = oss_download_and_install
         
         for i, info in enumerate(tasks_ignitor, 1):
-            simple_progress.emit(
-                0.4 + 0.5 * (i / len(tasks_ignitor)),
-                'fetching dependency "{}"'.format(info['id'])
-            )
-            detailed_progress.emit(
-                'deps',
-                len(tasks_ignitor),
-                i,
+            install_progress.emit(
+                'resolving_dependencies',
                 i / len(tasks_ignitor),
-                0.4 + 0.5 * (i / len(tasks_ignitor)),
-                'fetching dependency "{}"'.format(info['id'])
+                '[{}/{}] Fetching dependency "{}"'.format(
+                    i, len(tasks_ignitor), info['id']
+                )
             )
             resolve(info)
     
-    simple_progress.emit(
-        0.9 + 0.1 * (1 / 2),
-        'linking venv'
-    )
-    detailed_progress.emit(
-        'cleanup',
-        2,
-        1,
-        1 / 2,
-        0.9 + 0.1 * (1 / 2),
-        'linking venv'
-    )
+    install_progress.emit('ending', 0.5, 'Linking virtual environment')
     venv_dir = paths.apps.make_venv_dir(
         manifest_new['appid'], manifest_new['version'], clear_exists=True
     )
@@ -427,22 +396,9 @@ def _install_packages(
     
     pypi.index.save_index()
 
-
 def _create_launchers(manifest: T.Manifest) -> None:
     print('creating launcher... (this may be slow)')
-    
-    simple_progress.emit(
-        0.9 + 0.1 * (2 / 2),
-        'creating launcher'
-    )
-    detailed_progress.emit(
-        'cleanup',
-        2,
-        2,
-        2 / 2,
-        0.9 + 0.1 * (2 / 2),
-        'creating launcher'
-    )
+    install_progress.emit('ending', 1.0, 'Creating launcher')
     
     exe_file = '{}/{}/{}/{}.exe'.format(
         paths.project.apps,
@@ -517,7 +473,6 @@ def _create_launchers(manifest: T.Manifest) -> None:
         # elif fs.exist(readme_opener):
         #     fs.remove(readme_opener)
 
-
 def _save_history(appid: str, version: str) -> None:
     file = paths.apps.get_installation_history(appid)
     if os.path.exists(file):
@@ -527,7 +482,6 @@ def _save_history(appid: str, version: str) -> None:
     data.insert(0, version)
     fs.dump(data, file)
     print('new installation is recorded')
-
 
 def _save_manifest(manifest: T.Manifest) -> None:
     file_o = '{}/{}/{}/manifest.pkl'.format(
