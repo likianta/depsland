@@ -14,7 +14,9 @@
 
 编译: [$sh
     cd <this_directory>
-    por nuitka --onefile --standalone --windows-console-mode=force --output-filename="Depsland Online Installer.exe" --noinclude-IPython-mode=nofollow main.py
+    por nuitka --onefile --standalone --windows-console-mode=force --output-filename=depsland_online_installer.exe --noinclude-IPython-mode=nofollow main.py
 ]
 
-备忘: 使用精简的 pyproject.toml, 只安装 "airmise\[frp]", "nuitka" 和 "zstandard". 编译出来的体积为 17mb.
+[// 备忘: 使用精简的 pyproject.toml, 只安装 "airmise\[frp]", "nuitka" 和 "zstandard". 编译出来的体积为 17mb.]
+
+最后, 将 "depsland_online_installer.exe" 复制到 [_ <depsland>/resources/depsland_online_installer.exe].

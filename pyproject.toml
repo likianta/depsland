@@ -56,7 +56,7 @@ pyportable-crypto = { version = "^1.5.1", source = "likianta" }
 qmlease = { version = "^4.0.0a5", source = "likianta", extras = ["ui"] }
 reflex = "^0.8.28.post1"
 streamlit-canary = { version = "^0.2.2b1", source = "likianta" }
-tree-shaking = { version = "^0.2.5a4", source = "likianta" }
+tree-shaking = { version = "^0.2.5a6", source = "likianta" }
 
 numpy = "^2.4.4"  # <- streamlit, python 3.14
 rpds-py = "^0.30.0"  # <- streamlit, python 3.14
@@ -74,6 +74,9 @@ priority = "supplemental"
 
 [tool.poetry-extensions]
 ignore-unused-packages = ["poetry"]
+
+[tool.ty.rules]
+invalid-type-form = "ignore"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

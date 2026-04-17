@@ -23,7 +23,8 @@
                 ".venv/streamlit/__main__.py",
                 "run.py"
             ],
-            "sole_export": {
+            "ignores": [],
+            "export": {
                 "source": ".venv",
                 "target": ""
             }

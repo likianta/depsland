@@ -44,7 +44,7 @@ class T:
                         'root': Path,
                         'search_paths': t.List[Path],
                         'entries': t.List[Path],
-                        'sole_export': t.TypedDict('SoleExport', {
+                        'export': t.TypedDict('Export', {
                             'source': Path,
                             'target': Path,
                         }),

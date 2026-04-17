@@ -15,9 +15,12 @@ dynamic = ["dependencies"]
 [tool.poetry.dependencies]
 python = "^3.12"
 airmise = { version = "^3.0.0a8", extras = ["frp"], source = "likianta" }
+argsense = { version = "^1.1.1", source = "likianta" }
+lk-utils = { version = "^3.6.0a10", source = "likianta" }
 
 [tool.poetry.group.dev.dependencies]
 nuitka = "^4.0.8"
+tree-shaking = { version = "^0.2.5a6", source = "likianta" }
 zstandard = "^0.25.0"  # nuitka onefile mode required
 
 [[tool.poetry.source]]

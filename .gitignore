@@ -24,8 +24,9 @@
 /sidework/doctor/_*
 /sidework/mini_launcher/by_air/build/
 /sidework/mini_launcher/by_nuitka/depsland_online_installer/**
+/sidework/mini_launcher/by_nuitka/dist/
+/sidework/mini_launcher/by_nuitka/general_launcher/*
 /sidework/mini_launcher/by_nuitka/generated_launchers/*
-/sidework/mini_launcher/by_nuitka/temp/*
 /sidework/mini_launcher/by_nuitka_2/
 /sidework/mini_launcher/by_rust/target/
 /sidework/mini_launcher/by_rust/test/
@@ -64,5 +65,7 @@ dist/**
 !/pypi/index/snapdep/
 !/python/*._pth
 !/python/sitecustomize.py
-!/sidework/mini_launcher/by_nuitka/depsland_online_installer/main.py
+!/sidework/mini_launcher/by_nuitka/depsland_online_installer/*.py
 !/sidework/mini_launcher/by_nuitka/depsland_online_installer/readme.zh.txt
+!/sidework/mini_launcher/by_nuitka/general_launcher/_template.py
+!/sidework/mini_launcher/by_nuitka/general_launcher/factory.py

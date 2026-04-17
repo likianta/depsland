@@ -13,31 +13,45 @@ class State:
     # dirs_index_1 = 0
     folders: tp.Dict[str, tp.List[str]] = {}
     installation_path = ''
+    target: tp.Optional[tp.Tuple[str, str]] = None
     temp_hold_dialog_opened = False
     temp_new_folder_name = ''
-    __version__ = 18
+    __version__ = 19
 
 @cli
 def main(
-    # client_public_host: str,
-    # client_public_port: int,
-    target_appid: str = '',
-    # target_name: str = '',
-    target_version: str = '',
+    debug: bool = False,
+    **kwargs
+    # client_public_host: tp.Optional[str] = None,
+    # client_public_port: tp.Optional[int] = None,
+    # target_appid: tp.Optional[str] = None,
+    # target_version: tp.Optional[str] = None,
 ) -> None:
     st.set_page_config('Online Installing Depsland')
     st.title('Online Installing :red[Depsland]')
 
     if not State.air_client:
-        # the incoming url should be like: 
-        # $[http://<host>:<port>/?client-open-port=<open_port>]
-        if st.query_params and 'client-open-port' in st.query_params:
-            client_public_host = 'localhost'
-            client_public_port = int(st.query_params['client-open-port'])
+        if debug:
+            client_public_host = kwargs['client_public_host']
+            client_public_port = kwargs['client_public_port']
+            target_appid = kwargs.get('target_appid', '')
+            target_version = kwargs.get('target_version', '')
         else:
-            st.warning('Invalid query parameter.')
-            return
-            
+            # the incoming url should be like: 
+            # $[http://<host>:<port>/?client-open-port=<open_port>
+            # &target-appid=<appid>&target-version=<version>] $[// target-* are 
+            # optional]
+            if st.query_params:
+                client_public_host = 'localhost'
+                client_public_port = int(st.query_params['client-open-port'])
+                target_appid = st.query_params.get('target-appid', '')
+                target_version = st.query_params.get('target-version', '')
+            else:
+                st.warning('Invalid query parameter.')
+                return
+        if target_appid and target_version:
+            State.target = (target_appid, target_version)
+
         State.air_client = air.Client(client_public_host, client_public_port)
         State.air_client.open()
         _init_remote_env()
@@ -47,16 +61,17 @@ def main(
     
     if st.button('Install', type='primary', width=160):
         depsland_direct_path = _install_depsland(State.installation_path)
-        if target_appid:
-            _install_target_application(
-                depsland_direct_path, target_appid, target_version
-            )
+        if State.target:
+            _install_target_application(depsland_direct_path, *State.target)
+        State.air_client.close()
     
     with sc.row('center'):
         if st.button('Refresh remote environment'):
             _init_remote_env()
         if st.button('Test'):
             st.markdown(':green[{}]'.format(_aircall('test', 'Alice')))
+        if st.button(':red[Force close]'):
+            State.air_client.close()
 
 @st.fragment
 def _ask_folder():
@@ -330,7 +345,10 @@ def _tree_view():
                     
             with st.container(height=300):
                 target_dirname = st.radio('Select folder', subdirs)
-                result = '{}/{}'.format(currdir, target_dirname)
+                result = (
+                    target_dirname is None and currdir or
+                    '{}/{}'.format(currdir, target_dirname)
+                )
             
             def change_dir(dirpath):
                 if dirpath not in State.folders:
@@ -341,7 +359,7 @@ def _tree_view():
             
             if do_back:
                 change_dir(currdir.rsplit('/', 1)[0])
-            elif do_enter:
+            elif do_enter and result != currdir:
                 change_dir(result)
             else:
                 a, b = result.rsplit('/', 1)
