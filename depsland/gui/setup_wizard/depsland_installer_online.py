@@ -19,23 +19,29 @@ class State:
 
 @cli
 def main(
-    client_public_host: str,
-    client_public_port: int,
+    # client_public_host: str,
+    # client_public_port: int,
     target_appid: str = '',
     # target_name: str = '',
     target_version: str = '',
 ) -> None:
-    # if target_appid:
-    #     assert target_name and target_version
-    
+    st.set_page_config('Online Installing Depsland')
+    st.title('Online Installing :red[Depsland]')
+
     if not State.air_client:
+        # the incoming url should be like: 
+        # $[http://<host>:<port>/?client-open-port=<open_port>]
+        if st.query_params and 'client-open-port' in st.query_params:
+            client_public_host = 'localhost'
+            client_public_port = int(st.query_params['client-open-port'])
+        else:
+            st.warning('Invalid query parameter.')
+            return
+            
         State.air_client = air.Client(client_public_host, client_public_port)
         State.air_client.open()
         _init_remote_env()
         State.installation_path = _aircall('get_default_installation_path')
-    
-    st.set_page_config('Online Installing Depsland')
-    st.title('Online Installing :red[Depsland]')
     
     _ask_folder()
     

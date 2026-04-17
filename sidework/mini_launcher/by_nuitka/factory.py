@@ -1,3 +1,10 @@
+# if __name__ == '__main__':
+#     import sys
+#     from lk_utils import cd_current_dir
+#     cd_current_dir()
+#     sys.path.append('../../../')  # path to find `depsland`
+#     sys.path.append('../../../lib')  # path to find `tree_shaking`
+
 import json
 import sys
 from argsense import cli
@@ -55,6 +62,20 @@ def build_general_launcher() -> None:
         'temp/general_launcher_noconsole.exe',
         '_general_launcher_noconsole.exe',
         True
+    )
+
+    print(
+        '''
+        launchers built:
+            {}: {}
+            {}: {}
+        '''.format(
+            '_general_launcher_console.exe',
+            fs.filesize('_general_launcher_console.exe', str),
+            '_general_launcher_noconsole.exe',
+            fs.filesize('_general_launcher_noconsole.exe', str),
+        ),
+        ':t'
     )
 
 @cli
@@ -161,6 +182,7 @@ def create_launcher_from_manifest(
         file_out = '{}/{}'.format(dir_out, name)
     
     create_launcher(
+        target_name=mani['name'],
         target_appid=mani['appid'],
         target_version=mani['version'],
         file_out=file_out,
@@ -168,60 +190,10 @@ def create_launcher_from_manifest(
         show_console=show_console,
     )
 
-
-@cli.cmd('fast')
-def create_common_launcher(
-    target_appid,
-    target_version,
-    dir_out: str,
-    icon: str = None,
-    show_console: bool = False,
-) -> None:
-    """
-    this is good for developer to **fast generate** and test a launcher. but -
-    not good for production release.
-    devnote:
-        if you found that the common launcher works incorrectly, use -
-        `prebuild_common_launcher` to re-generate.
-    """
-    file_out = '{}/{}-v{}-{}.exe'.format(
-        dir_out,
-        target_appid,
-        target_version,
-        'debug' if show_console else 'common'
-    )
-    fs.copy_file(
-        'build/exe/mini-launcher-common-debug.exe' if show_console else
-        'build/exe/mini-launcher-common.exe',
-        file_out,
-        True
-    )
-    if icon:
-        add_icon_to_exe(file_out, icon)
-    print(':tv4', 'done. see "{}"'.format(file_out.replace('\\', '/')))
-
-
-@cli.cmd('prebuild-common')
-def prebuild_common_launcher():
-    create_launcher(
-        target_appid='<FROM_FILENAME>',
-        target_version='<FROM_FILENAME>',
-        file_out='build/exe/mini-launcher-common.exe',
-        icon='build/icon/python.ico',
-        show_console=False,
-    )
-    create_launcher(
-        target_appid='<FROM_FILENAME>',
-        target_version='<FROM_FILENAME>',
-        file_out='build/exe/mini-launcher-common-debug.exe',
-        icon='build/icon/python.ico',
-        show_console=True,
-    )
-
-
 if __name__ == '__main__':
     # pox sidework/mini_launcher/by_nuitka/factory.py -h
     # pox sidework/mini_launcher/by_nuitka/factory.py build_general_launcher
     # pox sidework/mini_launcher/by_nuitka/factory.py create_launcher ...
-    # pox sidework/mini_launcher/by_nuitka/factory.py manifest -h
+    # pox sidework/mini_launcher/by_nuitka/factory.py 
+    #   create_launcher_from_manifest ...
     cli.run()

@@ -23,6 +23,7 @@
 /sidework/bat_2_exe_template_gen/*.exe
 /sidework/doctor/_*
 /sidework/mini_launcher/by_air/build/
+/sidework/mini_launcher/by_nuitka/depsland_online_installer/**
 /sidework/mini_launcher/by_nuitka/generated_launchers/*
 /sidework/mini_launcher/by_nuitka/temp/*
 /sidework/mini_launcher/by_nuitka_2/
@@ -63,3 +64,5 @@ dist/**
 !/pypi/index/snapdep/
 !/python/*._pth
 !/python/sitecustomize.py
+!/sidework/mini_launcher/by_nuitka/depsland_online_installer/main.py
+!/sidework/mini_launcher/by_nuitka/depsland_online_installer/readme.zh.txt

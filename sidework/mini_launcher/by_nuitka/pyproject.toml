@@ -1,0 +1,35 @@
+[project]
+name = "depsland-online-installer"
+version = "0.1.0"
+description = ""
+# readme = "README.md"
+authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
+packages = [{ include = "depsland_online_installer" }]
+requires-python = ">=3.12"
+dynamic = ["dependencies"]
+# license = "MIT"
+
+# [project.urls]
+# homepage = "https://github.com/likianta/depsland-online-installer"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+airmise = { version = "^3.0.0a8", extras = ["frp"], source = "likianta" }
+
+[tool.poetry.group.dev.dependencies]
+nuitka = "^4.0.8"
+zstandard = "^0.25.0"  # nuitka onefile mode required
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "likianta"
+url = "http://localhost:2191/"
+priority = "supplemental"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

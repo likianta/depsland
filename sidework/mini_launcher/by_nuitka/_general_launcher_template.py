@@ -8,6 +8,7 @@ import os
 import subprocess
 import sys
 import typing as tp
+import urllib.request
 
 class T:
     Config = tp.TypedDict('Config', {
@@ -35,8 +36,19 @@ def main() -> None:
         # if _check_depsland_version(root):
         conf = _get_config()
         _run_app(root, conf['appid'], conf['version'], conf['show_console'])
-        return
-    raise NotImplementedError
+    else:
+        # download and install depsland
+        # this operation should be fast to ensure user experience. so we 
+        # download a $[** small-sized] executable file, then run it to connect 
+        # to a remote GUI service for the complete installation.
+        # see also $[./depsland_online_instaler/readme.zh.txt].
+        urllib.request.urlretrieve(
+            'http://172.20.128.100:2188/depsland_online_instaler.exe',
+            exe_file := os.path.join(
+                os.path.dirname(__file__), 'depsland_online_instaler.exe'
+            ),
+        )
+        subprocess.run((exe_file,))
 
 def _find_depsland_root() -> tp.Optional[str]:
     # (A)
@@ -47,25 +59,25 @@ def _find_depsland_root() -> tp.Optional[str]:
     #   consider that the A method may fail because current session didn't -
     #   update itself to sync with system environment settings, so we read the -
     #   registry key directly to get the latest env variable.
-    if os.name == 'nt':
-        import winreg
-        key = winreg.OpenKey(
-            winreg.HKEY_CURRENT_USER,
-            'Environment',
-            0,
-            winreg.KEY_READ
-        )
-        try:
-            value, _ = winreg.QueryValueEx(key, 'DEPSLAND')
-        except FileNotFoundError:
-            value = None
-        finally:
-            winreg.CloseKey(key)
-        if value and os.path.exists(
-            '{}/apps/.bin/depsland.exe'.format(value)
-        ):
-            return value
-    return None
+    # if os.name == 'nt':
+    #     import winreg
+    #     key = winreg.OpenKey(
+    #         winreg.HKEY_CURRENT_USER,
+    #         'Environment',
+    #         0,
+    #         winreg.KEY_READ
+    #     )
+    #     try:
+    #         value, _ = winreg.QueryValueEx(key, 'DEPSLAND')
+    #     except FileNotFoundError:
+    #         value = None
+    #     finally:
+    #         winreg.CloseKey(key)
+    #     if value and os.path.exists(
+    #         '{}/apps/.bin/depsland.exe'.format(value)
+    #     ):
+    #         return value
+    # return None
 
 def _run_app(
     depsland_root: str, appid: str, version: str, show_console: bool
