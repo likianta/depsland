@@ -32,6 +32,7 @@
 /sidework/mini_launcher/by_rust/target/
 /sidework/mini_launcher/by_rust/test/
 /sidework/mini_launcher/by_v/*.exe
+/sidework/mini_launcher/by_v/app_launcher/*.exe
 /sidework/ui_prototype/
 /temp/*
 /test/_config/
@@ -70,3 +71,5 @@ dist/**
 !/sidework/mini_launcher/by_nuitka/depsland_online_installer/readme.zh.txt
 !/sidework/mini_launcher/by_nuitka/depsland_online_installer/tree_shaking.yaml
 !/sidework/mini_launcher/by_nuitka/general_launcher/*.py
+# !/sidework/mini_launcher/by_v/app_launcher/launcher.v
+# !/sidework/mini_launcher/by_v/app_launcher/target.json

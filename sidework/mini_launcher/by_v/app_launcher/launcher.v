@@ -1,4 +1,5 @@
 // build mini launcher in v-language.
+import compress.szip // https://modules.vlang.io/compress.szip.html#zip_files
 import json
 import net.http
 import os
@@ -10,29 +11,46 @@ struct Manifest {
 }
 
 fn main() {
+    hide_console_window()
     // println('my PID is ${os.getpid()}')
-
-    root := find_depsland_root()
-    if root == '' {
-        // new_root := os.input(
-        //     'Depsland is not installed, please input a path for the ' +
-        //     'installation: '
-        // )
-        // download_depsland(new_root)!
-        panic('Depsland is not installed!')
-    }
 
     manifest := json.decode(
         Manifest, $embed_file('./target.json').to_string()
     )!
     println(manifest)
-    os.execvp(
-        '${root}/apps/.bin/depsland.exe',
-        ['runx', manifest.appid, manifest.version]
-    )!
+
+    dps_dir := find_depsland_root()
+    if dps_dir == '' {
+        dps_ol_dir := download_and_extract_depsland_online_installer()!
+        os.chdir(dps_ol_dir)!
+        os.execvp(
+            './python/python.exe',
+            [
+                'main.py', 
+                manifest.appid, 
+                manifest.version
+            ]
+        )!
+    } else {
+        os.execvp(
+            '${dps_dir}/apps/.bin/depsland.exe',
+            ['runx', manifest.appid, manifest.version]
+        )!
+    }
 }
 
-fn hide_console_window() {}
+fn download_and_extract_depsland_online_installer() !string {
+    currdir := os.getwd()
+    println(currdir)
+    url := 'http://172.20.128.100:2188/depsland_online_installer.zip'
+    zip := '${currdir}/depsland_online_installer.zip'
+    http.download_file(url, zip)!
+    szip.extract_zip_to_dir(zip, currdir)!
+    assert os.exists('${currdir}/depsland_online_installer')
+    assert os.exists('${currdir}/depsland_online_installer/main.py')
+    assert os.exists('${currdir}/depsland_online_installer/python/python.exe')
+    return '${currdir}/depsland_online_installer'
+}
 
 fn find_depsland_root() string {
     // println(os.environ())
@@ -49,11 +67,5 @@ fn find_depsland_root() string {
     return ''
 }
 
-fn download_depsland(target_directory string)! {
-    println(target_directory)
-    if !os.exists(target_directory) {
-        os.mkdir(target_directory)!
-    }
-    url := 'http://172.20.128.100:2184/depsland-0.11.0a4.7z'
-    http.download_file(url, '${target_directory}/depsland-0.11.0a4.7z')!
-}
+// TODO
+fn hide_console_window() {}

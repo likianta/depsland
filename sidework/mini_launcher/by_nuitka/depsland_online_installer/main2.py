@@ -18,7 +18,7 @@ import webbrowser
 from argsense import cli
 
 @cli
-def main(appid: str, version: str):
+def main(appid: str, version: str) -> None:
     """
     ref: source code of $[airmise.frp.connect_to_public_transport]
     """

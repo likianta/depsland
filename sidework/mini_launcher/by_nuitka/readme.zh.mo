@@ -1,6 +1,27 @@
 
 [## 构建流程]
 
+[### 基于 V 的启动器方案]
+
+结构: 
+
+[:tree
+    <用户下载目录>
+    ├─ launcher.exe
+    ├─ depsland_online_installer.zip
+    └─ depsland_online_installer
+       ├─ minideps
+       │  └─ ...
+       ├─ python
+       │  ├─ python.exe
+       │  └─ ...
+       └─ main.py
+]
+
+[...]
+
+[### 基于 Nuitka 的启动器方案]
+
 [
     = 构建 Depsland Online Installer
         [$sh

@@ -9,18 +9,23 @@ cd_current_dir()
 depsland_project_root = '../../..'
 
 @cli
-def init():
+def init() -> None:
     fs.make_dir('dist')
-    fs.copy_file(
-        f'{depsland_project_root}/python/python312.zip', 'dist/python312.zip'
+    fs.make_link(f'{depsland_project_root}/python', 'dist/python')
+    fs.make_link(
+        'dist', f'{depsland_project_root}/resources/depsland_online_installer'
     )
-    # fs.make_link('depsland_online_installer/main.py', 'dist/main.py')
+    # fs.make_link('depsland_online_installer/main1.py', 'dist/main.py')
 
 @cli
 def tree_shaking_depsland_online_installer(
     do_minify: bool = True, do_compress: bool = True
-):
+) -> None:
     """
+    params:
+        do_minify (-m):
+        do_compress (-c):
+
     tip: if you have only modified "depsland_online_installer/main.py", you can 
     rerun this command by `do_minify=False, do_compress=True` to fast refresh 
     result.
@@ -35,19 +40,20 @@ def tree_shaking_depsland_online_installer(
         )
     if do_compress:
         fs.copy_file(
-            'depsland_online_installer/main1.py',
+            'depsland_online_installer/main2.py',
             'dist/main.py',
             True
         )
         result = fs.zip(
-            'dist', 
+            f'{depsland_project_root}/resources/depsland_online_installer', 
             f'{depsland_project_root}/resources/depsland_online_installer.zip',
-            True
+            overwrite=True,
+            progress=True,
         )
         print(fs.filesize(result, str))
 
 @cli
-def nuitka_compile_depsland_online_installer():
+def nuitka_compile_depsland_online_installer() -> None:
     # warning: this is time consuming.
     # the output exe file size is ~17mb.
     run_cmd_args(
