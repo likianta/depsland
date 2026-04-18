@@ -45,4 +45,4 @@ def main(appid: str, version: str):
 if __name__ == '__main__':
     # `conf` is gained from caller's context. see 
     # `../general_launcher/template.py:exec(f.read())`.
-    main(conf['appid'], conf['version'])
+    main(conf['appid'], conf['version'])  # type: ignore

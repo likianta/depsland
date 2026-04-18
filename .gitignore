@@ -27,6 +27,7 @@
 /sidework/mini_launcher/by_nuitka/dist/
 /sidework/mini_launcher/by_nuitka/general_launcher/*
 /sidework/mini_launcher/by_nuitka/generated_launchers/*
+/sidework/mini_launcher/by_nuitka/tree_shaking
 /sidework/mini_launcher/by_nuitka_2/
 /sidework/mini_launcher/by_rust/target/
 /sidework/mini_launcher/by_rust/test/
@@ -67,5 +68,5 @@ dist/**
 !/python/sitecustomize.py
 !/sidework/mini_launcher/by_nuitka/depsland_online_installer/*.py
 !/sidework/mini_launcher/by_nuitka/depsland_online_installer/readme.zh.txt
-!/sidework/mini_launcher/by_nuitka/general_launcher/_template.py
-!/sidework/mini_launcher/by_nuitka/general_launcher/factory.py
+!/sidework/mini_launcher/by_nuitka/depsland_online_installer/tree_shaking.yaml
+!/sidework/mini_launcher/by_nuitka/general_launcher/*.py

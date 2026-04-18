@@ -1,0 +1,12 @@
+root: .
+search_paths:
+  - $venv
+  - .
+entries:
+  - main1.py
+ignores:
+  - ipython
+export:
+  source: $venv
+  target: minideps
+
