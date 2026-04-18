@@ -41,6 +41,7 @@ fn main() {
 }
 
 fn cleanup() ! {
+    println('Cleanup intermediate files.')
     currdir := os.dir(os.executable())
     os.rm('${currdir}/depsland_online_installer.zip')!
     os.rmdir_all('${currdir}/depsland_online_installer')!
@@ -49,7 +50,7 @@ fn cleanup() ! {
 fn download_and_extract_depsland_online_installer() !string {
     // currdir := os.getwd()
     currdir := os.dir(os.executable())
-    println(currdir)
+    println('Current executable directory: ${currdir}')
     url := 'http://172.20.128.100:2188/depsland_online_installer.zip'
     zip := '${currdir}/depsland_online_installer.zip'
     http.download_file(url, zip)!
