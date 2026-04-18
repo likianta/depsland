@@ -31,6 +31,7 @@ fn main() {
                 manifest.version
             ]
         )!
+        cleanup()!
     } else {
         os.execvp(
             '${dps_dir}/apps/.bin/depsland.exe',
@@ -39,8 +40,15 @@ fn main() {
     }
 }
 
+fn cleanup() ! {
+    currdir := os.dir(os.executable())
+    os.rm('${currdir}/depsland_online_installer.zip')!
+    os.rmdir_all('${currdir}/depsland_online_installer')!
+}
+
 fn download_and_extract_depsland_online_installer() !string {
-    currdir := os.getwd()
+    // currdir := os.getwd()
+    currdir := os.dir(os.executable())
     println(currdir)
     url := 'http://172.20.128.100:2188/depsland_online_installer.zip'
     zip := '${currdir}/depsland_online_installer.zip'
