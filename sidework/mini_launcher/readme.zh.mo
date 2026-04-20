@@ -79,7 +79,7 @@
         ]
 ]
 
-[## 问题总结]
+[#### 问题一览]
 
 [
     Q: 当尝试 [`exec(code)] 时, 会报标准库缺失.
@@ -88,4 +88,18 @@
     Q: 体积来到了 6MB, 不太理想.
     Q: 启动速度似乎不是很快.
     Q: 如果使用下载第二个 exe 的方案, 会被杀毒软件误报和拦截.
+]
+
+[## 用户访问流程]
+
+[
+    = 开发者: 检查或上传资源到 oss
+        检查以下资源: [$yaml
+            from_entrance: <depsland_project>/resources
+            to_entrance: <aliyun_oss>/likianta-public-share/depsland-resources
+            list:
+                - depsland-online-installer.zip
+                - depsland-standalone-<version>.zip
+        ]
+        注意: 目前需要手动上传.
 ]

@@ -4,9 +4,9 @@ if 1:
     _parent_dir = os.path.abspath(f'{__file__}/../..')
     if sys.base_prefix.startswith(_parent_dir):
         # we are using an exclusive python interpreter vendored by depsland.
-        # since the interpreter is clean and no third party packages -
-        # installed, we need to locate another place to find the site-packages.
-        assert os.path.exists(x := f'{_parent_dir}/chore/site_packages'), \
+        # since the interpreter is clean and no third party packages installed, 
+        # we need to lookup another place for packages.
+        assert os.path.exists(x := f'{_parent_dir}/chore/minideps'), \
             'see `DEVNOTE.md : search "make site-packages"` for help.'
         sys.path.append(x)
 
@@ -26,10 +26,11 @@ from . import verspec
 from .api import init
 from .api import install
 from .api import publish
+from .manifest import load_manifest
 from .platform import sysinfo
 from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.12.0a1'
+__version__ = '0.12.0a7'

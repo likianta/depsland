@@ -27,8 +27,7 @@
                 "temp/temp_project:0",
                 "test:0",
                 "poetry.lock",
-                "requirements.lock",
-                "wiki/docs/.vitepress/dist"
+                "requirements.lock"
             ],
             "dependencies": "",
             "launcher": {
@@ -55,16 +54,18 @@
     },
     "minideps_options": {
         "tree_shaking_model": {
-            "search_paths": ["chore/.venv", "."],
+            "search_paths": ["$venv", "."],
             "entries": [
                 "depsland/__init__.py",
                 "depsland/__main__.py",
                 "depsland/gui/app_manager/app.py",
+                "depsland/gui/setup_wizard/depsland_installer_client_support.py",
+                "depsland/gui/setup_wizard/depsland_installer_online.py",
                 "depsland/gui/setup_wizard/process_manager.py",
                 "depsland/gui/setup_wizard/setup_wizard.py",
-                "chore/.venv/streamlit/__init__.py",
-                "chore/.venv/streamlit/__main__.py",
-                "chore/.venv/streamlit_extras/__init__.py"
+                "$venv/streamlit/__init__.py",
+                "$venv/streamlit/__main__.py",
+                "$venv/streamlit_extras/__init__.py"
             ],
             "ignores": [
                 "ipython",
@@ -73,13 +74,14 @@
                 "pandas",
                 "pil",
                 "plotly",
+                "py7zr",
                 "pyside6",
                 "qmlease",
                 "qtpy"
             ],
             "export": {
-                "source": "chore/.venv",
-                "target": "chore/site_packages"
+                "source": "$venv",
+                "target": "chore/minideps"
             }
         }
     },

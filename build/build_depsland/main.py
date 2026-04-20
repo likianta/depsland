@@ -6,31 +6,17 @@ from depsland.api.dev_api.build_project import bump_version as _bump_version
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
-
 @cli
-def bump_version(new_ver: str = None) -> None:
+def bump_version(new_ver: str = '') -> None:
     _bump_version('build/build_depsland/build_project.json', new_ver)
 
-
 @cli
-def main(new_version: str = None, compress: bool = False) -> None:
+def main(new_version: str = '', compress: bool = False) -> None:
     """
     params:
         new_version (-v):
         compress (-z):
     """
-    # noinspection PyTypeChecker
-    assert fs.exist('chore/.venv'), (
-        'please manually link original venv path to "chore/.venv" to continue. '
-        'the command is: `python -m lk_utils mklink {}/Lib/site-packages '
-        'chore/.venv`'.format(
-            fs.normpath(run_cmd_args(
-                'poetry', 'env', 'info', '--path', '--no-ansi',
-                cwd=fs.xpath('../../')
-            ))
-        )
-    )
-    
     old_ver, new_ver = build_project(
         file='build/build_depsland/build_project.json',
         new_version=new_version,
@@ -77,7 +63,7 @@ def make_dist(
     # checks
     if oss_scheme == 'aliyun':
         # noinspection PyTypeChecker
-        assert fs.exist(os.getenv('DEPSLAND_CONFIG_ROOT'))
+        assert fs.exist(os.environ['DEPSLAND_CONFIG_ROOT'])
     
     root_i = paths.project.root
     root_o = (
@@ -192,16 +178,10 @@ def make_dist(
         fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
     
     if _add_python_sdk:
-        fs.make_link(
-            f'{root_i}/chore/site_packages',
-            f'{root_o}/chore/site_packages',
-        )
-        fs.make_link(
-            f'{root_i}/python',
-            f'{root_o}/python',
-        )
-        
-    _make_disguised_packages('chore/site_packages')
+        fs.make_link(f'{root_i}/chore/minideps', f'{root_o}/chore/minideps')
+        fs.make_link(f'{root_i}/python', f'{root_o}/python')
+    
+    _make_disguised_packages('chore/minideps')
 
     print(':t', 'created distribution: {}'.format(fs.relpath(root_o)))
     return root_o

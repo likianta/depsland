@@ -59,10 +59,10 @@ class T:
 
 def build(
     file: T.Path,
-    new_version: str = None,
+    new_version: str = '',
     minify_deps: int = 0,
     encrypt_packages: int = 0,
-    secret_key: str = None,
+    secret_key: str = '',
     publish: int = 0,
     remain_last_version: bool = False,
     remove_depsland: bool = False,
@@ -99,7 +99,7 @@ def build(
         print(':sv6', 'use last time updated version', curr_version)
         new_version = curr_version
     else:
-        if new_version is None:
+        if not new_version:
             new_version = _deduce_new_version(curr_version)
         print(':r2', 'bump version: {} -> {}'.format(curr_version, new_version))
         _bump_versions(

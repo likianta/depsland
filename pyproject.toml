@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.0a3"
+version = "0.12.0a4"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]

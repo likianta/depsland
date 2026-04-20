@@ -5,9 +5,9 @@ $[<site_packages>/build] package which is required by poetry executable.
 """
 import sys
 from argsense import cli
-from lk_utils import cd_current_dir, fs, run_cmd_args
+from lk_utils import fs, run_cmd_args
 
-cd_current_dir()
+fs.cd_current_dir()
 depsland_project_root = '../../..'
 
 @cli

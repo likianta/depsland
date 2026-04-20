@@ -28,4 +28,11 @@
 
 [## Production Run]
 
-...
+[
+    = Start server for client support (see above)
+    = Generate target app launcher
+        See [sidework/mini_launcher/readme.zh.mo].
+    = Run app launcher
+        The launcher is an EXE file. Double click it to run.
+        Internally, the EXE will request opening a new browser tab with [http://<public_host>:2185/?client-open-port=<public_port>&appid=<target_appid>&version=<target_version>].
+]

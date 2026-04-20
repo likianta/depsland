@@ -11,8 +11,8 @@ if 2:
     if sys.orig_argv[0].endswith('.exe'):
         os.environ['LK_LOGGER_MODERN_WINDOW'] = '0'
         # sys.path.append('.')
-        sys.path.append('chore/site_packages')
-        os.environ['DEPSLAND_SEARCH_PATHS'] = 'chore/site_packages'
+        sys.path.append('chore/minideps')
+        os.environ['DEPSLAND_SEARCH_PATHS'] = 'chore/minideps'
         #   see also `/python/sitecustomize.py`
 
 import subprocess
