@@ -4,7 +4,6 @@ import streamlit_canary as sc
 import typing as tp
 from argsense import cli
 from contextlib import contextmanager
-from time import sleep
 
 @sc.init_state
 class State:
@@ -18,7 +17,7 @@ class State:
     temp_new_folder_name = ''
     tree_select_index_0 = 0
     tree_select_index_1 = 0
-    __version__ = 20
+    __version__ = 22
 
 @cli
 def main(
@@ -121,18 +120,20 @@ def _ask_folder() -> None:
                 on_change=_sync_manual_path_setting,
                 help=(
                     '''
-                    If input an empty folder or an inexisting folder path, will 
+                    If input an empty folder or a non-existent folder path, will 
                     use it as installation path.
 
-                    If input a folder path that is not empty, will use 
+                    If input a non-empty folder path, will use 
                     `<the_given_path>/Depsland` as installation path.
 
-                    There is a trick that you can input a path to a zip file, 
-                    which is a 
-                    [Depsland Standalone package](http://172.20.128.100:2188/depsland_online_installer.zip). 
-                    Then the program will use it as downloaded resource and 
-                    continue installation.
-                    '''
+                    There is a trick: you can input a path to a ".zip" file, 
+                    which is a [Depsland Standalone package]({}); the program 
+                    will then treat it as downloaded resource and continue 
+                    installation.
+                    '''.format(
+                        'http://172.20.128.100:2188/'
+                        'depsland_online_installer.zip'
+                    )
                 ),
             )
             if path:
@@ -151,6 +152,7 @@ def _ask_folder() -> None:
                             )
                     else:
                         State.installation_path = path
+                print(State.installation_path)
             
             # popup st-dialog and show tree view.
             if (
@@ -172,103 +174,88 @@ def _close_tab_2() -> None:
     # simulate `ctrl + w` in client side using only standard python libraries.
     _airexec(
         '''
+        # https://github.com/gauthsvenkat/pyKey/blob/master/pyKey/windows.py
         # https://chatgpt.com/share/69e5b8d8-1578-8320-9a9d-40f07d28fd88
+        
         import ctypes
         from ctypes import wintypes
+        from time import sleep
 
         def simulate_ctrl_w():
-            user32 = ctypes.WinDLL('user32', use_last_error=True)
+            # C struct redefinitions 
+            PUL = ctypes.POINTER(ctypes.c_ulong)
 
-            INPUT_KEYBOARD = 1
-            KEYEVENTF_KEYUP = 2
-            VK_CONTROL = 0x11
-            VK_W = 0x57
-
-            class KEYBDINPUT(ctypes.Structure):
+            class KeyBdInput(ctypes.Structure):
                 _fields_ = (
-                    ("wVk", wintypes.WORD),
-                    ("wScan", wintypes.WORD),
-                    ("dwFlags", wintypes.DWORD),
-                    ("time", wintypes.DWORD),
-                    ("dwExtraInfo", wintypes.ULONG_PTR),
+                    ("wVk", ctypes.c_ushort),
+                    ("wScan", ctypes.c_ushort),
+                    ("dwFlags", ctypes.c_ulong),
+                    ("time", ctypes.c_ulong),
+                    ("dwExtraInfo", PUL)
                 )
 
-            class INPUT(ctypes.Structure):
+            class HardwareInput(ctypes.Structure):
                 _fields_ = (
-                    ("type", wintypes.DWORD),
-                    ("ki", KEYBDINPUT),
+                    ("uMsg", ctypes.c_ulong),
+                    ("wParamL", ctypes.c_short),
+                    ("wParamH", ctypes.c_ushort)
                 )
 
-            def send_input(*inputs):
-                n = len(inputs)
-                LPINPUT = INPUT * n
-                pinputs = LPINPUT(*inputs)
-                cb_size = ctypes.sizeof(INPUT)
-                if user32.SendInput(n, pinputs, cb_size) != n:
-                    raise ctypes.WinError(ctypes.get_last_error())
-
-            def key_down(vk):
-                return INPUT(
-                    type=INPUT_KEYBOARD,
-                    ki=KEYBDINPUT(
-                        wVk=vk, 
-                        wScan=0, 
-                        dwFlags=0, 
-                        time=0, 
-                        dwExtraInfo=0
-                    )
+            class MouseInput(ctypes.Structure):
+                _fields_ = (
+                    ("dx", ctypes.c_long),
+                    ("dy", ctypes.c_long),
+                    ("mouseData", ctypes.c_ulong),
+                    ("dwFlags", ctypes.c_ulong),
+                    ("time",ctypes.c_ulong),
+                    ("dwExtraInfo", PUL)
                 )
 
-            def key_up(vk):
-                return INPUT(
-                    type=INPUT_KEYBOARD,
-                    ki=KEYBDINPUT(
-                        wVk=vk, 
-                        wScan=0, 
-                        dwFlags=KEYEVENTF_KEYUP, 
-                        time=0, 
-                        dwExtraInfo=0
-                    )
+            class Input_I(ctypes.Union):
+                _fields_ = (
+                    ("ki", KeyBdInput),
+                    ("mi", MouseInput),
+                    ("hi", HardwareInput)
                 )
 
-            send_input(
-                key_down(VK_CONTROL),
-                key_down(VK_W),
-                key_up(VK_W),
-                key_up(VK_CONTROL),
-            )
-        
+            class Input(ctypes.Structure):
+                _fields_ = (
+                    ("type", ctypes.c_ulong),
+                    ("ii", Input_I)
+                )
+            
+            # https://github.com/gauthsvenkat/pyKey/blob/master/pyKey/key_dict.py
+            _key_dict = {'CTRL': 0x1D, 'W': 0x11}
+            _send_input = ctypes.windll.user32.SendInput
+
+            def key_down(key: str):
+                extra = ctypes.c_ulong(0)
+                ii_ = Input_I()
+                ii_.ki = KeyBdInput(
+                    0, _key_dict[key], 0x0008, 0, ctypes.pointer(extra)
+                )
+                x = Input(ctypes.c_ulong(1), ii_)
+                _send_input(1, ctypes.pointer(x), ctypes.sizeof(x))
+
+            def key_up(key: str):
+                extra = ctypes.c_ulong(0)
+                ii_ = Input_I()
+                ii_.ki = KeyBdInput(
+                    0, _key_dict[key], 0x0008 | 0x0002, 0, ctypes.pointer(extra)
+                )
+                x = Input( ctypes.c_ulong(1), ii_ )
+                _send_input(1, ctypes.pointer(x), ctypes.sizeof(x))
+            
+            key_down('CTRL')
+            key_down('W')
+            sleep(0.02)
+            key_up('W')
+            key_up('CTRL')
+
         simulate_ctrl_w()
         '''
     )
     State.air_client.close()
-
-# not suggested.
-@st.dialog('Closing Tab', dismissible=False)
-def _close_tab_3() -> None:
-    st.info(
-        '''
-        Installation is done. This tab is going to be closed in 30 seconds.
-
-        You can also manually close this tab.
-
-        After this, you can rerun the same ".exe" file to launch target 
-        application.
-        '''
-    )
-
-    place = st.empty()
-    do_close = st.button(':red[Close this tab]')
-
-    if not do_close:
-        with place:
-            prog = st.progress(0)
-            for i in range(1, 31):
-                prog.progress(
-                    i / 30, 'Auto close tab in {} seconds'.format(30 - i)
-                )
-                sleep(1)
-    _close_tab_2()
 
 def _install_depsland(root: str) -> str:
     """
@@ -291,7 +278,7 @@ def _install_depsland(root: str) -> str:
         temp = root
         path0 = temp.rsplit('/', 1)[0]
         path1 = temp
-        path2 = temp + '/0.12.0a3'
+        path2 = path0 + '/0.12.0a3'
     else:
         path0 = root
         path1 = root + '/depsland-0.12.0a3.zip'
