@@ -35,15 +35,29 @@
        └─ main.py
 ]
 
-[#### 构建流程]
+[#~ 流程描述]
 
 [
-    = 编译 v 到 exe
+    = 确认目标应用发布版本
+        [...]
+    = 创建目标应用的迷你启动器
+
         [$sh
             cd sidework/mini_launcher/by_v
-            v app_launcher.v
+            # 查看帮助
+            pox make.py create_launcher_from_profile <target_manifest_file>
         ]
-        整个过程极快. 在同目录下会生成 "app_launcher.exe" 文件, 体积 ~3mb.
+        整个构建过程极快. 生成的 exe 文件体积非常小, 大约 3mb.
+
+        [// 以下流程已废弃.
+            = 编译 v 到 exe
+                [$sh
+                    cd sidework/mini_launcher/by_v
+                    v app_launcher.v
+                ]
+                整个过程极快. 在同目录下会生成 "app_launcher.exe" 文件, 体积 ~3mb.
+        ]
+    = 将生成的 exe 分享给用户
 ]
 
 [### 基于 Nuitka 的启动器方案]
@@ -79,7 +93,7 @@
         ]
 ]
 
-[#### 问题一览]
+[#~ 问题一览]
 
 [
     Q: 当尝试 [`exec(code)] 时, 会报标准库缺失.
@@ -95,11 +109,23 @@
 [
     = 开发者: 检查或上传资源到 oss
         检查以下资源: [$yaml
-            from_entrance: <depsland_project>/resources
-            to_entrance: <aliyun_oss>/likianta-public-share/depsland-resources
-            list:
+            local_entrance: <depsland_project>/resources
+            cloud_entrance: <aliyun_oss>/likianta-public-share/depsland-resources
+            resource_list:
                 - depsland-online-installer.zip
                 - depsland-standalone-<version>.zip
         ]
         注意: 目前需要手动上传.
+
+        其中, [depsland-standalone-<version>.zip] 由以下方式创建: [$sh
+            pox build/build_depsland/main.py main -z
+            cp dist/standalone/depsland-<new_version>.zip resources
+        ]
+
+        [depsland-online-installer.zip] 由以下方式创建: [本文 : 章节 : 构建方案 : 基于 V 的启动器方案]
+    = 开发者: 开启端口 2188
+    = 开发者: 运行 Depsland Online Installer UI
+        [...]
+        将服务开放到公网: [$sh <bore> -p 2185 2185]
+    = 用户: 接收到迷你启动器, 双击运行
 ]
