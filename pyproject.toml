@@ -38,13 +38,13 @@ tree-shaking = "^0.2.4"
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]
-airmise = { version = "^3.0.0a8", extras = ["frp"], source = "likianta" }
+airmise = { version = "^3.0.0b0", extras = ["frp"], source = "likianta" }
 argsense = { version = "^1.1.1", source = "likianta" }
 conflore = { version = "^0.2.2", source = "likianta" }
 freesimplegui = "^5.2.0.post1"
 icnsutil = "^1.1.0"  # <- sidework/image_converter.py
 ipython = "^9.12.0"
-lk-utils = { version = "^3.6.0a10", source = "likianta" }
+lk-utils = { version = "^3.6.0a12", source = "likianta" }
 nuitka = "^4.0.8"
 pillow = "^12.2.0"  # <- sidework/image_converter.py
 # pinkrain = { version = "^0.0.0a32", source = "likianta" }
@@ -77,6 +77,7 @@ ignore-unused-packages = ["poetry"]
 
 [tool.ty.rules]
 invalid-type-form = "ignore"
+unresolved-attribute = "ignore"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

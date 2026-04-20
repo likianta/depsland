@@ -187,13 +187,13 @@ reference = "aliyun"
 
 [[package]]
 name = "airmise"
-version = "3.0.0a8"
+version = "3.0.0b0"
 description = "The native experience of calling remote functions, like local ones."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "airmise-3.0.0a8-py3-none-any.whl", hash = "sha256:e10cd0bd3b7cd07e8802e8407042cf7c3d46348f8e6b19d80ebb219268bf08d1"},
+    {file = "airmise-3.0.0b0-py3-none-any.whl", hash = "sha256:36ddc48602e11f0101d3d31c15eddb2a9da54c72007a6fbeb8cca0c176baabba"},
 ]
 
 [package.dependencies]
@@ -1277,13 +1277,13 @@ reference = "aliyun"
 
 [[package]]
 name = "lk-utils"
-version = "3.6.0a10"
+version = "3.6.0a12"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.6.0a10-py3-none-any.whl", hash = "sha256:e8582a40f2bd9efb0bd1b44e63ea89c2e788ba18bc615d6db782d47383fcaa8b"},
+    {file = "lk_utils-3.6.0a12-py3-none-any.whl", hash = "sha256:cd94eb9de33f2224ac2c014d953318351ffdc80ae8c1ea47abd187b753d64f62"},
 ]
 
 [package.dependencies]
@@ -2800,4 +2800,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "98dcdaf18069b0f582e1beb7520946313e1df397eefa227fb5edd05a3cf3c7c9"
+content-hash = "d7225ad08c9a4cd151e841ed12a09ba11e54d3d9f8e8ea09af08a22142a56424"

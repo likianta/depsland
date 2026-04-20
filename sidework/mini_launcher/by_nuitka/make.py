@@ -26,9 +26,9 @@ def tree_shaking_depsland_online_installer(
         do_minify (-m):
         do_compress (-c):
 
-    tip: if you have only modified "depsland_online_installer/main.py", you can 
-    rerun this command by `do_minify=False, do_compress=True` to fast refresh 
-    result.
+    tip: if you have only modified "depsland_online_installer/main.py", but not 
+    changed venv packages, you can rerun this command by 
+    `do_minify=False, do_compress=True` to fast refresh result.
     """
     if do_minify:
         tree_shaking.build_module_graphs(
@@ -76,7 +76,7 @@ def nuitka_compile_depsland_online_installer() -> None:
     )
 
 @cli
-def build_general_launcher() -> None:
+def nuitka_build_general_launcher() -> None:
     """
     https://chatgpt.com/share/69ddb859-0b78-8321-8407-fc3b8a7d8976
     """

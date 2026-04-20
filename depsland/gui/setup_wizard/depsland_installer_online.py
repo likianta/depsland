@@ -4,19 +4,21 @@ import streamlit_canary as sc
 import typing as tp
 from argsense import cli
 from contextlib import contextmanager
+from time import sleep
 
 @sc.init_state
 class State:
     air_client: tp.Optional[air.Client] = None
     depsland_root = ''
-    dirs_index_0 = 0
-    # dirs_index_1 = 0
     folders: tp.Dict[str, tp.List[str]] = {}
+    installation_done = False
     installation_path = ''
     target: tp.Optional[tp.Tuple[str, str]] = None
     temp_hold_dialog_opened = False
     temp_new_folder_name = ''
-    __version__ = 19
+    tree_select_index_0 = 0
+    tree_select_index_1 = 0
+    __version__ = 20
 
 @cli
 def main(
@@ -57,21 +59,48 @@ def main(
         _init_remote_env()
         State.installation_path = _aircall('get_default_installation_path')
     
-    _ask_folder()
+    if not State.installation_done:
+        _ask_folder()
     
-    if st.button('Install', type='primary', width=160):
-        depsland_direct_path = _install_depsland(State.installation_path)
-        if State.target:
-            _install_target_application(depsland_direct_path, *State.target)
-        State.air_client.close()
+    with st.container(horizontal=True):
+        do_inst = st.button(
+            'Install', 
+            type='primary', 
+            width=160, 
+            disabled=State.installation_done
+        )
+        do_close_place = st.empty()
+    above_progress_place = st.empty()
+    if do_inst:
+        with st.expander('Installation progress', True):
+            depsland_direct_path = _install_depsland(
+                State.installation_path
+            )
+            if State.target:
+                _install_target_application(
+                    depsland_direct_path, *State.target
+                )
+            State.installation_done = True
+            # State.air_client.close()
+    if State.installation_done:
+        with above_progress_place:
+            st.success(
+                'Installation done. You can now close this window and rerun '
+                'the same ".exe" file to launch target application.'
+            )
+        with do_close_place:
+            st.button(':red[Close this window/tab]', on_click=_close_tab_2)
     
-    with sc.row('center'):
-        if st.button('Refresh remote environment'):
-            _init_remote_env()
-        if st.button('Test'):
-            st.markdown(':green[{}]'.format(_aircall('test', 'Alice')))
-        if st.button(':red[Force close]'):
-            State.air_client.close()
+    if debug:
+        with sc.row('center'):
+            if st.button('Refresh remote environment'):
+                _init_remote_env()
+            if st.button('Test'):
+                st.markdown(':green[{}]'.format(_aircall('test', 'Alice')))
+            # if st.button(':red[Force close]'):
+            #     State.air_client.close()
+            if st.button(':red[Close this tab]'):
+                _close_tab_2()
 
 @st.fragment
 def _ask_folder():
@@ -110,7 +139,117 @@ def _ask_folder():
                 State.temp_hold_dialog_opened = False
                 _tree_view()
 
-def _install_depsland(root: str):
+def _close_tab_1() -> None:
+    # FIXME: doesn't work.
+    st.html(
+        '<script>window.close();</script>', 
+        unsafe_allow_javascript=True
+    )
+    State.air_client.close()
+
+def _close_tab_2() -> None:
+    # simulate `ctrl + w` in client side using only standard python libraries.
+    _airexec(
+        '''
+        # https://chatgpt.com/share/69e5b8d8-1578-8320-9a9d-40f07d28fd88
+        import ctypes
+        from ctypes import wintypes
+
+        def simulate_ctrl_w():
+            user32 = ctypes.WinDLL('user32', use_last_error=True)
+
+            INPUT_KEYBOARD = 1
+            KEYEVENTF_KEYUP = 2
+            VK_CONTROL = 0x11
+            VK_W = 0x57
+
+            class KEYBDINPUT(ctypes.Structure):
+                _fields_ = (
+                    ("wVk", wintypes.WORD),
+                    ("wScan", wintypes.WORD),
+                    ("dwFlags", wintypes.DWORD),
+                    ("time", wintypes.DWORD),
+                    ("dwExtraInfo", wintypes.ULONG_PTR),
+                )
+
+            class INPUT(ctypes.Structure):
+                _fields_ = (
+                    ("type", wintypes.DWORD),
+                    ("ki", KEYBDINPUT),
+                )
+
+            def send_input(*inputs):
+                n = len(inputs)
+                LPINPUT = INPUT * n
+                pinputs = LPINPUT(*inputs)
+                cb_size = ctypes.sizeof(INPUT)
+                if user32.SendInput(n, pinputs, cb_size) != n:
+                    raise ctypes.WinError(ctypes.get_last_error())
+
+            def key_down(vk):
+                return INPUT(
+                    type=INPUT_KEYBOARD,
+                    ki=KEYBDINPUT(
+                        wVk=vk, 
+                        wScan=0, 
+                        dwFlags=0, 
+                        time=0, 
+                        dwExtraInfo=0
+                    )
+                )
+
+            def key_up(vk):
+                return INPUT(
+                    type=INPUT_KEYBOARD,
+                    ki=KEYBDINPUT(
+                        wVk=vk, 
+                        wScan=0, 
+                        dwFlags=KEYEVENTF_KEYUP, 
+                        time=0, 
+                        dwExtraInfo=0
+                    )
+                )
+
+            send_input(
+                key_down(VK_CONTROL),
+                key_down(VK_W),
+                key_up(VK_W),
+                key_up(VK_CONTROL),
+            )
+        
+        simulate_ctrl_w()
+        '''
+    )
+    State.air_client.close()
+
+# not suggested.
+@st.dialog('Closing Tab', dismissible=False)
+def _close_tab_3() -> None:
+    st.info(
+        '''
+        Installation is done. This tab is going to be closed in 30 seconds.
+
+        You can also manually close this tab.
+
+        After this, you can rerun the same ".exe" file to launch target 
+        application.
+        '''
+    )
+
+    place = st.empty()
+    do_close = st.button(':red[Close this tab]')
+
+    if not do_close:
+        with place:
+            prog = st.progress(0)
+            for i in range(1, 31):
+                prog.progress(
+                    i / 30, 'Auto close tab in {} seconds'.format(30 - i)
+                )
+                sleep(1)
+    _close_tab_2()
+
+def _install_depsland(root: str) -> str:
     place1 = st.empty()
     label1 = ':one: Downloading Depsland.zip from internet...'
     prog1 = st.progress(0)
@@ -156,7 +295,7 @@ def _install_depsland(root: str):
             'http://172.20.128.100:2019/depsland-0.12.0a2.zip',
             root + '/depsland-0.12.0a2.zip',
         ):
-            print(p, t, ':iv')
+            # print(p, t, ':iv')
             prog.progress(p, t)
     
     with notify_extracting_status() as prog:
@@ -165,12 +304,14 @@ def _install_depsland(root: str):
             root + '/depsland-0.12.0a2.zip',
             root + '/0.12.0a2',
         ):
-            print(p, t, ':iv')
+            # print(p, t, ':iv')
             prog.progress(p, t)
     
     return root + '/0.12.0a2'
 
-def _install_target_application(depsland_root, appid, version):
+def _install_target_application(
+    depsland_root: str, appid: str, version: str
+) -> None:
     place1 = st.empty()
     label1 = ':three: Downloading target application assets...'
     prog1 = st.progress(0)
@@ -494,13 +635,8 @@ def _refresh_tree_model():
         State.folders[f] = []
         if f.startswith('C:/') and f.endswith('/AppData'):
             State.dirs_index_0 = i
+            break
 
 if __name__ == '__main__':
-    # 1. see $[./depsland_installer_client_support.py : __main__ : comments]
-    # 2.a.
-    #   strun 2185 depsland/gui/setup_wizard/depsland_installer_online.py
-    #   localhost <client_port>
-    # 2.b.
-    #   strun 2185 depsland/gui/setup_wizard/depsland_installer_online.py
-    #   localhost <client_port> hello_world_tkinter <version>
+    # see `./readme.mo : Demo Run : Start GUI with debug arguments`
     cli.run(main)
