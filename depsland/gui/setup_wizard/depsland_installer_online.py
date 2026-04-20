@@ -103,11 +103,11 @@ def main(
                 _close_tab_2()
 
 @st.fragment
-def _ask_folder():
+def _ask_folder() -> None:
     place1 = st.empty()
     place2 = st.empty()
     
-    def _sync_manual_path_setting():
+    def _sync_manual_path_setting() -> None:
         State.installation_path = st.session_state[
             'install_path_input:{}'.format(State.installation_path)
         ]
@@ -119,17 +119,38 @@ def _ask_folder():
                 State.installation_path,
                 key='install_path_input:{}'.format(State.installation_path),
                 on_change=_sync_manual_path_setting,
-                help='Input an empty folder or an inexisting folder.',
+                help=(
+                    '''
+                    If input an empty folder or an inexisting folder path, will 
+                    use it as installation path.
+
+                    If input a folder path that is not empty, will use 
+                    `<the_given_path>/Depsland` as installation path.
+
+                    There is a trick that you can input a path to a zip file, 
+                    which is a 
+                    [Depsland Standalone package](http://172.20.128.100:2188/depsland_online_installer.zip). 
+                    Then the program will use it as downloaded resource and 
+                    continue installation.
+                    '''
+                ),
             )
             if path:
-                if _aircall('is_valid_installation_path', path):
-                    State.installation_path = path.replace('\\', '/')
+                path = path.replace('\\', '/')
+                if path.endswith('.zip'):
+                    State.installation_path = path
+                elif _aircall('is_empty_folder', path):
+                    State.installation_path = path
                 else:
-                    with place2:
-                        st.warning(
-                            'Please select an **empty** folder or an '
-                            '**inexisting** folder to install.'
-                        )
+                    path += '/Depsland'
+                    if _aircall('is_empty_folder', path):
+                        with place2:
+                            st.warning(
+                                'Please select an **empty** folder or an '
+                                '**inexisting** folder to install.'
+                            )
+                    else:
+                        State.installation_path = path
             
             # popup st-dialog and show tree view.
             if (
@@ -250,6 +271,9 @@ def _close_tab_3() -> None:
     _close_tab_2()
 
 def _install_depsland(root: str) -> str:
+    """
+    trick: if root is a path to zip file, we will skip downloading process.
+    """
     place1 = st.empty()
     label1 = ':one: Downloading Depsland.zip from internet...'
     prog1 = st.progress(0)
@@ -262,16 +286,26 @@ def _install_depsland(root: str) -> str:
     with place2:
         st.markdown(label2 + ' :gray[wait]')
     
-    _airexec(
-        '''
-        if not fs.exist(root):
-            fs.make_dirs(root)
-        ''',
-        root=root
-    )
-    
+    if root.endswith('.zip'):
+        print('skip downloading depsland.zip because we use cached file.')
+        temp = root
+        path0 = temp.rsplit('/', 1)[0]
+        path1 = temp
+        path2 = temp + '/0.12.0a3'
+    else:
+        path0 = root
+        path1 = root + '/depsland-0.12.0a3.zip'
+        path2 = root + '/0.12.0a3'
+        _airexec(
+            '''
+            if not fs.exist(root):
+                fs.make_dirs(root)
+            ''',
+            root=path0
+        )
+
     @contextmanager
-    def notify_downloading_status():
+    def notify_downloading_status() -> tp.Iterator[st.progress]:
         with place1:
             st.markdown(label1)
         yield prog1
@@ -280,7 +314,7 @@ def _install_depsland(root: str) -> str:
         prog1.progress(1.0, 'Depsland downloaded')
 
     @contextmanager
-    def notify_extracting_status():
+    def notify_extracting_status() -> tp.Iterator[st.progress]:
         with place2:
             st.markdown(label2)
         yield prog2
@@ -288,26 +322,23 @@ def _install_depsland(root: str) -> str:
             st.markdown(label2 + ' :green[done]')
         prog2.progress(1.0, 'Depsland extracted')
 
-    # TEST
     with notify_downloading_status() as prog:
-        for p, t in _aircall(
-            'downloading',
-            'http://172.20.128.100:2019/depsland-0.12.0a2.zip',
-            root + '/depsland-0.12.0a2.zip',
-        ):
-            # print(p, t, ':iv')
-            prog.progress(p, t)
+        if root.endswith('.zip'):
+            prog.progress(1.0, 'Depsland already downloaded.')
+        else:
+            for p, t in _aircall(
+                'downloading',
+                'http://172.20.128.100:2188/depsland-0.12.0a3.zip',
+                path1,
+            ):
+                # print(p, t, ':iv')
+                prog.progress(p, t)
     
     with notify_extracting_status() as prog:
-        for p, t in _aircall(
-            'extracting',
-            root + '/depsland-0.12.0a2.zip',
-            root + '/0.12.0a2',
-        ):
+        for p, t in _aircall('extracting', path1, path2):
             # print(p, t, ':iv')
             prog.progress(p, t)
-    
-    return root + '/0.12.0a2'
+    return path2
 
 def _install_target_application(
     depsland_root: str, appid: str, version: str
@@ -595,7 +626,7 @@ def _init_remote_env():
         def get_default_installation_path():
             return os.path.join(os.environ['LOCALAPPDATA'], 'Depsland')
 
-        def is_valid_installation_path(path):
+        def is_empty_folder(path: str) -> bool:
             if fs.exist(path):
                 if fs.is_empty_dir(path):
                     return True
