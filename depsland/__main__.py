@@ -97,8 +97,8 @@ def welcome(confirm_close: bool = False) -> None:
 
 @cli
 def launch_gui(
-    port: int = 2182,
-    _app_token: str = None,
+    port: int = 2181,
+    _app_token: str = '',
     _run_at_once: t.Optional[bool] = False,
 ) -> None:
     """
@@ -238,8 +238,20 @@ def uninstall(appid: str, version: str = None) -> None:
 # launch application
 
 @cli.cmd('run', transfer_help=True)
-def run(appid: str, version: str = None, *args, **kwargs) -> None:
-    api.user_api.run_app(appid, _version=version, *args, **kwargs)
+def run(
+    appid: str = '', 
+    version: str = '', 
+    _caller_location: str = '', 
+    *args,
+    **kwargs
+) -> None:
+    api.user_api.run_app(
+        appid, 
+        *args, 
+        _version=version, 
+        _caller_location=_caller_location, 
+        **kwargs
+    )
 
 
 @cli

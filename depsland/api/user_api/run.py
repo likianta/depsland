@@ -16,10 +16,10 @@ from ...platform import sysinfo
 
 
 def run_app(
-    appid: str = None,
+    appid: str = '',
     *args,
-    _caller_location: str = None,
-    _version: str = None,
+    _version: str = '',
+    _caller_location: str = '',
     _blocking: bool = True,
     **kwargs
 ) -> t.Optional[subprocess.Popen]:
@@ -30,7 +30,7 @@ def run_app(
         /depsland/__main__.py
         /build/exe/depsland-runapp.bat
     """
-    if appid is None:
+    if not appid:
         assert (
             _caller_location and _caller_location.endswith(('.exe', '.bat'))
         ), _caller_location
