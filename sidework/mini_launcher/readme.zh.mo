@@ -108,6 +108,7 @@
 
 [
     = 开发者: 检查或上传资源到 oss
+
         检查以下资源: [$yaml
             local_entrance: <depsland_project>/resources
             cloud_entrance: <aliyun_oss>/likianta-public-share/depsland-resources
@@ -120,12 +121,23 @@
         其中, [depsland-standalone-<version>.zip] 由以下方式创建: [$sh
             pox build/build_depsland/main.py main -z
             cp dist/standalone/depsland-<new_version>.zip resources
+            #   mv 命令也可以
         ]
 
-        [depsland-online-installer.zip] 由以下方式创建: [本文 : 章节 : 构建方案 : 基于 V 的启动器方案]
-    = 开发者: 开启端口 2188
-    = 开发者: 运行 Depsland Online Installer UI
-        [...]
-        将服务开放到公网: [$sh <bore> -p 2185 2185]
+        [depsland-online-installer.zip] 由以下方式创建: 
+        [本文 : 章节 : 构建方案 : 基于 V 的启动器方案]
+
+    = 开发者: 运行服务进程
+        
+        调试环境: [$sh
+            pom run start_depsland_online_service <bore_secret> --debug
+        ]
+        调试环境会占用以下端口: 2185, 2186, 2188.
+
+        生产环境: [$sh
+            pom run start_depsland_online_service <bore_secret>
+        ]
+        生成环境会占用以下端口: 2185, 2186.
+
     = 用户: 接收到迷你启动器, 双击运行
 ]

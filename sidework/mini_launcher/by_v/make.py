@@ -26,7 +26,7 @@ def create_launcher(
             'appid': target_appid,
             'name': target_name,
             'version': target_version,
-            'depsland_online_installer_url': (
+            'depsland_ol_url': (
                 debug and 
                 'http://172.20.128.100:2188/depsland-online-installer.zip' or 
                 'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com/'

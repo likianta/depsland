@@ -3,7 +3,7 @@ search_paths:
   - $venv
   - .
 entries:
-  - main1.py
+  - main2.py
 ignores:
   - ipython
 export:

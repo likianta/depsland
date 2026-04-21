@@ -18,7 +18,6 @@ from ...api.self_api import self_upgrade
 class State:
     placeholder_widget: tp.Optional[tp.Any] = None
 
-
 def setup_ui(default_appid: str = '', _run_at_once: bool = False) -> None:
     # row = st_row((7, 3))
     # with row.container():
@@ -33,7 +32,6 @@ def setup_ui(default_appid: str = '', _run_at_once: bool = False) -> None:
         # bottom_bar.main()
     with tabs[1]:
         settings.main()
-
 
 def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
     # noinspection PyUnresolvedReferences
@@ -63,7 +61,7 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
     
     if appid and (_run_at_once or do_install):
         with prog_bar_container:
-            with progress_bar.progress_bar():
+            with progress_bar.start_real_progress():
                 with placeholder:
                     with st.spinner(f'Installing "{appid}"...'):
                         # logger = bottom_bar.get_logger()
@@ -86,9 +84,8 @@ def search_bar(default_appid: str, _run_at_once: bool = False) -> None:
                         else:
                             install_by_appid(appid)
 
-
 if __name__ == '__main__':
-    # strun 2180 depsland/gui/app_manager/app.py
+    # strun 2181 depsland/gui/app_manager/app.py
     # setup_ui('hello_world')
     
     from argsense import cli

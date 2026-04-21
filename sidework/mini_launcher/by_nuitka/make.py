@@ -13,9 +13,8 @@ def init() -> None:
     fs.make_dir('dist')
     fs.make_link(f'{depsland_project_root}/python', 'dist/python')
     fs.make_link(
-        'dist', f'{depsland_project_root}/resources/depsland_online_installer'
+        'dist', f'{depsland_project_root}/resources/depsland-online-installer'
     )
-    # fs.make_link('depsland_online_installer/main1.py', 'dist/main.py')
 
 @cli
 def tree_shaking_depsland_online_installer(
@@ -26,7 +25,11 @@ def tree_shaking_depsland_online_installer(
         do_minify (-m):
         do_compress (-c):
 
-    tip: if you have only modified "depsland_online_installer/main.py", but not 
+    note: if you have upgraded some dependencies in 
+    `<depsland_project>/pyproject.toml`, also check this place 
+    `./pyproject.toml`.
+
+    tip: if you have only modified "depsland_online_installer/main2.py", but not 
     changed venv packages, you can rerun this command by 
     `do_minify=False, do_compress=True` to fast refresh result.
     """
@@ -45,12 +48,17 @@ def tree_shaking_depsland_online_installer(
             True
         )
         result = fs.zip(
-            f'{depsland_project_root}/resources/depsland_online_installer', 
-            f'{depsland_project_root}/resources/depsland_online_installer.zip',
+            f'{depsland_project_root}/resources/depsland-online-installer', 
+            f'{depsland_project_root}/resources/depsland-online-installer.zip',
             overwrite=True,
             progress=True,
         )
-        print(fs.filesize(result, str))
+        print(
+            'see "<depsland_project>/resources/depsland-online-installer.zip" '
+            '({}). you may also want to upload this file to '
+            '"<oss>/likianta-public-share/depsland-resources".'
+            .format(fs.filesize(result, str))
+        )
 
 @cli
 def nuitka_compile_depsland_online_installer() -> None:
@@ -234,4 +242,8 @@ def create_launcher_from_manifest(
     )
 
 if __name__ == '__main__':
+    # cd <current_dir>
+    # pox make.py -h
+    # pox make.py tree_shaking_depsland_online_installer
+    # pox make.py tree_shaking_depsland_online_installer -M
     cli.run()

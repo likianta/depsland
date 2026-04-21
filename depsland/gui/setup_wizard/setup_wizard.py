@@ -6,8 +6,8 @@ import streamlit_canary as sc
 from airmise import Client as AirClient
 from argsense import cli
 from streamlit_extras.bottom_container import bottom as bottom_container
-from ..app_manager.progress_bar import bind_real_progress
 from ..app_manager.progress_bar import start_demo_progress
+from ..app_manager.progress_bar import start_real_progress
 from ...api import install_by_appid
 
 state = sc.init_state(lambda: {
@@ -19,7 +19,7 @@ state = sc.init_state(lambda: {
 def main(
     app_name: str,
     appid: str,
-    description: str = None,
+    description: str = '',
     dry_run: bool = False,
     emit_close_event: bool = False,
 ) -> None:
@@ -69,11 +69,11 @@ def main(
     else:
         st.title(f'Installing :blue[{app_name}]...')
         if dry_run:
-            start_demo_progress()
+            with start_demo_progress():
+                pass
         else:
-            prog_ui = bind_real_progress()
-            install_by_appid(appid)
-            prog_ui.progress(1.0, 'Installation done')
+            with start_real_progress():
+                install_by_appid(appid)
         state['finished'] = True
         st.rerun()
 

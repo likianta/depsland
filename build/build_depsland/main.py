@@ -4,20 +4,24 @@ from depsland import paths
 from depsland.api.dev_api import build_project
 from depsland.api.dev_api.build_project import bump_version as _bump_version
 from lk_utils import fs
-from lk_utils import run_cmd_args
 
 @cli
 def bump_version(new_ver: str = '') -> None:
     _bump_version('build/build_depsland/build_project.json', new_ver)
 
 @cli
-def main(new_version: str = '', compress: bool = False) -> None:
+def main(
+    new_version: str = '', 
+    compress: bool = False, 
+    upload_to_oss: bool = False,
+) -> None:
     """
     params:
         new_version (-v):
         compress (-z):
+        upload_to_oss (-u):
     """
-    old_ver, new_ver = build_project(
+    _, new_ver = build_project(
         file='build/build_depsland/build_project.json',
         new_version=new_version,
         minify_deps=2,
@@ -30,6 +34,16 @@ def main(new_version: str = '', compress: bool = False) -> None:
         print(':t', 'compressed: {} ({})'.format(
             fs.relpath(dist_file), fs.filesize(dist_file, str)
         ))
+    if upload_to_oss:  # TODO
+        print(
+            '''
+            1. copy or move the ".zip" file to `resources` folder.
+            2. upload the ".zip" file to `oss:/likianta-public-share/depsland
+            -resources/depsland-<version>.zip`
+            3. update code at `depsland/gui/setup_wizard/depsland_installer
+            _online.py:State.depsland_url`
+            '''
+        )
 
 @cli
 def make_dist(

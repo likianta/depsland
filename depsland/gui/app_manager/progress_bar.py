@@ -1,9 +1,11 @@
 import streamlit as st
+from contextlib import contextmanager
 from random import randint
 from time import sleep
 from ...api.user_api.install import T
 from ...api.user_api.install import install_progress
 
+@contextmanager
 def start_demo_progress():
     prog_ui = st.progress(0)
     
@@ -25,12 +27,15 @@ def start_demo_progress():
         )
         sleep(randint(5, 10) / 10)  # 500ms ~ 1000ms
     
+    yield prog_ui
+
     prog_ui.progress(1.0, 'Installation done')
 
-def bind_real_progress(signal=install_progress):
+@contextmanager
+def start_real_progress(progress_signal=install_progress):
     _prog_ui = st.progress(0)
     
-    @signal
+    @progress_signal.bind
     def _update_progress(
         stage: T.ProgressStage, percent: float, text: str
     ) -> None:
@@ -41,4 +46,6 @@ def bind_real_progress(signal=install_progress):
         else:
             _prog_ui.progress(0.9 + 0.1 * percent, text)
     
-    return _prog_ui
+    yield _prog_ui
+    
+    _prog_ui.progress(1.0, 'Installation done')

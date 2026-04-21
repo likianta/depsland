@@ -9,6 +9,10 @@ from contextlib import contextmanager
 class State:
     air_client: tp.Optional[air.Client] = None
     depsland_root = ''
+    depsland_url = (
+        'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
+        '/depsland-resources/depsland-0.12.0a9.zip'
+    )
     folders: tp.Dict[str, tp.List[str]] = {}
     installation_done = False
     installation_path = ''
@@ -17,7 +21,7 @@ class State:
     temp_new_folder_name = ''
     tree_select_index_0 = 0
     tree_select_index_1 = 0
-    __version__ = 22
+    __version__ = 23
 
 @cli
 def main(
@@ -130,10 +134,7 @@ def _ask_folder() -> None:
                     which is a [Depsland Standalone package]({}); the program 
                     will then treat it as downloaded resource and continue 
                     installation.
-                    '''.format(
-                        'http://172.20.128.100:2188/'
-                        'depsland_online_installer.zip'
-                    )
+                    '''.format(State.depsland_url)
                 ),
             )
             if path:
@@ -276,13 +277,15 @@ def _install_depsland(root: str) -> str:
     if root.endswith('.zip'):
         print('skip downloading depsland.zip because we use cached file.')
         temp = root
-        path0 = temp.rsplit('/', 1)[0]
-        path1 = temp
-        path2 = path0 + '/0.12.0a3'
+        version = temp.rsplit('-', 1)[1].removesuffix('.zip')
+        path0 = temp.rsplit('/', 1)[0]  # parent folder
+        path1 = temp  # zip file
+        path2 = path0 + '/' + version  # extracted folder
     else:
-        path0 = root
-        path1 = root + '/depsland-0.12.0a3.zip'
-        path2 = root + '/0.12.0a3'
+        version = State.depsland_url.rsplit('-', 1)[1].removesuffix('.zip')
+        path0 = root  # parent folder
+        path1 = root + '/depsland-' + version + '.zip'  # zip file
+        path2 = root + '/' + version  # extracted folder
         _airexec(
             '''
             if not fs.exist(root):
@@ -313,11 +316,7 @@ def _install_depsland(root: str) -> str:
         if root.endswith('.zip'):
             prog.progress(1.0, 'Depsland already downloaded.')
         else:
-            for p, t in _aircall(
-                'downloading',
-                'http://172.20.128.100:2188/depsland-0.12.0a3.zip',
-                path1,
-            ):
+            for p, t in _aircall('downloading', State.depsland_url, path1):
                 # print(p, t, ':iv')
                 prog.progress(p, t)
     

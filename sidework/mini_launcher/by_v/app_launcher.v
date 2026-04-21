@@ -9,7 +9,7 @@ struct Manifest {
     appid  string
     name string
     version string
-    depsland_online_installer_url string
+    depsland_ol_url string
 }
 
 struct LocalDepslandInfo {
@@ -36,8 +36,8 @@ fn main() {
             ['runx', manifest.appid, manifest.version]
         )!
     } else {
-        dps_ol_dir := download_and_extract_depsland_online_installer(
-            manifest.depsland_online_installer_url
+        dps_ol_dir := download_and_extract_depsland_ol(
+            manifest.depsland_ol_url
         )!
         os.chdir(dps_ol_dir)!
         os.execvp(
@@ -116,11 +116,11 @@ fn check_version_of_installed_depsland(path string) !bool {
 fn cleanup() ! {
     println('Cleanup intermediate files.')
     currdir := os.dir(os.executable())
-    os.rm('${currdir}/depsland_online_installer.zip')!
-    os.rmdir_all('${currdir}/depsland_online_installer')!
+    os.rm('${currdir}/depsland-online-installer.zip')!
+    os.rmdir_all('${currdir}/depsland-online-installer')!
 }
 
-fn download_and_extract_depsland_online_installer(url string) !string {
+fn download_and_extract_depsland_ol(url string) !string {
     // currdir := os.getwd()
     currdir := os.dir(os.executable())
     println('Current executable directory: ${currdir}')
