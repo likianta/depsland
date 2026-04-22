@@ -22,7 +22,7 @@ fn main() {
     // println('my PID is ${os.getpid()}')
 
     manifest := json.decode(
-        Manifest, $embed_file('./target.json').to_string()
+        Manifest, $embed_file('_target_meta.json').to_string()
     )!
     println(manifest)
 

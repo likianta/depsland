@@ -1,12 +1,12 @@
 import json
 import sys
 import tree_shaking
-import typing as tp
 from argsense import cli
-from lk_utils import cd_current_dir, fs, run_cmd_args
+from lk_utils import fs, run_cmd_args
 
-cd_current_dir()
-depsland_project_root = '../../..'
+fs.cd_current_dir()
+depsland_project_root = '../..'
+
 
 @cli
 def init() -> None:
@@ -15,6 +15,12 @@ def init() -> None:
     fs.make_link(
         'dist', f'{depsland_project_root}/resources/depsland-online-installer'
     )
+    if not fs.exist('tree_shaking'):
+        print(
+            'suggest manually linking '
+            '`<python_tree_shaking_project>/tree_shaking` here'
+        )
+
 
 @cli
 def tree_shaking_depsland_online_installer(
@@ -26,12 +32,12 @@ def tree_shaking_depsland_online_installer(
         compress (-c):
         upload (-u):
 
-    note: if you have upgraded some dependencies in 
-    `<depsland_project>/pyproject.toml`, also check this place 
+    note: if you have upgraded some dependencies in
+    `<depsland_project>/pyproject.toml`, also check this place
     `./pyproject.toml`.
 
-    tip: if you have only modified "depsland_online_installer/main2.py", but not 
-    changed venv packages, you can rerun this command by 
+    tip: if you have only modified "depsland_online_installer/main2.py", but not
+    changed venv packages, you can rerun this command by
     `minify=False, compress=True` to fast refresh result.
     """
     if minify:
@@ -39,17 +45,12 @@ def tree_shaking_depsland_online_installer(
             'depsland_online_installer/tree_shaking.yaml'
         )
         tree_shaking.dump_tree(
-            'depsland_online_installer/tree_shaking.yaml',
-            'dist/minideps'
+            'depsland_online_installer/tree_shaking.yaml', 'dist/minideps'
         )
     if compress:
-        fs.copy_file(
-            'depsland_online_installer/main2.py',
-            'dist/main.py',
-            True
-        )
+        fs.copy_file('depsland_online_installer/main2.py', 'dist/main.py', True)
         result = fs.zip(
-            f'{depsland_project_root}/resources/depsland-online-installer', 
+            f'{depsland_project_root}/resources/depsland-online-installer',
             f'{depsland_project_root}/resources/depsland-online-installer.zip',
             overwrite=True,
             progress=True,
@@ -57,24 +58,105 @@ def tree_shaking_depsland_online_installer(
         print(
             'see "<depsland_project>/resources/depsland-online-installer.zip" '
             '({}). you may also want to upload this file to '
-            '"<oss>/likianta-public-share/depsland-resources".'
-            .format(fs.filesize(result, str))
+            '"<oss>/likianta-public-share/depsland-resources".'.format(
+                fs.filesize(result, str)
+            )
         )
     if upload:
         if not compress:
             print('the uploaded file may not be latest.', ':v6')
         run_cmd_args(
             (
-                'ossutil', 
-                'cp', 
+                'ossutil',
+                'cp',
                 f'{depsland_project_root}/resources/depsland-online'
                 '-installer.zip',
                 'oss://likianta-public-share/depsland-resources/depsland'
                 '-online-installer.zip',
                 '-u',
             ),
-            verbose=True
+            verbose=True,
         )
+
+
+@cli
+def create_launcher(
+    target_name: str,
+    target_appid,
+    target_version,
+    file_out: str,
+    icon: str = '',
+    show_console: bool = False,
+    debug: bool = False,
+) -> None:
+    if fs.isdir(file_out):
+        file_out += '/{}.exe'.format(target_name)
+    else:
+        assert file_out.endswith('.exe')
+
+    fs.dump(
+        {
+            'appid': target_appid,
+            'name': target_name,
+            'version': target_version,
+            'depsland_ol_url': (
+                debug
+                and 'http://172.20.128.100:2188/depsland-online-installer.zip'
+                or 'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com/'
+                'depsland-resources/depsland-online-installer.zip'
+            ),
+        },
+        '_target_meta.json',
+    )
+    run_cmd_args(('v', 'app_launcher.v'))
+    print(fs.filesize('app_launcher.exe', str))
+
+    fs.copy_file('app_launcher.exe', file_out, True)
+
+    if icon:
+        sys.path.append(depsland_project_root)
+        from depsland.platform.launcher.make_exe import add_icon_to_exe
+
+        add_icon_to_exe(file_out, icon)
+
+    # TODO
+    if not show_console:
+        print(':v6', 'hiding console is work-in-progress')
+
+
+@cli
+def create_launcher_from_profile(profile: str, file_out: str = '') -> None:
+    sys.path.append(depsland_project_root)
+    from depsland import load_manifest
+
+    manifest = load_manifest(profile)
+
+    if file_out:
+        if fs.isdir(file_out):
+            file_out += '/{} v{}.exe'.format(
+                manifest['name'], manifest['version']
+            )
+        else:
+            assert file_out.endswith('.exe')
+    else:
+        file_out = '{}/dist/{} v{}.exe'.format(
+            manifest['start_directory'], manifest['name'], manifest['version']
+        )
+
+    create_launcher(
+        manifest['name'],
+        manifest['appid'],
+        manifest['version'],
+        file_out,
+        icon=manifest['launcher']['icon'],
+        show_console=manifest['launcher']['show_console'],
+    )
+    print('see result at "{}"'.format(file_out), ':v4')
+
+
+# ------------------------------------------------------------------------------
+# DELETE: nuitka related build functions are deprecated.
+
 
 @cli
 def nuitka_compile_depsland_online_installer() -> None:
@@ -96,8 +178,9 @@ def nuitka_compile_depsland_online_installer() -> None:
     fs.copy_file(
         'depsland_online_installer/depsland_online_installer.exe',
         f'{depsland_project_root}/resources/depsland_online_installer.exe',
-        True
+        True,
     )
+
 
 @cli
 def nuitka_build_general_launcher() -> None:
@@ -129,21 +212,22 @@ def nuitka_build_general_launcher() -> None:
         cwd='general_launcher',
     )
     print(
-        '''
+        """
         launchers built:
             {}: {}
             {}: {}
-        '''.format(
+        """.format(
             'general_launcher_console.exe',
             fs.filesize('general_launcher/general_launcher_console.exe', str),
             'general_launcher_noconsole.exe',
             fs.filesize('general_launcher/general_launcher_noconsole.exe', str),
         ),
-        ':t'
+        ':t',
     )
 
+
 @cli
-def create_launcher(
+def nuitka_create_launcher(
     target_name: str,
     target_appid,
     target_version,
@@ -166,11 +250,11 @@ def create_launcher(
             file_out += '/{}.exe'.format(target_name)
     else:
         file_out = 'generated_launchers/{}.exe'.format(target_name)
-    
+
     base_exe = (
-        show_console and
-        'general_launcher/general_launcher_console.exe' or
-        'general_launcher/general_launcher_noconsole.exe'
+        show_console
+        and 'general_launcher/general_launcher_console.exe'
+        or 'general_launcher/general_launcher_noconsole.exe'
     )
 
     # with (open(base_exe, 'rb') as r, open(file_out, 'wb') as w):
@@ -193,73 +277,39 @@ def create_launcher(
 
         fs.copy_file(base_exe, file_out, True)
         add_icon_to_exe(file_out, icon)
-        
+
         with open(file_out, 'rb') as r:
             raw = r.read()
         with open(file_out, 'wb') as w:
-            w.write(raw + b'__DEPSLAND_CONFIG__' + json.dumps(
-                {
-                    'appid'       : target_appid,
-                    'name'        : target_name,
-                    'version'     : target_version,
-                    'show_console': show_console,
-                }
-            ).encode('utf-8'))
+            w.write(
+                raw
+                + b'__DEPSLAND_CONFIG__'
+                + json.dumps(
+                    {
+                        'appid': target_appid,
+                        'name': target_name,
+                        'version': target_version,
+                        'show_console': show_console,
+                    }
+                ).encode('utf-8')
+            )
     else:
-        with (open(base_exe, 'rb') as r, open(file_out, 'wb') as w):
-            w.write(r.read() + b'__DEPSLAND_CONFIG__' + json.dumps(
-                {
-                    'appid'       : target_appid,
-                    'name'        : target_name,
-                    'version'     : target_version,
-                    'show_console': show_console,
-                }
-            ).encode('utf-8'))
-    
+        with open(base_exe, 'rb') as r, open(file_out, 'wb') as w:
+            w.write(
+                r.read()
+                + b'__DEPSLAND_CONFIG__'
+                + json.dumps(
+                    {
+                        'appid': target_appid,
+                        'name': target_name,
+                        'version': target_version,
+                        'show_console': show_console,
+                    }
+                ).encode('utf-8')
+            )
+
     print(':tv4', f'see "{file_out}" ({fs.filesize(file_out, str)})')
 
-@cli
-def create_launcher_from_manifest(
-    mainfest_file: str,
-    dir_out: str = '',
-    file_out: str = '',
-    show_console: tp.Optional[bool] = None,
-) -> None:
-    """
-    params:
-        dir_out (-d):
-        file_out (-f):
-        show_console (-c):
-    """
-    from depsland.manifest import load_manifest
-    mani = load_manifest(mainfest_file)
-    
-    debug = bool(show_console)
-    if show_console is None:
-        show_console = mani['launcher']['show_console']
-        print(':v', show_console)
-    if file_out is None:
-        if dir_out is None:
-            dir_out = '{}/dist'.format(mani['start_directory'])
-        if debug:
-            name_template = '{} v{} (Debug).exe'
-        else:
-            name_template = '{} v{}.exe'
-        name = name_template.format(mani['name'], mani['version'])
-        file_out = '{}/{}'.format(dir_out, name)
-    
-    create_launcher(
-        target_name=mani['name'],
-        target_appid=mani['appid'],
-        target_version=mani['version'],
-        file_out=file_out,
-        icon=mani['launcher']['icon'],
-        show_console=show_console,
-    )
 
 if __name__ == '__main__':
-    # cd <current_dir>
-    # pox make.py -h
-    # pox make.py tree_shaking_depsland_online_installer
-    # pox make.py tree_shaking_depsland_online_installer -M
     cli.run()
