@@ -5,6 +5,7 @@ import typing as tp
 from argsense import cli
 from contextlib import contextmanager
 
+
 @sc.init_state
 class State:
     air_client: tp.Optional[air.Client] = None
@@ -23,10 +24,11 @@ class State:
     tree_select_index_1 = 0
     __version__ = 23
 
+
 @cli
 def main(
     debug: bool = False,
-    **kwargs
+    **kwargs,
     # client_public_host: tp.Optional[str] = None,
     # client_public_port: tp.Optional[int] = None,
     # target_appid: tp.Optional[str] = None,
@@ -42,9 +44,9 @@ def main(
             target_appid = kwargs.get('target_appid', '')
             target_version = kwargs.get('target_version', '')
         else:
-            # the incoming url should be like: 
+            # the incoming url should be like:
             # $[http://<host>:<port>/?client-open-port=<open_port>
-            # &target-appid=<appid>&target-version=<version>] $[// target-* are 
+            # &target-appid=<appid>&target-version=<version>] $[// target-* are
             # optional]
             if st.query_params:
                 client_public_host = 'localhost'
@@ -61,28 +63,24 @@ def main(
         State.air_client.open()
         _init_remote_env()
         State.installation_path = _aircall('get_default_installation_path')
-    
+
     if not State.installation_done:
         _ask_folder()
-    
+
     with st.container(horizontal=True):
         do_inst = st.button(
-            'Install', 
-            type='primary', 
-            width=160, 
-            disabled=State.installation_done
+            'Install',
+            type='primary',
+            width=160,
+            disabled=State.installation_done,
         )
         do_close_place = st.empty()
     above_progress_place = st.empty()
     if do_inst:
         with st.expander('Installation progress', True):
-            depsland_direct_path = _install_depsland(
-                State.installation_path
-            )
+            depsland_direct_path = _install_depsland(State.installation_path)
             if State.target:
-                _install_target_application(
-                    depsland_direct_path, *State.target
-                )
+                _install_target_application(depsland_direct_path, *State.target)
             State.installation_done = True
             # State.air_client.close()
     if State.installation_done:
@@ -93,7 +91,7 @@ def main(
             )
         with do_close_place:
             st.button(':red[Close this window/tab]', on_click=_close_tab_2)
-    
+
     if debug:
         with sc.row('center'):
             if st.button('Refresh remote environment'):
@@ -105,16 +103,17 @@ def main(
             if st.button(':red[Close this tab]'):
                 _close_tab_2()
 
+
 @st.fragment
 def _ask_folder() -> None:
     place1 = st.empty()
     place2 = st.empty()
-    
+
     def _sync_manual_path_setting() -> None:
         State.installation_path = st.session_state[
             'install_path_input:{}'.format(State.installation_path)
         ]
-    
+
     with place1:
         with st.container(horizontal=True, vertical_alignment='bottom'):
             path = st.text_input(
@@ -123,7 +122,7 @@ def _ask_folder() -> None:
                 key='install_path_input:{}'.format(State.installation_path),
                 on_change=_sync_manual_path_setting,
                 help=(
-                    '''
+                    """
                     If input an empty folder or a non-existent folder path, will 
                     use it as installation path.
 
@@ -134,7 +133,7 @@ def _ask_folder() -> None:
                     which is a [Depsland Standalone package]({}); the program 
                     will then treat it as downloaded resource and continue 
                     installation.
-                    '''.format(State.depsland_url)
+                    """.format(State.depsland_url)
                 ),
             )
             if path:
@@ -154,27 +153,23 @@ def _ask_folder() -> None:
                     else:
                         State.installation_path = path
                 print(State.installation_path)
-            
+
             # popup st-dialog and show tree view.
-            if (
-                st.button('Browse', width=120) or
-                State.temp_hold_dialog_opened
-            ):
+            if st.button('Browse', width=120) or State.temp_hold_dialog_opened:
                 State.temp_hold_dialog_opened = False
                 _tree_view()
 
+
 def _close_tab_1() -> None:
     # FIXME: doesn't work.
-    st.html(
-        '<script>window.close();</script>', 
-        unsafe_allow_javascript=True
-    )
+    st.html('<script>window.close();</script>', unsafe_allow_javascript=True)
     State.air_client.close()
+
 
 def _close_tab_2() -> None:
     # simulate `ctrl + w` in client side using only standard python libraries.
     _airexec(
-        '''
+        """
         # https://github.com/gauthsvenkat/pyKey/blob/master/pyKey/windows.py
         # https://chatgpt.com/share/69e5b8d8-1578-8320-9a9d-40f07d28fd88
         
@@ -254,9 +249,10 @@ def _close_tab_2() -> None:
             key_up('CTRL')
 
         simulate_ctrl_w()
-        '''
+        """
     )
     State.air_client.close()
+
 
 def _install_depsland(root: str) -> str:
     """
@@ -268,12 +264,12 @@ def _install_depsland(root: str) -> str:
     place2 = st.empty()
     label2 = ':two: Unpacking resources...'
     prog2 = st.progress(0)
-    
+
     with place1:
         st.markdown(label1 + ' :gray[wait]')
     with place2:
         st.markdown(label2 + ' :gray[wait]')
-    
+
     if root.endswith('.zip'):
         print('skip downloading depsland.zip because we use cached file.')
         temp = root
@@ -287,11 +283,11 @@ def _install_depsland(root: str) -> str:
         path1 = root + '/depsland-' + version + '.zip'  # zip file
         path2 = root + '/' + version  # extracted folder
         _airexec(
-            '''
+            """
             if not fs.exist(root):
                 fs.make_dirs(root)
-            ''',
-            root=path0
+            """,
+            root=path0,
         )
 
     @contextmanager
@@ -319,12 +315,13 @@ def _install_depsland(root: str) -> str:
             for p, t in _aircall('downloading', State.depsland_url, path1):
                 # print(p, t, ':iv')
                 prog.progress(p, t)
-    
+
     with notify_extracting_status() as prog:
         for p, t in _aircall('extracting', path1, path2):
             # print(p, t, ':iv')
             prog.progress(p, t)
     return path2
+
 
 def _install_target_application(
     depsland_root: str, appid: str, version: str
@@ -338,16 +335,16 @@ def _install_target_application(
     place3 = st.empty()
     label3 = ':five: Finishing target application...'
     prog3 = st.progress(0)
-    
+
     with place1:
         st.markdown(label1 + ' :gray[wait]')
     with place2:
         st.markdown(label2 + ' :gray[wait]')
     with place3:
         st.markdown(label3 + ' :gray[wait]')
-    
+
     generator = _airexec(
-        '''
+        """
         def run_depsland_install(depsland_root, appid, version):
             if depsland_root not in sys.path:
                 sys.path.insert(0, depsland_root)
@@ -378,12 +375,12 @@ def _install_target_application(
             yield (progress[0], 1.0, progress[2])
         
         return run_depsland_install(depsland_root, appid, version)
-        ''',
+        """,
         depsland_root=depsland_root,
         appid=appid,
         version=version,
     )
-    
+
     # @contextmanager
     # def notify_stage1_status():
     #     with place1:
@@ -407,7 +404,7 @@ def _install_target_application(
     #     yield prog3
     #     with place3:
     #         st.markdown(label3 + ' :green[done]')
-    
+
     curr_prog = prog1
     last_stage = ''
     for stage, percent, text in generator:
@@ -437,20 +434,21 @@ def _install_target_application(
             st.markdown(label3 + ' :green[done]')
         prog3.progress(1.0, 'Finished miscellaneous stuff')
 
+
 @st.dialog('Choose Setup Location', width='medium')
-def _tree_view():
+def _tree_view() -> None:
     """
     ref: $[lib:streamlib_canary/opener.py:file_dialog_st]
     """
     if not State.folders:
         _refresh_tree_model()
-    
+
     place1 = st.empty()
     place2 = st.empty()
-    
-    def _set_new_folder_name():
+
+    def _set_new_folder_name() -> None:
         State.temp_new_folder_name = st.session_state['new_folder_input']
-    
+
     with place2:
         with st.container(horizontal=True):
             do_confirm = st.button('Confirm', type='primary')
@@ -467,81 +465,99 @@ def _tree_view():
             else:
                 new_folder_name = State.temp_new_folder_name
                 State.temp_new_folder_name = ''
-    
+
     with place1:
         with st.container():
             currdir = st.selectbox(
                 'Current location',
                 sorted(State.folders.keys()),
-                index=State.dirs_index_0,
+                index=State.tree_select_index_0,
             )
-            
+
             subdirs = State.folders[currdir]
             if do_refresh:
                 subdirs.clear()
             if not subdirs:
-                subdirs.extend(_airexec(
-                    'return fs.find_dir_names(folder)', folder=currdir
-                ))
-                
+                subdirs.extend(
+                    _airexec('return fs.find_dir_names(folder)', folder=currdir)
+                )
+
             if new_folder_name:
                 if new_folder_name in subdirs:
                     st.toast(
                         ':red[Failed to create new folder: duplicate name!]',
-                        duration='long'
+                        duration='long',
                     )
+                    State.tree_select_index_1 = subdirs.index(new_folder_name)
                 else:
                     _airexec(
                         'fs.make_dir(path)',
-                        path='{}/{}'.format(currdir, new_folder_name)
+                        path='{}/{}'.format(currdir, new_folder_name),
                     )
                     st.toast(':green[Folder created.]')
                     subdirs.append(new_folder_name)
                     subdirs.sort()
+                    State.tree_select_index_1 = subdirs.index(new_folder_name)
                     State.temp_hold_dialog_opened = True
                     st.rerun()
-                    
+
             with st.container(height=300):
-                target_dirname = st.radio('Select folder', subdirs)
-                result = (
-                    target_dirname is None and currdir or
-                    '{}/{}'.format(currdir, target_dirname)
+                target_dirname = st.radio(
+                    'Select folder', subdirs, index=State.tree_select_index_1
                 )
-            
-            def change_dir(dirpath):
+                result = (
+                    target_dirname is None
+                    and currdir
+                    or '{}/{}'.format(currdir, target_dirname)
+                )
+
+            def change_dir(
+                dirpath: str, relocate_subdir_name: str = ''
+            ) -> None:
                 if dirpath not in State.folders:
-                    State.folders[dirpath] = []
-                State.dirs_index_0 = sorted(State.folders).index(dirpath)
+                    State.folders[dirpath] = _airexec(
+                        'return fs.find_dir_names(folder)', folder=dirpath
+                    )
+                State.tree_select_index_0 = sorted(State.folders).index(dirpath)
+                if relocate_subdir_name:
+                    State.tree_select_index_1 = State.folders[dirpath].index(
+                        relocate_subdir_name
+                    )
+                else:
+                    State.tree_select_index_1 = 0
                 State.temp_hold_dialog_opened = True
                 st.rerun()
-            
+
             if do_back:
-                change_dir(currdir.rsplit('/', 1)[0])
+                a, b = currdir.rsplit('/', 1)
+                change_dir(a, relocate_subdir_name=b)
             elif do_enter and result != currdir:
                 change_dir(result)
             else:
                 a, b = result.rsplit('/', 1)
                 st.markdown('You selected: **{}/:blue[{}]**'.format(a, b))
-    
+
     if do_confirm:
         State.installation_path = (
-            result.endswith('/Depsland') and
-            result or
-            result + '/Depsland'
+            result.endswith('/Depsland') and result or result + '/Depsland'
         )
         st.rerun()
 
+
 # ------------------------------------------------------------------------------
+
 
 def _aircall(func_name: str, *args, **kwargs) -> tp.Any:
     return State.air_client.call(func_name, *args, **kwargs)
 
+
 def _airexec(code, **kwargs):
     return State.air_client.exec(code, **kwargs)
 
+
 def _init_remote_env():
     State.air_client.exec(
-        '''
+        """
         import os
         import sys
         from lk_utils import fs
@@ -620,12 +636,13 @@ def _init_remote_env():
             return True
         
         return None
-        '''
+        """
     )
+
 
 def _refresh_tree_model():
     parent_folders = _airexec(
-        '''
+        """
         folders = [fs.parent(fs.normpath(os.environ['LOCALAPPDATA']))]
 
         for root in (
@@ -645,14 +662,15 @@ def _refresh_tree_model():
         
         folders.sort()
         return folders
-        '''
+        """
     )
     State.folders.clear()
     for i, f in enumerate(parent_folders):
         State.folders[f] = []
         if f.startswith('C:/') and f.endswith('/AppData'):
-            State.dirs_index_0 = i
+            State.tree_select_index_0 = i
             break
+
 
 if __name__ == '__main__':
     # see `./readme.mo : Demo Run : Start GUI with debug arguments`
