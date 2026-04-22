@@ -1,21 +1,26 @@
 """
 directory structure (example):
-    dist/hello_world-0.1.0
-    |- Hello World.exe
-    |= source
-        |= depsland
-        |= apps
-            |= hello_world
-                |= 0.1.0
-                    |= .venv
-                    |= src
-                        |- main.py
-        |= python
-            |- python.exe
+    <depsland_project>
+    └── dist
+        └── hello_world-0.1.0
+            ├── source
+            │   ├── apps
+            │   │   └── hello_world
+            │   │       └── 0.1.0
+            │   │           ├── .venv
+            │   │           └── src
+            │   │               └── main.py
+            │   ├── depsland
+            │   └── python
+            │       ├── python.exe
+            │       └── ...
+            ├── Hello World.exe
+            └── Hello World (Debug).exe
+
 what does "Hello World.exe" do:
     1. cd to `<curr_dir>/source`
-    2. set environment `PYTHONPATH=.`
-    3. run "python/python.exe -m depsland run hello_world"
+    2. set environment variables
+    3. run `python/python.exe -m depsland run hello_world`
         depsland will find the target's location and launch it.
 """
 from lk_utils import dedent

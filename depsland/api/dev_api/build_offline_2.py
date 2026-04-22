@@ -91,6 +91,7 @@ def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     icon = manifest['launcher']['icon'] or paths.build.python_icon
     
+    # default launcher
     script = dedent(
         '''
         @echo off
@@ -113,6 +114,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     )
     fs.remove_file(x)
     
+    # debug launcher
     script = dedent(
         '''
         cd /d %~dp0

@@ -4,6 +4,7 @@ from .fs import get_file_hash
 from .fs import get_updated_time
 from .fs import init_target_tree
 from .fs import make_temp_dir
+from .misc import add_info_to_exe
 from .mklink import mergelink
 from .mklink import mergelinks
 from .mklink import mklink

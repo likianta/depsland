@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.0a4"
+version = "0.12.0a10"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -38,7 +38,7 @@ tree-shaking = "^0.2.4"
 windows-toasts = { version = "^1.0.0", platform = "win32" }
 
 [tool.poetry.group.dev.dependencies]
-airmise = { version = "^3.0.0b1", extras = ["frp"], source = "likianta" }
+airmise = { version = "^3.0.0b2", source = "likianta" }
 argsense = { version = "^1.1.1", source = "likianta" }
 conflore = { version = "^0.2.2", source = "likianta" }
 freesimplegui = "^5.2.0.post1"
@@ -74,6 +74,12 @@ priority = "supplemental"
 
 [tool.poetry-extensions]
 ignore-unused-packages = ["poetry"]
+
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "single"
 
 [tool.ty.rules]
 invalid-type-form = "ignore"

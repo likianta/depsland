@@ -40,8 +40,12 @@ def main(
             1. copy or move the ".zip" file to `resources` folder.
             2. upload the ".zip" file to `oss:/likianta-public-share/depsland
             -resources/depsland-<version>.zip`
+                command: `ossutil cp <dist_file> oss://likianta-public-share
+                /depsland-resources/depsland-<version>.zip`
             3. update code at `depsland/gui/setup_wizard/depsland_installer
             _online.py:State.depsland_url`
+            4. check code at `sidework/mini_launcher/by_v/app_launcher.v
+            :check_version_of_installed_depsland`
             '''
         )
 

@@ -1,5 +1,22 @@
 [# 开发者说明文档]
 
+[## 环境配置]
+
+[#~ 工具链]
+
+确保以下工具已添加到环境变量 PATH:
+
+[
+    - aliyun ossutil 2.0
+        链接: [@ https://help.aliyun.com/document_detail/2786110.html?spm=5176.8465980.console-base_help.100.4e701450oTNtfn]
+        说明: 用于上传/下载应用.
+        验证: [$ ossutil version]
+    - vlang 0.5
+        链接: [...]
+        说明: 用于构建 [_ sidework/mini_launcher/by_v/app_launcher.v]
+        验证: [$ v version]
+]
+
 [## 占用端口说明]
 
 [$yaml

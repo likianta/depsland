@@ -11,7 +11,7 @@ class State:
     depsland_root = ''
     depsland_url = (
         'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
-        '/depsland-resources/depsland-0.12.0a9.zip'
+        '/depsland-resources/depsland-0.12.0a10.zip'
     )
     folders: tp.Dict[str, tp.List[str]] = {}
     installation_done = False

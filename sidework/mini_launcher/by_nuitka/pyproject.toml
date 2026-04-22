@@ -14,7 +14,7 @@ dynamic = ["dependencies"]
 
 [tool.poetry.dependencies]
 python = "^3.12"
-airmise = { version = "^3.0.0b1", extras = ["frp"], source = "likianta" }
+airmise = { version = "^3.0.0b2", source = "likianta" }
 argsense = { version = "^1.1.1", source = "likianta" }
 lk-utils = { version = "^3.6.0a13", source = "likianta" }
 

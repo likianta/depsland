@@ -70,35 +70,8 @@ fn check_version_of_installed_depsland(path string) !bool {
         info.depsland_version[re.groups[8]..re.groups[9]].int()
     }
     
-    // the minimal acceptable version is 0.12.0a7
-    // PERF: compare with something like python tuple or normalized string.
-    // if major == 0 {
-    //     if minor == 12 {
-    //         if patch == 0 {
-    //             if dev == -1 {
-    //                 return true
-    //             } else if dev_type == 'a' {
-    //                 if dev >= 7 {
-    //                     return true
-    //                 } else {
-    //                     return false
-    //                 }
-    //             } else {
-    //                 return true
-    //             }
-    //         } else {
-    //             return true
-    //         }
-    //     } else if minor > 12 {
-    //         return true
-    //     } else {
-    //         return false
-    //     }
-    // } else {
-    //     return true
-    // }
-
-    println('${major:03}.${minor:03}.${patch:03}.${dev:03} vs 000.012.000.007')
+    // the minimal acceptable version is 0.12.0a10
+    // println('${major:03}.${minor:03}.${patch:03}.${dev:03} vs 000.012.000.010')
     mut this_version := ''
     mut target_least_version := ''
     if dev == -1 || dev_type == 'b' {
@@ -107,7 +80,7 @@ fn check_version_of_installed_depsland(path string) !bool {
         return this_version >= target_least_version
     } else {
         this_version = '${major:03}.${minor:03}.${patch:03}.${dev:03}'
-        target_least_version = '000.012.000.007'
+        target_least_version = '000.012.000.010'
         return this_version >= target_least_version
     }
     return false
@@ -126,7 +99,9 @@ fn download_and_extract_depsland_ol(url string) !string {
     println('Current executable directory: ${currdir}')
     // url := 'http://172.20.128.100:2188/depsland-online-installer.zip'
     zip := '${currdir}/depsland-online-installer.zip'
-    http.download_file(url, zip)!
+    if os.exists(zip) { os.rm(zip)! }
+    // http.download_file(url, zip)!
+    http.download_file_with_progress(url, zip)!
     szip.extract_zip_to_dir(zip, currdir)!
     assert os.exists('${currdir}/depsland-online-installer')
     assert os.exists('${currdir}/depsland-online-installer/main.py')

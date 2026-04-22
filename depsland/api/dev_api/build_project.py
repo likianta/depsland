@@ -65,7 +65,7 @@ def build(
     secret_key: str = '',
     publish: int = 0,
     remain_last_version: bool = False,
-    remove_depsland: bool = False,
+    remove_depsland: bool = True,
 ) -> t.Tuple[str, str]:
     """
     params:

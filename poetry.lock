@@ -187,23 +187,20 @@ reference = "aliyun"
 
 [[package]]
 name = "airmise"
-version = "3.0.0b1"
+version = "3.0.0b2"
 description = "The native experience of calling remote functions, like local ones."
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "airmise-3.0.0b1-py3-none-any.whl", hash = "sha256:c3e77a07b6ea9b42c391b629fc477fef07dc9e57a613099c3eb6080eb0b4620e"},
+    {file = "airmise-3.0.0b2-py3-none-any.whl", hash = "sha256:3cf3d9a6390d7f22575fb6b161bac1005d142306fedc1274b7d54a05a10ff31c"},
 ]
 
 [package.dependencies]
-aiohttp = {version = ">=3.13.3", optional = true, markers = "extra == \"frp\""}
+aiohttp = ">=3.13.3,<4.0.0"
 argsense = ">=1.1.1,<2.0.0"
 lk-logger = ">=6.0.7,<7.0.0"
 lk-utils = ">=3.5.2,<4.0.0"
-
-[package.extras]
-frp = ["aiohttp (>=3.13.3)"]
 
 [package.source]
 type = "legacy"
@@ -6623,4 +6620,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "1991f06714f573a510f748bd5c9d2ec5aff02fb991d1456abf68aea75ac8b638"
+content-hash = "2988c703d77a664bfbd0dd5ad67cce027a4d3e4758cb7ae96f9b01c96f5a700b"

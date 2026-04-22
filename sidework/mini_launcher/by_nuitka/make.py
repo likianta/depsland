@@ -18,12 +18,13 @@ def init() -> None:
 
 @cli
 def tree_shaking_depsland_online_installer(
-    do_minify: bool = True, do_compress: bool = True
+    minify: bool = True, compress: bool = True, upload: bool = False
 ) -> None:
     """
     params:
-        do_minify (-m):
-        do_compress (-c):
+        minify (-m):
+        compress (-c):
+        upload (-u):
 
     note: if you have upgraded some dependencies in 
     `<depsland_project>/pyproject.toml`, also check this place 
@@ -31,9 +32,9 @@ def tree_shaking_depsland_online_installer(
 
     tip: if you have only modified "depsland_online_installer/main2.py", but not 
     changed venv packages, you can rerun this command by 
-    `do_minify=False, do_compress=True` to fast refresh result.
+    `minify=False, compress=True` to fast refresh result.
     """
-    if do_minify:
+    if minify:
         tree_shaking.build_module_graphs(
             'depsland_online_installer/tree_shaking.yaml'
         )
@@ -41,7 +42,7 @@ def tree_shaking_depsland_online_installer(
             'depsland_online_installer/tree_shaking.yaml',
             'dist/minideps'
         )
-    if do_compress:
+    if compress:
         fs.copy_file(
             'depsland_online_installer/main2.py',
             'dist/main.py',
@@ -58,6 +59,21 @@ def tree_shaking_depsland_online_installer(
             '({}). you may also want to upload this file to '
             '"<oss>/likianta-public-share/depsland-resources".'
             .format(fs.filesize(result, str))
+        )
+    if upload:
+        if not compress:
+            print('the uploaded file may not be latest.', ':v6')
+        run_cmd_args(
+            (
+                'ossutil', 
+                'cp', 
+                f'{depsland_project_root}/resources/depsland-online'
+                '-installer.zip',
+                'oss://likianta-public-share/depsland-resources/depsland'
+                '-online-installer.zip',
+                '-u',
+            ),
+            verbose=True
         )
 
 @cli

@@ -187,23 +187,20 @@ reference = "aliyun"
 
 [[package]]
 name = "airmise"
-version = "3.0.0b0"
+version = "3.0.0b2"
 description = "The native experience of calling remote functions, like local ones."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "airmise-3.0.0b0-py3-none-any.whl", hash = "sha256:36ddc48602e11f0101d3d31c15eddb2a9da54c72007a6fbeb8cca0c176baabba"},
+    {file = "airmise-3.0.0b2-py3-none-any.whl", hash = "sha256:3cf3d9a6390d7f22575fb6b161bac1005d142306fedc1274b7d54a05a10ff31c"},
 ]
 
 [package.dependencies]
-aiohttp = {version = ">=3.13.3", optional = true, markers = "extra == \"frp\""}
+aiohttp = ">=3.13.3,<4.0.0"
 argsense = ">=1.1.1,<2.0.0"
 lk-logger = ">=6.0.7,<7.0.0"
 lk-utils = ">=3.5.2,<4.0.0"
-
-[package.extras]
-frp = ["aiohttp (>=3.13.3)"]
 
 [package.source]
 type = "legacy"
@@ -1277,13 +1274,13 @@ reference = "aliyun"
 
 [[package]]
 name = "lk-utils"
-version = "3.6.0a12"
+version = "3.6.0a13"
 description = "LK Utils is a set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.6.0a12-py3-none-any.whl", hash = "sha256:cd94eb9de33f2224ac2c014d953318351ffdc80ae8c1ea47abd187b753d64f62"},
+    {file = "lk_utils-3.6.0a13-py3-none-any.whl", hash = "sha256:1ec957ab4bbe90e526703b0e31a5cfb33e49bae59fdfede9a621a7ded9b78cef"},
 ]
 
 [package.dependencies]
@@ -2800,4 +2797,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "d7225ad08c9a4cd151e841ed12a09ba11e54d3d9f8e8ea09af08a22142a56424"
+content-hash = "2508e7bd1286da39474a55331e3f4ab11f9eccd6f04821d06b6bbe00eaac064b"
