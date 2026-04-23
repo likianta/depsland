@@ -25,7 +25,7 @@ class State:
     temp_new_folder_name = ''
     tree_select_index_0 = 0
     tree_select_index_1 = 0
-    __version__ = 23
+    __version__ = 28
 
 
 @cli
@@ -95,7 +95,7 @@ def main(
                 You can now close this window and **rerun** the same ".exe" file 
                 to launch target application.
                 """.format(
-                    target_appid
+                    State.target
                     and 'Depsland and the target application'
                     or 'Depsland'
                 )
@@ -357,9 +357,9 @@ def _install_target_application(
     generator = _airexec(
         """
         def run_depsland_install(depsland_root, appid, version):
-            if depsland_root not in sys.path:
+            if sys.path[0] != depsland_root:
                 sys.path.insert(0, depsland_root)
-                sys.path.insert(1, depsland_root + '/chore/site_packages')
+                sys.path.insert(1, depsland_root + '/chore/minideps')
             
             if 'depsland' in sys.modules:
                 sys.modules.pop('depsland')
@@ -654,25 +654,27 @@ def _init_remote_env():
 def _refresh_tree_model():
     parent_folders = _airexec(
         """
-        folders = [fs.parent(fs.normpath(os.environ['LOCALAPPDATA']))]
+        def list_folders():
+            folders = [fs.parent(fs.normpath(os.environ['LOCALAPPDATA']))]
 
-        for root in (
-            fs.parent(fs.parent(fs.abspath(sys.argv[0]))),
-        ):
-            parts = root.split('/')
-            temp_list = []
-            temp_str = parts[0]
-            for p in parts[1:]:
-                temp_str += '/' + p
-                temp_list.append(temp_str)
-            folders.extend(temp_list)
-        
-        for d in os.listdrives():
-            d = d.replace('\\\\', '/')
-            folders.append(d)
-        
-        folders.sort()
-        return folders
+            for root in (
+                fs.parent(fs.parent(fs.abspath(sys.argv[0]))),
+            ):
+                parts = root.split('/')
+                temp_list = []
+                temp_str = parts[0]
+                for p in parts[1:]:
+                    temp_str += '/' + p
+                    temp_list.append(temp_str)
+                folders.extend(temp_list)
+            
+            for d in os.listdrives():
+                folders.append(d.replace('\\\\', '/'))
+            
+            folders.sort()
+            return folders
+
+        return list_folders()
         """
     )
     State.folders.clear()
@@ -680,7 +682,6 @@ def _refresh_tree_model():
         State.folders[f] = []
         if f.startswith('C:/') and f.endswith('/AppData'):
             State.tree_select_index_0 = i
-            break
 
 
 if __name__ == '__main__':
