@@ -5399,18 +5399,18 @@ reference = "aliyun"
 
 [[package]]
 name = "streamlit-canary"
-version = "0.2.2b1"
+version = "0.3.0a8"
 description = "LK-flavored Streamlit components."
 optional = false
-python-versions = ">=3.8"
-groups = ["main", "dev"]
+python-versions = ">=3.9"
+groups = ["dev"]
 files = [
-    {file = "streamlit_canary-0.2.2b1-py3-none-any.whl", hash = "sha256:2e1fd5b38b5a515cb821acd6785e788d7b2ab3f534c77493a2f37f36c6d77cc1"},
+    {file = "streamlit_canary-0.3.0a8-py3-none-any.whl", hash = "sha256:ad2269807c74f56a9fb524d1383cb0f1689407ca622b62380b74bffa3557505d"},
 ]
 
 [package.dependencies]
-argsense = ">=1.1.0,<2.0.0"
-lk-utils = {version = ">=3.5.2,<4.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""}
+argsense = ">=1.1.1,<2.0.0"
+lk-utils = ">=3.5.2,<4.0.0"
 psutil = ">=7.0.0,<8.0.0"
 pyapp-window = ">=2.2.1,<3.0.0"
 streamlit = {version = ">=1.55.0,<2.0.0", markers = "python_version >= \"3.10\" and python_version < \"4.0\""}
@@ -6620,4 +6620,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "2988c703d77a664bfbd0dd5ad67cce027a4d3e4758cb7ae96f9b01c96f5a700b"
+content-hash = "377c9f39e28f2dfd038b2d72b5f14c1da87315ecf72f9b9a44ebe0474ca683c7"

@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.0a10"
+version = "0.12.0a13"
 description = "User oriented dependency management and application distribution tool."
 license = "MIT"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
@@ -31,7 +31,7 @@ pyportable-crypto = "^1.5.1"
 semver = "^3.0.4"
 streamlit = "^1.55.0"
 # streamlit-arborist = "^0.3.0"
-streamlit-canary = "^0.2.1"
+# streamlit-canary = "^0.2.1"  # TODO
 streamlit-extras = "^1.4.1"
 # streamlit-tree-select = "^0.0.5"
 tree-shaking = "^0.2.4"
@@ -55,7 +55,7 @@ pyportable-crypto = { version = "^1.5.1", source = "likianta" }
 # pysimplegui = "^5.0.7"  # <- demo/hello-world-tkinter
 qmlease = { version = "^4.0.0a5", source = "likianta", extras = ["ui"] }
 reflex = "^0.8.28.post1"
-streamlit-canary = { version = "^0.2.2b1", source = "likianta" }
+streamlit-canary = { version = "^0.3.0a8", source = "likianta" }
 tree-shaking = { version = "^0.2.5a6", source = "likianta" }
 
 numpy = "^2.4.4"  # <- streamlit, python 3.14

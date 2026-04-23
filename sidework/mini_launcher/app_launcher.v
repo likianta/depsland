@@ -30,6 +30,12 @@ fn main() {
     dps_approved := if dps_dir == '' { false } else {
         check_version_of_installed_depsland(dps_dir)!
     }
+    if dps_dir != '' && !dps_approved {
+        println(
+            'Detected Depsland installed in your system, but version too ' +
+            'low. Will download the latest version from internet now.'
+        )
+    }
     if dps_approved {
         os.execvp(
             '${dps_dir}/apps/.bin/depsland.exe',
@@ -70,8 +76,7 @@ fn check_version_of_installed_depsland(path string) !bool {
         info.depsland_version[re.groups[8]..re.groups[9]].int()
     }
     
-    // the minimal acceptable version is 0.12.0a10
-    // println('${major:03}.${minor:03}.${patch:03}.${dev:03} vs 000.012.000.010')
+    // the minimal acceptable version is 0.12.0a13
     mut this_version := ''
     mut target_least_version := ''
     if dev == -1 || dev_type == 'b' {
@@ -80,10 +85,9 @@ fn check_version_of_installed_depsland(path string) !bool {
         return this_version >= target_least_version
     } else {
         this_version = '${major:03}.${minor:03}.${patch:03}.${dev:03}'
-        target_least_version = '000.012.000.010'
+        target_least_version = '000.012.000.013'
         return this_version >= target_least_version
     }
-    return false
 }
 
 fn cleanup() ! {
@@ -100,6 +104,7 @@ fn download_and_extract_depsland_ol(url string) !string {
     // url := 'http://172.20.128.100:2188/depsland-online-installer.zip'
     zip := '${currdir}/depsland-online-installer.zip'
     if os.exists(zip) { os.rm(zip)! }
+    println('Downloading depsland online installer (~11MB), please wait...')
     // http.download_file(url, zip)!
     http.download_file_with_progress(url, zip)!
     szip.extract_zip_to_dir(zip, currdir)!

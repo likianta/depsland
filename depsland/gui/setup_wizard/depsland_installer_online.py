@@ -12,8 +12,11 @@ class State:
     depsland_root = ''
     depsland_url = (
         'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
-        '/depsland-resources/depsland-0.12.0a10.zip'
+        '/depsland-resources/depsland.zip'
     )
+    depsland_version = '0.12.0a13'  
+    #   this field required manually update. make sure it matches 
+    #   `pyproject.toml:project.version`.
     folders: tp.Dict[str, tp.List[str]] = {}
     installation_done = False
     installation_path = ''
@@ -86,8 +89,16 @@ def main(
     if State.installation_done:
         with above_progress_place:
             st.success(
-                'Installation done. You can now close this window and rerun '
-                'the same ".exe" file to launch target application.'
+                """
+                Successfully installed {}! 🎉🎉🎉
+                
+                You can now close this window and **rerun** the same ".exe" file 
+                to launch target application.
+                """.format(
+                    target_appid
+                    and 'Depsland and the target application'
+                    or 'Depsland'
+                )
             )
         with do_close_place:
             st.button(':red[Close this window/tab]', on_click=_close_tab_2)
@@ -273,12 +284,12 @@ def _install_depsland(root: str) -> str:
     if root.endswith('.zip'):
         print('skip downloading depsland.zip because we use cached file.')
         temp = root
-        version = temp.rsplit('-', 1)[1].removesuffix('.zip')
+        version = State.depsland_version
         path0 = temp.rsplit('/', 1)[0]  # parent folder
         path1 = temp  # zip file
         path2 = path0 + '/' + version  # extracted folder
     else:
-        version = State.depsland_url.rsplit('-', 1)[1].removesuffix('.zip')
+        version = State.depsland_version
         path0 = root  # parent folder
         path1 = root + '/depsland-' + version + '.zip'  # zip file
         path2 = root + '/' + version  # extracted folder

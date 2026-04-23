@@ -808,7 +808,7 @@ class Manifest:
                     fs.dump(mini_deps_assets_info, mini_deps_cache_file)
                     assets1.update(mini_deps_assets_info)
             
-            elif type == 'uv':
+            elif method == 'uv':
                 raise NotImplementedError
         
         return {}
