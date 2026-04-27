@@ -1,6 +1,5 @@
 import os
 import shlex
-import subprocess
 import sys
 import typing as t
 
@@ -8,6 +7,7 @@ import lk_logger
 from argsense import args_2_cargs
 from lk_utils import fs
 from lk_utils import run_cmd_args
+from lk_utils.subproc import Popen
 
 from ... import paths
 from ...manifest import get_last_installed_version
@@ -21,18 +21,18 @@ def run_app(
     _version: str = '',
     _caller_location: str = '',
     _blocking: bool = True,
-    **kwargs
-) -> t.Optional[subprocess.Popen]:
+    **kwargs,
+) -> t.Optional[Popen]:
     """
     a general launcher to start an installed app.
-    
+
     related:
         /depsland/__main__.py
         /build/exe/depsland-runapp.bat
     """
     if not appid:
-        assert (
-            _caller_location and _caller_location.endswith(('.exe', '.bat'))
+        assert _caller_location and _caller_location.endswith(
+            ('.exe', '.bat')
         ), _caller_location
         # related:
         #   depsland.api.user_api.install._create_launchers
@@ -42,20 +42,22 @@ def run_app(
         caller_dir = fs.parent(_caller_location)
         _, appid, _version = caller_dir.rsplit('/', 2)
         print(_caller_location, appid, _version)
-    
+
     version = _version or get_last_installed_version(appid)
-    if not version:
+    if version:
+        print(
+            ':r',
+            '[magenta dim]launching [cyan]{}[/] [green]v{}[/][/]'.format(
+                appid, version
+            ),
+        )
+    else:
         print(':v8', f'cannot find installed version of {appid}')
         return
-    else:
-        print(
-            ':r', '[magenta dim]launching [cyan]{}[/] [green]v{}[/][/]'
-            .format(appid, version)
-        )
-    
-    manifest = load_manifest('{}/{}/{}/manifest.pkl'.format(
-        paths.project.apps, appid, version
-    ))
+
+    manifest = load_manifest(
+        '{}/{}/{}/manifest.pkl'.format(paths.project.apps, appid, version)
+    )
     assert manifest['version'] == version
     os.environ['DEPSLAND'] = paths.project.root
     # note (2025-09-04):
@@ -78,29 +80,32 @@ def run_app(
     #     os.environ['PYTHONPATH'].split(sep),
     #     os.environ['PATH'].split(sep), ':lv'
     # )
-    
+
     if not manifest['launcher']['show_console']:
         if sysinfo.IS_WINDOWS:
             _toast_notification(
                 'Depsland is launching "{} (v{})"'.format(appid, version)
             )
-    
+
     command = '{} {}'.format(
         # FIXME: literally replacing "python" is not reliable.
         manifest['launcher']['command'].replace(
             'python', '"{}"'.format(sys.executable.replace('\\', '/')), 1
         ),
-        shlex.join(args_2_cargs(*args, **kwargs))
+        shlex.join(args_2_cargs(*args, **kwargs)),
     ).strip()
     print(':vs', command)
     # lk_logger.unload()
     try:
-        return run_cmd_args(
-            shlex.split(command),
-            cwd=manifest['start_directory'],
-            blocking=_blocking,
-            shell=True,
-            verbose=True,
+        return t.cast(
+            Popen,
+            run_cmd_args(
+                shlex.split(command),
+                cwd=manifest['start_directory'],
+                blocking=_blocking,
+                shell=True,
+                verbose=True,
+            ),
         )
     except Exception as e:
         lk_logger.enable()
@@ -116,9 +121,10 @@ def run_app(
 
 # DELETE
 def _popup_error(msg: str) -> None:
-    """ use tkinter popup to show error message. """
+    """use tkinter popup to show error message."""
     import tkinter
     from tkinter import messagebox
+
     root = tkinter.Tk()
     root.withdraw()
     messagebox.showerror('Depsland Run Failed', msg)
@@ -128,6 +134,7 @@ def _popup_error(msg: str) -> None:
 def _popup_error_2(msg: str) -> None:
     # https://stackoverflow.com/a/4485736/9695911
     import ctypes
+
     box = ctypes.windll.user32.MessageBoxW  # noqa
     box(None, msg, 'Depsland Run Failed', 0)
 

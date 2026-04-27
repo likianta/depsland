@@ -19,13 +19,14 @@ state = {
     'run_after_setup': False,
 }
 
+
 def sequential_launch(appid, name, version, dry_run: bool = False):
     run_new_thread(
         air.run_server,
         {'start': _notify_started, 'close': _close_setup_wizard},
         port=2184,
     )
-    
+
     proc_st, proc_win = tp.cast(
         tp.Tuple[Popen, Popen],
         sc.run(
@@ -37,16 +38,16 @@ def sequential_launch(appid, name, version, dry_run: bool = False):
                 appid,
                 ':empty',  # TODO: description
                 '--dry-run' if dry_run else '--not-dry-run',
-                '--emit-close-event'
+                '--emit-close-event',
             ),
             port=2183,
             show_window=True,
             # size=(1340, 960),
             size=(870, 590),
             subthread=True,
-        )
+        ),
     )
-    
+
     while True:
         # print('polling...', ':vi')
         if state['setup_finished']:
@@ -64,9 +65,9 @@ def sequential_launch(appid, name, version, dry_run: bool = False):
                 if state['frontend_timeout'] <= 0:
                     raise TimeoutError('timeout waiting for opening app window')
         sleep(1)
-    
+
     air.default_client.close()
-    
+
     if state['run_after_setup']:
         if dry_run:
             print('run target application...', appid, name, version)
@@ -81,19 +82,23 @@ def sequential_launch(appid, name, version, dry_run: bool = False):
         if dry_run:
             print('finish without running target application')
 
+
 def _notify_started() -> None:
     state['frontend_started'] = True
     print('frontend get started')
+
 
 def _close_setup_wizard(run_after_setup: bool) -> None:
     state['setup_finished'] = True
     state['run_after_setup'] = run_after_setup
     print(state, ':v2')
 
+
 if __name__ == '__main__':
     # pox depsland/gui/setup_wizard/process_manager.py -h
     # pox depsland/gui/setup_wizard/process_manager.py hello_world
     #   'Hello World Example' 0.0.0 :true
     from argsense import cli
+
     cli.add_cmd(sequential_launch)
     cli.run(sequential_launch)

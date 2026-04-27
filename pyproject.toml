@@ -81,6 +81,9 @@ line-length = 80
 [tool.ruff.format]
 quote-style = "single"
 
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
+
 [tool.ty.rules]
 invalid-type-form = "ignore"
 unresolved-attribute = "ignore"

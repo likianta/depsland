@@ -8,6 +8,7 @@ if 1:
 if 2:
     import os
     import sys
+
     if sys.orig_argv[0].endswith('.exe'):
         os.environ['LK_LOGGER_MODERN_WINDOW'] = '0'
         # sys.path.append('.')
@@ -40,13 +41,16 @@ if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
 
 cli = CommandLineInterface('depsland')
 print(
-    'depsland [red][dim]v[/]{}[/] [dim]({})[/]'
-    .format(__version__, __path__[0]), ':r'
+    'depsland [red][dim]v[/]{}[/] [dim]({})[/]'.format(
+        __version__, __path__[0]
+    ),
+    ':r',
 )
 
 
 # -----------------------------------------------------------------------------
 # depsland intro
+
 
 @cli
 def about() -> None:
@@ -55,6 +59,7 @@ def about() -> None:
     """
     from . import __path__
     from . import __version__
+
     print(':rs1', '[red b]♥ depsland [u]v{}[/] ♥[/]'.format(__version__))
     print(':rs1', '  [magenta]located  at [u]{}[/][/]'.format(__path__[0]))
 
@@ -70,10 +75,10 @@ def welcome(confirm_close: bool = False) -> None:
     show welcome message and exit.
     """
     from . import __version__
-    
+
     print(
         ':r2',
-        '''
+        """
         # DEPSLAND
         
         Depsland is a python apps manager for non-developer users.
@@ -81,19 +86,20 @@ def welcome(confirm_close: bool = False) -> None:
         - Version: {}
         - Author: {}
         - Official site: {}
-        '''.format(
+        """.format(
             __version__,
             'Likianta (likianta@foxmail.com)',
             'https://github.com/likianta/depsland',
-        )
+        ),
     )
-    
+
     if confirm_close:
         input('press enter to close window...')
 
 
 # -----------------------------------------------------------------------------
 # depsland ui
+
 
 @cli
 def launch_gui(
@@ -103,7 +109,7 @@ def launch_gui(
 ) -> None:
     """
     launch depsland gui.
-    
+
     params:
         _app_token: an appid or a path to a manifest file.
             if given, the app will launch and instantly install it.
@@ -114,12 +120,13 @@ def launch_gui(
             _create_updator()`
     """
     import streamlit_canary as sc
+
     sc.run(
         title='Depsland Appstore',
         target='depsland/gui/app_manager/app.py',
         extra_args=(
             _app_token or ':empty',
-            ':true' if _run_at_once else ':false'
+            _run_at_once and ':true' or ':false'
         ),
         port=port,
         show_window=True,
@@ -131,11 +138,12 @@ def launch_gui(
 # -----------------------------------------------------------------------------
 # development process (ordered by lifecycle)
 
+
 @cli
 def init(target: str = '.', app_name: str = '') -> None:
     """
     create a "manifest.json" file in project directory.
-    
+
     params:
         target (-t): a directory or file path to generate manifest file at.
             if given a directory, will create a "manifest.json" file under -
@@ -162,7 +170,7 @@ def build(
     build your python application based on manifest file.
     the build result is stored in "dist" directory.
     [dim i](if "dist" not exists, it will be auto created.)[/]
-    
+
     params:
         offline (-o):
         remove_depsland (-r):
@@ -187,7 +195,7 @@ def publish(
     publish dist assets to oss.
     if you configured a local oss server, it will generate assets to -
     `~/oss/apps/<appid>/<version>` directory.
-    
+
     params:
         target (-t): see `init : [param] target : [docstring]`.
         full_upload (-f): if true, will upload all assets, ignore the files -
@@ -204,7 +212,7 @@ def publish(
 def install(appid: str, upgrade: bool = True, reinstall: bool = False) -> None:
     """
     install an app from oss by querying appid.
-    
+
     params:
         upgrade (-u):
         reinstall (-r):
@@ -237,33 +245,47 @@ def uninstall(appid: str, version: str = None) -> None:
 # -----------------------------------------------------------------------------
 # launch application
 
+
 @cli.cmd('run', transfer_help=True)
 def run(
-    appid: str = '', 
-    version: str = '', 
-    _caller_location: str = '', 
+    appid: str = '',
+    version: str = '',
+    _caller_location: str = '',
     *args,
-    **kwargs
+    **kwargs,
 ) -> None:
     api.user_api.run_app(
-        appid, 
-        *args, 
-        _version=version, 
-        _caller_location=_caller_location, 
-        **kwargs
+        appid,
+        *args,
+        _version=version,
+        _caller_location=_caller_location,
+        **kwargs,
     )
 
 
 @cli
 def runx(
     appid: str,
-    version: str = None,
+    version: str = '',
     use_exist: bool = True,
     *,
     dry_run: bool = False,
 ) -> None:
     """
     check app exists, if not, download and install it. then run the application.
+
+    params:
+        use_exist (-u):
+            1. if `version` is not given, will try to use the last installed
+            version.
+            2. if `version` is given, but not installed, and if depsland finds
+            a newer version already installed, will use the newer one.
+                why we do this: due to the design limitation, the cloud drive
+                stores only one "latest" version on the oss side; older versions
+                are discarded as soon as a new version is published. this means
+                user can never retrieve a specific older version at that time.
+                we have to force user to use the newer one.
+
     prerequisite:
         make sure your network available.
     """
@@ -274,13 +296,27 @@ def runx(
         if version:
             if fs.exist('{}/{}'.format(x, version)):
                 ver_exists = True
+            else:
+                if use_exist and (
+                    some_ver := get_last_installed_version(appid)
+                ):
+                    if _check_version(some_ver, version):
+                        print(
+                            'change specified version ({}) to newer one ({}) '
+                            'since it is already installed.'.format(
+                                version, some_ver
+                            ),
+                            ':v5',
+                        )
+                        version = some_ver
+                        ver_exists = True
         else:
             if use_exist:
                 assert _get_dir_to_last_installed_version(appid)
                 ver_exists = True
             else:
                 raise NotImplementedError
-    
+
     if app_exists and ver_exists:
         api.user_api.run_app(appid, _version=version)
     else:
@@ -291,9 +327,10 @@ def runx(
         else:
             _, m = _get_manifests(appid)
             # FIXME: what if `m['version'] > version`?
-        
+
         # show a mini UI to notify user the installation progress.
         from .gui.setup_wizard import sequential_launch
+
         sequential_launch(m['appid'], m['name'], m['version'], dry_run)
 
 
@@ -327,13 +364,16 @@ def list_apps() -> None:
                 assert latest_version
                 i += 1
                 # noinspection PyTypeChecker
-                rows.append((
-                    str(i),
-                    fs.load('{}/{}/manifest.pkl'.format(
-                        d.path, latest_version))['name'],
-                    d.name,
-                    latest_version,
-                ))
+                rows.append(
+                    (
+                        str(i),
+                        fs.load(
+                            '{}/{}/manifest.pkl'.format(d.path, latest_version)
+                        )['name'],
+                        d.name,
+                        latest_version,
+                    )
+                )
     if len(rows) > 1:
         print(rows, ':r2')
     else:
@@ -382,11 +422,13 @@ def get_package_size(
         include_dependencies (-d):
     """
     from .pypi import insight
+
     insight.measure_package_size(name, version, include_dependencies)
 
 
 # -----------------------------------------------------------------------------
 # utilities
+
 
 @cli
 def open_readme(appid: str) -> None:
@@ -405,8 +447,10 @@ def open_readme(appid: str) -> None:
 # -----------------------------------------------------------------------------
 # misc
 
+
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
     from .verspec import compare_version
+
     return compare_version(new['version'], '>', old['version'])
 
 
@@ -419,9 +463,9 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
 
 
 def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
-    """ get old and new manifests by appid. """
+    """get old and new manifests by appid."""
     from .oss import get_oss_client
-    
+
     oss = get_oss_client(appid)
     oss.download(oss.path.manifest, paths.temp.manifest_pkl)
     manifest_new = load_manifest(paths.temp.manifest_pkl)
@@ -431,9 +475,9 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     manifest_new.make_tree()
     fs.move(
         paths.temp.manifest_pkl,
-        manifest_new['start_directory'] + '/manifest.pkl'
+        manifest_new['start_directory'] + '/manifest.pkl',
     )
-    
+
     if x := _get_dir_to_last_installed_version(appid):
         manifest_old = load_manifest(f'{x}/manifest.pkl')
     else:
@@ -444,15 +488,16 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
         print(
             'be noted the first-time installation may consume a long '
             'time. depsland will try to reduce the consumption in the '
-            'succeeding upgrades/installations.', ':v'
+            'succeeding upgrades/installations.',
+            ':v',
         )
         manifest_old = None
-    
+
     return manifest_old, manifest_new
 
 
 def _normalize_manifest_path(target: str, ensure_exists: bool = True) -> str:
-    """ return an abspath to manifest file. """
+    """return an abspath to manifest file."""
     if target.endswith(('.json', '.yaml', '.toml', '.pkl')):
         out = fs.normpath(target, True)
     else:
