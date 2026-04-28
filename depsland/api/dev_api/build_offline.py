@@ -39,7 +39,7 @@ from ...pypi import pypi
 from ...venv import link_venv
 
 
-def main(manifest_file: str) -> None:
+def main(manifest_file: str) -> str:
     manifest = load_manifest(manifest_file)
     dir_i = manifest['start_directory']
     dir_o = '{}/dist/{}-{}'.format(
@@ -53,6 +53,7 @@ def main(manifest_file: str) -> None:
     _create_launcher(manifest, dir_o)
     _create_updator(manifest, dir_o)
     print('see result at {}'.format(dir_o))
+    return dir_o
 
 
 def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:

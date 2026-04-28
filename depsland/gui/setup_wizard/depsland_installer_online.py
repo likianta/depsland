@@ -14,7 +14,7 @@ class State:
         'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
         '/depsland-resources/depsland.zip'
     )
-    depsland_version = '0.12.0a13'  
+    depsland_version = '0.12.0a14'  
     #   this field required manually update. make sure it matches 
     #   `pyproject.toml:project.version`.
     folders: tp.Dict[str, tp.List[str]] = {}

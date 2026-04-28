@@ -29,7 +29,6 @@
 /sidework/mini_launcher/depsland_online_installer/*
 /sidework/mini_launcher/dist/
 /sidework/mini_launcher/nuitka_general_launcher/*
-/sidework/mini_launcher/tree_shaking
 /sidework/ui_prototype/
 /temp/*
 /test/_config/

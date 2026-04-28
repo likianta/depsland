@@ -1,6 +1,6 @@
 if __name__ == '__main__':
     __package__ = 'depsland.api.dev_api'
-    
+
 import os
 import re
 import sys
@@ -16,45 +16,63 @@ from ...paths import temp as temp_paths
 class T:
     Path = str  # any path form
     # noinspection PyTypedDict,PyTypeHints
-    Config = t.TypedDict('Config', {
-        'root': Path,
-        'version_bump': t.TypedDict('VersionBump', {
-            # the places:keys are order sensitive. the first key will be
-            # treated as primary key.
-            # usually the primary key indicates to "pyproject.toml" file.
-            'places': t.Dict[Path, str],
-        }),
-        'images': t.TypedDict('Images', {
-            'src_max': t.Union[Path, dict],
-            'src_min': t.Union[Path, dict],
-            'enc_max': t.Union[Path, dict],
-            'enc_min': t.Union[Path, dict],
-        }),
-        'encryption_options': t.TypedDict('EncryptionOptions', {
-            'key': str,  # a string or `<ENV>` or `<ENV:VARNAME>`
-            'packages': t.List[Path],
-            'output': Path,
-        }),
-        'minideps_options': t.TypedDict('MinidepsOptions', {
-            'tree_shaking_model': t.Union[
-                Path,
-                t.TypedDict(
-                    'TreeShakingModel',
-                    {
-                        'root': Path,
-                        'search_paths': t.List[Path],
-                        'entries': t.List[Path],
-                        'export': t.TypedDict('Export', {
-                            'source': Path,
-                            'target': Path,
-                        }),
-                    },
-                    total=False
-                )
-            ]
-        }),
-        'post_script': Path,  # TODO: support passing args.
-    })
+    Config = t.TypedDict(
+        'Config',
+        {
+            'root': Path,
+            'version_bump': t.TypedDict(
+                'VersionBump',
+                {
+                    # the places:keys are order sensitive. the first key will be
+                    # treated as primary key.
+                    # usually the primary key indicates to "pyproject.toml" file.
+                    'places': t.Dict[Path, str],
+                },
+            ),
+            'images': t.TypedDict(
+                'Images',
+                {
+                    'src_max': t.Union[Path, dict],
+                    'src_min': t.Union[Path, dict],
+                    'enc_max': t.Union[Path, dict],
+                    'enc_min': t.Union[Path, dict],
+                },
+            ),
+            'encryption_options': t.TypedDict(
+                'EncryptionOptions',
+                {
+                    'key': str,  # a string or `<ENV>` or `<ENV:VARNAME>`
+                    'packages': t.List[Path],
+                    'output': Path,
+                },
+            ),
+            'minideps_options': t.TypedDict(
+                'MinidepsOptions',
+                {
+                    'tree_shaking_model': t.Union[
+                        Path,
+                        t.TypedDict(
+                            'TreeShakingModel',
+                            {
+                                'root': Path,
+                                'search_paths': t.List[Path],
+                                'entries': t.List[Path],
+                                'export': t.TypedDict(
+                                    'Export',
+                                    {
+                                        'source': Path,
+                                        'target': Path,
+                                    },
+                                ),
+                            },
+                            total=False,
+                        ),
+                    ]
+                },
+            ),
+            'post_script': Path,  # TODO: support passing args.
+        },
+    )
 
 
 def build(
@@ -66,6 +84,7 @@ def build(
     publish: int = 0,
     remain_last_version: bool = False,
     remove_depsland: bool = True,
+    compress_result: bool = False,
 ) -> t.Tuple[str, str]:
     """
     params:
@@ -91,9 +110,11 @@ def build(
             tip: if you set `minify_deps` other than 0, we recommend setting -
             this option 1 or 0.
         remove_depsland (-r):
+        compress_result (-z): if true, compress to ".7z" format.
+            this option is only valid when `publish==1`.
     """
     config = _load_config(file, secret_key=secret_key)
-    
+
     curr_version = _get_current_version(config)
     if remain_last_version:
         print(':sv6', 'use last time updated version', curr_version)
@@ -105,21 +126,23 @@ def build(
         _bump_versions(
             curr_version, new_version, config['version_bump']['places']
         )
-    
+
     # noinspection PyTypedDict
-    image_file = config['images'][image_key := '{}_{}'.format(
-        'enc' if encrypt_packages else 'src',
-        'max' if minify_deps else 'min',
-    )]
+    image_file = config['images'][
+        image_key := '{}_{}'.format(
+            'enc' if encrypt_packages else 'src',
+            'max' if minify_deps else 'min',
+        )
+    ]
     print(image_key)
     assert image_file, image_key
-    
+
     if minify_deps == 2:
         assert (x := config['minideps_options']['tree_shaking_model'])
         assert isinstance(x, str)
         tree_shaking.build_module_graphs(x)
         tree_shaking.dump_tree(x)
-    
+
     if encrypt_packages:
         assert all(config['encryption_options'].values())
         enc = config['encryption_options']
@@ -128,21 +151,32 @@ def build(
             _patch_encrypted_packages(
                 enc['packages'],
                 enc['output'],
-                tuple(config['version_bump']['places'].keys())
+                tuple(config['version_bump']['places'].keys()),
             )
         else:
             _encrypt_packages(enc['packages'], enc['output'], enc['key'])
-    
+
     if publish == 1:
         import depsland.api
+
         if remove_depsland:
-            depsland.api.build_stripped_offline(image_file)
+            dir_o = depsland.api.build_stripped_offline(image_file)
         else:
-            depsland.api.build_offline(image_file)
+            dir_o = depsland.api.build_offline(image_file)
+        if compress_result:
+            fs.zip(
+                dir_o,
+                dst='.7z',
+                overwrite=False,
+                progress=True,
+                compression_level='maximum',
+            )
+
     elif publish == 2:
         import depsland.api
+
         depsland.api.publish(image_file, upload_dependencies=True)
-    
+
     if config['post_script']:
         run_cmd_args(
             sys.executable,
@@ -150,11 +184,11 @@ def build(
             cwd=config['root'],
             verbose=True,
         )
-    
+
     return curr_version, new_version
 
 
-def bump_version(file: T.Path, new_version: str = None) -> None:
+def bump_version(file: T.Path, new_version: str = '') -> None:
     config = _load_config(file)
     curr_ver = _get_current_version(config)
     new_ver = new_version or _deduce_new_version(curr_ver)
@@ -179,7 +213,7 @@ def _bump_versions(
             v.replace('<VERSION>', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
             v.replace('<VERSION>', new_ver),
             content_r,
-            1
+            1,
         )
         assert content_w != content_r
         fs.dump(content_w, k, 'plain')
@@ -219,8 +253,7 @@ def _get_current_version(config: T.Config) -> str:
         content: str = fs.load(k, 'plain')
         # noinspection PyUnresolvedReferences
         return re.search(
-            v.replace('<VERSION>', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
-            content
+            v.replace('<VERSION>', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'), content
         ).group(1)
     else:
         raise Exception
@@ -228,18 +261,18 @@ def _get_current_version(config: T.Config) -> str:
 
 def _load_config(file: T.Path, **kwargs) -> T.Config:
     data0: T.Config = fs.load(file)
-    
+
     root = fs.abspath('{}/{}'.format(fs.parent(file), data0['root']))
-    
+
     def abspath(x: str) -> T.Path:
         assert x
         return '{}/{}'.format(root, x)
-    
+
     places = {}
     for k, v in data0['version_bump']['places'].items():
         places[abspath(k)] = v
     assert places
-    
+
     images = {}
     for k in ('src_max', 'src_min', 'enc_max', 'enc_min'):
         # noinspection PyTypedDict
@@ -251,9 +284,11 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
                 if 'start_directory' in xdict:
                     # noinspection PyUnresolvedReferences
                     if xdict['start_directory'].startswith('..'):
-                        xdict['start_directory'] = fs.normpath('{}/{}'.format(
-                            fs.parent(file), xdict['start_directory']
-                        ))
+                        xdict['start_directory'] = fs.normpath(
+                            '{}/{}'.format(
+                                fs.parent(file), xdict['start_directory']
+                            )
+                        )
                 else:
                     xdict['start_directory'] = root
                 if 'version' not in xdict:
@@ -267,7 +302,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
         else:
             images[k] = None
     assert any(images.values())
-    
+
     encryption_key = ''
     encryption_dirs = []
     encryption_output = ''
@@ -285,7 +320,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
             encryption_dirs.append(abspath(d))
         if x['output']:
             encryption_output = abspath(x['output'])
-    
+
     tree_shaking_model_path = ''
     if x := data0.get('minideps_options'):
         if y := x.get('tree_shaking_model'):
@@ -294,19 +329,19 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
             else:
                 xdict = y
                 if 'root' in xdict:
-                    xdict['root'] = fs.normpath('{}/{}'.format(
-                        fs.parent(file), xdict['root']
-                    ))
+                    xdict['root'] = fs.normpath(
+                        '{}/{}'.format(fs.parent(file), xdict['root'])
+                    )
                 else:
                     xdict['root'] = root
                 fs.dump(xdict, temp_paths.tree_shaking_model)
                 tree_shaking_model_path = temp_paths.tree_shaking_model
-    
+
     if x := data0.get('post_script'):
         post_script = abspath(x)
     else:
         post_script = None
-    
+
     return {
         'root': root,
         'version_bump': {
@@ -318,9 +353,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
             'packages': encryption_dirs,
             'output': encryption_output,
         },
-        'minideps_options': {
-            'tree_shaking_model': tree_shaking_model_path
-        },
+        'minideps_options': {'tree_shaking_model': tree_shaking_model_path},
         'post_script': post_script,
     }
 
@@ -328,7 +361,7 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
 def _patch_encrypted_packages(
     packages: t.Iterable[str],
     output_root: T.Path,
-    version_changed_files: t.Iterable[str]
+    version_changed_files: t.Iterable[str],
 ) -> None:
     for dir in packages:
         for file in version_changed_files:
@@ -338,8 +371,9 @@ def _patch_encrypted_packages(
                     output_root, fs.relpath(file, fs.parent(dir))
                 )
                 print(
-                    'fast encrypt to version changed file: {} -> {}'
-                    .format(file_i, file_o)
+                    'fast encrypt to version changed file: {} -> {}'.format(
+                        file_i, file_o
+                    )
                 )
                 fs.copy_file(file_i, file_o, True)
 
@@ -347,6 +381,7 @@ def _patch_encrypted_packages(
 if __name__ == '__main__':
     # pox depsland/api/dev_api/build_project.py -h
     from argsense import cli
+
     cli.add_cmd(build)
     cli.add_cmd(bump_version)
     cli.run()

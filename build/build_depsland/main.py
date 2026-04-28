@@ -41,9 +41,9 @@ def main(
             2. upload the ".zip" file to `oss:/likianta-public-share/depsland
             -resources/depsland.zip`
                 command: `ossutil cp <dist_file> oss://likianta-public-share
-                /depsland-resources/depsland.zip`
+                /depsland-resources/depsland.zip -f`
             3. update code at `depsland/gui/setup_wizard/depsland_installer
-            _online.py:State.depsland_url`
+            _online.py:State.depsland_version`
             4. check code at `sidework/mini_launcher/app_launcher.v
             :check_version_of_installed_depsland`
             '''
