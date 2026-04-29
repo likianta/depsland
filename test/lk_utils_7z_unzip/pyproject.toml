@@ -1,29 +1,24 @@
 [project]
-name = "depsland-online-installer"
-version = "0.1.0"
+name = "lk-utils-7z-unzip"
+version = "0.0.0"
 description = ""
 # readme = "README.md"
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
-packages = [{ include = "depsland_online_installer" }]
+packages = [{ include = "lk_utils_7z_unzip" }]
 requires-python = ">=3.12"
 dynamic = ["dependencies"]
 # license = "MIT"
 
 # [project.urls]
-# homepage = "https://github.com/likianta/depsland-online-installer"
+# homepage = "https://github.com/likianta/lk-utils-7z-unzip"
 
 [tool.poetry.dependencies]
 python = "^3.12"
-airmise = { version = "^3.0.0b2", source = "likianta" }
-argsense = { version = "^1.1.1", source = "likianta" }
 lk-utils = { version = "^3.6.0a18", source = "likianta" }
-py7zr = "^1.1.0"  # <- lk_utils.fs.zip
+py7zr = "^1.1.0"
 
 [tool.poetry.group.dev.dependencies]
-nuitka = "^4.0.8"
-psutil = "^7.2.2"
-tree-shaking = { version = "^0.2.5b0", source = "likianta" }
-zstandard = "^0.25.0"  # nuitka onefile mode required
+tree-shaking = { version = "^0.2.5b1", source = "likianta" }
 
 [[tool.poetry.source]]
 name = "aliyun"
@@ -35,8 +30,18 @@ name = "likianta"
 url = "http://localhost:2191/"
 priority = "supplemental"
 
-[tool.ruff.lint]
-ignore = ["E402"]
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint.isort]
+force-single-line = true
+no-sections = true
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
 
 [build-system]
 requires = ["poetry-core"]

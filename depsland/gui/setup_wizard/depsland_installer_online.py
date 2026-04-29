@@ -12,9 +12,9 @@ class State:
     depsland_root = ''
     depsland_url = (
         'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
-        '/depsland-resources/depsland.zip'
+        '/depsland-resources/depsland.7z'
     )
-    depsland_version = '0.12.0a14'  
+    depsland_version = '0.12.0a17'  
     #   this field required manually update. make sure it matches 
     #   `pyproject.toml:project.version`.
     folders: tp.Dict[str, tp.List[str]] = {}
@@ -140,7 +140,7 @@ def _ask_folder() -> None:
                     If input a non-empty folder path, will use 
                     `<the_given_path>/Depsland` as installation path.
 
-                    There is a trick: you can input a path to a ".zip" file, 
+                    There is a trick: you can input a path to a ".7z" file, 
                     which is a [Depsland Standalone package]({}); the program 
                     will then treat it as downloaded resource and continue 
                     installation.
@@ -149,7 +149,7 @@ def _ask_folder() -> None:
             )
             if path:
                 path = path.replace('\\', '/')
-                if path.endswith('.zip'):
+                if path.endswith('.7z'):  # TODO: we want also support ".zip"
                     State.installation_path = path
                 elif _aircall('is_empty_folder', path):
                     State.installation_path = path
@@ -270,7 +270,7 @@ def _install_depsland(root: str) -> str:
     trick: if root is a path to zip file, we will skip downloading process.
     """
     place1 = st.empty()
-    label1 = ':one: Downloading Depsland.zip from internet...'
+    label1 = ':one: Downloading Depsland.7z from internet...'
     prog1 = st.progress(0)
     place2 = st.empty()
     label2 = ':two: Unpacking resources...'
@@ -281,8 +281,8 @@ def _install_depsland(root: str) -> str:
     with place2:
         st.markdown(label2 + ' :gray[wait]')
 
-    if root.endswith('.zip'):
-        print('skip downloading depsland.zip because we use cached file.')
+    if root.endswith('.7z'):
+        print('skip downloading depsland.7z because we use cached file.')
         temp = root
         version = State.depsland_version
         path0 = temp.rsplit('/', 1)[0]  # parent folder
@@ -291,7 +291,7 @@ def _install_depsland(root: str) -> str:
     else:
         version = State.depsland_version
         path0 = root  # parent folder
-        path1 = root + '/depsland-' + version + '.zip'  # zip file
+        path1 = root + '/depsland-' + version + '.7z'  # zip file
         path2 = root + '/' + version  # extracted folder
         _airexec(
             """
@@ -320,7 +320,7 @@ def _install_depsland(root: str) -> str:
         prog2.progress(1.0, 'Depsland extracted')
 
     with notify_downloading_status() as prog:
-        if root.endswith('.zip'):
+        if root.endswith('.7z'):
             prog.progress(1.0, 'Depsland already downloaded.')
         else:
             for p, t in _aircall('downloading', State.depsland_url, path1):
@@ -606,7 +606,7 @@ def _init_remote_env():
                 sleep(0.1)
             yield (1.0, progress[1])
         
-        def extracting(file_zip, folder):
+        def extracting(file_7z, folder):
             progress = (0.0, '')
             progress_done = False
 
@@ -625,7 +625,7 @@ def _init_remote_env():
 
             run_new_thread(
                 fs.unzip_file,
-                file_zip,
+                file_7z,
                 folder,
                 progress=_update_progress,
                 overwrite=False,

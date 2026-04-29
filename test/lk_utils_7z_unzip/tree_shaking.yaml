@@ -3,10 +3,7 @@ search_paths:
   - $venv
   - .
 entries:
-  - main2.py
-ignores:
-  - ipython
-  # - py7zr
+  - run.py
 export:
   source: $venv
   target: minideps

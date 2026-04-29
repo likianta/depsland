@@ -39,6 +39,11 @@ def tree_shaking_depsland_online_installer(
     tip: if you have only modified "depsland_online_installer/main2.py", but not
     changed venv packages, you can rerun this command by
     `minify=False, compress=True` to fast refresh result.
+
+    post check:
+        - if the size of `<depsland_project>/resources/depsland-online-installer
+            .zip` has notably changed, check some statements in 
+            `./app_launcher.v : download_and_extract_depsland_ol : println`.
     """
     if minify:
         tree_shaking.build_module_graphs(
@@ -52,31 +57,33 @@ def tree_shaking_depsland_online_installer(
         result = fs.zip(
             f'{depsland_project_root}/resources/depsland-online-installer',
             f'{depsland_project_root}/resources/depsland-online-installer.zip',
+            compression_level='maximum',
             overwrite=True,
             progress=True,
         )
         print(
             'see "<depsland_project>/resources/depsland-online-installer.zip" '
-            '({}). you may also want to upload this file to '
-            '"<oss>/likianta-public-share/depsland-resources".'.format(
-                fs.filesize(result, str)
+            '({}).'.format(fs.filesize(result, str))
+        )
+        if upload:
+            run_cmd_args(
+                (
+                    'ossutil',
+                    'cp',
+                    f'{depsland_project_root}/resources/depsland-online'
+                    '-installer.zip',
+                    'oss://likianta-public-share/depsland-resources/depsland'
+                    '-online-installer.zip',
+                    '-u',
+                ),
+                verbose=True,
             )
-        )
-    if upload:
-        if not compress:
-            print('the uploaded file may not be latest.', ':v6')
-        run_cmd_args(
-            (
-                'ossutil',
-                'cp',
-                f'{depsland_project_root}/resources/depsland-online'
-                '-installer.zip',
-                'oss://likianta-public-share/depsland-resources/depsland'
-                '-online-installer.zip',
-                '-u',
-            ),
-            verbose=True,
-        )
+        else:
+            print(
+                'you may also want to upload this file to "<oss>/likianta'
+                '-public-share/depsland-resources/depsland-online-installer'
+                '.zip".'
+            )
 
 
 @cli
@@ -312,4 +319,10 @@ def nuitka_create_launcher(
 
 
 if __name__ == '__main__':
+    # pox sidework/mini_launcher/make.py -h
+    # pox sidework/mini_launcher/make.py tree_shaking_depsland_online_installer 
+    #   -m -c -u
+    # pox sidework/mini_launcher/make.py tree_shaking_depsland_online_installer 
+    #   -M -c -u
+    # pox sidework/mini_launcher/make.py create_launcher_from_profile ...
     cli.run()

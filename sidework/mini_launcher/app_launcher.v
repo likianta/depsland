@@ -76,7 +76,7 @@ fn check_version_of_installed_depsland(path string) !bool {
         info.depsland_version[re.groups[8]..re.groups[9]].int()
     }
     
-    // the minimal acceptable version is 0.12.0a13
+    // the minimal acceptable version is 0.12.0a17
     mut this_version := ''
     mut target_least_version := ''
     if dev == -1 || dev_type == 'b' {
@@ -85,7 +85,7 @@ fn check_version_of_installed_depsland(path string) !bool {
         return this_version >= target_least_version
     } else {
         this_version = '${major:03}.${minor:03}.${patch:03}.${dev:03}'
-        target_least_version = '000.012.000.013'
+        target_least_version = '000.012.000.017'
         return this_version >= target_least_version
     }
 }
@@ -104,7 +104,7 @@ fn download_and_extract_depsland_ol(url string) !string {
     // url := 'http://172.20.128.100:2188/depsland-online-installer.zip'
     zip := '${currdir}/depsland-online-installer.zip'
     if os.exists(zip) { os.rm(zip)! }
-    println('Downloading depsland online installer (~11MB), please wait...')
+    println('Downloading depsland online installer (~13MB), please wait...')
     // http.download_file(url, zip)!
     http.download_file_with_progress(url, zip)!
     szip.extract_zip_to_dir(zip, currdir)!
