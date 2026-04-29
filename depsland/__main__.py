@@ -19,10 +19,8 @@ if 2:
 import subprocess
 import sys
 import typing as t
-
 from argsense import CommandLineInterface
 from lk_utils import fs
-
 from . import __path__
 from . import __version__
 from . import api
@@ -32,6 +30,7 @@ from .manifest import T
 from .manifest import get_last_installed_version
 from .manifest import load_manifest
 from .normalization import check_name_normalized
+from .verspec import compare_version
 
 # fix sys.argv
 if len(sys.argv) > 1 and sys.argv[1].endswith('.exe'):
@@ -300,7 +299,7 @@ def runx(
                 if use_exist and (
                     some_ver := get_last_installed_version(appid)
                 ):
-                    if _check_version(some_ver, version):
+                    if compare_version(some_ver, '>', version):
                         print(
                             'change specified version ({}) to newer one ({}) '
                             'since it is already installed.'.format(
@@ -446,12 +445,6 @@ def open_readme(appid: str) -> None:
 
 # -----------------------------------------------------------------------------
 # misc
-
-
-def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
-    from .verspec import compare_version
-
-    return compare_version(new['version'], '>', old['version'])
 
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:

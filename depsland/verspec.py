@@ -129,7 +129,7 @@ def _minor_fix_version_form(raw_verspec: str) -> str:
         0.12.0.post2    0.12.0-post.2
         6.4.0.1         6.4.0-1
         21.7b0          21.7.0-b.0
-    see unittest in `unittests/raw_version_to_semver.py`
+    see test case in `test/raw_version_to_semver.py`.
     """
     pattern1 = re.compile(r'^(\d+(?:\.\d+)?(?:\.\d+)?)(.*)')
     main, sub = pattern1.search(raw_verspec).groups()

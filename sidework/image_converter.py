@@ -11,7 +11,7 @@ from lk_utils import fs
 
 
 @cli
-def main(file_i: str, file_o: str = '') -> str:
+def main(file_i: str, file_o: str = '') -> None:
     """
     params:
         file_i (-i):
@@ -31,6 +31,11 @@ def main(file_i: str, file_o: str = '') -> str:
         else:
             assert file_o.endswith(('.ico', '.png'))
     else:
+        if file_i.endswith('.icns'):
+            file_png = icns_2_png(file_i, fs.replace_ext(file_i, 'png'))
+            file_ico = png_2_ico(file_png, fs.replace_ext(file_i, 'ico'))
+            print('results: \n    {}\n    {}'.format(file_png, file_ico), ':v4')
+            return
         file_o = fs.replace_ext(file_i, 'ico')
 
     if file_i.endswith('.icns'):
@@ -41,8 +46,7 @@ def main(file_i: str, file_o: str = '') -> str:
     else:
         png_2_ico(file_i, file_o)
 
-    print('result: {}'.format(file_o))
-    return file_o
+    print('result: {}'.format(file_o), ':v4')
 
 
 @cli
