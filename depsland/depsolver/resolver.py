@@ -1,10 +1,8 @@
 import json
 import typing as t
 from functools import cache
-
 from lk_utils import fs
 from lk_utils import run_cmd_args
-
 from .poetry_lock_resolver import resolve_poetry_lock
 from .requirements_lock import resolve_requirements_lock
 from .. import paths
@@ -45,7 +43,7 @@ def resolve_dependencies(
 ) -> T.Dependencies1:
     if not deps0:  # None, empty dict/list/string/etc.
         return {}
-    
+
     if isinstance(deps0, str):
         assert deps0 in ('poetry.lock', 'pyproject.toml', 'requirements.lock')
         specfile = f'{proj_dir}/{deps0}'
@@ -55,32 +53,36 @@ def resolve_dependencies(
     # raise Exception
     if fs.exist(lock_file):
         return fs.load(lock_file)
-    
-    print(
-        'the first time building dependencies tree, this may take a while...',
-        ':v6'
-    )
-    
+
+    print('build new dependency tree, this may take a while...', ':v6')
+
     if isinstance(deps0, str):  # a file
         # assert deps0 in ('poetry.lock', 'pyproject.toml', 'requirements.lock')
-        assert all(map(fs.exist, (
-            a := f'{proj_dir}/pyproject.toml',
-            b := f'{proj_dir}/poetry.lock',
-            c := f'{proj_dir}/{deps0}',
-        )))
+        assert all(
+            map(
+                fs.exist,
+                (
+                    a := f'{proj_dir}/pyproject.toml',
+                    b := f'{proj_dir}/poetry.lock',
+                    c := f'{proj_dir}/{deps0}',
+                ),
+            )
+        )
         if deps0 == 'requirements.lock':
             out = resolve_requirements_lock(a, b, c)
         else:  # NOTE (2024-07-01): currently this is mainly used.
             out = resolve_poetry_lock(a, b)
         fs.dump(out, lock_file)
         return out
-    
+
     elif isinstance(deps0, list):
         raw_requirements = '\n'.join(deps0)
         dir_m = paths.temp.make_dir()
         fs.dump(raw_requirements, f'{dir_m}/requirements.txt')
         json_data = run_cmd_args(
-            'pipgrip', '--json', '--sort',
+            'pipgrip',
+            '--json',
+            '--sort',
             ('-r', 'requirements.txt'),
             # ('--cache-dir', paths.pypi.cache),
             ('--index-url', 'https://pypi.tuna.tsinghua.edu.cn/simple'),
@@ -89,26 +91,24 @@ def resolve_dependencies(
         )
         requirements = []
         for k, v in json.loads(json_data).items():
-            requirements.append('{}=={}'.format(
-                normalize_name(k), v
-            ))
+            requirements.append('{}=={}'.format(normalize_name(k), v))
         out = {}
         for line in requirements:
             name, ver = line.split('==', 1)
             # out[name] = ver
             out[name] = {
-                'id'      : f'{name}-{ver}',
-                'name'    : name,
-                'version' : ver,
+                'id': f'{name}-{ver}',
+                'name': name,
+                'version': ver,
                 'appendix': None,
             }
-    
+
     elif isinstance(deps0, dict):  # TODO
         raise NotImplementedError
-    
+
     else:
         raise Exception
-    
+
     fs.dump(out, lock_file)
     return out
 
@@ -123,7 +123,7 @@ def _get_snapshot_file(deps0: T.Dependencies0) -> str:
         raise NotImplementedError
     else:
         raise Exception
-    
+
     print(f'snapdep/{hash}.pkl', ':p')
     lock_file = f'{paths.pypi.snapdep}/{hash}.pkl'
     return lock_file

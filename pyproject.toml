@@ -46,6 +46,7 @@ icnsutil = "^1.1.0"  # <- sidework/image_converter.py
 ipython = "^9.12.0"
 lk-utils = { version = "^3.6.0a20", source = "likianta" }
 nuitka = "^4.0.8"
+objprint = "^0.3.0"
 pillow = "^12.2.0"  # <- sidework/image_converter.py
 # pinkrain = { version = "^0.0.0a32", source = "likianta" }
 py7zr = "^1.1.0"
@@ -75,13 +76,6 @@ priority = "supplemental"
 
 [tool.poetry-extensions]
 ignore-unused-packages = ["poetry"]
-
-[tool.pyright]
-include = [
-    "build",
-    "depsland",
-    "sidework",
-]
 
 [tool.ruff]
 line-length = 80

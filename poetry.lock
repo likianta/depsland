@@ -3290,6 +3290,23 @@ url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun"
 
 [[package]]
+name = "objprint"
+version = "0.3.0"
+description = "A library that can print Python objects in human readable format"
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "objprint-0.3.0-py3-none-any.whl", hash = "sha256:489083bfc8baf0526f8fd6af74673799511532636f0ce4141133255ded773405"},
+    {file = "objprint-0.3.0.tar.gz", hash = "sha256:b5d83f9d62db5b95353bb42959106e1cd43010dcaa3eed1ad8d7d0b2df9b2d5a"},
+]
+
+[package.source]
+type = "legacy"
+url = "https://mirrors.aliyun.com/pypi/simple"
+reference = "aliyun"
+
+[[package]]
 name = "oss2"
 version = "2.19.1"
 description = "Aliyun OSS (Object Storage Service) SDK"
@@ -7281,4 +7298,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "e4bdc02fd3ece7c0592cc4e7c3cb5c07b6d694f8c29ea55c65c04534ef793e49"
+content-hash = "f8449e0d14a67ac7c2c87cb24a5558ea9136cffd81fa3b827cd889e8d1e89346"
