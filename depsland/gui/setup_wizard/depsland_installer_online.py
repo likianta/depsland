@@ -14,7 +14,7 @@ class State:
         'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
         '/depsland-resources/depsland.7z'
     )
-    depsland_version = '0.12.0a17'  
+    depsland_version = '0.12.0a19'
     #   this field required manually update. make sure it matches 
     #   `pyproject.toml:project.version`.
     folders: tp.Dict[str, tp.List[str]] = {}
@@ -369,14 +369,23 @@ def _install_target_application(
             from depsland.api.user_api import install_by_appid
             from depsland.api.user_api import install_progress
             
-            progress = ('', 0.0, '')
+            progress = ('', 0.0, '')  # Tuple[Stage, Percent, Text]
             progress_done = False
             
             @install_progress.bind
             def _update_progress(stage, percent, text):
                 nonlocal progress, progress_done
-                progress = (stage, percent, text)
-                progress_done = stage == 'ending' and percent >= 1
+                if stage == 'updating_assets':
+                    progress = (stage, percent, text)
+                elif stage == 'resolving_dependencies':
+                    progress = (stage, percent, text)
+                elif stage == 'linking_dependencies':
+                    progress = ('ending', 0.0 + 0.7 * percent, text)
+                elif stage == 'ending':
+                    progress = ('ending', 0.7 + 0.3 * percent, text)
+                    progress_done = percent >= 1.0
+                else:
+                    raise ValueError(stage)
             
             run_new_thread(install_by_appid, appid, version)
             
@@ -431,7 +440,7 @@ def _install_target_application(
                 with place2:
                     st.markdown(label2)
                 curr_prog = prog2
-            else:
+            else:  # 'ending'
                 with place2:
                     st.markdown(label2 + ' :green[done]')
                 prog2.progress(1.0, 'All dependencies resolved')

@@ -11,7 +11,6 @@ from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...oss import T as T1
 from ...oss import get_oss_client
-# from ...platform import create_launcher
 from ...platform import sysinfo
 from ...platform.launcher import create_desktop_shortcut
 from ...platform.launcher.make_exe import add_icon_to_exe
@@ -19,6 +18,7 @@ from ...pypi import pypi
 from ...pypi.pypi import LocalPyPI
 from ...utils import ziptool
 from ...verspec import compare_version
+
 
 class T(T0):
     LauncherInfo = T0.Launcher  # alias
@@ -28,6 +28,7 @@ class T(T0):
     ProgressStage = t.Literal[
         'updating_assets',
         'resolving_dependencies',
+        'linking_dependencies',
         'ending',
     ]
     Progress = t.Union[
@@ -37,12 +38,14 @@ class T(T0):
                 float,  # percentage (0.0 ~ 1.0)
                 str,  # description
             ],
-            None
+            None,
         ],
-        Signal
+        Signal,
     ]
 
+
 install_progress = t.cast(T.Progress, Signal(T.ProgressStage, float, str))
+
 
 def install_by_appid(
     appid: str, upgrade: bool = True, reinstall: bool = False
@@ -52,28 +55,30 @@ def install_by_appid(
         m0 = init_manifest(appid, m1['name'])
     return install(m1, m0, upgrade, reinstall)
 
+
 def install_local(
     manifest_file: T.Path, upgrade: bool = True, reinstall: bool = False
 ) -> str:
     m1 = load_manifest(manifest_file)
-    
+
     if fs.exist(d := '{}/.oss'.format(m1['start_directory'])):
         custom_oss_root = d
     else:
         custom_oss_root = None
-    
-    m1.make_tree(d := '{}/{}/{}'.format(
-        paths.project.apps, m1['appid'], m1['version']
-    ))
+
+    m1.make_tree(
+        d := '{}/{}/{}'.format(paths.project.apps, m1['appid'], m1['version'])
+    )
     m1['start_directory'] = d
-    
+
     appid, name = m1['appid'], m1['name']
     if x := _get_dir_to_last_installed_version(appid):
         m0 = load_manifest(f'{x}/manifest.pkl')
     else:
         m0 = init_manifest(appid, name)
-    
+
     return install(m1, m0, upgrade, reinstall, custom_oss_root)
+
 
 def install(
     manifest_new: T.Manifest,
@@ -109,6 +114,7 @@ def install(
     else:  # TODO
         if reinstall:
             from .uninstall import main as _uninstall
+
             # assert m0['version'] == m1['version']
             _uninstall(appid, manifest_old['version'])
             install_by_appid(appid, upgrade=False, reinstall=False)
@@ -120,13 +126,14 @@ def install(
             )
     return manifest_new['start_directory']
 
+
 def _install(
     manifest_new: T.Manifest,
     manifest_old: T.Manifest,
     custom_oss_root: T.Path = None,
 ) -> None:
     dir_m = paths.temp.make_dir()
-    
+
     if custom_oss_root:
         print('use local oss server', ':v1')
         oss = get_oss_client(manifest_new['appid'], server='local')
@@ -134,33 +141,37 @@ def _install(
     else:
         oss = get_oss_client(manifest_new['appid'])
     print(oss.path)
-    
+
     package_resolver = pypi
     if x := manifest_new.get('experiments'):
         if x.get('package_provider') == 'oss':
             print(':v1', 'experimental feature: use oss as package provider')
             package_resolver = oss
-    
+
     _install_files(manifest_new, manifest_old, oss, dir_m)
     _install_packages(manifest_new, manifest_old, package_resolver)
     _create_launchers(manifest_new)
-    
+
     _save_history(manifest_new['appid'], manifest_new['version'])
     _save_manifest(manifest_new)
-    
+
     print(':rt', '[green]installation done[/]')
+
 
 # -----------------------------------------------------------------------------
 # callees for `install_by_appid`
+
 
 def _check_update(manifest_new: T.Manifest, manifest_old: T.Manifest) -> bool:
     return compare_version(
         manifest_new['version'], '>', manifest_old['version']
     )
 
+
 def _check_version(new: T.Manifest, old: T.Manifest) -> bool:
-    """ check if version upgradale. """
+    """check if version upgradale."""
     return compare_version(new['version'], '>', old['version'])
+
 
 def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     if last_ver := get_last_installed_version(appid):
@@ -168,6 +179,7 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
         assert fs.exist(dir_), dir_
         return dir_
     return None
+
 
 def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
     def download_new() -> T.Manifest:
@@ -183,7 +195,7 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
         manifest_new.make_tree()
         fs.move(x, manifest_new['start_directory'] + '/manifest.pkl')
         return manifest_new
-    
+
     def find_old() -> t.Optional[T.Manifest]:
         if x := _get_dir_to_last_installed_version(appid):
             return load_manifest(f'{x}/manifest.pkl')
@@ -197,12 +209,14 @@ def _get_manifests(appid: str) -> t.Tuple[T.Manifest, t.Optional[T.Manifest]]:
                 ':v',
             )
             return None
-    
+
     new, old = download_new(), find_old()
     return new, old
 
+
 # -----------------------------------------------------------------------------
 # callees for main process.
+
 
 def _install_files(
     manifest_new: T.Manifest,
@@ -214,7 +228,7 @@ def _install_files(
     root1 = manifest_new['start_directory']
     _root00 = fs.parent(root0)
     _root10 = fs.parent(root1)
-    
+
     # noinspection PyUnusedLocal
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.
@@ -225,17 +239,17 @@ def _install_files(
         #     fs.copy_file(i, o, True)
         # else:
         #     fs.copy_tree(i, o, True)
-    
+
     def download_from_oss(i: str, m: str, o: str) -> None:
         print(fs.relpath(o, _root10))
         oss.download(i, m)
         ziptool.extract_file(m, o, overwrite=True)
-    
+
     total_diff = diff_manifest(manifest_new, manifest_old)
     assets_diff = tuple(total_diff['assets'])
     assets_diff_cnt = len(assets_diff)
     curr_cnt = 0  # 1-based
-    
+
     for action, relpath, (info0, info1) in assets_diff:
         curr_cnt += 1
         install_progress.emit(
@@ -243,9 +257,9 @@ def _install_files(
             curr_cnt / assets_diff_cnt,
             '[{}/{}] Updating asset "{}" ({})'.format(
                 curr_cnt, assets_diff_cnt, relpath, action
-            )
+            ),
         )
-        
+
         if action == 'ignore':
             if info1.scheme == 0b00:
                 if not fs.exist(f'{root1}/{relpath}'):
@@ -260,7 +274,7 @@ def _install_files(
                 else:
                     print('turn ignore to append action')
                     action = 'append'
-        
+
         if action in ('append', 'update'):
             path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
             path_m = fs.normpath(  # an intermediate file (zip)
@@ -273,6 +287,7 @@ def _install_files(
             path_o = fs.normpath(f'{root1}/{relpath}')  # a file or a directory
             download_from_oss(path_i, path_m, path_o)
 
+
 def _install_packages(
     manifest_new: T.Manifest,
     manifest_old: T.Manifest,
@@ -282,21 +297,21 @@ def _install_packages(
     if not manifest_new['dependencies']:
         print('no dependency for this project')
         return
-    
+
     total_diff = diff_manifest(manifest_new, manifest_old)
     deps_diff = tuple(total_diff['dependencies'])
     # deps_diff_cnt = len(deps_diff)
-    
+
     # curr_cnt = 0
     package_ids = set()
     tasks_ignitor = []  # list[T.PackageInfo]
-    
+
     action: T.Action
     info0: T.PackageInfo
     info1: T.PackageInfo
     pkg_id: T.PackageId
     pkg_name: T.PackageName
-    
+
     for action, pkg_name, (info0, info1) in deps_diff:
         if action == 'delete':  # this is handled by oss util.
             continue
@@ -304,11 +319,11 @@ def _install_packages(
         if action in ('append', 'update'):
             tasks_ignitor.append(info1)
         package_ids.add(pkg_id)
-    
+
     has_new_packages = bool(tasks_ignitor)
     if tasks_ignitor:
         print(len(tasks_ignitor))
-        
+
         def pip_download_and_install(info: T.PackageInfo) -> None:
             if info['id'] in pypi.index.id_2_paths:
                 # this case should always be False in production environment. -
@@ -316,10 +331,10 @@ def _install_packages(
                 return
             dl_path = pypi.download_one(
                 info['id'],
-                info['appendix'] and info['appendix'].get('custom_url')
+                info['appendix'] and info['appendix'].get('custom_url'),
             )
             pypi.install_one(info['id'], dl_path)
-        
+
         def oss_download_and_install(info: T.PackageInfo) -> None:
             if info['id'] in pypi.index.id_2_paths:
                 # this case should ALWAYS be False in production environment.
@@ -334,7 +349,7 @@ def _install_packages(
                 paths.pypi.installed, info['name'], info['version']
             )
             fs.make_dirs('{}/{}'.format(paths.pypi.installed, info['name']))
-            
+
             if not fs.exist(download_path):
                 # note: if `_oss.download` function raises an exception, the
                 # entire process will terminate abruptly -- typically due to
@@ -346,7 +361,7 @@ def _install_packages(
                 _oss.download(resource_path, download_path)
             ziptool.extract_file(download_path, install_path, True)
             pypi.index.update_index(info['id'], download_path, install_path)
-        
+
         # FIXME: thread_pool makes pip install stucked, and ctrl+c cannot -
         #   terminate the process.
         # we will have IO heavy tasks, so promoting max workers is fine.
@@ -358,48 +373,63 @@ def _install_packages(
         #     for info in tasks_ignitor
         # ]
         # for x in tasks: x.result()
-        
+
         if package_resolver is pypi:
             resolve = pip_download_and_install
         else:
             _oss: T.Oss = package_resolver
             resolve = oss_download_and_install
-        
+
         for i, info in enumerate(tasks_ignitor, 1):
             install_progress.emit(
                 'resolving_dependencies',
                 i / len(tasks_ignitor),
                 '[{}/{}] Fetching dependency "{}"'.format(
                     i, len(tasks_ignitor), info['id']
-                )
+                ),
             )
             resolve(info)
-    
-    install_progress.emit('ending', 0.5, 'Linking virtual environment')
+
     venv_dir = paths.apps.make_venv_dir(
         manifest_new['appid'], manifest_new['version'], clear_exists=True
     )
     if has_new_packages:
-        pypi.linking(package_ids, venv_dir)
+        install_progress.emit(
+            'linking_dependencies', 0.0, 'Setting virtual environment'
+        )
+
+        def _progress(item: fs.ProgressItem) -> None:
+            install_progress.emit(
+                'linking_dependencies',
+                '[{}/{}] {}'.format(item.index, item.total, item.text),
+                'Setting virtual environment',
+            )
+
+        pypi.linking(package_ids, venv_dir, progress=_progress)
     else:
+        install_progress.emit(
+            'linking_dependencies', 1.0, 'Setting virtual environment'
+        )
+
         def fast_link_venv(dst_dir: T.Path) -> None:
             print('fast link venv from old version')
-            assert (
-                manifest_old['version'] != '0.0.0'
-            ), 'cannot do fast linking from a void version'
+            assert manifest_old['version'] != '0.0.0', (
+                'cannot do fast linking from a void version'
+            )
             src_dir = paths.apps.get_venv_dir(
                 manifest_old['appid'], manifest_old['version']
             )
             fs.make_link(src_dir, dst_dir, True)
-        
+
         fast_link_venv(venv_dir)
-    
+
     pypi.index.save_index()
+
 
 def _create_launchers(manifest: T.Manifest) -> None:
     print('creating launcher... (this may be slow)')
     install_progress.emit('ending', 1.0, 'Creating launcher')
-    
+
     exe_file = '{}/{}/{}/{}.exe'.format(
         paths.project.apps,
         manifest['appid'],
@@ -412,10 +442,10 @@ def _create_launchers(manifest: T.Manifest) -> None:
         fs.copy_file(paths.build.depsland_runapp_exe, exe_file)
     if x := manifest['launcher']['icon']:
         add_icon_to_exe(exe_file, x)
-    
+
     if sysinfo.IS_WINDOWS:
         launcher: T.LauncherInfo = manifest['launcher']
-        
+
         # if not launcher['show_console']:
         #     # since console-less application is hard to debug if failed at -
         #     # startup, we provide a "debug" launcher for user.
@@ -441,11 +471,11 @@ def _create_launchers(manifest: T.Manifest) -> None:
         fs.copy_file(paths.build.depsland_runapp_debug_exe, dbg_exe_file)
         if x := manifest['launcher']['icon']:
             add_icon_to_exe(dbg_exe_file, x)
-        
+
         if launcher['enable_cli']:
-            fs.copy_file(exe_file, '{}/{}.exe'.format(
-                paths.apps.bin, manifest['appid']
-            ))
+            fs.copy_file(
+                exe_file, '{}/{}.exe'.format(paths.apps.bin, manifest['appid'])
+            )
         if launcher['add_to_desktop']:
             create_desktop_shortcut(
                 file_i=exe_file,
@@ -456,11 +486,10 @@ def _create_launchers(manifest: T.Manifest) -> None:
         if launcher['add_to_start_menu']:
             # WARNING: not tested
             fs.copy_file(
-                exe_file, '{}/{}.exe'.format(
-                    paths.system.start_menu, manifest['name']
-                )
+                exe_file,
+                '{}/{}.exe'.format(paths.system.start_menu, manifest['name']),
             )
-    
+
     # ref: `/depsland/paths.py:Project:_setup_shipboard_mode`
     if paths.project.project_mode == 'shipboard':
         if x := manifest['readme']:
@@ -469,9 +498,11 @@ def _create_launchers(manifest: T.Manifest) -> None:
             )
             if not fs.exist(readme_opener):
                 from ..dev_api.build_offline import create_readme_opener
+
                 create_readme_opener(manifest, fs.parent(paths.project.root))
         # elif fs.exist(readme_opener):
         #     fs.remove(readme_opener)
+
 
 def _save_history(appid: str, version: str) -> None:
     file = paths.apps.get_installation_history(appid)
@@ -482,6 +513,7 @@ def _save_history(appid: str, version: str) -> None:
     data.insert(0, version)
     fs.dump(data, file)
     print('new installation is recorded')
+
 
 def _save_manifest(manifest: T.Manifest) -> None:
     file_o = '{}/{}/{}/manifest.pkl'.format(

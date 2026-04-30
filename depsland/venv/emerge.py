@@ -1,10 +1,7 @@
 import os
 import typing as t
 from collections import defaultdict
-
-# from lk_utils import Signal
 from lk_utils import fs
-
 from .. import paths
 
 
@@ -12,7 +9,6 @@ class T:
     AbsPath = str
     RelPath = str
     PackageId = str
-    
     Ownership = t.Dict[RelPath, PackageId]
     PackageIds = t.Iterable[PackageId]
 
@@ -21,7 +17,7 @@ def link_venv(
     pkg_ids: T.PackageIds,
     venv_dir: T.AbsPath,
     overwrite: bool = None,
-    # _signal: Signal[int] = None
+    progress: t.Optional[t.Callable[[fs.ProgressItem], None]] = None,
 ) -> None:
     dirname_2_name_ids = defaultdict(list)
     for pid in pkg_ids:
@@ -34,6 +30,8 @@ def link_venv(
     if not dirname_2_name_ids:
         print('no package to link to venv', ':p')
         # fs.make_dirs(venv_dir)
+        if progress:
+            progress(fs.ProgressItem(1, 1, 1.0, 'No need to link any package'))
         return
     
     ownership: T.Ownership = {}
@@ -44,10 +42,19 @@ def link_venv(
             ownership.update(_divide_ownerships(dname, pkg_ids))
     
     _init_dirs(venv_dir, ownership.keys())
+    total = len(ownership)
+    index = 0
     for relpath, name_id in sorted(
         ownership.items(), key=lambda x: x[1]  # sort by name_id.
     ):
         print(name_id, relpath, ':vs')
+        index += 1
+        if progress:
+            progress(
+                fs.ProgressItem(
+                    total, index, index / total, f'Linking {name_id}'
+                )
+            )
         fs.make_link(
             '{}/{}'.format(_name_id_2_path(name_id), relpath),
             '{}/{}'.format(venv_dir, relpath),
@@ -59,7 +66,7 @@ def _divide_ownerships(
     relpath: T.RelPath, candidates: T.PackageIds
 ) -> T.Ownership:
     """
-    docs: docs/devnote/merge-links-algorithm.zh.md
+    docs: wiki/docs/devnote/merge-links-algorithm.zh.md
     """
     file_asset_2_name_ids = defaultdict(list)
     dir_asset_2_name_ids = defaultdict(list)

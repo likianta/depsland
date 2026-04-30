@@ -11,19 +11,19 @@ def start_demo_progress():
     
     for i in range(10):
         prog_ui.progress(
-            0.0 + 0.4 * (i + 1) / 10, 'Fetching file #{}'.format(i + 1)
+            0.0 + 0.3 * (i + 1) / 10, 'Fetching file #{}'.format(i + 1)
         )
         sleep(randint(1, 5) / 10)  # 100ms ~ 500ms
     
     for i in range(10):
         prog_ui.progress(
-            0.4 + 0.5 * (i + 1) / 10, 'Installing package #{}'.format(i + 1)
+            0.3 + 0.5 * (i + 1) / 10, 'Installing package #{}'.format(i + 1)
         )
         sleep(randint(1, 5) / 10)  # 100ms ~ 500ms
     
     for i in range(2):
         prog_ui.progress(
-            0.9 + 0.1 * (i + 1) / 10, 'Cleaning stuff #{}'.format(i + 1)
+            0.8 + 0.2 * (i + 1) / 10, 'Cleaning stuff #{}'.format(i + 1)
         )
         sleep(randint(5, 10) / 10)  # 500ms ~ 1000ms
     
@@ -39,12 +39,15 @@ def start_real_progress(progress_signal=install_progress):
     def _update_progress(
         stage: T.ProgressStage, percent: float, text: str
     ) -> None:
-        if stage == 'updating_assets':
-            _prog_ui.progress(0.0 + 0.4 * percent, text)
-        elif stage == 'resolving_dependencies':
-            _prog_ui.progress(0.4 + 0.5 * percent, text)
-        else:
-            _prog_ui.progress(0.9 + 0.1 * percent, text)
+        match stage:
+            case 'updating_assets':  # 30%
+                _prog_ui.progress(0.0 + 0.3 * percent, text)
+            case 'resolving_dependencies':  # 40%
+                _prog_ui.progress(0.3 + 0.4 * percent, text)
+            case 'linking_dependencies':  # 20%
+                _prog_ui.progress(0.7 + 0.2 * percent, text)
+            case 'ending':  # 10%
+                _prog_ui.progress(0.9 + 0.1 * percent, text)
     
     yield _prog_ui
     
