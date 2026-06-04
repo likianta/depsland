@@ -1,4 +1,5 @@
 from .build import build
+from .build_project import load_config
 from .build_offline import main as build_offline
 from .build_offline_2 import main as build_stripped_offline
 from .build_project import build as build_project

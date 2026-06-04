@@ -1,9 +1,8 @@
 {
     "root": "..",
-    "version_bump": {
-        "places": {
-            "pyproject.toml": "version = \"<VERSION>\""
-        }
+    "version": "$pyproject_version",
+    "version_bumps": {
+        "pyproject.toml": "version = \"$version_pattern\""
     },
     "images": {
         "src_max": "",

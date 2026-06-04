@@ -16,7 +16,7 @@ dynamic = ["dependencies"]
 python = "^3.12"
 airmise = { version = "^3.0.0b2", source = "likianta" }
 argsense = { version = "^1.1.1", source = "likianta" }
-lk-utils = { version = "^3.6.0a18", source = "likianta" }
+lk-utils = { version = "^3.6.0a19", source = "likianta" }
 py7zr = "^1.1.0"  # <- lk_utils.fs.zip
 
 [tool.poetry.group.dev.dependencies]
@@ -35,8 +35,23 @@ name = "likianta"
 url = "http://localhost:2191/"
 priority = "supplemental"
 
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "single"
+skip-magic-trailing-comma = true
+
 [tool.ruff.lint]
-ignore = ["E402"]
+ignore = ["E701"]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+# no-sections = true
+relative-imports-order = "closest-to-furthest"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401", "F403"]
 
 [build-system]
 requires = ["poetry-core"]

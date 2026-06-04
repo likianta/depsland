@@ -1649,13 +1649,13 @@ reference = "aliyun"
 
 [[package]]
 name = "lk-utils"
-version = "3.6.0a18"
+version = "3.6.0a20"
 description = "A set of utility wrappers made for data processing."
 optional = false
 python-versions = ">=3.8"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.6.0a18-py3-none-any.whl", hash = "sha256:4ff403ecc997e4646aa98b5a77550dbc53183d5345bc4e778795955b95c53636"},
+    {file = "lk_utils-3.6.0a20-py3-none-any.whl", hash = "sha256:30824f48c9ec883e323149b85c4446d186861b4858530a63d71688d4d67b249f"},
 ]
 
 [package.dependencies]
@@ -3458,4 +3458,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "eaf98fee559a0a5718e0e5849fd6c2a173208ed57a323d7e770fc7cdf8d74d33"
+content-hash = "09d1dc453a2ec3baa979349cbe66680f3b41aa52f2e7f17b7bfdf3a33045de85"

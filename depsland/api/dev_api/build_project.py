@@ -4,31 +4,30 @@ if __name__ == '__main__':
 import os
 import re
 import sys
-import tree_shaking
 import typing as t
+
+import neoprint as np
+import tree_shaking
 from lk_utils import fs
 from lk_utils import run_cmd_args
 from pyportable_crypto import compile_dir
 from pyportable_crypto.cipher_gen import generate_cipher_package
+
 from ...paths import temp as temp_paths
+from ...verspec import compare_version
 
 
 class T:
     Path = str  # any path form
-    # noinspection PyTypedDict,PyTypeHints
     Config = t.TypedDict(
         'Config',
         {
             'root': Path,
-            'version_bump': t.TypedDict(
-                'VersionBump',
-                {
-                    # the places:keys are order sensitive. the first key will be
-                    # treated as primary key.
-                    # usually the primary key indicates to "pyproject.toml" file.
-                    'places': t.Dict[Path, str],
-                },
-            ),
+            'version': str,
+            # the version_bumps:keys are order sensitive. the first key will be
+            # treated as primary key.
+            # usually the primary key indicates to "pyproject.toml" file.
+            'version_bumps': t.Dict[Path, str],
             'images': t.TypedDict(
                 'Images',
                 {
@@ -58,11 +57,7 @@ class T:
                                 'search_paths': t.List[Path],
                                 'entries': t.List[Path],
                                 'export': t.TypedDict(
-                                    'Export',
-                                    {
-                                        'source': Path,
-                                        'target': Path,
-                                    },
+                                    'Export', {'source': Path, 'target': Path}
                                 ),
                             },
                             total=False,
@@ -113,19 +108,19 @@ def build(
         compress_result (-z): if true, compress to ".7z" format.
             this option is only valid when `publish==1`.
     """
-    config = _load_config(file, secret_key=secret_key)
+    config = load_config(file, secret_key=secret_key)
 
-    curr_version = _get_current_version(config)
+    curr_version = config['version']
     if remain_last_version:
-        print(':sv6', 'use last time updated version', curr_version)
+        np.show(':v6', 'use last time updated version', curr_version)
         new_version = curr_version
     else:
         if not new_version:
             new_version = _deduce_new_version(curr_version)
-        print(':r2', 'bump version: {} -> {}'.format(curr_version, new_version))
-        _bump_versions(
-            curr_version, new_version, config['version_bump']['places']
+        np.show(
+            ':r2', 'bump version: {} -> {}'.format(curr_version, new_version)
         )
+        _bump_versions(curr_version, new_version, config['version_bumps'])
 
     # noinspection PyTypedDict
     image_file = config['images'][
@@ -134,7 +129,7 @@ def build(
             'max' if minify_deps else 'min',
         )
     ]
-    print(image_key)
+    np.show(image_key, ':n')
     assert image_file, image_key
 
     if minify_deps == 2:
@@ -147,11 +142,11 @@ def build(
         assert all(config['encryption_options'].values())
         enc = config['encryption_options']
         if encrypt_packages == 1:
-            print('use last time encrypted packages')
+            np.show('use last time encrypted packages')
             _patch_encrypted_packages(
                 enc['packages'],
                 enc['output'],
-                tuple(config['version_bump']['places'].keys()),
+                tuple(config['version_bumps'].keys()),
             )
         else:
             _encrypt_packages(enc['packages'], enc['output'], enc['key'])
@@ -189,77 +184,16 @@ def build(
 
 
 def bump_version(file: T.Path, new_version: str = '') -> None:
-    config = _load_config(file)
-    curr_ver = _get_current_version(config)
+    config = load_config(file)
+    curr_ver = config['version']
     new_ver = new_version or _deduce_new_version(curr_ver)
-    print(':r2', 'bump version: {} -> {}'.format(curr_ver, new_ver))
-    _bump_versions(curr_ver, new_ver, config['version_bump']['places'])
+    np.show(':r2', 'bump version: {} -> {}'.format(curr_ver, new_ver))
+    if places := config['version_bumps']:
+        _bump_versions(curr_ver, new_ver, places)
+    # TODO: config['version'] = new_ver
 
 
-# noinspection PyUnusedLocal
-def _bump_versions(
-    old_ver: str, new_ver: str, places: t.Dict[T.Path, str]
-) -> None:
-    for k, v in places.items():
-        content_r = fs.load(k, 'plain')
-        # (a) fast but limited
-        # content_w = content_r.replace(
-        #     v.replace('<VERSION>', old_ver),
-        #     v.replace('<VERSION>', new_ver),
-        #     1
-        # )
-        # (b) more flexible
-        content_w = re.sub(
-            v.replace('<VERSION>', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
-            v.replace('<VERSION>', new_ver),
-            content_r,
-            1,
-        )
-        assert content_w != content_r
-        fs.dump(content_w, k, 'plain')
-
-
-def _deduce_new_version(old: str) -> str:
-    """
-    example:
-        0.12.0   -> 0.12.1
-        0.12.1a9 -> 0.12.1a10
-        0.12.1b0 -> 0.12.1b1
-    """
-    # noinspection PyUnresolvedReferences
-    a, b, c, d = re.match(r'(\d+)\.(\d+)\.(\d+)([ab]\d+)?', old).groups()
-    if d is None:
-        return f'{a}.{b}.{int(c) + 1}'
-    else:
-        return f'{a}.{b}.{c}{d[0]}{int(d[1:]) + 1}'
-
-
-def _encrypt_packages(
-    targets: t.Iterable[str], output_root: str, key: str
-) -> None:
-    fs.copy_tree(
-        generate_cipher_package(key),
-        '{}/pyportable_runtime'.format(output_root),
-        True,
-    )
-    for target in targets:
-        dir_i = target
-        dir_o = '{}/{}'.format(output_root, fs.basename(target))
-        compile_dir(dir_i, dir_o, key, add_runtime_package='none')
-
-
-def _get_current_version(config: T.Config) -> str:
-    for k, v in config['version_bump']['places'].items():
-        content: str = fs.load(k, 'plain')
-        # noinspection PyUnresolvedReferences
-        return re.search(
-            v.replace('<VERSION>', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'), content
-        ).group(1)
-    else:
-        raise Exception
-
-
-def _load_config(file: T.Path, **kwargs) -> T.Config:
+def load_config(file: T.Path, **kwargs) -> T.Config:
     data0: T.Config = fs.load(file)
 
     root = fs.abspath('{}/{}'.format(fs.parent(file), data0['root']))
@@ -268,21 +202,36 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
         assert x
         return '{}/{}'.format(root, x)
 
-    places = {}
-    for k, v in data0['version_bump']['places'].items():
-        places[abspath(k)] = v
-    assert places
+    version = data0.get('version', '')
+    if version == '$pyproject_version':
+        version = fs.load('{}/pyproject.toml'.format(root))['project'][
+            'version'
+        ]
+    version_bumps = {}
+    for k, v in data0.get('version_bumps', {}).items():
+        version_bumps[abspath(k)] = v
+    if not version:
+        # deduce version from places
+        assert version_bumps
+        for k, v in version_bumps.items():
+            content: str = fs.load(k, 'plain')
+            version = re.search(
+                v.replace('$version_pattern', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
+                content,
+            ).group(1)
+            break
+        else:
+            raise Exception
+    assert version
 
     images = {}
     for k in ('src_max', 'src_min', 'enc_max', 'enc_min'):
-        # noinspection PyTypedDict
         if x := data0['images'].get(k):
             if isinstance(x, str):
                 images[k] = abspath(x)
             else:  # dict
                 xdict: t.Dict[str, t.Any] = x  # noqa
                 if 'start_directory' in xdict:
-                    # noinspection PyUnresolvedReferences
                     if xdict['start_directory'].startswith('..'):
                         xdict['start_directory'] = fs.normpath(
                             '{}/{}'.format(
@@ -291,12 +240,13 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
                         )
                 else:
                     xdict['start_directory'] = root
-                if 'version' not in xdict:
-                    xdict['version'] = fs.load(
-                        '{}/pyproject.toml'.format(root)
-                    )['project']['version']
+                if 'version' in xdict:
+                    assert compare_version(version, '>=', xdict['version'])
+                    xdict['version'] = version
+                else:
+                    xdict['version'] = version
                 temp_file = getattr(temp_paths, k)
-                places[temp_file] = '"version": "<VERSION>"'
+                version_bumps[temp_file] = '"version": "$version_pattern"'
                 fs.dump(xdict, temp_file)
                 images[k] = temp_file
         else:
@@ -342,20 +292,73 @@ def _load_config(file: T.Path, **kwargs) -> T.Config:
     else:
         post_script = None
 
-    return {
-        'root': root,
-        'version_bump': {
-            'places': places,
+    return t.cast(
+        T.Config,
+        {
+            'root': root,
+            'version': version,
+            'version_bumps': version_bumps,
+            'images': images,
+            'encryption_options': {
+                'key': encryption_key,
+                'packages': encryption_dirs,
+                'output': encryption_output,
+            },
+            'minideps_options': {'tree_shaking_model': tree_shaking_model_path},
+            'post_script': post_script,
         },
-        'images': images,  # noqa
-        'encryption_options': {
-            'key': encryption_key,
-            'packages': encryption_dirs,
-            'output': encryption_output,
-        },
-        'minideps_options': {'tree_shaking_model': tree_shaking_model_path},
-        'post_script': post_script,
-    }
+    )
+
+
+def _bump_versions(
+    old_ver: str, new_ver: str, places: t.Dict[T.Path, str]
+) -> None:
+    for k, v in places.items():
+        content_r = fs.load(k, 'plain')
+        # (a) fast but limited
+        # content_w = content_r.replace(
+        #     v.replace('$version_pattern', old_ver),
+        #     v.replace('$version_pattern', new_ver),
+        #     1
+        # )
+        # (b) more flexible
+        content_w = re.sub(
+            v.replace('$version_pattern', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
+            v.replace('$version_pattern', new_ver),
+            content_r,
+            1,
+        )
+        assert content_w != content_r
+        fs.dump(content_w, k, 'plain')
+
+
+def _deduce_new_version(old: str) -> str:
+    """
+    example:
+        0.12.0   -> 0.12.1
+        0.12.1a9 -> 0.12.1a10
+        0.12.1b0 -> 0.12.1b1
+    """
+    # noinspection PyUnresolvedReferences
+    a, b, c, d = re.match(r'(\d+)\.(\d+)\.(\d+)([ab]\d+)?', old).groups()
+    if d is None:
+        return f'{a}.{b}.{int(c) + 1}'
+    else:
+        return f'{a}.{b}.{c}{d[0]}{int(d[1:]) + 1}'
+
+
+def _encrypt_packages(
+    targets: t.Iterable[str], output_root: str, key: str
+) -> None:
+    fs.copy_tree(
+        generate_cipher_package(key),
+        '{}/pyportable_runtime'.format(output_root),
+        True,
+    )
+    for target in targets:
+        dir_i = target
+        dir_o = '{}/{}'.format(output_root, fs.basename(target))
+        compile_dir(dir_i, dir_o, key, add_runtime_package='none')
 
 
 def _patch_encrypted_packages(
@@ -370,8 +373,8 @@ def _patch_encrypted_packages(
                 file_o = '{}/{}'.format(
                     output_root, fs.relpath(file, fs.parent(dir))
                 )
-                print(
-                    'fast encrypt to version changed file: {} -> {}'.format(
+                np.show(
+                    'fast encrypt on version changed file: {} -> {}'.format(
                         file_i, file_o
                     )
                 )

@@ -10,10 +10,6 @@ if 1:
             'see `DEVNOTE.md : search "make site-packages"` for help.'
         sys.path.append(x)
 
-if 2:
-    import lk_logger
-    lk_logger.setup(quiet=True, show_funcname=False, show_varnames=True)
-
 from . import api
 from . import config
 from . import depsolver
@@ -33,4 +29,4 @@ from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.12.0a17'
+__version__ = '0.12.0a19'

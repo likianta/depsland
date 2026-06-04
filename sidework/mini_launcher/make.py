@@ -1,4 +1,5 @@
 import json
+import neoprint as np
 import sys
 import tree_shaking
 from argsense import cli
@@ -17,8 +18,7 @@ def init() -> None:
     )
     if not fs.exist('tree_shaking'):
         print(
-            'suggest manually linking '
-            '`<python_tree_shaking_project>/tree_shaking` here'
+            'suggest manually linking `<python_tree_shaking_project>/tree_shaking` here'
         )
 
 
@@ -42,7 +42,7 @@ def tree_shaking_depsland_online_installer(
 
     post check:
         - if the size of `<depsland_project>/resources/depsland-online-installer
-            .zip` has notably changed, check some statements in 
+            .zip` has notably changed, check some statements in
             `./app_launcher.v : download_and_extract_depsland_ol : println`.
     """
     if minify:
@@ -70,8 +70,7 @@ def tree_shaking_depsland_online_installer(
                 (
                     'ossutil',
                     'cp',
-                    f'{depsland_project_root}/resources/depsland-online'
-                    '-installer.zip',
+                    f'{depsland_project_root}/resources/depsland-online-installer.zip',
                     'oss://likianta-public-share/depsland-resources/depsland'
                     '-online-installer.zip',
                     '-u',
@@ -133,10 +132,26 @@ def create_launcher(
 
 @cli
 def create_launcher_from_profile(profile: str, file_out: str = '') -> None:
+    """
+    params:
+        file_out (-o):
+    """
     sys.path.append(depsland_project_root)
     from depsland import load_manifest
+    from depsland.api.dev_api import load_config
 
-    manifest = load_manifest(profile)
+    conf = fs.load(profile)
+    if 'images' in conf:
+        conf2 = load_config(profile)
+        for k in ('src_min', 'enc_max', 'enc_min', 'src_max'):
+            if v := conf2['images'].get(k):
+                assert isinstance(v, str)
+                manifest = load_manifest(v)
+                break
+        else:
+            raise Exception(conf2['images'])
+    else:
+        manifest = load_manifest(profile)
 
     if file_out:
         if fs.isdir(file_out):
@@ -320,9 +335,9 @@ def nuitka_create_launcher(
 
 if __name__ == '__main__':
     # pox sidework/mini_launcher/make.py -h
-    # pox sidework/mini_launcher/make.py tree_shaking_depsland_online_installer 
+    # pox sidework/mini_launcher/make.py tree_shaking_depsland_online_installer
     #   -m -c -u
-    # pox sidework/mini_launcher/make.py tree_shaking_depsland_online_installer 
+    # pox sidework/mini_launcher/make.py tree_shaking_depsland_online_installer
     #   -M -c -u
     # pox sidework/mini_launcher/make.py create_launcher_from_profile ...
     cli.run()
