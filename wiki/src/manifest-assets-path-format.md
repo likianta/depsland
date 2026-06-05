@@ -51,11 +51,10 @@
 
 ## 示例
 
-> (引用自 `build/build_depsland/src_max.json`.)
+> (引用自 `build/build_depsland/build_project.json`.)
 
 ```json
 {
-    "...": "...",
     "assets": [
         "CHANGELOG.zh.md",
         "apps/.bin:0",
@@ -70,10 +69,10 @@
         "pypi/index/snapdep:0",
         "python:0",
         "temp:0",
+        "temp/temp_project:0",
         "test:0",
         "poetry.lock",
-        "requirements.lock",
-        "wiki/docs/.vitepress/dist"
+        "requirements.lock"
     ]
 }
 ```
@@ -84,7 +83,7 @@
 <dist>
 |- CHANGELOG.zh.md
 |= apps
-   |= .bin  # empty folder
+   |= .bin        # empty folder
 |= build
    |- ...
 |= chore
@@ -103,7 +102,8 @@
    |= index
       |= snapdep  # empty folder
 |= python  # empty folder
-|= temp  # empty folder
+|= temp
+   |= temp_project # empty folder
 |= test  # empty folder
 |- poetry.lock
 |- requirements.lock

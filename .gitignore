@@ -36,9 +36,7 @@
 /test/lk_utils_7z_unzip/test_in.7z
 /test/lk_utils_7z_unzip/test_out/
 /test/lk_utils_7z_unzip/tree_shaking
-/wiki/docs/.vitepress/cache/
-/wiki/docs/.vitepress/dist/
-/wiki/node_modules/
+/wiki/book/
 
 .depsland/
 .idea/

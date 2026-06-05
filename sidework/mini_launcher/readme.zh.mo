@@ -33,7 +33,7 @@
                     否: 安装应用
                         -> 启动目标应用
                         -o 结束
-                否: 下载 Depsland 在线安装器 (一个 11mb 大小的文件)
+                否: 下载 Depsland 在线安装器 (一个 12mb 大小的文件)
                     -> 启动在线安装器
                         在线安装器进程:
                             o- 与公网上的代理服务器取得联系
@@ -46,6 +46,56 @@
                             -> 启动目标应用
                             -o 结束
 ]
+
+[
+    Q:  为什么迷你启动器在找不到主程序时, 不是去下载主程序, 而是下载 "在线安装器"?
+    A:  直接下载主程序太慢了, 会让用户长时间停留在控制台界面. (迷你启动器不具备界面框架, 另外, 出于编译体积考虑, 未来是否支持仍未明确.)
+        另外我们想询问用户把主程序安装到哪里, 用控制台的 `input` 来交互对普通用户也不友好.
+        所以我们需要让用户尽快地离开控制台界面, 来到一个可视化界面的地方继续操作.
+        "在线安装器" 的好处是, 一是迷你启动器可以快速下载它 (只有 12MB), 解压它, 然后运行它.
+        二是它包含了更丰富的功能, 特别是远程交互功能 (涉及到 socket, os, pickle, eval, import, 是用 Python 写的, 虽然 V 也有可能实现, 但对本人来说难度太高), 用户利用它来连接远端的服务器, 访问 Web UI, 这样就能可视化地选择安装位置, 点击安装按钮, 看到安装的进度条.
+        未来可能考虑把 "在线安装器" 的功能也用 V 语言实现, 这样就不需要它了.
+        如果加入界面框架后, 编译体积能控制在 5MB 以内, 也会考虑 all-in "迷你启动器 -> 主程序" 两步走策略.
+]
+
+[## 构建流程]
+
+[#~ 构建基础设施]
+
+= 编译 Depsland Online Installer
+
+    [$sh
+        # 请先配置 [_ devnote.zh.mo:环境配置:ossutil].
+        pox sidework/mini_launcher/make.py tree_shaking_depsland_online_installer -m -c -u
+        #   -m: 重新压缩依赖库.
+        #   -c: 将结果压缩为 ".zip" 文件.
+        #   -u: 上传到 OSS.
+        #   完整参数含义见源码注解.
+    ]
+
+    生成结果位于 [_ resources/depsland_online_installer.zip].
+    注意: 如果该文件的体积有明显变化, 更新代码中的有关它的体积的描述: [_ sidework/mini_launcher/app_launcher.v : download_and_extract_depsland_ol : println].
+
+= 编译 Depsland Standalone (Depsland 主程序)
+    见 [_ devnote.zh.mo : h2 构建 : h3 构建 Depsland Standalone].
+
+[#~ 构建目标应用的迷你启动器]
+
+假设目标应用是 "Hello World", 它的项目结构如下:
+
+[:tree
+    ...
+]
+
+构建命令: [
+    a. [...]
+    b. [$sh
+        pox sidework/mini_launcher/make.py create_launcher_from_profile <hello_world_project>/profile.json
+    ]
+]
+
+[------------------------------------------------------------------------------]
+[// 以下内容已过时, 请酌情修改或删除.]
 
 [## 构建方案]
 

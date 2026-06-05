@@ -22,5 +22,5 @@
 
 转换是由 Manifest 完成的. 基本思路是, 外部想要获取一个键, 走 `Manifest.__getitem__` 方法, Manifest 察觉到对方要的是一个路径, 就返回 `self._start_directory + '/' + the_relpath` 给对方.
 
-以上为示意理解, 具体代码请见 `/depsland/manifest/manifest.py : [class] Manifest`.
+以上为示意理解, 具体代码请见 `depsland/manifest/manifest.py : [class] Manifest`.
 

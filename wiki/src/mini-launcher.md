@@ -52,11 +52,38 @@ end
 
 ## 如何创建迷你启动器
 
-相关工作见 `sidework/mini_launcher`.
+### 更新在线安装器
 
-迷你启动器最终要的是编译为可执行的单文件. 有多个方案在调研 (Rust, Nuitka, V 等), 目前在努力推进 Nuitka 和 V 的进展.
+如果升级了 sidework/mini_launcher/pyproject.toml, 则需要:
 
-更新 (2025-07): Nuitka 在概念验证阶段, 编译出来的 exe 体积已经有些超出预期了 (单文件 6MB, 但我期望的是在几百 KB 量级), 这还是没有加 GUI 的情况, 犹豫要不要继续推进.
+```sh
+python sidework/mini_launcher/make.py tree_shaking_depsland_online_installer -u
+```
 
-更新 (2025-08): V 语言的实现已通过概念验证阶段.
+> [!NOTE]
+>
+> 如果更新了 `<tree_shaking_project>/tree_shaking/patches/implicit_import_hooks.yaml` 文件, 建议立刻升级 sidework/mini_launcher/pyproject.toml 里的 tree-shaking 依赖, 以免下次调用上述命令时出现 minideps 意外缺失的问题.
+
+细节备忘: 观察上述命令的控制台输出的末尾几行, 如果看到生成的 zip 的体积有别于 `sidework/mini_launcher/app_launcher.v:download_and_extract_depsland_ol:println` 的描述, 请手动修改后者位置的代码.
+
+### 创建目标应用
+
+命令帮助:
+
+```sh
+python sidework/mini_launcher/make.py -h
+python sidework/mini_launcher/make.py create_launcher -h
+python sidework/mini_launcher/make.py create_launcher_from_profile -h
+```
+
+常用命令 + 示例:
+
+```sh
+python sidework/mini_launcher/make.py \
+    create_launcher_from_profile \
+    C:/Likianta/workspace/dev.master.likianta/python-tree-shaking/build/build_app.json \
+    -o C:/Likianta/temp/2026-06
+```
+
+
 

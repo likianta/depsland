@@ -1,4 +1,4 @@
-# PYPI 索引文件格式
+# PyPI 索引文件格式
 
 ## 为什么 `pypi/index` 中的文件格式是 "json" 而不是 "pkl"?
 

@@ -1,0 +1,15 @@
+[book]
+title = "Depsland 手册"
+authors = ["Likianta"]
+language = "zh"
+
+[build]
+create-missing = false
+
+[output.html]
+additional-css = ["theme.css"]
+
+[output.html.print]
+page-break = false
+
+# [output.pdf]
