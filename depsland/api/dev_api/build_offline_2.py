@@ -1,6 +1,6 @@
+import neoprint as np
 from lk_utils import dedent
 from lk_utils import fs
-
 from ... import paths
 from ... import platform
 from ...manifest import T
@@ -20,7 +20,7 @@ def main(manifest_file: str) -> str:
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
-    print('see result at {}'.format(dir_o))
+    np.show('see result at {}'.format(dir_o))
     return dir_o
 
 
@@ -43,22 +43,22 @@ def _init_dist_tree(dst_dir: str) -> None:
 def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     # noinspection PyTypeChecker
     diff = diff_manifest(
-        new=manifest,
-        old=init_manifest(manifest['appid'], manifest['name'])
+        new=manifest,  # type: ignore
+        old=init_manifest(manifest['appid'], manifest['name']),
     )
-    
+
     root_i = manifest['start_directory']
     root_o = f'{dst_dir}/source'
     manifest.make_tree(root_o)
-    
+
     # info1: T.AssetInfo
     for action, relpath, (info0, info1) in diff['assets']:
         assert action == 'append', action
-        
-        print(':i2s', relpath)
+
+        np.show(':i', relpath)
         path_i = f'{root_i}/{relpath}'
         path_o = f'{root_o}/{relpath}'
-        
+
         # ref: `.publish._copy_assets : match case`
         if info1.scheme is None:
             fs.make_link(path_i, path_o, True)
@@ -85,25 +85,25 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
 def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
     link_venv(
         (x['id'] for x in manifest['dependencies'].values()),
-        '{}/library'.format(dst_dir)
+        '{}/library'.format(dst_dir),
     )
 
 
 def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     icon = manifest['launcher']['icon'] or paths.build.python_icon
-    
+
     # default launcher
     script = dedent(
-        '''
+        """
         @echo off
         cd /d %~dp0
         cd source
         set "PYTHONUTF8=1"
         {}
-        '''.format(
-            manifest['launcher']['command'].replace(
-                'python', '..\\python\\python.exe', 1
-            ).replace("'", '"')
+        """.format(
+            manifest['launcher']['command']
+            .replace('python', '..\\python\\python.exe', 1)
+            .replace("'", '"')
         )
     )
     fs.dump(script, x := '{}/{}.bat'.format(dst_dir, manifest['name']))
@@ -114,19 +114,19 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         show_console=manifest['launcher']['show_console'],
     )
     fs.remove_file(x)
-    
+
     # debug launcher
     script = dedent(
-        '''
+        """
         cd /d %~dp0
         cd source
         set "PYTHONUTF8=1"
         {}
         pause
-        '''.format(
-            manifest['launcher']['command'].replace(
-                'python', '..\\python\\python.exe', 1
-            ).replace("'", '"')
+        """.format(
+            manifest['launcher']['command']
+            .replace('python', '..\\python\\python.exe', 1)
+            .replace("'", '"')
         )
     )
     fs.dump(script, x := '{}/{} (Debug).bat'.format(dst_dir, manifest['name']))
@@ -138,6 +138,6 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
         # uac_admin=True,
     )
     fs.remove_file(x)
-    
+
     if manifest['readme']:  # TODO
-        print('lite mode does not support creating readme opener yet', ':v8')
+        np.show('lite mode does not support creating readme opener yet', ':v8')

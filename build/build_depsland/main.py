@@ -64,7 +64,7 @@ def main(
             # a = fs.basename(dist_file)
             a = 'depsland.7z'
             b = 'resources/{}'.format(a)
-            fs.move(dist_file, b, True)
+            fs.make_link(dist_file, b, True)
             # fmt: off
             run_cmd_args(
                 (

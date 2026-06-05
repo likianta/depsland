@@ -9,14 +9,14 @@ from .normalization import split_filename_of_package
 from .normalization import normalize_verspecs
 
 
-def compare_version(v0: str, comp: str, v1: str, _patch: bool = True) -> bool:
+def compare_version(a: str, comp: str, b: str, _patch: bool = True) -> bool:
     """
     args:
         comp: '>', '>=', '==', '<=', '<'
     """
     if _patch:
-        v0, v1 = map(_minor_fix_version_form, (v0, v1))
-    r: int = semver.compare(v0, v1)  # -1, 0, 1
+        a, b = map(_minor_fix_version_form, (a, b))
+    r: int = semver.compare(a, b)  # -1, 0, 1
     return eval(f'{r} {comp} 0')
 
 
@@ -123,12 +123,12 @@ def sort_versions(versions: t.List[str], reverse: bool = True) -> None:
 def _minor_fix_version_form(raw_verspec: str) -> str:
     """
     examples:
-        335             335.0.0
-        1.7             1.7.0
-        1.0.0b3         1.0.0-b.3
-        0.12.0.post2    0.12.0-post.2
-        6.4.0.1         6.4.0-1
-        21.7b0          21.7.0-b.0
+        335          -> 335.0.0
+        1.7          -> 1.7.0
+        1.0.0b3      -> 1.0.0-b.3
+        0.12.0.post2 -> 0.12.0-post.2
+        6.4.0.1      -> 6.4.0-1
+        21.7b0       -> 21.7.0-b.0
     see test case in `test/raw_version_to_semver.py`.
     """
     pattern1 = re.compile(r'^(\d+(?:\.\d+)?(?:\.\d+)?)(.*)')

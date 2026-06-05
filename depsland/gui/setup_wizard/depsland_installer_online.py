@@ -1,4 +1,5 @@
 import airmise as air
+import neoprint as np
 import streamlit as st
 import streamlit_canary as sc
 import typing as tp
@@ -14,7 +15,7 @@ class State:
         'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
         '/depsland-resources/depsland.7z'
     )
-    depsland_version = '0.12.0a19'
+    depsland_version = '0.12.0a22'
     #   this field required manually update. make sure it matches 
     #   `pyproject.toml:project.version`.
     folders: tp.Dict[str, tp.List[str]] = {}
@@ -25,7 +26,7 @@ class State:
     temp_new_folder_name = ''
     tree_select_index_0 = 0
     tree_select_index_1 = 0
-    __version__ = 28
+    __version__ = 29
 
 
 @cli
@@ -323,6 +324,10 @@ def _install_depsland(root: str) -> str:
         if root.endswith('.7z'):
             prog.progress(1.0, 'Depsland already downloaded.')
         else:
+            # for x in _aircall('downloading', State.depsland_url, path1):
+            #     np.show(x, ':vni1')
+            #     p, t = x
+            #     prog.progress(p, t)
             for p, t in _aircall('downloading', State.depsland_url, path1):
                 # print(p, t, ':iv')
                 prog.progress(p, t)

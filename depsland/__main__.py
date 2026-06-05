@@ -1,7 +1,3 @@
-# import sys
-# from pprint import pprint
-# pprint((__name__, __package__, sys.path))
-
 if 1:
     if not __package__:  # noqa
         __package__ = 'depsland'
@@ -16,6 +12,7 @@ if 2:
         os.environ['DEPSLAND_SEARCH_PATHS'] = 'chore/minideps'
         #   see also `/python/sitecustomize.py`
 
+import neoprint as np
 import subprocess
 import sys
 import typing as t
@@ -75,20 +72,22 @@ def welcome(confirm_close: bool = False) -> None:
     """
     from . import __version__
 
-    print(
-        ':r2',
-        """
-        # DEPSLAND
-        
-        Depsland is a python apps manager for non-developer users.
-        
-        - Version: {}
-        - Author: {}
-        - Official site: {}
-        """.format(
-            __version__,
-            'Likianta (likianta@foxmail.com)',
-            'https://github.com/likianta/depsland',
+    np.show(
+        ':l',
+        np.Markdown(
+            """
+            # DEPSLAND
+            
+            Depsland is a python apps manager for non-developer users.
+            
+            - Version: {}
+            - Author: {}
+            - Official site: {}
+            """.format(
+                __version__,
+                'Likianta (likianta@foxmail.com)',
+                'https://github.com/likianta/depsland',
+            )
         ),
     )
 
@@ -125,7 +124,7 @@ def launch_gui(
         target='depsland/gui/app_manager/app.py',
         extra_args=(
             _app_token or ':empty',
-            _run_at_once and ':true' or ':false'
+            _run_at_once and ':true' or ':false',
         ),
         port=port,
         show_window=True,
@@ -161,14 +160,12 @@ def init(target: str = '.', app_name: str = '') -> None:
 
 @cli
 def build(
-    manifest: str = '.',
-    offline: bool = False,
-    remove_depsland: bool = False,
+    manifest: str = '.', offline: bool = False, remove_depsland: bool = False
 ) -> None:
     """
-    build your python application based on manifest file.
-    the build result is stored in "dist" directory.
-    [dim i](if "dist" not exists, it will be auto created.)[/]
+    build application from manifest file.
+    the result will be at "dist" directory.
+    [dim i](if "dist" folder not exists, it will be auto created.)[/]
 
     params:
         offline (-o):
@@ -229,14 +226,14 @@ def upgrade(appid: str) -> None:
 
 
 @cli
-def uninstall(appid: str, version: str = None) -> None:
+def uninstall(appid: str, version: t.Optional[str] = None) -> None:
     """
     uninstall an application.
     """
     if version is None:
         version = get_last_installed_version(appid)
     if version is None:
-        print(f'{appid} is already uninstalled.')
+        np.show(f'{appid} is already uninstalled.')
         return
     api.uninstall(appid, version)
 
@@ -300,7 +297,7 @@ def runx(
                     some_ver := get_last_installed_version(appid)
                 ):
                     if compare_version(some_ver, '>', version):
-                        print(
+                        np.show(
                             'change specified version ({}) to newer one ({}) '
                             'since it is already installed.'.format(
                                 version, some_ver
@@ -374,13 +371,13 @@ def list_apps() -> None:
                     )
                 )
     if len(rows) > 1:
-        print(rows, ':r2')
+        np.show(rows, ':l2')
     else:
-        print('there is no installed apps in "{}"'.format(paths.project.apps))
+        np.show('there is no installed apps in "{}"'.format(paths.project.apps))
 
 
 @cli
-def show(appid: str, version: str = None) -> None:
+def show(appid: str, version: t.Optional[str] = None) -> None:
     """
     show manifest of an app.
     """
@@ -389,32 +386,36 @@ def show(appid: str, version: str = None) -> None:
     assert version is not None
     dir_ = '{}/{}/{}'.format(paths.project.apps, appid, version)
     manifest = load_manifest(f'{dir_}/manifest.pkl')
-    print(manifest, ':l')
+    np.show(manifest, ':l')
 
 
 @cli
 def view_manifest(manifest: str = '.') -> None:
-    manifest = load_manifest(_normalize_manifest_path(manifest))
-    print(manifest.model, ':l')
+    manifest = load_manifest(_normalize_manifest_path(manifest))  # type: ignore
+    np.show(manifest.model, ':l')
 
 
 @cli
-def show_packages(poetry_file: str, save_result: str = None) -> None:
+def show_packages(
+    poetry_file: str, save_result: t.Optional[str] = None
+) -> None:
     pkgs = resolve_dependencies('poetry.lock', fs.parent(poetry_file))
     rows = [('index', 'name', 'version', 'files count')]
     indx = 0
     for name, info in pkgs.items():
         indx += 1
         # noinspection PyTypeChecker
-        rows.append((indx, name, info['version'], len(info['files'])))
-    print(rows, ':r2')
+        rows.append((str(indx), name, info['version'], str(len(info['files']))))
+    np.show(rows, ':l2')
     if save_result:
         fs.dump(pkgs, save_result)
 
 
 @cli
 def get_package_size(
-    name: str, version: str = None, include_dependencies: bool = False
+    name: str,
+    version: t.Optional[str] = None,
+    include_dependencies: bool = False,
 ) -> None:
     """
     params:
@@ -474,11 +475,11 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
     if x := _get_dir_to_last_installed_version(appid):
         manifest_old = load_manifest(f'{x}/manifest.pkl')
     else:
-        print(
+        np.show(
             'no previous version found, '
             'it may be your first time to install {}'.format(appid)
         )
-        print(
+        np.show(
             'be noted the first-time installation may consume a long '
             'time. depsland will try to reduce the consumption in the '
             'succeeding upgrades/installations.',
@@ -490,7 +491,9 @@ def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
 
 
 def _normalize_manifest_path(target: str, ensure_exists: bool = True) -> str:
-    """return an abspath to manifest file."""
+    """
+    return an abspath to manifest file.
+    """
     if target.endswith(('.json', '.yaml', '.toml', '.pkl')):
         out = fs.normpath(target, True)
     else:
@@ -500,7 +503,7 @@ def _normalize_manifest_path(target: str, ensure_exists: bool = True) -> str:
         out = fs.normpath(f'{target}/manifest.json', True)
     if ensure_exists:
         assert fs.exist(out)
-    print(f'manifest file: {out}', ':pv')
+    np.show(f'manifest file: {out}', ':pv')
     return out
 
 

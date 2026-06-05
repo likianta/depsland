@@ -187,20 +187,20 @@ reference = "aliyun"
 
 [[package]]
 name = "airmise"
-version = "3.0.0b2"
+version = "3.0.0b16"
 description = "The native experience of calling remote functions, like local ones."
 optional = false
 python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "airmise-3.0.0b2-py3-none-any.whl", hash = "sha256:3cf3d9a6390d7f22575fb6b161bac1005d142306fedc1274b7d54a05a10ff31c"},
+    {file = "airmise-3.0.0b16-py3-none-any.whl", hash = "sha256:27bf42e9e0a56c398dcb9e0cf57b1eca9e8af1d0e5228dacd30dddfb33bc9d53"},
 ]
 
 [package.dependencies]
-aiohttp = ">=3.13.3,<4.0.0"
-argsense = ">=1.1.1,<2.0.0"
-lk-logger = ">=6.0.7,<7.0.0"
-lk-utils = ">=3.5.2,<4.0.0"
+aiohttp = ">=3.13.3"
+argsense = ">=1.2.0a3"
+lk-logger = ">=6.0.8a2"
+lk-utils = ">=3.6.0b10"
 
 [package.source]
 type = "legacy"
@@ -233,18 +233,18 @@ reference = "aliyun"
 
 [[package]]
 name = "argsense"
-version = "1.1.1"
+version = "1.2.0a6"
 description = "New command line interface based on Rich library."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "argsense-1.1.1-py3-none-any.whl", hash = "sha256:3ae655478a3c0b80f431e5cbfebe9e3a397ab207edf0b32f8901ee8c79652b27"},
+    {file = "argsense-1.2.0a6-py3-none-any.whl", hash = "sha256:e0ce8843d3f44053fd692480e27494b9485da47daf119e7ac4b4ad9d5facb526"},
 ]
 
 [package.dependencies]
-lk-logger = ">=6.0.7,<7.0.0"
-rich = ">=14.0.0,<15.0.0"
+neoprint = ">=0.1.0a28"
+rich = ">=14.0.0"
 
 [package.source]
 type = "legacy"
@@ -1627,52 +1627,51 @@ reference = "aliyun"
 
 [[package]]
 name = "lk-logger"
-version = "6.0.7"
+version = "6.0.8a2"
 description = "Python print with source map and varnames."
 optional = false
 python-versions = ">=3.8"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
-    {file = "lk_logger-6.0.7-py3-none-any.whl", hash = "sha256:8bbc003240e294849eabea8b29ee3ba3abcdf29459cdbd0625160edb075945a0"},
+    {file = "lk_logger-6.0.8a2-py3-none-any.whl", hash = "sha256:0e5588bdb6192305e010fa2b9910850680faf73fcf0e3687b69526399e2e06e3"},
 ]
 
 [package.dependencies]
-rich = ">=13.9.0"
+rich = ">=14.0.0"
 
 [package.extras]
 ext = ["svg-ultralight"]
 
 [package.source]
 type = "legacy"
-url = "https://mirrors.aliyun.com/pypi/simple"
-reference = "aliyun"
+url = "http://localhost:2191"
+reference = "likianta"
 
 [[package]]
 name = "lk-utils"
-version = "3.6.0a20"
+version = "3.6.0b14"
 description = "A set of utility wrappers made for data processing."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main", "dev"]
 files = [
-    {file = "lk_utils-3.6.0a20-py3-none-any.whl", hash = "sha256:30824f48c9ec883e323149b85c4446d186861b4858530a63d71688d4d67b249f"},
+    {file = "lk_utils-3.6.0b14-py3-none-any.whl", hash = "sha256:6bcf1cef4ede767dd5e29a76cc21d3ef57e9af86cf06fcde6561e61b22c3b62b"},
 ]
 
 [package.dependencies]
-argsense = ">=1.1.1,<2.0.0"
-lk-logger = ">=6.0.7,<7.0.0"
-psutil = ">=6.0.0"
-pyyaml = ">=6.0.0,<7.0.0"
-rich = ">=14.0.0,<15.0.0"
-typing-extensions = ">=4.0.0,<5.0.0"
+argsense = ">=1.2.0a6"
+neoprint = ">=0.1.0a28"
+psutil = ">=7.2.2"
+pyyaml = ">=6.0.0"
+rich = ">=14.0.0"
 
 [package.extras]
-all = ["ipython (>=9.12.0) ; python_version >= \"3.12\"", "py7zr (>=1.1.0) ; python_version >= \"3.10\"", "toml ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter", "zstandard (>=0.25.0) ; python_version < \"3.14\""]
-dbg = ["ipython (>=9.12.0) ; python_version >= \"3.12\""]
-exl = ["xlrd (==1.2.0)", "xlsxwriter"]
-io = ["toml ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter"]
-tml = ["toml"]
-zip = ["py7zr (>=1.1.0) ; python_version >= \"3.10\"", "zstandard (>=0.25.0) ; python_version >= \"3.9\" and python_version < \"3.14\""]
+all = ["ipython (>=9.13.0) ; python_version >= \"3.12\"", "py7zr (>=1.1.0) ; python_version >= \"3.10\"", "toml (>=0.10.2) ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter (>=3.2.9)", "zstandard (>=0.25.0) ; python_version < \"3.14\""]
+dbg = ["ipython (>=9.13.0) ; python_version >= \"3.12\""]
+exl = ["xlrd (==1.2.0)", "xlsxwriter (>=3.2.9)"]
+io = ["toml (>=0.10.2) ; python_version < \"3.11\"", "xlrd (==1.2.0)", "xlsxwriter (>=3.2.9)"]
+tml = ["toml (>=0.10.2)"]
+zip = ["py7zr (>=1.1.0) ; python_version >= \"3.10\"", "zstandard (>=0.25.0) ; python_version < \"3.14\""]
 
 [package.source]
 type = "legacy"
@@ -2001,6 +2000,28 @@ type = ["mypy", "mypy-extensions"]
 type = "legacy"
 url = "https://mirrors.aliyun.com/pypi/simple"
 reference = "aliyun"
+
+[[package]]
+name = "neoprint"
+version = "0.1.0a33"
+description = "The artistic print for modern consoles."
+optional = false
+python-versions = ">=3.9"
+groups = ["main", "dev"]
+files = [
+    {file = "neoprint-0.1.0a33-py3-none-any.whl", hash = "sha256:3d53d1ee97f478856984a63d9ea7e085959ea71d3db3d61bac1bb82480f14720"},
+]
+
+[package.dependencies]
+rich = ">=14.0.0"
+
+[package.extras]
+ext = ["svg-ultralight (>=0.34.0)"]
+
+[package.source]
+type = "legacy"
+url = "http://localhost:2191"
+reference = "likianta"
 
 [[package]]
 name = "nuitka"
@@ -3019,13 +3040,13 @@ reference = "aliyun"
 
 [[package]]
 name = "tree-shaking"
-version = "0.2.5b0"
-description = "Python tree-shaking for dependencies to reduce the size of packaging."
+version = "0.2.6a0"
+description = "Detect and eliminate \"unused\" files from dependencies to reduce packaging size of target application."
 optional = false
 python-versions = ">=3.12"
 groups = ["dev"]
 files = [
-    {file = "tree_shaking-0.2.5b0-py3-none-any.whl", hash = "sha256:52b613aaaea51386fd0a63e817470e6efaff3b5f4a77c683665f843a773dea6f"},
+    {file = "tree_shaking-0.2.6a0-py3-none-any.whl", hash = "sha256:c2bb0801d2f271713b7388abab73a1369e420063f88a26fc84a1420902536821"},
 ]
 
 [package.dependencies]
@@ -3062,6 +3083,7 @@ description = "Backported and Experimental Type Hints for Python 3.9+"
 optional = false
 python-versions = ">=3.9"
 groups = ["main", "dev"]
+markers = "python_version == \"3.12\""
 files = [
     {file = "typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548"},
     {file = "typing_extensions-4.15.0.tar.gz", hash = "sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466"},
@@ -3458,4 +3480,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "09d1dc453a2ec3baa979349cbe66680f3b41aa52f2e7f17b7bfdf3a33045de85"
+content-hash = "ea91e127f4fc6753cc9e68e9927f53db4d7ff7af08049fd72099543b6aff97fb"

@@ -328,7 +328,13 @@ def _bump_versions(
             content_r,
             1,
         )
-        assert content_w != content_r
+        assert content_w != content_r, (
+            k,
+            re.search(
+                v.replace('$version_pattern', r'\d+\.\d+\.\d+(?:[ab]\d+)?'),
+                content_r,
+            ),
+        )
         fs.dump(content_w, k, 'plain')
 
 

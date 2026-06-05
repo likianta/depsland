@@ -1,10 +1,8 @@
 {
     "root": "../../",
-    "version_bump": {
-        "places": {
-            "pyproject.toml": "version = \"<VERSION>\"",
-            "depsland/__init__.py": "__version__ = '<VERSION>'"
-        }
+    "version_bumps": {
+        "pyproject.toml": "version = \"$version_pattern\"",
+        "depsland/__init__.py": "__version__ = '$version_pattern'"
     },
     "images": {
         "src_max": {

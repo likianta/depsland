@@ -1,9 +1,11 @@
 import json
-import neoprint as np
 import sys
+
+import neoprint as np
 import tree_shaking
 from argsense import cli
-from lk_utils import fs, run_cmd_args
+from lk_utils import fs
+from lk_utils import run_cmd_args
 
 fs.cd_current_dir()
 depsland_project_root = '../..'
@@ -18,7 +20,8 @@ def init() -> None:
     )
     if not fs.exist('tree_shaking'):
         print(
-            'suggest manually linking `<python_tree_shaking_project>/tree_shaking` here'
+            'suggest manually linking '
+            '`<python_tree_shaking_project>/tree_shaking` here'
         )
 
 
@@ -61,7 +64,7 @@ def tree_shaking_depsland_online_installer(
             overwrite=True,
             progress=True,
         )
-        print(
+        np.show(
             'see "<depsland_project>/resources/depsland-online-installer.zip" '
             '({}).'.format(fs.filesize(result, str))
         )
@@ -70,7 +73,9 @@ def tree_shaking_depsland_online_installer(
                 (
                     'ossutil',
                     'cp',
-                    f'{depsland_project_root}/resources/depsland-online-installer.zip',
+                    '{}/resources/depsland-online-installer.zip'.format(
+                        depsland_project_root
+                    ),
                     'oss://likianta-public-share/depsland-resources/depsland'
                     '-online-installer.zip',
                     '-u',
@@ -78,7 +83,7 @@ def tree_shaking_depsland_online_installer(
                 verbose=True,
             )
         else:
-            print(
+            np.show(
                 'you may also want to upload this file to "<oss>/likianta'
                 '-public-share/depsland-resources/depsland-online-installer'
                 '.zip".'
