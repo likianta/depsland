@@ -310,13 +310,15 @@ def _install_depsland(root: str) -> str:
             # print(p, t, ':iv')
             prog.progress(p, t)
     if State.depsland_old_pypi_path:
-        # FIXME: maybe we should delete old pypi folder
         airexec(
-            'fs.make_link(pypi_src, pypi_dst, True)',
+            """
+            fs.move(pypi_src, pypi_dst, True)
+            fs.make_link(pypi_dst, pypi_src, False)
+            """,
             pypi_src=State.depsland_old_pypi_path,
             pypi_dst=path2 + '/pypi',
         )
-    
+
     return path2
 
 
