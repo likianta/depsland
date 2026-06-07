@@ -3,7 +3,6 @@ import shlex
 import sys
 import typing as t
 
-import lk_logger
 from argsense import args_2_cargs
 from lk_utils import fs
 from lk_utils import run_cmd_args
@@ -95,7 +94,6 @@ def run_app(
         shlex.join(args_2_cargs(*args, **kwargs)),
     ).strip()
     print(':vs', command)
-    # lk_logger.unload()
     try:
         return t.cast(
             Popen,
@@ -108,7 +106,6 @@ def run_app(
             ),
         )
     except Exception as e:
-        lk_logger.enable()
         print(':e', e)
         if manifest['launcher']['show_console']:
             # raise e
