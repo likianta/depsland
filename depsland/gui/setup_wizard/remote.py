@@ -252,6 +252,9 @@ def _init_remote_env():
                     return True
                 return False
             return True
+
+        # def is_folder(path: str) -> bool:
+        #     return fs.is_dir(path)
         
         return None
         """

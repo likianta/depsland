@@ -16,14 +16,16 @@ from .remote import airexec
 
 @sc.init_state
 class State:
+    depsland_old_pypi_path = ''
     depsland_root = ''
     depsland_url = (
         'https://likianta-public-share.oss-cn-shanghai.aliyuncs.com'
         '/depsland-resources/depsland.7z'
     )
     depsland_version = '0.12.0a22'
-    #   this field required manually update. make sure it matches 
+    #   this field required manually update. make sure it matches
     #   `pyproject.toml:project.version`.
+    depsland_zip = ''
     installation_done = False
     installation_path = ''
     target: tp.Optional[tp.Tuple[str, str]] = None
@@ -118,19 +120,13 @@ def _ask_folder() -> None:
 
                     If input a non-empty folder path, will use 
                     `<the_given_path>/Depsland` as installation path.
-
-                    There is a trick: you can input a path to a ".7z" file, 
-                    which is a [Depsland Standalone package]({}); the program 
-                    will then treat it as downloaded resource and continue 
-                    installation.
-                    """.format(State.depsland_url)
+                    """
                 ),
             )
             if path:
                 path = path.replace('\\', '/')
-                if path.endswith('.7z'):  # TODO: we want also support ".zip"
-                    State.installation_path = path
-                elif aircall('is_empty_folder', path):
+                # assert aircall('is_dir', path)
+                if aircall('is_empty_folder', path):
                     State.installation_path = path
                 else:
                     path += '/Depsland'
@@ -144,16 +140,18 @@ def _ask_folder() -> None:
                         State.installation_path = path
                 print(State.installation_path)
 
-            # popup st-dialog and show tree view.
             if (
-                st.button('Browse', width=120) 
+                st.button('Browse', width=120)
                 or remote.State.temp_hold_dialog_opened
             ):
+                # popup st-dialog and show tree view.
                 remote.State.temp_hold_dialog_opened = False
                 remote.tree_view()
-            
+
             with st.popover('Advanced options'):
-                advanced.main()
+                State.depsland_zip, State.depsland_old_pypi_path = (
+                    advanced.main()
+                )
 
 
 def _close_tab_1() -> None:
@@ -251,9 +249,6 @@ def _close_tab_2() -> None:
 
 
 def _install_depsland(root: str) -> str:
-    """
-    trick: if root is a path to zip file, we will skip downloading process.
-    """
     place1 = st.empty()
     label1 = ':one: Downloading Depsland.7z from internet...'
     prog1 = st.progress(0)
@@ -266,25 +261,19 @@ def _install_depsland(root: str) -> str:
     with place2:
         st.markdown(label2 + ' :gray[wait]')
 
-    if root.endswith('.7z'):
+    if State.depsland_zip:
         print('skip downloading depsland.7z because we use cached file.')
-        temp = root
-        version = State.depsland_version
-        path0 = temp.rsplit('/', 1)[0]  # parent folder
-        path1 = temp  # zip file
-        path2 = path0 + '/' + version  # extracted folder
-    else:
-        version = State.depsland_version
-        path0 = root  # parent folder
-        path1 = root + '/depsland-' + version + '.7z'  # zip file
-        path2 = root + '/' + version  # extracted folder
-        airexec(
-            """
-            if not fs.exist(root):
-                fs.make_dirs(root)
-            """,
-            root=path0,
-        )
+    version = State.depsland_version
+    path0 = root  # parent folder
+    path1 = root + '/depsland-' + version + '.7z'  # zip file
+    path2 = root + '/' + version  # extracted folder
+    airexec(
+        """
+        if not fs.exist(root):
+            fs.make_dirs(root)
+        """,
+        root=path0,
+    )
 
     @contextmanager
     def notify_downloading_status() -> tp.Iterator[st.progress]:
@@ -305,7 +294,7 @@ def _install_depsland(root: str) -> str:
         prog2.progress(1.0, 'Depsland extracted')
 
     with notify_downloading_status() as prog:
-        if root.endswith('.7z'):
+        if State.depsland_zip:
             prog.progress(1.0, 'Depsland already downloaded.')
         else:
             # for x in aircall('downloading', State.depsland_url, path1):
@@ -320,6 +309,14 @@ def _install_depsland(root: str) -> str:
         for p, t in aircall('extracting', path1, path2):
             # print(p, t, ':iv')
             prog.progress(p, t)
+    if State.depsland_old_pypi_path:
+        # FIXME: maybe we should delete old pypi folder
+        airexec(
+            'fs.make_link(pypi_src, pypi_dst, True)',
+            pypi_src=State.depsland_old_pypi_path,
+            pypi_dst=path2 + '/pypi',
+        )
+    
     return path2
 
 

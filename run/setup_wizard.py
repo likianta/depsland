@@ -7,6 +7,10 @@ from lk_utils import run_cmd_args
 
 @cli
 def demo():
+    """
+    After process launched, visit http://localhost:3001 to check the setup 
+    wizard.
+    """
     run_cmd_args(
         (
             sys.executable,
