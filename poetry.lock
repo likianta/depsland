@@ -5415,13 +5415,13 @@ reference = "aliyun"
 
 [[package]]
 name = "tree-shaking"
-version = "0.2.6a0"
+version = "0.2.6a1"
 description = "Detect and eliminate \"unused\" files from dependencies to reduce packaging size of target application."
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
 files = [
-    {file = "tree_shaking-0.2.6a0-py3-none-any.whl", hash = "sha256:c2bb0801d2f271713b7388abab73a1369e420063f88a26fc84a1420902536821"},
+    {file = "tree_shaking-0.2.6a1-py3-none-any.whl", hash = "sha256:91e8782403fa13a470c3f2e9e50766370bc4fb9051460f913ff16d1e087ab2e3"},
 ]
 
 [package.dependencies]
@@ -6081,4 +6081,4 @@ reference = "aliyun"
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.12"
-content-hash = "ed997f3cf12ec1fb3a56a7416b413a94f66f3f67a96e01ae64808d968edd9c26"
+content-hash = "99a592eb0a35eb3e4231c32bbb333ade3722d5da24deec2d1312ca1ba6277893"

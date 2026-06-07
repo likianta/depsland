@@ -17,12 +17,14 @@ def main(
     new_version: str = '',
     compress: bool = False,
     upload_to_oss: bool = False,
+    pypi_scheme: str = 'blank',
 ) -> None:
     """
     params:
         new_version (-v):
         compress (-z):
         upload_to_oss (-u):
+        pypi_scheme (-p): 'full' or 'blank'
     """
     _, new_ver = build_project(
         file='build/build_depsland/build_project.json',
@@ -31,7 +33,7 @@ def main(
         publish=0,
     )
 
-    dist_dir = make_dist(new_ver, 'aliyun')
+    dist_dir = make_dist(new_ver, 'aliyun', pypi_scheme)
     if compress:
         dist_file = fs.zip_dir(
             dist_dir,

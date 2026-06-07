@@ -19,7 +19,7 @@ def init() -> None:
         'dist', f'{depsland_project_root}/resources/depsland-online-installer'
     )
     if not fs.exist('tree_shaking'):
-        print(
+        np.show(
             'suggest manually linking '
             '`<python_tree_shaking_project>/tree_shaking` here'
         )
@@ -120,7 +120,7 @@ def create_launcher(
         '_target_meta.json',
     )
     run_cmd_args(('v', 'app_launcher.v'))
-    print(fs.filesize('app_launcher.exe', str))
+    np.show(fs.filesize('app_launcher.exe', str))
 
     fs.copy_file('app_launcher.exe', file_out, True)
 
@@ -132,7 +132,7 @@ def create_launcher(
 
     # TODO
     if not show_console:
-        print(':v6', 'hiding console is work-in-progress')
+        np.show(':v6', 'hiding console is work-in-progress')
 
 
 @cli
@@ -178,7 +178,7 @@ def create_launcher_from_profile(profile: str, file_out: str = '') -> None:
         icon=manifest['launcher']['icon'],
         show_console=manifest['launcher']['show_console'],
     )
-    print('see result at "{}"'.format(file_out), ':v4')
+    np.show('see result at "{}"'.format(file_out), ':v4')
 
 
 # ------------------------------------------------------------------------------
@@ -238,7 +238,7 @@ def nuitka_build_general_launcher() -> None:
         verbose=True,
         cwd='general_launcher',
     )
-    print(
+    np.show(
         """
         launchers built:
             {}: {}
@@ -293,10 +293,10 @@ def nuitka_create_launcher(
     #             'show_console': show_console,
     #         }
     #     ).encode('utf-8'))
-    # print(b'__DEPSLAND_CONFIG__' in fs.load(file_out, 'binary'), ':v')
+    # np.show(b'__DEPSLAND_CONFIG__' in fs.load(file_out, 'binary'), ':v')
     # if icon:
     #     add_icon_to_exe(file_out, icon)
-    #     print(b'__DEPSLAND_CONFIG__' in fs.load(file_out, 'binary'), ':v')
+    #     np.show(b'__DEPSLAND_CONFIG__' in fs.load(file_out, 'binary'), ':v')
 
     if icon:
         sys.path.append(depsland_project_root)
@@ -335,7 +335,7 @@ def nuitka_create_launcher(
                 ).encode('utf-8')
             )
 
-    print(':tv4', f'see "{file_out}" ({fs.filesize(file_out, str)})')
+    np.show(':tv4', f'see "{file_out}" ({fs.filesize(file_out, str)})')
 
 
 if __name__ == '__main__':
