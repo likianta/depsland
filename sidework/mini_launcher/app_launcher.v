@@ -43,7 +43,7 @@ fn main() {
         )!
     } else {
         dps_ol_dir := download_and_extract_depsland_ol(
-            manifest.depsland_ol_url
+            manifest.depsland_ol_url, true // TODO: should I use existing file?
         )!
         os.chdir(dps_ol_dir)!
         os.execvp(
@@ -97,17 +97,26 @@ fn cleanup() ! {
     os.rmdir_all('${currdir}/depsland-online-installer')!
 }
 
-fn download_and_extract_depsland_ol(url string) !string {
+fn download_and_extract_depsland_ol(url string, use_exists bool) !string {
     // currdir := os.getwd()
     currdir := os.dir(os.executable())
     println('Current executable directory: ${currdir}')
+    
     // url := 'http://172.20.128.100:2188/depsland-online-installer.zip'
     zip := '${currdir}/depsland-online-installer.zip'
-    if os.exists(zip) { os.rm(zip)! }
+    if os.exists(zip) {
+        if use_exists {
+            assert os.exists('${currdir}/depsland-online-installer')
+            return '${currdir}/depsland-online-installer'
+        } else {
+            os.rm(zip)!
+        }
+    }
     println('Downloading depsland online installer (~13MB), please wait...')
     // http.download_file(url, zip)!
     // FIXME: the progress doesn't show at time.
     http.download_file_with_progress(url, zip)!
+    
     szip.extract_zip_to_dir(zip, currdir)!
     assert os.exists('${currdir}/depsland-online-installer')
     assert os.exists('${currdir}/depsland-online-installer/main.py')
