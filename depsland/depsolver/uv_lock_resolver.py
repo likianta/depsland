@@ -92,7 +92,7 @@ def resolve_uv_lock(pyproj_file: str, uvlock_file: str) -> T.Packages:
             normalize_name(x['name']) for x in item.get('dependencies', ())
         )
 
-    this_proj_name = pyproj_data['project']['name']
+    this_proj_name = normalize_name(pyproj_data['project']['name'])
     this_proj_deps = pkg_2_direct_deps[this_proj_name]
 
     # fmt: off
@@ -111,14 +111,17 @@ def resolve_uv_lock(pyproj_file: str, uvlock_file: str) -> T.Packages:
         index_all_package_references('{}/Lib/site-packages'.format(venv_dir))
     )
     for name in this_proj_deps:
-        ver = pkg_2_ver[name]
-        record_file = '{}/RECORD'.format(all_pkg_refs[name][1])
-        relpaths = tuple(sorted(analyze_records(record_file)))
-        info = {
-            'id': f'{name}-{ver}',
-            'name': name,
-            'version': ver,
-            'files': relpaths,
-        }
-        pkgs_info[name] = info
+        # note: `this_proj_deps` may contain many inexistent packages, thus we 
+        # need to do this check.
+        if name in all_pkg_refs:
+            ver = pkg_2_ver[name]
+            record_file = '{}/RECORD'.format(all_pkg_refs[name][1])
+            relpaths = tuple(sorted(analyze_records(record_file)))
+            info = {
+                'id': f'{name}-{ver}',
+                'name': name,
+                'version': ver,
+                'files': relpaths,
+            }
+            pkgs_info[name] = info
     return pkgs_info

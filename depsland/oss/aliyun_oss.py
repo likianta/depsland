@@ -9,9 +9,7 @@ from ._base import BaseOss
 from ._base import BaseOssPath
 from .. import paths
 
-if __name__ == '__main__':
-    # TODO: we are going to remove `oss2` dependency, use `requests` or -
-    #   `urllib` instead.
+if t.TYPE_CHECKING:
     from oss2 import Auth
     from oss2 import Bucket
 

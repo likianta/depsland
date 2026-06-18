@@ -1,3 +1,6 @@
+from neoprint import bprint
+
+
 class BaseOss:
     type = 'base'
     path: 'BaseOssPath'
@@ -16,7 +19,7 @@ class BaseOss:
     
     @staticmethod
     def _update_progress(desc: str, curr_bytes: int, total_bytes: int) -> None:
-        print('{}: {:.2%}'.format(desc, curr_bytes / total_bytes), end='\r')
+        bprint('{}: {:.2%}'.format(desc, curr_bytes / total_bytes), end='\r')
 
 
 class BaseOssPath:

@@ -6,6 +6,7 @@ the concept of terms:
         package 2
         ...
 """
+
 import re
 import sys
 import typing as t
@@ -25,24 +26,24 @@ class T:
     PackageName = str
     Path = str  # an absolute path
     PathName = str  # union[dir_name, file_name, bin_name]  # DELETE
-    
+
     PackageInfo = t.TypedDict(
         'PackageInfo',
         {
-            'package_id'  : PackageId,
-            'version'     : ExactVersion,
-            'url'         : str,
+            'package_id': PackageId,
+            'version': ExactVersion,
+            'url': str,
             # 'files'       : t.TypedDict('Files', {
             #     'root' : str,  # absolute dirpath
             #     'paths': t.Iterable[str],  # relative filepath
             # }),
-            'files'       : t.Iterable[str],  # (relative_file_path, ...)
+            'files': t.Iterable[str],  # (relative_file_path, ...)
             'dependencies': t.List[PackageName],
         },
     )
     PackageReferences = t.Dict[PackageName, t.Tuple[str, Path]]
     Packages = t.Dict[PackageName, PackageInfo]
-    
+
     FlattenPackages = Packages
 
 
@@ -50,20 +51,22 @@ class T:
 
 
 def index_all_package_references(
-    library_root: T.Path,
+    site_packages_dir: T.Path,
 ) -> t.Iterator[t.Tuple[T.PackageName, t.Tuple[str, T.Path]]]:
     """
     this is for quick indexing that is faster than `index_packages`.
     yields: (pkg_name, (dir_name, dir_path))
     """
-    # print(library_root, ':vp')
-    for dname, dpath in _find_dist_info_dirs(library_root):
+    print(site_packages_dir, ':vp')
+    for dname, dpath in _find_dist_info_dirs(site_packages_dir):
         pkg_name, _ = norm.split_dirname_of_dist_info(dname)
         yield pkg_name, (dname, dpath)
 
 
-def _find_dist_info_dirs(library_root: T.Path) -> t.Iterator[t.Tuple[str, str]]:
-    for d in fs.find_dirs(library_root):
+def _find_dist_info_dirs(
+    site_packages_dir: T.Path,
+) -> t.Iterator[t.Tuple[str, str]]:
+    for d in fs.find_dirs(site_packages_dir):
         if d.name.endswith('.dist-info'):
             yield d.name, d.path
 
@@ -82,18 +85,18 @@ class LibraryIndexer:
     library_root: T.Path
     packages: T.FlattenPackages
     working_root: T.Path
-    
+
     def __init__(self, working_root: T.Path):
         """
         venv_root: this can be got by `get_target_venv_packages_dir()`. see
         usage at `depsland/manifest/manifest.py:Manifest._update_dependencies()`.
         """
         print(':t2s')
-        
+
         self.working_root = working_root
         self.library_root = finder.get_venv_root(working_root)
         print(self.library_root)
-        
+
         # self._all_pkg_refs = dict(quick_index_packages(self.library_root))
         self.packages = self.index_packages()
         # print(self.library_root, self.packages, ':lv')
@@ -105,15 +108,15 @@ class LibraryIndexer:
         #     ':lv',
         # )
         print(':t2', 'indexing packages done', len(self.packages))
-    
+
     # -------------------------------------------------------------------------
-    
+
     def index_packages(self) -> T.FlattenPackages:
         all_pkg_refs: T.PackageReferences = dict(
             index_all_package_references(self.library_root)
         )
         print(len(all_pkg_refs))
-        
+
         # get top package names
         for filename in (
             'pyproject.toml',
@@ -128,7 +131,7 @@ class LibraryIndexer:
                 'no available deps spec found in your working root!',
                 self.working_root,
             )
-        
+
         top_pkgs: T.Packages = {}
         for top_name in top_pkg_names:
             print(':i2', top_name)
@@ -153,32 +156,32 @@ class LibraryIndexer:
         # print(top_pkgs, ':lv')
         self._fill_dependencies_2(top_pkgs, all_pkg_refs)
         print(top_pkgs, ':lv')
-        
+
         before = len(top_pkgs)
         flatten_pkgs = self._flatten_packages(top_pkgs, all_pkg_refs)
         # print(flatten_pkgs, ':lv')
         after = len(flatten_pkgs)
         print('flatten packages done', f'count: {before} -> {after}', ':v2')
         return flatten_pkgs
-    
+
     @staticmethod
     def _create_package_info(dname: str, dpath: T.Path) -> T.PackageInfo:
         name, ver = norm.split_dirname_of_dist_info(dname)
         pkg_id = f'{name}-{ver}'
         url = _get_custom_url(dpath)
-        
+
         record_file = f'{dpath}/RECORD'
         assert fs.exist(record_file)
         relpaths = set(analyze_records(record_file))
-        
+
         return {
-            'package_id'  : pkg_id,
-            'version'     : ver,
-            'url'         : url or '',  # noqa
-            'files'       : tuple(sorted(relpaths)),
+            'package_id': pkg_id,
+            'version': ver,
+            'url': url or '',  # noqa
+            'files': tuple(sorted(relpaths)),
             'dependencies': [],
         }
-    
+
     def _fill_dependencies(self, packages: T.Packages) -> None:
         """
         notice: this method only works for top-level packages. i.e. it is not
@@ -186,10 +189,10 @@ class LibraryIndexer:
         DELETE: since `poetry show` may increase the range of listing packages,
             it is not a good idea to use `poetry show` to get dependencies.
         """
-        
-        def get_secondary_packages() -> (
-            t.Iterator[t.Tuple[T.PackageName, T.PackageName]]
-        ):
+
+        def get_secondary_packages() -> t.Iterator[
+            t.Tuple[T.PackageName, T.PackageName]
+        ]:
             _poetry = (sys.executable, '-m', 'poetry')
             content = run_cmd_args(
                 _poetry,
@@ -197,10 +200,10 @@ class LibraryIndexer:
                 ('--directory', self.working_root),
                 cwd=self.working_root,
             )
-            
+
             re_lv0 = re.compile(r'^[-\w]+')
             re_lv1 = re.compile(r'^\W\W\W ([-\w]+)')
-            
+
             name0 = ''
             for line in content.splitlines():
                 if m := re_lv0.match(line):
@@ -209,11 +212,11 @@ class LibraryIndexer:
                     assert name0
                     name1 = norm.normalize_name(m.group(1))
                     yield name0, name1
-        
+
         for pkg_name, dep_name in get_secondary_packages():
             # assert parent_name in top_packages
             packages[pkg_name]['dependencies'].append(dep_name)
-    
+
     @staticmethod
     def _fill_dependencies_2(
         packages: T.Packages,
@@ -243,13 +246,13 @@ class LibraryIndexer:
                     #     )
                     # else:
                     #     ...
-    
+
     def _flatten_packages(
         self, packages: T.Packages, all_package_references: T.PackageReferences
     ) -> T.FlattenPackages:
         nested: T.Packages = packages
         flatten: T.FlattenPackages = packages.copy()
-        
+
         def recurse(unindexed_names: t.Sequence[T.PackageName]) -> None:
             """
             result: the nonlocal `flatten` gets updated.
@@ -263,7 +266,7 @@ class LibraryIndexer:
             flatten.update(temp)
             if x := tuple(collect_unindexed_names(temp, flatten)):
                 recurse(x)
-        
+
         def collect_unindexed_names(
             nested: T.Packages, flatten: T.FlattenPackages
         ) -> t.Iterator[T.PackageName]:
@@ -271,7 +274,7 @@ class LibraryIndexer:
                 for name in v['dependencies']:
                     if name not in flatten:
                         yield name
-        
+
         if x := tuple(collect_unindexed_names(nested, flatten)):
             recurse(x)
         return flatten
@@ -301,7 +304,7 @@ def analyze_metadata(
     """
     #                       ╭── 1 ──╮      ╭─ 2 ─╮   ╭─ 3 ─╮
     pattern = re.compile(r'^([-.\w]+)(?: \(([^)]+)\)|([^;]+))?')
-    
+
     def walk() -> t.Iterator[str]:
         with open(metadata_file, 'r', encoding='utf-8') as f:
             flag = 0
@@ -319,8 +322,8 @@ def analyze_metadata(
                         break
                 # assert flag == 1
                 # print(':v', line.rstrip())
-                yield line[len(head):].strip()
-    
+                yield line[len(head) :].strip()
+
     for line in walk():
         if ';' in line:
             # e.g. 'Requires-Dist: toml; extra == "ext"'
