@@ -1,4 +1,5 @@
 /.bin/
+/.venv/
 /apps/**
 /build/fuzzy_workflow.py
 /build/windows_patch/windows-7-sp1-32bit/*.msu

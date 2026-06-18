@@ -1,16 +1,18 @@
 import json
 import typing as t
 from functools import cache
+
 from lk_utils import fs
 from lk_utils import run_cmd_args
+from neoprint import print
+
 from .poetry_lock_resolver import resolve_poetry_lock
 from .requirements_lock import resolve_requirements_lock
+from .uv_lock_resolver import T as T0
+from .uv_lock_resolver import resolve_uv_lock
 from .. import paths
 from .. import utils
 from ..normalization import normalize_name
-from ..pypi import pypi
-
-index = pypi.index
 
 
 class T:
@@ -32,48 +34,52 @@ class T:
         t.Dict[str, t.Union[str, dict, list]],
     ]
     # fmt:on
-    # Dependencies1 = t.Iterator[t.Tuple[str, str]]  # ((name, version), ...)
-    # Dependencies1 = t.Dict[str, str]
-    Dependencies1 = t.Dict[str, dict]  # see T0.Packages
+    Dependencies1 = T0.Packages
 
 
 @cache
 def resolve_dependencies(
     deps0: T.Dependencies0, proj_dir: str
 ) -> T.Dependencies1:
-    if not deps0:  # None, empty dict/list/string/etc.
+    if not deps0:  # None, empty dict/list/str/etc.
         return {}
 
     if isinstance(deps0, str):
-        assert deps0 in ('poetry.lock', 'pyproject.toml', 'requirements.lock')
+        assert deps0 in (
+            'poetry.lock',
+            'pyproject.toml',
+            'requirements.lock',
+            'uv.lock',
+        )
         specfile = f'{proj_dir}/{deps0}'
     else:
         specfile = None
     lock_file = _get_snapshot_file(specfile or deps0)
-    # raise Exception
     if fs.exist(lock_file):
         return fs.load(lock_file)
 
     print('build new dependency tree, this may take a while...', ':v6')
 
-    if isinstance(deps0, str):  # a file
-        # assert deps0 in ('poetry.lock', 'pyproject.toml', 'requirements.lock')
-        assert all(
-            map(
-                fs.exist,
-                (
-                    a := f'{proj_dir}/pyproject.toml',
-                    b := f'{proj_dir}/poetry.lock',
-                    c := f'{proj_dir}/{deps0}',
-                ),
+    if isinstance(deps0, str):  # a file name
+        if deps0 == 'uv.lock':  # actively developed
+            out = resolve_uv_lock(
+                f'{proj_dir}/pyproject.toml', f'{proj_dir}/uv.lock'
             )
-        )
-        if deps0 == 'requirements.lock':
-            out = resolve_requirements_lock(a, b, c)
-        else:  # NOTE (2024-07-01): currently this is mainly used.
-            out = resolve_poetry_lock(a, b)
-        fs.dump(out, lock_file)
-        return out
+        else:  # legacy support
+            assert all(
+                map(
+                    fs.exist,
+                    (
+                        a := f'{proj_dir}/pyproject.toml',
+                        b := f'{proj_dir}/poetry.lock',
+                        c := f'{proj_dir}/{deps0}',
+                    ),
+                )
+            )
+            if deps0 == 'requirements.lock':
+                out = resolve_requirements_lock(a, b, c)
+            else:  # NOTE (2024-07-01): currently this is mainly used.
+                out = resolve_poetry_lock(a, b)
 
     elif isinstance(deps0, list):
         raw_requirements = '\n'.join(deps0)
@@ -90,7 +96,7 @@ def resolve_dependencies(
             verbose=False,
         )
         requirements = []
-        for k, v in json.loads(json_data).items():
+        for k, v in json.loads(json_data).items():  # type: ignore
             requirements.append('{}=={}'.format(normalize_name(k), v))
         out = {}
         for line in requirements:
@@ -110,7 +116,7 @@ def resolve_dependencies(
         raise Exception
 
     fs.dump(out, lock_file)
-    return out
+    return t.cast(T.Dependencies1, out)
 
 
 def _get_snapshot_file(deps0: T.Dependencies0) -> str:

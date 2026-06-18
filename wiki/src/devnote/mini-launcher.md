@@ -6,7 +6,7 @@ Depsland 的自身安装包体积在 70MB 以上, 如果考虑到以 "shipboard"
 
 为了减轻由于初始的体积给人造成的不好的印象, 我们制作了迷你启动器.
 
-迷你启动器的体积在 5MB 左右, 它在启动时会优先检测并复用本地已有的资源, 仅下载缺少的组件 (注意这需要联网), 从而减轻网络下载压力, 这对于想要初次使用/想要尝鲜的新用户来说, 能一定程度减少焦虑感.
+迷你启动器的体积在 3MB 左右, 它在启动时会优先检测并复用本地已有的资源, 仅下载缺少的组件 (注意这需要联网), 从而减轻网络下载压力, 这对于想要初次使用/想要尝鲜的新用户来说, 能一定程度减少焦虑感.
 
 ## 工作原理
 
@@ -84,6 +84,5 @@ python sidework/mini_launcher/make.py \
     C:/Likianta/workspace/dev.master.likianta/python-tree-shaking/build/build_app.json \
     -o C:/Likianta/temp/2026-06
 ```
-
 
 
