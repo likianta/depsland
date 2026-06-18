@@ -40,38 +40,35 @@ class T(T0):
         ),
     ]
 
-    # Dependencies0 = t.Optional[t.Union[
-    #     t.Literal['poetry.lock', 'uv.lock', 'venv'],
-    #     t.TypedDict('Dependencies0', {
-    #         'source': t.Literal['poetry.lock', 'uv.lock', 'venv'],
-    #         'minify': bool,
-    #     }),
-    #     RelPath,
-    # ]]
-    # Dependencies1 = t.TypedDict('Dependencies1', {
-    #     'source': t.Union[t.Literal['poetry.lock', 'uv.lock', 'venv'], RelPath],
-    #     'minify': bool,
-    #     'result': t.Optional[t.Union[T0.Packages, AbsPath]],
-    # })
     Dependencies0 = t.Optional[
         t.Union[
-            t.Literal['poetry', 'tree_shaking', 'uv'],
+            # t.Literal['poetry', 'tree_shaking', 'uv'],
             # tree_shaking.T.Config0,
+            # t.TypedDict(
+            #     'Dependencies0',
+            #     {
+            #         'method': t.Literal['poetry', 'tree_shaking', 'uv'],
+            #         'options': t.Union[
+            #             t.Literal['poetry.lock', 'uv.lock'],
+            #             t.TypedDict(
+            #                 'TreeShakingOptions',
+            #                 {
+            #                     'search_paths': t.List[str],
+            #                     'entries': t.List[str],
+            #                 },
+            #                 total=False,
+            #             ),
+            #         ],
+            #     },
+            #     total=False,
+            # ),
+            t.Literal['poetry', 'uv'],
             t.TypedDict(
-                'Dependencies0',
+                'TreeShakingDependencies',
                 {
-                    'method': t.Literal['poetry', 'tree_shaking', 'uv'],
-                    'options': t.Union[
-                        t.Literal['poetry.lock', 'uv.lock'],
-                        t.TypedDict(
-                            'TreeShakingOptions',
-                            {
-                                'search_paths': t.List[str],
-                                'entries': t.List[str],
-                            },
-                            total=False,
-                        ),
-                    ],
+                    'method': 'tree_shaking',
+                    'base': t.Literal['poetry.lock', 'uv.lock'],
+                    'options': tree_shaking.T.Config0,
                 },
                 total=False,
             ),
@@ -390,15 +387,15 @@ class Manifest:
         self._manifest = data1
         return self
 
-    def dump_to_file(self, file: T.AnyPath = None) -> None:
-        if file is None:
+    def dump_to_file(self, file: T.AnyPath = '') -> None:
+        if not file:
             file = self._file
         if fs.basename(file) == 'pyproject.toml':
             # TODO: how to reserve original comments?
             raise NotImplementedError(file)
 
         data1: T.Manifest1 = self._manifest
-        data0: T.Manifest0 = self._manifest.copy()
+        data0: T.Manifest0 = self._manifest.copy()  # type: ignore
 
         # modify `data0` fields
         # be noticed some of `data0.values()` are list or dict types, which -
@@ -408,11 +405,13 @@ class Manifest:
         if not file.endswith('.pkl'):
             data0['assets'] = self._plainify_assets(data1['assets'])
             if file.endswith('.toml'):
-                data0 = {'tool': {'depsland': {'manifest': data0}}}  # noqa
+                data0 = {
+                    'tool': {'depsland': {'manifest': data0}}  # type: ignore
+                }
 
         fs.dump(data0, file)
 
-    def make_tree(self, root: str = None) -> None:
+    def make_tree(self, root: str = '') -> None:
         if not root:
             root = self._manifest['start_directory']
         relpaths = []
@@ -457,12 +456,12 @@ class Manifest:
 
                 def __getitem__(self, key: str) -> t.Union[str, bool]:
                     if key == 'file' or key == 'icon':
-                        if x := self._data[key]:
+                        if x := self._data[key]:  # type: ignore
                             return '{}/{}'.format(self._start_directory, x)
                         else:
                             return ''
                     else:
-                        return self._data[key]  # noqa
+                        return self._data[key]  # type: ignore
 
                 def __setitem__(self, key: str, value: t.Any) -> None:
                     raise Exception('cannot modify readme dict', key, value)
@@ -490,7 +489,7 @@ class Manifest:
                         else:
                             return ''
                     else:
-                        return self._data[key]  # noqa
+                        return self._data[key]  # type: ignore
 
                 def __setitem__(self, key: str, value: t.Any) -> None:
                     raise Exception('cannot modify launcher dict', key, value)
@@ -500,12 +499,12 @@ class Manifest:
             )
 
         else:
-            return self._manifest[key]  # noqa
+            return self._manifest[key]  # type: ignore
 
     def __setitem__(self, key: str, value: t.Any) -> None:
         if key == 'start_directory':
             assert os.path.isabs(value)
-            self._manifest[key] = value
+            self._manifest[key] = value  # type: ignore
         else:
             raise Exception('cannot modify top field of manifest!', key, value)
 
@@ -580,28 +579,31 @@ class Manifest:
                     )
                     manifest['dependencies'] = manifest['dependencies'][:-5]
                 else:
-                    assert manifest['dependencies'] in (
-                        'poetry',
-                        'tree_shaking',
-                        'uv',
-                    )
+                    assert manifest['dependencies'] in ('poetry', 'uv')
             else:  # dict
                 assert isinstance(manifest['dependencies'], dict)
-                assert manifest['dependencies']['method'] in (
-                    ('poetry', 'tree_shaking', 'uv')
-                )
-                if manifest['dependencies']['method'] == 'tree_shaking':
-                    # assert manifest['dependencies']['options']
-                    if 'options' in manifest['dependencies']:
-                        assert 'root' not in manifest['dependencies']['options']
-                        assert (
-                            'export' not in manifest['dependencies']['options']
-                        )
-                else:
-                    assert 'options' not in manifest['dependencies'] or (
-                        manifest['dependencies']['options']
-                        == manifest['dependencies']['method'] + '.lock'
-                    )
+                deps_dict = manifest['dependencies']
+
+                assert deps_dict['method'] == 'tree_shaking'
+
+                assert deps_dict['base'] in ('poetry.lock', 'uv.lock')
+                # dir = manifest['start_directory']
+                # if 'base' in deps_dict:
+                #     assert deps_dict['base'] in ('uv.lock', 'poetry.lock')
+                #     assert fs.exist('{}/{}'.format(dir, deps_dict['base']))
+                # else:  # FIXME
+                #     assert (
+                #         x := 'uv.lock'
+                #         if fs.exist('{}/uv.lock'.format(dir))
+                #         else 'poetry.lock'
+                #         if fs.exist('{}/poetry.lock'.format(dir))
+                #         else ''
+                #     ), dir
+                #     deps_dict['base'] = x
+
+                if 'options' in deps_dict:
+                    assert 'root' not in deps_dict['options']
+                    assert 'export' not in deps_dict['options']
 
         launcher: T.Launcher0 = manifest['launcher']
         assert launcher['command'], 'field `launcher.command` cannot be empty!'
@@ -743,12 +745,12 @@ class Manifest:
     ) -> T.Dependencies1:
         if not deps0:  # None, empty dict, empty str.
             return {}
-
-        method = deps0 if isinstance(deps0, str) else deps0['method']
-        if method == 'poetry':
-            return resolve_dependencies('poetry.lock', start_directory)
-
-        elif method == 'tree_shaking':
+        elif isinstance(deps0, str):
+            if deps0 == 'poetry':
+                return resolve_dependencies('poetry.lock', start_directory)
+            else:  # 'uv'
+                return resolve_dependencies('uv.lock', start_directory)
+        else:  # dict
             """
             folder structure:
                 <target_project>
@@ -756,9 +758,9 @@ class Manifest:
                     |= orig_deps
                     |= mini_deps
                     |- tree_shaking_model.json
-            the `<target_project>/.depsland/mini_deps` path will be added
-            to `sys.path` in the runtime, see also `python/sitecustomize.py`
-            for details.
+            the `<target_project>/.depsland/mini_deps` path will be added to
+            `sys.path` in the runtime, see also `python/sitecustomize.py` for
+            details.
             """
             dot_dps_dir = '{}/.depsland'.format(start_directory)
             print(dot_dps_dir, ':v')
@@ -766,7 +768,7 @@ class Manifest:
             mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
             mini_deps_cache_file = '{}/{}.pkl'.format(
                 dot_dps_dir,
-                get_file_hash('{}/poetry.lock'.format(start_directory)),
+                get_file_hash('{}/{}'.format(start_directory, deps0['base'])),
             )
 
             if fs.exist(mini_deps_cache_file):
@@ -779,14 +781,12 @@ class Manifest:
                     print('first time minify dependencies')
 
                 fs.make_dir(dot_dps_dir)
-                fs.make_link(get_venv_root(start_directory), orig_deps_dir)
+                fs.make_link(
+                    get_venv_root(start_directory, deps0['base'][:-5]),
+                    orig_deps_dir,
+                )
 
                 # 1/3. get options
-                # options = (
-                #     {} if isinstance(deps0, str) else
-                #     deps0.get('options', {})
-                # )
-                assert isinstance(deps0, dict)
                 options = deps0['options']
                 # 2/3. fill options
                 options['root'] = '..'
@@ -817,11 +817,7 @@ class Manifest:
                 )
                 fs.dump(mini_deps_assets_info, mini_deps_cache_file)
                 assets1.update(mini_deps_assets_info)
-
-        elif method == 'uv':
-            return resolve_dependencies('uv.lock', start_directory)
-
-        return {}
+            return {}
 
     def _update_launcher(
         self, launcher0: T.Launcher0, start_directory: T.StartDirectory
@@ -950,7 +946,6 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
             yield 'ignore', key1, (info0, info1)
 
 
-# noinspection PyTypeChecker
 def _diff_dependencies(new: T.Packages, old: T.Packages) -> T.DependenciesDiff:
     info0: T.PackageInfo
     info1: T.PackageInfo

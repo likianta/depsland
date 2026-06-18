@@ -1,14 +1,21 @@
+# fmt: off
 if 1:
     import os
     import sys
     _parent_dir = os.path.abspath(f'{__file__}/../..')
     if sys.base_prefix.startswith(_parent_dir):
         # we are using an exclusive python interpreter vendored by depsland.
-        # since the interpreter is clean and no third party packages installed, 
+        # since the interpreter is clean and no third party packages installed,
         # we need to lookup another place for packages.
-        assert os.path.exists(x := f'{_parent_dir}/chore/minideps'), \
+        assert os.path.exists(x := f'{_parent_dir}/chore/minideps'), (
             'see `DEVNOTE.md : search "make site-packages"` for help.'
+        )
         sys.path.append(x)
+
+if 2:
+    import neoprint as _np
+    _np.setup()
+# fmt: on
 
 from . import api
 from . import config
@@ -29,4 +36,4 @@ from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
 
-__version__ = '0.12.0a22'
+__version__ = '0.12.0a26'

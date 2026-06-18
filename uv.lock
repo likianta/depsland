@@ -748,7 +748,7 @@ requires-dist = [
     { name = "argsense", specifier = ">=1.2.0a6", index = "http://localhost:2191/" },
     { name = "conflore", specifier = ">=0.2.2" },
     { name = "lk-utils", specifier = ">=3.6.0b14", index = "http://localhost:2191/" },
-    { name = "neoprint", specifier = ">=0.1.0a39", index = "http://localhost:2191/" },
+    { name = "neoprint", specifier = ">=0.1.0a40", index = "http://localhost:2191/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "pip", specifier = ">=26.0.0" },
     { name = "psutil", specifier = ">=7.0.0" },
@@ -1604,13 +1604,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.0a39"
+version = "0.1.0a40"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/neoprint/neoprint-0.1.0a39-py3-none-any.whl" },
+    { url = "http://localhost:2191/neoprint/neoprint-0.1.0a40-py3-none-any.whl" },
 ]
 
 [[package]]

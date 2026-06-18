@@ -1,4 +1,5 @@
 /.bin/
+/.ruff_cache/
 /.venv/
 /apps/**
 /build/fuzzy_workflow.py

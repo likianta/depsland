@@ -1,8 +1,8 @@
-import functools
 import os
 import re
 import sys
 import typing as t
+from functools import cache
 
 from lk_utils import fs
 from lk_utils import run_cmd_args
@@ -21,38 +21,48 @@ class T:
     ]
     LibraryPath = str
     PackageName = str
+    Toolchain = t.Literal['poetry', 'uv']
 
 
 # -----------------------------------------------------------------------------
 
-@functools.cache
-def get_venv_root(working_root: str) -> T.LibraryPath:
+@cache
+def get_venv_root(
+    working_root: str, strategy: T.Toolchain = 'uv'
+) -> T.LibraryPath:
     """
     find venv root (the "site-packages" folder) by `poetry env` command.
     FIXME: poetry env is not reliable!
     """
-    from ...platform.system_info import IS_WINDOWS
-    
-    # https://stackoverflow.com/questions/75232761/
-    if 'VIRTUAL_ENV' in os.environ:
-        del os.environ['VIRTUAL_ENV']
-    venv_root = fs.normpath(
-        run_cmd_args(
-            _poetry, 'env', 'info', '--path', '--no-ansi',
-            '--directory', working_root, cwd=working_root,
-        )
-    )
-    print(venv_root)
-    assert venv_root.endswith('py3.12')
-    
-    if IS_WINDOWS:
-        out = '{}/Lib/site-packages'.format(venv_root)
+    if strategy == 'uv':
+        venv_dir = '{}/.venv'.format(working_root)
+        assert fs.exist(venv_dir + '/Lib/site-packages'), venv_dir
+        return venv_dir
     else:
-        out = '{}/lib/python{}.{}/site-packages'.format(
-            venv_root, sys.version_info.major, sys.version_info.minor
+        print(':pv6', 'poetry venv is deprecated')
+
+        from ...platform.system_info import IS_WINDOWS
+        
+        # https://stackoverflow.com/questions/75232761/
+        if 'VIRTUAL_ENV' in os.environ:
+            del os.environ['VIRTUAL_ENV']
+        venv_root = fs.normpath(
+            run_cmd_args(
+                _poetry, 'env', 'info', '--path', '--no-ansi',
+                '--directory', working_root, cwd=working_root,
+            )
         )
-    assert fs.exist(out), (working_root, venv_root, out)
-    return out
+        print(venv_root)
+        assert venv_root.endswith('py3.12')
+        
+        if IS_WINDOWS:
+            out = '{}/Lib/site-packages'.format(venv_root)
+        else:
+            out = '{}/lib/python{}.{}/site-packages'.format(
+                venv_root, sys.version_info.major, sys.version_info.minor
+            )
+        assert fs.exist(out), (working_root, venv_root, out)
+        return out
 
 
 def get_top_package_names(

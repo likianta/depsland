@@ -6,7 +6,7 @@ from lk_utils import run_cmd_args
 
 
 @cli
-def demo():
+def debug():
     """
     After process launched, visit http://localhost:3001 to check the setup 
     wizard.
