@@ -726,6 +726,7 @@ dependencies = [
     { name = "streamlit" },
     { name = "streamlit-canary" },
     { name = "streamlit-extras" },
+    { name = "streamlit-tree-select" },
     { name = "tree-shaking" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'" },
 ]
@@ -747,17 +748,18 @@ dev = [
 requires-dist = [
     { name = "argsense", specifier = ">=1.2.0a6", index = "http://localhost:2191/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.6.0b14", index = "http://localhost:2191/" },
-    { name = "neoprint", specifier = ">=0.1.0a40", index = "http://localhost:2191/" },
+    { name = "lk-utils", specifier = ">=3.6.0b18", index = "http://localhost:2191/" },
+    { name = "neoprint", specifier = ">=0.1.1b0", index = "http://localhost:2191/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "pip", specifier = ">=26.0.0" },
     { name = "psutil", specifier = ">=7.0.0" },
     { name = "pyapp-window", specifier = ">=2.2.3a0", index = "http://localhost:2191/" },
-    { name = "pyportable-crypto", specifier = ">=1.5.2a1", index = "http://localhost:2191/" },
+    { name = "pyportable-crypto", specifier = ">=1.5.2b2", index = "http://localhost:2191/" },
     { name = "semver", specifier = ">=3.0.4" },
     { name = "streamlit", specifier = ">=1.58.0" },
-    { name = "streamlit-canary", specifier = ">=0.3.0b1", index = "http://localhost:2191/" },
+    { name = "streamlit-canary", specifier = ">=0.3.0b4", index = "http://localhost:2191/" },
     { name = "streamlit-extras", specifier = ">=1.4.1" },
+    { name = "streamlit-tree-select", specifier = ">=0.0.5" },
     { name = "tree-shaking", specifier = ">=0.2.6a1", index = "http://localhost:2191/" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'", specifier = ">=1.0.0" },
 ]
@@ -1315,7 +1317,7 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.6.0b14"
+version = "3.6.0b18"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -1325,7 +1327,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/lk-utils/lk_utils-3.6.0b14-py3-none-any.whl" },
+    { url = "http://localhost:2191/lk-utils/lk_utils-3.6.0b18-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1604,13 +1606,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.0a40"
+version = "0.1.1b0"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/neoprint/neoprint-0.1.0a40-py3-none-any.whl" },
+    { url = "http://localhost:2191/neoprint/neoprint-0.1.1b0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2391,7 +2393,7 @@ wheels = [
 
 [[package]]
 name = "pyportable-crypto"
-version = "1.5.2a1"
+version = "1.5.2b2"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -2401,7 +2403,7 @@ dependencies = [
     { name = "setuptools" },
 ]
 wheels = [
-    { url = "http://localhost:2191/pyportable-crypto/pyportable_crypto-1.5.2a1-py3-none-any.whl" },
+    { url = "http://localhost:2191/pyportable-crypto/pyportable_crypto-1.5.2b2-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2935,7 +2937,7 @@ wheels = [
 
 [[package]]
 name = "streamlit-canary"
-version = "0.3.0b1"
+version = "0.3.0b4"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -2946,7 +2948,7 @@ dependencies = [
     { name = "streamlit" },
 ]
 wheels = [
-    { url = "http://localhost:2191/streamlit-canary/streamlit_canary-0.3.0b1-py3-none-any.whl" },
+    { url = "http://localhost:2191/streamlit-canary/streamlit_canary-0.3.0b4-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2960,6 +2962,18 @@ dependencies = [
 sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/52/e2/34510d0639ee4e321c7e92205c990a15957b46aadaab56eef3bc59e15d23/streamlit_extras-1.6.0.tar.gz", hash = "sha256:d75bfabd2be35f1fba6bce3935d1c446cfcfbe03123478df1b5ba4a02a7c49c0", size = 408284, upload-time = "2026-05-15T15:33:22.666Z" }
 wheels = [
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/85/6a/3cf1af290973094d8104c5ced9e5e5913c90852492419774286550d6c7bc/streamlit_extras-1.6.0-py3-none-any.whl", hash = "sha256:99c38dad3cd07d088da809c97f3e35cd65f97c983480c3115c724f0324fc8eee", size = 1042438, upload-time = "2026-05-15T15:33:24.18Z" },
+]
+
+[[package]]
+name = "streamlit-tree-select"
+version = "0.0.5"
+source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
+dependencies = [
+    { name = "streamlit" },
+]
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/83/b5/ec39a5b4cce1fb1cc920d341263bc1f08f73412eb10ea09df7c5e0566a4f/streamlit-tree-select-0.0.5.tar.gz", hash = "sha256:985f5d4c357c403723fd69d4c4fca38193e0f9105974ec36259c43d9e6b78044", size = 1205495, upload-time = "2022-09-05T14:08:51.938Z" }
+wheels = [
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ba/02/8e298f4a4556d2f1ceecc0fcde9a795596520b681aeff4288e5daac588e6/streamlit_tree_select-0.0.5-py3-none-any.whl", hash = "sha256:9bfee4d9394fcb0b3e98801cca32f179c85f9f7fdf7005904bf88811f73db05c", size = 1225810, upload-time = "2022-09-05T14:08:50.009Z" },
 ]
 
 [[package]]
