@@ -10,7 +10,7 @@ import neoprint as np
 import tree_shaking
 from lk_utils import fs
 from lk_utils import run_cmd_args
-from pyportable_crypto import compile_dir
+from pyportable_crypto import compile_package
 from pyportable_crypto.cipher_gen import generate_cipher_package
 
 from ...paths import temp as temp_paths
@@ -364,7 +364,7 @@ def _encrypt_packages(
     for target in targets:
         dir_i = target
         dir_o = '{}/{}'.format(output_root, fs.basename(target))
-        compile_dir(dir_i, dir_o, key, add_runtime_package='none')
+        compile_package(dir_i, dir_o, key, add_runtime_package='none')
 
 
 def _patch_encrypted_packages(

@@ -132,12 +132,7 @@ def _get_top_names_by_poetry_3(toml_file: str) -> t.Iterator[T.PackageName]:
     parse pyproject.toml and get the names.
     this may not a good idea. use `_get_top_names_by_poetry_2` instead.
     """
-    if sys.version_info >= (3, 11):
-        from tomllib import load
-    else:  # pip install toml
-        from toml import load  # noqa
-    with open(toml_file, 'rb') as f:
-        data: dict = load(f)
+    data: dict = fs.load(toml_file, 'toml')
     deps: dict = data['tool']['poetry']['dependencies']
     deps.pop('python')
     for k, group in data['tool']['poetry']['group'].items():
