@@ -9,14 +9,10 @@ from lk_utils import run_cmd_args
 
 from ...normalization import normalize_name
 
-_poetry = (sys.executable, '-m', 'poetry')
-
 
 class T:
     Format = t.Literal[
-        'auto',
-        'pyproject.toml',
-        'requirements.txt',
+        'auto', 'pyproject.toml', 'requirements.txt'
         # TODO: 'poetry.lock', 'requirements.lock', 'requirements.yaml'.
     ]
     LibraryPath = str
@@ -24,38 +20,51 @@ class T:
     Toolchain = t.Literal['poetry', 'uv']
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 @cache
 def get_venv_root(
     working_root: str, strategy: T.Toolchain = 'uv'
 ) -> T.LibraryPath:
     """
-    find venv root (the "site-packages" folder) by `poetry env` command.
-    FIXME: poetry env is not reliable!
+    find venv site-packages folder.
     """
     if strategy == 'uv':
         venv_dir = '{}/.venv'.format(working_root)
-        assert fs.exist(venv_dir + '/Lib/site-packages'), venv_dir
-        return venv_dir
+        out = '{}/{}'.format(
+            venv_dir,
+            'Lib/site-packages'
+            if os.name == 'nt'
+            else 'lib/python{}.{}/site-packages'.format(
+                sys.version_info.major, sys.version_info.minor
+            ),
+        )
+        assert fs.exist(out), (working_root, out)
+        return out
+
     else:
         print(':pv6', 'poetry venv is deprecated')
 
-        from ...platform.system_info import IS_WINDOWS
-        
         # https://stackoverflow.com/questions/75232761/
         if 'VIRTUAL_ENV' in os.environ:
             del os.environ['VIRTUAL_ENV']
         venv_root = fs.normpath(
             run_cmd_args(
-                _poetry, 'env', 'info', '--path', '--no-ansi',
-                '--directory', working_root, cwd=working_root,
+                (sys.executable, '-m', 'poetry'),
+                'env',
+                'info',
+                '--path',
+                '--no-ansi',
+                '--directory',
+                working_root,
+                cwd=working_root,
             )
         )
         print(venv_root)
         assert venv_root.endswith('py3.12')
-        
-        if IS_WINDOWS:
+
+        if os.name == 'nt':
             out = '{}/Lib/site-packages'.format(venv_root)
         else:
             out = '{}/lib/python{}.{}/site-packages'.format(
@@ -103,7 +112,7 @@ def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
     yield from map(
         normalize_name,
         run_cmd_args(
-            _poetry,
+            (sys.executable, '-m', 'poetry'),
             ('show', '-T', '--no-ansi'),
             ('--directory', working_root),
             cwd=working_root,
@@ -113,7 +122,7 @@ def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
 
 def _get_top_names_by_poetry_2(working_root: str) -> t.Iterator[T.PackageName]:
     content = run_cmd_args(
-        _poetry,
+        (sys.executable, '-m', 'poetry'),
         ('show', '-t', '--no-dev', '--no-ansi'),
         ('--directory', working_root),
         cwd=working_root,

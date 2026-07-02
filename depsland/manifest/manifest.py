@@ -746,10 +746,10 @@ class Manifest:
         if not deps0:  # None, empty dict, empty str.
             return {}
         elif isinstance(deps0, str):
-            if deps0 == 'poetry':
-                return resolve_dependencies('poetry.lock', start_directory)
-            else:  # 'uv'
+            if deps0 == 'uv':
                 return resolve_dependencies('uv.lock', start_directory)
+            else:  # 'poetry'
+                return resolve_dependencies('poetry.lock', start_directory)
         else:  # dict
             """
             folder structure:
@@ -783,6 +783,7 @@ class Manifest:
                 fs.make_dir(dot_dps_dir)
                 fs.make_link(
                     get_venv_root(start_directory, deps0['base'][:-5]),
+                    #   tip: deps0['base'] is either 'poetry.lock' or 'uv.lock'.
                     orig_deps_dir,
                 )
 
