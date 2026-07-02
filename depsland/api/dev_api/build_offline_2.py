@@ -1,6 +1,6 @@
-import neoprint as np
 from lk_utils import dedent
 from lk_utils import fs
+
 from ... import paths
 from ... import platform
 from ...manifest import T
@@ -20,7 +20,7 @@ def main(manifest_file: str) -> str:
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
-    np.show('see result at {}'.format(dir_o))
+    print('see result at {}'.format(dir_o))
     return dir_o
 
 
@@ -55,7 +55,7 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     for action, relpath, (info0, info1) in diff['assets']:
         assert action == 'append', action
 
-        np.show(':i', relpath)
+        print(':i', relpath)
         path_i = f'{root_i}/{relpath}'
         path_o = f'{root_o}/{relpath}'
 
@@ -140,4 +140,4 @@ def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
     fs.remove_file(x)
 
     if manifest['readme']:  # TODO
-        np.show('lite mode does not support creating readme opener yet', ':v8')
+        print('lite mode does not support creating readme opener yet', ':v8')

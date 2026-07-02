@@ -768,7 +768,14 @@ class Manifest:
             mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
             mini_deps_cache_file = '{}/{}.pkl'.format(
                 dot_dps_dir,
-                get_file_hash('{}/{}'.format(start_directory, deps0['base'])),
+                # this means: if uv.lock / poetry.lock / tree-shaking implicit 
+                # hooks file changed, rebuild mini_deps cache.
+                get_content_hash(
+                    get_file_hash(
+                        '{}/{}'.format(start_directory, deps0['base'])
+                    )
+                    + get_file_hash(tree_shaking.implicit_hooks_file)
+                ),
             )
 
             if fs.exist(mini_deps_cache_file):

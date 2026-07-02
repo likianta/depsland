@@ -6,13 +6,16 @@ import re
 import sys
 import typing as t
 
-import neoprint as np
 import tree_shaking
 from lk_utils import fs
 from lk_utils import run_cmd_args
+from neoprint import print
 from pyportable_crypto import compile_package
 from pyportable_crypto.cipher_gen import generate_cipher_package
 
+from .build_offline import main as build_offline
+from .build_offline_2 import main as build_stripped_offline
+from .publish import main as publish_to_oss
 from ...paths import temp as temp_paths
 from ...verspec import compare_version
 
@@ -112,24 +115,21 @@ def build(
 
     curr_version = config['version']
     if remain_last_version:
-        np.show(':v6', 'use last time updated version', curr_version)
+        print(':v6', 'use last time updated version', curr_version)
         new_version = curr_version
     else:
         if not new_version:
             new_version = _deduce_new_version(curr_version)
-        np.show(
-            ':r2', 'bump version: {} -> {}'.format(curr_version, new_version)
-        )
+        print(':r2', 'bump version: {} -> {}'.format(curr_version, new_version))
         _bump_versions(curr_version, new_version, config['version_bumps'])
 
-    # noinspection PyTypedDict
     image_file = config['images'][
         image_key := '{}_{}'.format(
             'enc' if encrypt_packages else 'src',
             'max' if minify_deps else 'min',
         )
     ]
-    np.show(image_key, ':n')
+    print(image_key, ':n')
     assert image_file, image_key
 
     if minify_deps == 2:
@@ -142,7 +142,7 @@ def build(
         assert all(config['encryption_options'].values())
         enc = config['encryption_options']
         if encrypt_packages == 1:
-            np.show('use last time encrypted packages')
+            print('use last time encrypted packages')
             _patch_encrypted_packages(
                 enc['packages'],
                 enc['output'],
@@ -152,12 +152,10 @@ def build(
             _encrypt_packages(enc['packages'], enc['output'], enc['key'])
 
     if publish == 1:
-        import depsland.api
-
         if remove_depsland:
-            dir_o = depsland.api.build_stripped_offline(image_file)
+            dir_o = build_stripped_offline(image_file)
         else:
-            dir_o = depsland.api.build_offline(image_file)
+            dir_o = build_offline(image_file)
         if compress_result:
             fs.zip(
                 dir_o,
@@ -166,11 +164,8 @@ def build(
                 progress=True,
                 compression_level='maximum',
             )
-
     elif publish == 2:
-        import depsland.api
-
-        depsland.api.publish(image_file, upload_dependencies=True)
+        publish_to_oss(image_file, upload_dependencies=True)
 
     if config['post_script']:
         run_cmd_args(
@@ -187,7 +182,7 @@ def bump_version(file: T.Path, new_version: str = '') -> None:
     config = load_config(file)
     curr_ver = config['version']
     new_ver = new_version or _deduce_new_version(curr_ver)
-    np.show(':r2', 'bump version: {} -> {}'.format(curr_ver, new_ver))
+    print(':r2', 'bump version: {} -> {}'.format(curr_ver, new_ver))
     if places := config['version_bumps']:
         _bump_versions(curr_ver, new_ver, places)
     # TODO: config['version'] = new_ver
@@ -272,12 +267,12 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
             encryption_output = abspath(x['output'])
 
     tree_shaking_model_path = ''
-    if x := data0.get('minideps_options'):
-        if y := x.get('tree_shaking_model'):
-            if isinstance(y, str):
-                tree_shaking_model_path = abspath(y)
+    if x0 := data0.get('minideps_options'):
+        if x1 := x0.get('tree_shaking_model'):
+            if isinstance(x1, str):
+                tree_shaking_model_path = abspath(x1)
             else:
-                xdict = y
+                xdict = x1
                 if 'root' in xdict:
                     xdict['root'] = fs.normpath(
                         '{}/{}'.format(fs.parent(file), xdict['root'])
@@ -345,7 +340,6 @@ def _deduce_new_version(old: str) -> str:
         0.12.1a9 -> 0.12.1a10
         0.12.1b0 -> 0.12.1b1
     """
-    # noinspection PyUnresolvedReferences
     a, b, c, d = re.match(r'(\d+)\.(\d+)\.(\d+)([ab]\d+)?', old).groups()
     if d is None:
         return f'{a}.{b}.{int(c) + 1}'
@@ -379,7 +373,7 @@ def _patch_encrypted_packages(
                 file_o = '{}/{}'.format(
                     output_root, fs.relpath(file, fs.parent(dir))
                 )
-                np.show(
+                print(
                     'fast encrypt on version changed file: {} -> {}'.format(
                         file_i, file_o
                     )

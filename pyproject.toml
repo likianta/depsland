@@ -16,13 +16,13 @@ dependencies = [
     # "pip>=26.0.0",
     # "poetry>=2.3.2",
     "psutil>=7.2.2",
-    "pyportable-crypto>=1.6.0b6",
+    "pyportable-crypto>=1.6.0b10",
     "semver>=3.0.4",
     "streamlit>=1.58.0",
     "streamlit-canary>=0.3.0b4",
     "streamlit-extras>=1.4.1",
     "streamlit-tree-select>=0.0.5",  # DELETE
-    "tree-shaking>=0.2.6b0",
+    "tree-shaking>=0.2.6b2",
     "windows-toasts>=1.0.0; sys_platform == 'win32'",
 ]
 
