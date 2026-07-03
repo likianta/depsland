@@ -1,5 +1,5 @@
 if 1:
-    if not __package__:  # noqa
+    if not __package__:
         __package__ = 'depsland'
 if 2:
     import os
@@ -12,12 +12,15 @@ if 2:
         os.environ['DEPSLAND_SEARCH_PATHS'] = 'chore/minideps'
         #   see also `/python/sitecustomize.py`
 
-import neoprint as np
 import subprocess
 import sys
 import typing as t
+
+import neoprint as np
 from argsense import CommandLineInterface
 from lk_utils import fs
+from neoprint import print
+
 from . import __path__
 from . import __version__
 from . import api

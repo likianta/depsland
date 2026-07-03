@@ -10,19 +10,19 @@ dependencies = [
     "airmise>=3.0.0b17",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.6.1b1",
-    "neoprint>=0.1.5b0",
+    "lk-utils>=3.6.2a1",
+    "neoprint>=0.1.6b1",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
     # "poetry>=2.3.2",
     "psutil>=7.2.2",
-    "pyportable-crypto>=1.6.0b10",
+    "pyportable-crypto>=1.6.1a0",
     "semver>=3.0.4",
     "streamlit>=1.58.0",
-    "streamlit-canary>=0.3.0b4",
+    "streamlit-canary>=0.3.0b6",
     "streamlit-extras>=1.4.1",
     "streamlit-tree-select>=0.0.5",  # DELETE
-    "tree-shaking>=0.2.6b2",
+    "tree-shaking>=0.2.7a0",
     "windows-toasts>=1.0.0; sys_platform == 'win32'",
 ]
 
@@ -34,7 +34,7 @@ requires = ["hatchling>=1.29.0"]
 dev = [
     "freesimplegui>=5.2.0post1",
     "icnsutil>=1.1.0",
-    # "ipython>=9.15.0",
+    "ipython>=9.15.0",
     "nuitka>=4.1.3",
     "pillow>=12.2.0",
     # "pinkrain>=0.0.0a32",
