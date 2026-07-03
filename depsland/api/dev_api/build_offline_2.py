@@ -8,7 +8,7 @@ from ...manifest import T
 from ...manifest import diff_manifest
 from ...manifest import init_manifest
 from ...manifest import load_manifest
-from ...utils import check_folder_changed
+from ...utils import check_folder_content_changed
 from ...venv import link_venv
 
 
@@ -88,18 +88,18 @@ def _copy_assets(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
 
 def _encrypt_source(manifest: T.Manifest) -> None:
     enc: T.Encryption2 = manifest['encryption']
-    if check_folder_changed(enc['output']):
+    if any(map(check_folder_content_changed, enc['packages'])):
         fs.copy_tree(
             pyportable_crypto.generate_cipher_package(enc['key']),
             '{}/pyportable_runtime'.format(enc['output']),
             True,
         )
-        for pkg in enc['packages']:
+        for pkg_path in enc['packages']:
             pyportable_crypto.compile_package(
-                dir_i=pkg, 
-                dir_o='{}/{}'.format(enc['output'], fs.barename(pkg)),
-                key=enc['key'], 
-                add_runtime_package='none'
+                dir_i=pkg_path,
+                dir_o='{}/{}'.format(enc['output'], fs.barename(pkg_path)),
+                key=enc['key'],
+                add_runtime_package='none',
             )
     else:
         print('reuse encrypted sources')
