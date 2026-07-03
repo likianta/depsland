@@ -5,13 +5,14 @@
 - 完整的迷你启动器以及在线安装器, 用于解决发布体积问题和依赖裁剪的不稳定性
 - 将 uv 作为首要支持的项目环境创建方式
 - 避免使用复杂的安装路径
+- 在构建清单中集成代码加密选项 ([pyportable-crypto](https://github.com/likianta/pyportable-crypto))
 
 ---
 
 ### 0.11.0 (2026-04-07)
 
 - 构建更加轻量化的独立应用 (no-depsland 版本)
-- 在 Depsland 中集成依赖优化选项 (tree-shaking)
+- 在 Depsland 中集成依赖优化选项 ([tree-shaking](https://github.com/likianta/python-tree-shaking))
 - 优化中断发生后的重安装速度
 
 ---
