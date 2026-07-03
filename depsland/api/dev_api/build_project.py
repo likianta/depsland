@@ -1,17 +1,13 @@
 if __name__ == '__main__':
     __package__ = 'depsland.api.dev_api'
 
-import os
 import re
 import sys
 import typing as t
 
-import tree_shaking
 from lk_utils import fs
 from lk_utils import run_cmd_args
 from neoprint import print
-from pyportable_crypto import compile_package
-from pyportable_crypto.cipher_gen import generate_cipher_package
 
 from .build_offline import build as build_offline
 from .build_offline_2 import build_stripped_offline
@@ -21,6 +17,7 @@ from ...verspec import compare_version
 
 
 class T:
+    ImageKey = t.Literal['src_max', 'src_min', 'enc_max', 'enc_min']
     Path = str  # any path form
     Config = t.TypedDict(
         'Config',
@@ -40,34 +37,6 @@ class T:
                     'enc_min': t.Union[Path, dict],
                 },
             ),
-            'encryption_options': t.TypedDict(
-                'EncryptionOptions',
-                {
-                    'key': str,  # a string or `<ENV>` or `<ENV:VARNAME>`
-                    'packages': t.List[Path],
-                    'output': Path,
-                },
-            ),
-            'minideps_options': t.TypedDict(
-                'MinidepsOptions',
-                {
-                    'tree_shaking_model': t.Union[
-                        Path,
-                        t.TypedDict(
-                            'TreeShakingModel',
-                            {
-                                'root': Path,
-                                'search_paths': t.List[Path],
-                                'entries': t.List[Path],
-                                'export': t.TypedDict(
-                                    'Export', {'source': Path, 'target': Path}
-                                ),
-                            },
-                            total=False,
-                        ),
-                    ]
-                },
-            ),
             'post_script': Path,  # TODO: support passing args.
         },
     )
@@ -75,10 +44,8 @@ class T:
 
 def build(
     file: T.Path,
+    image_key: T.ImageKey = 'src_min',
     new_version: str = '',
-    minify_deps: int = 0,
-    encrypt_packages: int = 0,
-    secret_key: str = '',
     publish: int = 0,
     remain_last_version: bool = False,
     remove_depsland: bool = True,
@@ -86,19 +53,8 @@ def build(
 ) -> t.Tuple[str, str]:
     """
     params:
+        image_key (-k): suggest 'src_min' or 'enc_max'.
         new_version (-v):
-        minify_deps (-m):
-            0: do not minimize.
-            1: enable minimize mode, but use existing results.
-            2: enable minimize mode, and re-generate the results.
-        encrypt_packages (-e):
-            0: do not encrypt.
-            1: enable encryption, but use existing results.
-            2: enable encryption, and re-generate the results.
-                you must set `secret_key` in this case.
-        secret_key (-s): required if `encrypt_packages==2`.
-            caution: do not frequently change the secret key, because -
-            recompiling a new key is time-consuming.
         publish (-p):
             0: do not publish.
             1: generate a standalone package, you can manually publish it, or -
@@ -111,7 +67,7 @@ def build(
         compress_result (-z): if true, compress to ".7z" format.
             this option is only valid when `publish==1`.
     """
-    config = load_config(file, secret_key=secret_key)
+    config = load_config(file)
 
     curr_version = config['version']
     if remain_last_version:
@@ -123,33 +79,8 @@ def build(
         print(':r2', 'bump version: {} -> {}'.format(curr_version, new_version))
         _bump_versions(curr_version, new_version, config['version_bumps'])
 
-    image_file = config['images'][
-        image_key := '{}_{}'.format(
-            'enc' if encrypt_packages else 'src',
-            'max' if minify_deps else 'min',
-        )
-    ]
-    print(image_key, ':n')
+    image_file = config['images'][image_key]
     assert image_file, image_key
-
-    if minify_deps == 2:
-        assert (x := config['minideps_options']['tree_shaking_model'])
-        assert isinstance(x, str)
-        tree_shaking.build_module_graphs(x)
-        tree_shaking.dump_tree(x)
-
-    if encrypt_packages:
-        assert all(config['encryption_options'].values())
-        enc = config['encryption_options']
-        if encrypt_packages == 1:
-            print('use last time encrypted packages')
-            _patch_encrypted_packages(
-                enc['packages'],
-                enc['output'],
-                tuple(config['version_bumps'].keys()),
-            )
-        else:
-            _encrypt_packages(enc['packages'], enc['output'], enc['key'])
 
     if publish == 1:
         if remove_depsland:
@@ -248,40 +179,6 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
             images[k] = None
     assert any(images.values())
 
-    encryption_key = ''
-    encryption_dirs = []
-    encryption_output = ''
-    if x := data0.get('encryption_options'):
-        if kwargs.get('secret_key'):
-            encryption_key = kwargs['secret_key']
-        elif x['key']:
-            if x['key'] == '<ENV>':
-                encryption_key = os.environ['DEPSLAND_ENCRYPTION_KEY']
-            elif x['key'].startswith('<ENV:'):
-                encryption_key = os.environ[x['key'][5:-1]]
-            else:
-                encryption_key = x['key']
-        for d in x['packages']:
-            encryption_dirs.append(abspath(d))
-        if x['output']:
-            encryption_output = abspath(x['output'])
-
-    tree_shaking_model_path = ''
-    if x0 := data0.get('minideps_options'):
-        if x1 := x0.get('tree_shaking_model'):
-            if isinstance(x1, str):
-                tree_shaking_model_path = abspath(x1)
-            else:
-                xdict = x1
-                if 'root' in xdict:
-                    xdict['root'] = fs.normpath(
-                        '{}/{}'.format(fs.parent(file), xdict['root'])
-                    )
-                else:
-                    xdict['root'] = root
-                fs.dump(xdict, temp_paths.tree_shaking_model)
-                tree_shaking_model_path = temp_paths.tree_shaking_model
-
     if x := data0.get('post_script'):
         post_script = abspath(x)
     else:
@@ -294,12 +191,6 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
             'version': version,
             'version_bumps': version_bumps,
             'images': images,
-            'encryption_options': {
-                'key': encryption_key,
-                'packages': encryption_dirs,
-                'output': encryption_output,
-            },
-            'minideps_options': {'tree_shaking_model': tree_shaking_model_path},
             'post_script': post_script,
         },
     )
@@ -345,40 +236,6 @@ def _deduce_new_version(old: str) -> str:
         return f'{a}.{b}.{int(c) + 1}'
     else:
         return f'{a}.{b}.{c}{d[0]}{int(d[1:]) + 1}'
-
-
-def _encrypt_packages(
-    targets: t.Iterable[str], output_root: str, key: str
-) -> None:
-    fs.copy_tree(
-        generate_cipher_package(key),
-        '{}/pyportable_runtime'.format(output_root),
-        True,
-    )
-    for target in targets:
-        dir_i = target
-        dir_o = '{}/{}'.format(output_root, fs.basename(target))
-        compile_package(dir_i, dir_o, key, add_runtime_package='none')
-
-
-def _patch_encrypted_packages(
-    packages: t.Iterable[str],
-    output_root: T.Path,
-    version_changed_files: t.Iterable[str],
-) -> None:
-    for dir in packages:
-        for file in version_changed_files:
-            if file.startswith(dir + '/'):
-                file_i = file
-                file_o = '{}/{}'.format(
-                    output_root, fs.relpath(file, fs.parent(dir))
-                )
-                print(
-                    'fast encrypt on version changed file: {} -> {}'.format(
-                        file_i, file_o
-                    )
-                )
-                fs.copy_file(file_i, file_o, True)
 
 
 if __name__ == '__main__':

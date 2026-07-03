@@ -668,7 +668,7 @@ requires-dist = [
     { name = "neoprint", specifier = ">=0.1.6b1", index = "http://localhost:2191/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
-    { name = "pyportable-crypto", specifier = ">=1.6.1a0", index = "http://localhost:2191/" },
+    { name = "pyportable-crypto", specifier = ">=1.6.1a1", index = "http://localhost:2191/" },
     { name = "semver", specifier = ">=3.0.4" },
     { name = "streamlit", specifier = ">=1.58.0" },
     { name = "streamlit-canary", specifier = ">=0.3.0b6", index = "http://localhost:2191/" },
@@ -1985,7 +1985,7 @@ wheels = [
 
 [[package]]
 name = "pyportable-crypto"
-version = "1.6.1a0"
+version = "1.6.1a1"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -1995,7 +1995,7 @@ dependencies = [
     { name = "nuitka" },
 ]
 wheels = [
-    { url = "http://localhost:2191/pyportable-crypto/pyportable_crypto-1.6.1a0-py3-none-any.whl" },
+    { url = "http://localhost:2191/pyportable-crypto/pyportable_crypto-1.6.1a1-py3-none-any.whl" },
 ]
 
 [[package]]

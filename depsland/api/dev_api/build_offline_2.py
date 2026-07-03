@@ -90,7 +90,7 @@ def _encrypt_source(manifest: T.Manifest) -> None:
     enc: T.Encryption2 = manifest['encryption']
     if check_folder_changed(enc['output']):
         fs.copy_tree(
-            pyportable_crypto.cipher_gen.generate_cipher_package(enc['key']),
+            pyportable_crypto.generate_cipher_package(enc['key']),
             '{}/pyportable_runtime'.format(enc['output']),
             True,
         )
