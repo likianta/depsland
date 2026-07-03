@@ -1,219 +1,20 @@
 import os
 import shlex
-import typing as t
+import typing as tp
 from collections import namedtuple
 from functools import cache
-from types import NoneType
 
 import pyportable_crypto
 import tree_shaking
 from lk_utils import fs
 
+from .typing import T
 from .. import normalization as norm
-from ..depsolver import T as T0
 from ..depsolver import resolve_dependencies
 from ..utils import hash_content
 from ..utils import hash_file_content
 from ..utils import init_target_tree
 from ..venv import get_venv_root
-
-
-class T(T0):
-    AbsPath = RelPath = AnyPath = str
-    #   the RelPath is relative to manifest file's location.
-    StartDirectory = AbsPath
-
-    Assets0 = t.List[RelPath]  # all paths must be relative to `start_directory`
-    Assets1 = t.Dict[
-        RelPath,
-        AssetInfo := t.NamedTuple(
-            'AssetInfo',
-            (
-                ('type', t.Literal['file', 'dir']),
-                # see `depsland.api.dev_api.publish._copy_assets`
-                ('scheme', AssetScheme := t.Optional[int]),
-                #   AssetScheme: None | 0b00 | 0b01 | 0b10 | 0b11
-                ('utime', int),  # updated time
-                ('hash', str),  # if type is dir, the hash is empty
-                ('uid', str),  # the uid will be used as key to filename in oss.
-                # ('redirect', str),
-            ),
-        ),
-    ]
-
-    Dependencies0 = t.Optional[
-        t.Union[
-            t.Literal['poetry', 'uv'],
-            t.TypedDict(
-                'TreeShakingDependencies',
-                {
-                    'method': 'tree_shaking',
-                    'base': t.Literal['poetry.lock', 'uv.lock'],
-                    'options': tree_shaking.T.Config0,
-                },
-                total=False,
-            ),
-        ]
-    ]
-    Dependencies1 = T0.Packages
-
-    Encryption0 = t.Optional[
-        t.TypedDict(
-            'Encryption0',
-            {
-                'key': str,
-                #   key can be plain string, or literally "$env", or
-                #   `$env:<varname>`.
-                #   for example:
-                #       - 'AjetGCuXouoQJZiZ3faBgGla04j52VzrVAHnf49MbQw'
-                #       - '$env'
-                #       - '$env:MY_SECRET_KEY'
-                'add_salt': bool,
-                'packages': t.List[RelPath],
-                'output': RelPath,
-            },
-        )
-    ]
-    Encryption1 = t.TypedDict(
-        'Encryption1',
-        {'key': str, 'packages': t.List[RelPath], 'output': RelPath},
-    )
-    Encryption2 = t.TypedDict(
-        'Encryption2',
-        {'key': str, 'packages': t.Tuple[AbsPath, ...], 'output': AbsPath},
-    )
-
-    Experiments0 = t.TypedDict(
-        'Experiments0',
-        {'package_provider': t.Literal['oss', 'pypi']},
-        total=False,
-    )
-    Experiments1 = Experiments0
-
-    Launcher0 = t.TypedDict(
-        'Launcher0',
-        {
-            'command': t.Union[str, list],
-            'icon': AnyPath,
-            'show_console': bool,
-            'enable_cli': bool,
-            'add_to_desktop': bool,
-            'add_to_start_menu': bool,
-        },
-        total=False,
-    )
-    Launcher1 = t.TypedDict(
-        'Launcher1',
-        {
-            'command': str,
-            'icon': RelPath,  # relpath or empty
-            'show_console': bool,
-            'enable_cli': bool,
-            'add_to_desktop': bool,
-            'add_to_start_menu': bool,
-        },
-    )
-
-    # occurrences:
-    #   - Manifest._update_readme_file
-    #   - /depsland/api/user_api/install.py : _create_launchers
-    #   - /depsland/api/dev_api/build_offline.py : _create_launcher
-    Readme0 = t.Union[
-        NoneType,
-        AnyPath,
-        t.TypedDict(
-            'Readme0',
-            {'file': AnyPath, 'name': str, 'icon': AnyPath, 'standalone': bool},
-            total=False,
-        ),
-    ]
-    Readme1 = t.TypedDict(
-        'Readme1',
-        {
-            'file': RelPath,  # relpath or empty
-            'name': str,  # name without extension, prefer title case.
-            'icon': RelPath,  # relpath or empty
-            'standalone': bool,  # default true
-        },
-    )
-
-    # -------------------------------------------------------------------------
-
-    # Manifest0: original manifest
-    #   this is a json-compatible dict. it is either made by user or dumped by -
-    #   `dump_manifest` function (when caller passes a '.json' file param to it).
-    Manifest0 = t.TypedDict(
-        'Manifest0',
-        # note: not all keys are required, check details in -
-        # `Manifest._precheck_manifest`.
-        {
-            'appid': str,
-            'name': str,
-            'version': str,
-            'start_directory': AnyPath,
-            'readme': Readme0,
-            'assets': Assets0,
-            'encryption': Encryption0,
-            'dependencies': Dependencies0,
-            'launcher': Launcher0,
-            'experiments': Experiments0,
-            'depsland_version': str,
-        },
-        total=False,
-    )
-
-    # Manifest1: standard manifest
-    #   this is core and unified data structure for program to use. it is -
-    #   loaded from a '.pkl' file, or parsed from a '.json' file by -
-    #   `Manifest.load_from_file`.
-    #   the differences between Manifest0 and Manifest1 are:
-    #       1. ~1 has an unified path form (all must be abspath).
-    #       2. ~1 has an extra key 'start_directory'.
-    #       3. ~1's assets values are `namedtuple AssetInfo`.
-    Manifest1 = t.TypedDict(
-        'Manifest1',
-        {
-            'appid': str,
-            'name': str,
-            'version': str,
-            'start_directory': StartDirectory,
-            'readme': Readme1,
-            'assets': Assets1,
-            'encryption': t.Optional[Encryption1],
-            'dependencies': Dependencies1,
-            'launcher': Launcher1,
-            'experiments': Experiments1,
-            'depsland_version': str,
-        },
-    )
-
-    # -------------------------------------------------------------------------
-
-    Action = t.Literal['append', 'update', 'delete', 'ignore']
-
-    AssetsDiff = t.Iterator[
-        t.Tuple[
-            Action,
-            RelPath,
-            t.Tuple[t.Optional[AssetInfo], t.Optional[AssetInfo]],
-        ]
-    ]
-
-    DependenciesDiff = t.Iterator[
-        t.Tuple[
-            Action,
-            T0.PackageName,
-            t.Tuple[t.Optional[T0.PackageInfo], t.Optional[T0.PackageInfo]],
-        ]
-    ]
-
-    # see `depsland.api.dev_api.publish._upload`
-    ManifestDiff = t.TypedDict(
-        'ManifestDiff', {'assets': AssetsDiff, 'dependencies': DependenciesDiff}
-    )
-
-
-# -----------------------------------------------------------------------------
 
 
 def init_manifest(appid: str, appname: str) -> 'Manifest':
@@ -238,7 +39,7 @@ def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
     }
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
@@ -296,7 +97,7 @@ class Manifest:
         self._file = fs.abspath(file)
         cfg_dir = fs.parent(self._file)  # abspath
 
-        data0: t.Union[T.Manifest0, T.Manifest1]
+        data0: tp.Union[T.Manifest0, T.Manifest1]
         data1: T.Manifest1
 
         if self._file.endswith('.pkl'):
@@ -439,15 +240,15 @@ class Manifest:
     def model(self) -> T.Manifest1:
         return self._manifest
 
-    def get(self, key: str) -> t.Any:
+    def get(self, key: str) -> tp.Any:
         if key in self._manifest:
             return self[key]
         return None
 
-    def __iter__(self) -> t.Iterator[t.Tuple[str, t.Any]]:
+    def __iter__(self) -> tp.Iterator[tp.Tuple[str, tp.Any]]:
         yield from self._manifest.items()
 
-    def __getitem__(self, key: str) -> t.Any:
+    def __getitem__(self, key: str) -> tp.Any:
         if key == 'readme':
 
             class ReadmeGetter:
@@ -460,10 +261,10 @@ class Manifest:
                 def __bool__(self) -> bool:
                     return bool(self._data['file'])
 
-                def __iter__(self) -> t.Iterator[t.Tuple[str, t.Any]]:
+                def __iter__(self) -> tp.Iterator[tp.Tuple[str, tp.Any]]:
                     yield from self._data.items()
 
-                def __getitem__(self, key: str) -> t.Union[str, bool]:
+                def __getitem__(self, key: str) -> tp.Union[str, bool]:
                     if key == 'file' or key == 'icon':
                         if x := self._data[key]:  # type: ignore
                             return '{}/{}'.format(self._start_directory, x)
@@ -472,7 +273,7 @@ class Manifest:
                     else:
                         return self._data[key]  # type: ignore
 
-                def __setitem__(self, key: str, value: t.Any) -> None:
+                def __setitem__(self, key: str, value: tp.Any) -> None:
                     raise Exception('cannot modify readme dict', key, value)
 
             return ReadmeGetter(
@@ -489,8 +290,8 @@ class Manifest:
                     self._start_directory = start_directory
 
                 def __getitem__(
-                    self, key: t.Literal['key', 'packages', 'output']
-                ) -> t.Any:
+                    self, key: tp.Literal['key', 'packages', 'output']
+                ) -> tp.Any:
                     if key == 'output':
                         return '{}/{}'.format(
                             self._start_directory, self._data[key]
@@ -521,10 +322,10 @@ class Manifest:
                     self._data = data
                     self._start_directory = start_directory
 
-                def __iter__(self) -> t.Iterator[t.Tuple[str, t.Any]]:
+                def __iter__(self) -> tp.Iterator[tp.Tuple[str, tp.Any]]:
                     yield from self._data.items()
 
-                def __getitem__(self, key: str) -> t.Union[str, bool]:
+                def __getitem__(self, key: str) -> tp.Union[str, bool]:
                     if key == 'icon':
                         if x := self._data['icon']:
                             return '{}/{}'.format(self._start_directory, x)
@@ -533,7 +334,7 @@ class Manifest:
                     else:
                         return self._data[key]  # type: ignore
 
-                def __setitem__(self, key: str, value: t.Any) -> None:
+                def __setitem__(self, key: str, value: tp.Any) -> None:
                     raise Exception('cannot modify launcher dict', key, value)
 
             return LauncherGetter(
@@ -543,14 +344,14 @@ class Manifest:
         else:
             return self._manifest[key]  # type: ignore
 
-    def __setitem__(self, key: str, value: t.Any) -> None:
+    def __setitem__(self, key: str, value: tp.Any) -> None:
         if key == 'start_directory':
             assert os.path.isabs(value)
             self._manifest[key] = value  # type: ignore
         else:
             raise Exception('cannot modify top field of manifest!', key, value)
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @staticmethod
     def _precheck_manifest(manifest: T.Manifest0) -> None:
@@ -679,7 +480,7 @@ class Manifest:
                 'experimental feature.',
             )
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @staticmethod
     def _update_assets(
@@ -695,10 +496,10 @@ class Manifest:
 
         def unpack_assets(
             assets: T.Assets0,
-        ) -> t.Iterator[t.Tuple[T.RelPath, T.AssetScheme]]:
+        ) -> tp.Iterator[tp.Tuple[T.RelPath, T.AssetScheme]]:
             def resolve_wildcard(
                 rpath: str, scheme: T.AssetScheme
-            ) -> t.Iterator[t.Tuple[T.RelPath, T.AssetScheme]]:
+            ) -> tp.Iterator[tp.Tuple[T.RelPath, T.AssetScheme]]:
                 path0, path1 = rpath, rpath.rstrip('/*')
                 if scheme is None:
                     dirpath = fs.normpath(
@@ -770,7 +571,7 @@ class Manifest:
             if recursive and os.listdir(abspath):
                 # https://stackoverflow.com/questions/29685069
 
-                def walk(entrance: str) -> t.Iterator[str]:
+                def walk(entrance: str) -> tp.Iterator[str]:
                     yield from (x.path for x in fs.findall_dirs(entrance))
                     yield from (x.path for x in fs.findall_files(entrance))
 
@@ -953,7 +754,7 @@ class Manifest:
         return out
 
     def _update_readme_file(
-        self, readme: t.Optional[T.Readme0], start_directory: T.StartDirectory
+        self, readme: tp.Optional[T.Readme0], start_directory: T.StartDirectory
     ) -> T.Readme1:
         out: T.Readme1 = {
             'file': '',

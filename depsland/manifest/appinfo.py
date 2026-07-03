@@ -1,40 +1,11 @@
-import os
-import typing as t
-from os.path import exists
+import typing as tp
 
 from lk_utils import fs
 
-from .manifest import Manifest
-from .manifest import T as T0
 from .manifest import dump_manifest
 from .manifest import load_manifest
+from .typing import T
 from .. import paths
-
-
-class T(T0):
-    Appinfo = t.TypedDict(
-        'Appinfo',
-        {
-            'appid'  : str,
-            'name'   : str,
-            'version': str,
-            'src_dir': str,  # abspath
-            'dst_dir': str,  # abspath
-            'history': t.List[str],  # list[str version]
-        },
-    )
-    Launcher = T0.Launcher1
-    # if t.TYPE_CHECKING:
-    #     Manifest = T0.Manifest1
-    # else:
-    #     Manifest = Manifest
-    Manifest = Manifest
-    # PseudoManifestDict = t.cast(T0.Manifest1, Manifest)
-    PseudoManifestDict = T0.Manifest1
-    
-    # extra ports for external use
-    Scheme = T0.AssetScheme
-    UserManifest = T0.Manifest0
 
 
 def get_app_info(manifest_file: str) -> T.Appinfo:
@@ -42,10 +13,10 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
     load origin manifest file, copy it to `<depsland>/apps` hosted directory -
     for unified management. and refresh the history file.
     """
-    data_i: T.Manifest = load_manifest(manifest_file)
+    data_i: T.ManifestObject = load_manifest(manifest_file)
     data_o: T.Appinfo = {
-        'appid'  : data_i['appid'],
-        'name'   : data_i['name'],
+        'appid': data_i['appid'],
+        'name': data_i['name'],
         'version': data_i['version'],
         'src_dir': fs.dirpath(manifest_file),
         'dst_dir': '{}/{}/{}'.format(
@@ -53,14 +24,14 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
         ),
         'history': [],
     }
-    
-    if not exists(d := data_o['dst_dir']):
-        os.makedirs(d)
+
+    if not fs.exist(d := data_o['dst_dir']):
+        fs.make_dirs(d)
     dump_manifest(data_i, f'{d}/manifest.json')
-    
+
     # update history
     history_file = paths.apps.get_distribution_history(data_o['appid'])
-    if exists(history_file):
+    if fs.exist(history_file):
         data_o['history'] = fs.load(history_file, 'plain').splitlines()
     else:
         print(
@@ -70,19 +41,21 @@ def get_app_info(manifest_file: str) -> T.Appinfo:
             ':v2',
         )
         # dumps('', history_file, type='plain')
-    
+
     return data_o
 
 
-def get_last_installed_version(appid: str) -> t.Optional[str]:
+def get_last_installed_version(appid: str) -> tp.Optional[str]:
     file = paths.apps.get_installation_history(appid)
-    if not exists(file): return None
+    if not fs.exist(file):
+        return None
     return _quick_read_line(file)
 
 
-def get_last_released_version(appid: str) -> t.Optional[str]:
+def get_last_released_version(appid: str) -> tp.Optional[str]:
     file = paths.apps.get_distribution_history(appid)
-    if not exists(file): return None
+    if not fs.exist(file):
+        return None
     return _quick_read_line(file)
 
 
