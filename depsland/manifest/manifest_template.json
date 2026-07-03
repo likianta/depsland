@@ -1,0 +1,19 @@
+{
+    "appid": "",
+    "name": "",
+    "version": "",
+    "start_directory": ".",
+    "assets": [],
+    "encryption": null,
+    "dependencies": "uv",
+    "launcher": {
+        "command": "",
+        "icon": "",
+        "show_console": false,
+        "add_to_desktop": true
+    },
+    "experiments": {
+        "package_provider": "oss"
+    },
+    "depsland_version": "0.12.0"
+}

@@ -24,8 +24,11 @@ class T(T0):
         },
     )
     Launcher = T0.Launcher1
-    Manifest = t.Union[T0.Manifest1, Manifest]
-    # Manifest = Manifest
+    # if t.TYPE_CHECKING:
+    #     Manifest = T0.Manifest1
+    # else:
+    #     Manifest = Manifest
+    Manifest = Manifest
     # PseudoManifestDict = t.cast(T0.Manifest1, Manifest)
     PseudoManifestDict = T0.Manifest1
     

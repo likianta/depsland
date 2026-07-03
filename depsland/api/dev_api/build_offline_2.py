@@ -1,3 +1,4 @@
+import pyportable_crypto
 from lk_utils import dedent
 from lk_utils import fs
 
@@ -7,10 +8,11 @@ from ...manifest import T
 from ...manifest import diff_manifest
 from ...manifest import init_manifest
 from ...manifest import load_manifest
+from ...utils import check_folder_changed
 from ...venv import link_venv
 
 
-def main(manifest_file: str) -> str:
+def build_stripped_offline(manifest_file: T.AnyPath) -> T.AbsPath:
     manifest = load_manifest(manifest_file)
     dir_i = manifest['start_directory']
     dir_o = '{}/dist/{}-{}'.format(
@@ -18,13 +20,15 @@ def main(manifest_file: str) -> str:
     )
     _init_dist_tree(dir_o)
     _copy_assets(manifest, dir_o)
+    if manifest['encryption']:
+        _encrypt_source(manifest)
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
     print('see result at {}'.format(dir_o))
     return dir_o
 
 
-def _init_dist_tree(dst_dir: str) -> None:
+def _init_dist_tree(dst_dir: T.AbsPath) -> None:
     """
     tree structure:
         <dist_app>
@@ -40,7 +44,7 @@ def _init_dist_tree(dst_dir: str) -> None:
     fs.make_dir('{}/source'.format(dst_dir))
 
 
-def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
+def _copy_assets(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
     # noinspection PyTypeChecker
     diff = diff_manifest(
         new=manifest,  # type: ignore
@@ -82,7 +86,26 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
             raise Exception(info1.scheme)
 
 
-def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
+def _encrypt_source(manifest: T.Manifest) -> None:
+    enc: T.Encryption2 = manifest['encryption']
+    if check_folder_changed(enc['output']):
+        fs.copy_tree(
+            pyportable_crypto.cipher_gen.generate_cipher_package(enc['key']),
+            '{}/pyportable_runtime'.format(enc['output']),
+            True,
+        )
+        for pkg in enc['packages']:
+            pyportable_crypto.compile_package(
+                dir_i=pkg, 
+                dir_o='{}/{}'.format(enc['output'], fs.barename(pkg)),
+                key=enc['key'], 
+                add_runtime_package='none'
+            )
+    else:
+        print('reuse encrypted sources')
+
+
+def _make_venv(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
     link_venv(
         (x['id'] for x in manifest['dependencies'].values()),
         '{}/library'.format(dst_dir),

@@ -39,7 +39,7 @@ from ...pypi import pypi
 from ...venv import link_venv
 
 
-def main(manifest_file: str) -> str:
+def build(manifest_file: str) -> str:
     manifest = load_manifest(manifest_file)
     dir_i = manifest['start_directory']
     dir_o = '{}/dist/{}-{}'.format(

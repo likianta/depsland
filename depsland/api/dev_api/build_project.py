@@ -13,9 +13,9 @@ from neoprint import print
 from pyportable_crypto import compile_package
 from pyportable_crypto.cipher_gen import generate_cipher_package
 
-from .build_offline import main as build_offline
-from .build_offline_2 import main as build_stripped_offline
-from .publish import main as publish_to_oss
+from .build_offline import build as build_offline
+from .build_offline_2 import build_stripped_offline
+from .publish import publish as publish_to_oss
 from ...paths import temp as temp_paths
 from ...verspec import compare_version
 

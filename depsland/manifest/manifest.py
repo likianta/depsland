@@ -5,15 +5,15 @@ from collections import namedtuple
 from functools import cache
 from types import NoneType
 
+import pyportable_crypto
 import tree_shaking
 from lk_utils import fs
 
 from .. import normalization as norm
 from ..depsolver import T as T0
 from ..depsolver import resolve_dependencies
-from ..utils import get_content_hash
-from ..utils import get_file_hash
-from ..utils import get_updated_time
+from ..utils import hash_content
+from ..utils import hash_file_content
 from ..utils import init_target_tree
 from ..venv import get_venv_root
 
@@ -36,32 +36,13 @@ class T(T0):
                 ('utime', int),  # updated time
                 ('hash', str),  # if type is dir, the hash is empty
                 ('uid', str),  # the uid will be used as key to filename in oss.
+                # ('redirect', str),
             ),
         ),
     ]
 
     Dependencies0 = t.Optional[
         t.Union[
-            # t.Literal['poetry', 'tree_shaking', 'uv'],
-            # tree_shaking.T.Config0,
-            # t.TypedDict(
-            #     'Dependencies0',
-            #     {
-            #         'method': t.Literal['poetry', 'tree_shaking', 'uv'],
-            #         'options': t.Union[
-            #             t.Literal['poetry.lock', 'uv.lock'],
-            #             t.TypedDict(
-            #                 'TreeShakingOptions',
-            #                 {
-            #                     'search_paths': t.List[str],
-            #                     'entries': t.List[str],
-            #                 },
-            #                 total=False,
-            #             ),
-            #         ],
-            #     },
-            #     total=False,
-            # ),
             t.Literal['poetry', 'uv'],
             t.TypedDict(
                 'TreeShakingDependencies',
@@ -74,13 +55,33 @@ class T(T0):
             ),
         ]
     ]
-    # Dependencies1 = t.Optional[t.Tuple[t.Union[T0.Packages, Assets1], int]]
-    #   (..., int): type code, 0 or 1. 0 for T0.Packages, 1 for Assets1.
-    # Dependencies1 = t.Optional[t.TypedDict('Dependencies1', {
-    #     'method': t.Literal['poetry', 'tree_shaking', 'uv'],
-    #     'options': t.Union[T0.Packages, Assets1]
-    # })]
     Dependencies1 = T0.Packages
+
+    Encryption0 = t.Optional[
+        t.TypedDict(
+            'Encryption0',
+            {
+                'key': str,
+                #   key can be plain string, or literally "$env", or
+                #   `$env:<varname>`.
+                #   for example:
+                #       - 'AjetGCuXouoQJZiZ3faBgGla04j52VzrVAHnf49MbQw'
+                #       - '$env'
+                #       - '$env:MY_SECRET_KEY'
+                'add_salt': bool,
+                'packages': t.List[RelPath],
+                'output': RelPath,
+            },
+        )
+    ]
+    Encryption1 = t.TypedDict(
+        'Encryption1',
+        {'key': str, 'packages': t.List[RelPath], 'output': RelPath},
+    )
+    Encryption2 = t.TypedDict(
+        'Encryption2',
+        {'key': str, 'packages': t.Tuple[AbsPath, ...], 'output': AbsPath},
+    )
 
     Experiments0 = t.TypedDict(
         'Experiments0',
@@ -152,6 +153,7 @@ class T(T0):
             'start_directory': AnyPath,
             'readme': Readme0,
             'assets': Assets0,
+            'encryption': Encryption0,
             'dependencies': Dependencies0,
             'launcher': Launcher0,
             'experiments': Experiments0,
@@ -177,6 +179,7 @@ class T(T0):
             'start_directory': StartDirectory,
             'readme': Readme1,
             'assets': Assets1,
+            'encryption': t.Optional[Encryption1],
             'dependencies': Dependencies1,
             'launcher': Launcher1,
             'experiments': Experiments1,
@@ -262,6 +265,7 @@ class Manifest:
             'start_directory': '',
             'readme': {'file': '', 'name': '', 'icon': '', 'standalone': True},
             'assets': {},
+            'encryption': None,
             'dependencies': {},
             'launcher': {
                 'command': '',
@@ -371,6 +375,11 @@ class Manifest:
                         data0['assets'], start_directory
                     )
                 ),
+                'encryption': (
+                    self._update_encryption(data0['encryption'])
+                    if 'encryption' in data0
+                    else None
+                ),
                 'dependencies': self._update_dependencies(
                     data0.get('dependencies'), assets, start_directory
                 ),
@@ -423,7 +432,7 @@ class Manifest:
                     relpaths.append(k.rsplit('/', 1)[0])
         init_target_tree(root, relpaths)
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # dict-like behavior
 
     @property
@@ -441,7 +450,7 @@ class Manifest:
     def __getitem__(self, key: str) -> t.Any:
         if key == 'readme':
 
-            class ReadmeDict:
+            class ReadmeGetter:
                 def __init__(
                     self, data: T.Readme1, start_directory: T.StartDirectory
                 ) -> None:
@@ -466,13 +475,46 @@ class Manifest:
                 def __setitem__(self, key: str, value: t.Any) -> None:
                     raise Exception('cannot modify readme dict', key, value)
 
-            return ReadmeDict(
+            return ReadmeGetter(
                 self._manifest['readme'], self._manifest['start_directory']
+            )
+
+        elif key == 'encryption':
+
+            class EncryptionGetter:
+                def __init__(
+                    self, data: T.Encryption1, start_directory: T.StartDirectory
+                ):
+                    self._data = data
+                    self._start_directory = start_directory
+
+                def __getitem__(
+                    self, key: t.Literal['key', 'packages', 'output']
+                ) -> t.Any:
+                    if key == 'output':
+                        return '{}/{}'.format(
+                            self._start_directory, self._data[key]
+                        )
+                    elif key == 'packages':
+                        return tuple(
+                            '{}/{}'.format(self._start_directory, x)
+                            for x in self._data[key]
+                        )
+                    else:
+                        return self._data[key]
+
+            return (
+                EncryptionGetter(
+                    self._manifest['encryption'],
+                    self._manifest['start_directory'],
+                )
+                if self._manifest['encryption']
+                else None
             )
 
         elif key == 'launcher':
 
-            class LauncherDict:
+            class LauncherGetter:
                 def __init__(
                     self, data: T.Launcher1, start_directory: T.StartDirectory
                 ) -> None:
@@ -494,7 +536,7 @@ class Manifest:
                 def __setitem__(self, key: str, value: t.Any) -> None:
                     raise Exception('cannot modify launcher dict', key, value)
 
-            return LauncherDict(
+            return LauncherGetter(
                 self._manifest['launcher'], self._manifest['start_directory']
             )
 
@@ -698,7 +740,7 @@ class Manifest:
 
         def generate_hash(abspath: str, ftype: str) -> str:
             if ftype == 'file':
-                return get_file_hash(abspath)
+                return hash_file_content(abspath)
             # if calculate_dir_hash:
             #     meta_info = []
             #     for d in fs.findall_dirs(abspath):
@@ -707,16 +749,39 @@ class Manifest:
             #         meta_info.append('file:{}:{}'.format(
             #             f.relpath, os.path.getsize(f.path)
             #         ))
-            #     return get_content_hash('\n'.join(meta_info))
+            #     return hash_content('\n'.join(meta_info))
             return ''
 
         def generate_utime(abspath: str, scheme: T.AssetScheme) -> int:
-            return get_updated_time(
-                abspath, recursive=scheme is None or scheme == 0b11
-            )
+            # return get_updated_time(
+            #     abspath, recursive=scheme is None or scheme == 0b11
+            # )
+
+            if os.path.isfile(abspath):
+                return int(os.path.getmtime(abspath))
+            elif os.path.islink(abspath):
+                abspath = os.path.realpath(abspath)
+            else:
+                assert os.path.isdir(abspath), abspath
+                #   if assertion error, this abspath may not exist.
+
+            mtime = int(os.path.getmtime(abspath))
+            recursive = scheme is None or scheme == 0b11
+            if recursive and os.listdir(abspath):
+                # https://stackoverflow.com/questions/29685069
+
+                def walk(entrance: str) -> t.Iterator[str]:
+                    yield from (x.path for x in fs.findall_dirs(entrance))
+                    yield from (x.path for x in fs.findall_files(entrance))
+
+                return max(
+                    (mtime, max(map(int, map(os.path.getmtime, walk(abspath)))))
+                )
+            else:
+                return mtime
 
         def generate_uid(ftype: str, rpath: str) -> str:
-            return get_content_hash(f'{ftype}:{rpath}')
+            return hash_content(f'{ftype}:{rpath}')
 
         out = {}
         for rpath, scheme in unpack_assets(assets0):
@@ -768,13 +833,13 @@ class Manifest:
             mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
             mini_deps_cache_file = '{}/{}.pkl'.format(
                 dot_dps_dir,
-                # this means: if uv.lock / poetry.lock / tree-shaking implicit 
+                # this means: if uv.lock / poetry.lock / tree-shaking implicit
                 # hooks file changed, rebuild mini_deps cache.
-                get_content_hash(
-                    get_file_hash(
+                hash_content(
+                    hash_file_content(
                         '{}/{}'.format(start_directory, deps0['base'])
                     )
-                    + get_file_hash(tree_shaking.implicit_hooks_file)
+                    + hash_file_content(tree_shaking.implicit_hooks_file)
                 ),
             )
 
@@ -826,6 +891,31 @@ class Manifest:
                 fs.dump(mini_deps_assets_info, mini_deps_cache_file)
                 assets1.update(mini_deps_assets_info)
             return {}
+
+    def _update_encryption(self, options: T.Encryption0) -> T.Encryption1:
+        assert options
+
+        key: str
+        if options['key'] == '$env':
+            key = os.environ['DEPSLAND_APP_SECRET_KEY']
+        elif options['key'].startswith('$env:'):
+            key = os.environ[options['key'][5:]]
+        else:
+            key = options['key']
+        if options.get('add_salt'):
+            key = pyportable_crypto.keygen.add_salt(key)
+        print('key: {} -> {}'.format(options['key'], key), ':r2')
+
+        # assert all(
+        #     fs.exist('{}/{}'.format(start_directory, x))
+        #     for x in options['packages']
+        # )
+
+        return {
+            'key': key,
+            'packages': options['packages'],
+            'output': options['output'],
+        }
 
     def _update_launcher(
         self, launcher0: T.Launcher0, start_directory: T.StartDirectory
@@ -888,7 +978,7 @@ class Manifest:
                         )
         return out
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @staticmethod
     def _make_relpath(path: T.AnyPath, base: T.AbsPath) -> T.RelPath:
@@ -908,7 +998,7 @@ class Manifest:
         return out
 
 
-# -----------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 # noinspection PyTypeChecker
