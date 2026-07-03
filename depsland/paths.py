@@ -240,10 +240,9 @@ class Project:
         fs.make_link(sys.base_exec_prefix, f'{root}/python')
         
         # unzip files
-        from .utils.ziptool import extract_file
-        extract_file(fs.xpath('chore/build.zip'), f'{root}/build')
-        extract_file(fs.xpath('chore/config.zip'), f'{root}/config')
-        extract_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
+        fs.unzip_file(fs.xpath('chore/build.zip'), f'{root}/build')
+        fs.unzip_file(fs.xpath('chore/config.zip'), f'{root}/config')
+        fs.unzip_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
         
         # init files
         fs.dump({}, f'{root}/pypi/index/id_2_paths.json')

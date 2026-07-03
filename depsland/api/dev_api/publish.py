@@ -17,7 +17,6 @@ from ...platform.launcher import bat_2_exe
 from ...platform.system_info import IS_WINDOWS
 from ...pypi import pypi
 from ...utils import init_target_tree
-from ...utils import ziptool
 from ...venv.target_venv import get_venv_root
 from ...verspec import compare_version
 
@@ -31,7 +30,7 @@ class T:
     Scheme = T0.Scheme
 
 
-def main(
+def publish(
     manifest_file: str,
     full_upload: bool = False,
     upload_dependencies: bool = False,
@@ -241,7 +240,7 @@ def _upload(
             if os.path.isfile(file_i):
                 fs.copy_file(file_i, file_o)
 
-        ziptool.compress_dir(path1, path0, True)
+        fs.zip_dir(path1, path0, True)
         pypi.index.update_index(package_id, path0, path1)
         return path0
 
@@ -278,10 +277,10 @@ def _save_manifest(manifest_new: T.Manifest) -> str:
 
 def _compress(path_i: T.Path, file_o: T.Path) -> T.Path:
     if file_o.endswith('.zip'):
-        ziptool.compress_dir(path_i, file_o)
+        fs.zip_dir(path_i, file_o)
     else:  # file_o.endswith('.fzip'):
         fs.move(path_i, file_o)
-        # ziptool.compress_file(path_i, file_o)
+        # fs.zip_file(path_i, file_o)
     return file_o
 
 

@@ -16,7 +16,6 @@ from ...platform.launcher import create_desktop_shortcut
 from ...platform.launcher.make_exe import add_icon_to_exe
 from ...pypi import pypi
 from ...pypi.pypi import LocalPyPI
-from ...utils import ziptool
 from ...verspec import compare_version
 
 
@@ -243,7 +242,7 @@ def _install_files(
     def download_from_oss(i: str, m: str, o: str) -> None:
         print(fs.relpath(o, _root10))
         oss.download(i, m)
-        ziptool.extract_file(m, o, overwrite=True)
+        _extract_file(m, o, overwrite=True)
 
     total_diff = diff_manifest(manifest_new, manifest_old)
     assets_diff = tuple(total_diff['assets'])
@@ -359,7 +358,7 @@ def _install_packages(
                 # be skipped, thereby avoiding redundant transfers and save much
                 # of time.
                 _oss.download(resource_path, download_path)
-            ziptool.extract_file(download_path, install_path, True)
+            _extract_file(download_path, install_path, True)
             pypi.index.update_index(info['id'], download_path, install_path)
 
         # FIXME: thread_pool makes pip install stucked, and ctrl+c cannot -
@@ -502,6 +501,17 @@ def _create_launchers(manifest: T.Manifest) -> None:
                 create_readme_opener(manifest, fs.parent(paths.project.root))
         # elif fs.exist(readme_opener):
         #     fs.remove(readme_opener)
+
+
+def _extract_file(
+    file_i: str, path_o: str, overwrite: t.Optional[bool] = None
+) -> str:
+    if file_i.endswith('.fzip'):
+        fs.copy_file(file_i, path_o, overwrite=overwrite)
+        return path_o
+    else:
+        return fs.unzip_file(file_i, path_o, overwrite)
+
 
 
 def _save_history(appid: str, version: str) -> None:
