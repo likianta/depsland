@@ -8,7 +8,6 @@ from ..depsolver import T as T0
 
 class T(T0):
     AbsPath = RelPath = AnyPath = str
-    #   the RelPath is relative to manifest file's location.
     Appinfo = tp.TypedDict(
         'Appinfo',
         {
@@ -21,7 +20,6 @@ class T(T0):
         },
     )
     AssetScheme = tp.Optional[int]  # None | 0b00 | 0b01 | 0b10 | 0b11
-    StartDirectory = AbsPath
 
     AssetInfo = tp.NamedTuple(
         'AssetInfo',
@@ -36,11 +34,13 @@ class T(T0):
             # ('redirect', str),
         ),
     )
+    StartDirectory = AbsPath
 
     # --------------------------------------------------------------------------
 
     Assets0 = tp.List[RelPath]  # all paths relative to `start_directory`
     Assets1 = tp.Dict[RelPath, AssetInfo]
+    AssetsRedirection = tp.Dict[RelPath, RelPath]
 
     Dependencies0 = tp.Optional[
         tp.Union[
@@ -182,6 +182,7 @@ class T(T0):
             'start_directory': StartDirectory,
             'readme': Readme1,
             'assets': Assets1,
+            'assets_redirection': AssetsRedirection,
             'encryption': tp.Optional[Encryption1],
             'dependencies': Dependencies1,
             'launcher': Launcher1,

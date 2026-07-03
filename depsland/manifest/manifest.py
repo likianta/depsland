@@ -66,6 +66,7 @@ class Manifest:
             'start_directory': '',
             'readme': {'file': '', 'name': '', 'icon': '', 'standalone': True},
             'assets': {},
+            'assets_redirection': {},
             'encryption': None,
             'dependencies': {},
             'launcher': {
@@ -162,7 +163,7 @@ class Manifest:
                             'entries': [deduce_entry()]
                         }
 
-            self._precheck_manifest(data0)
+            self._precheck_manifest(data0, start_directory)
             data1 = {
                 'appid': data0['appid'],
                 'name': data0['name'],
@@ -171,18 +172,17 @@ class Manifest:
                 'readme': self._update_readme_file(
                     data0.get('readme', None), start_directory
                 ),
-                'assets': (
-                    assets := self._update_assets(
-                        data0['assets'], start_directory
-                    )
-                ),
+                'assets': self._update_assets(data0['assets'], start_directory),
+                'assets_redirection': {},
                 'encryption': (
-                    self._update_encryption(data0['encryption'])
+                    self._update_encryption(
+                        data0['encryption'], start_directory
+                    )
                     if 'encryption' in data0
                     else None
                 ),
                 'dependencies': self._update_dependencies(
-                    data0.get('dependencies'), assets, start_directory
+                    data0.get('dependencies'), start_directory
                 ),
                 'launcher': self._update_launcher(
                     data0['launcher'], start_directory
@@ -192,7 +192,9 @@ class Manifest:
                 ),
                 'depsland_version': data0.get('depsland_version', __version__),
             }
-            self._postcheck_manifest(data1)
+            self._postcheck_manifest(
+                data1, origin_dependency_setting=data0.get('dependencies')
+            )
 
         self._manifest = data1
         return self
@@ -353,8 +355,11 @@ class Manifest:
 
     # --------------------------------------------------------------------------
 
+    # TODO: rename to `_pre_process_manifest`?
     @staticmethod
-    def _precheck_manifest(manifest: T.Manifest0) -> None:
+    def _precheck_manifest(
+        manifest: T.Manifest0, start_directory: T.StartDirectory
+    ) -> None:
         # assert required keys
         required_keys = ('appid', 'name', 'version', 'assets', 'launcher')
         assert all(x in manifest for x in required_keys), (
@@ -408,6 +413,20 @@ class Manifest:
             'manifest should be put at the root of project, and there shall be '
             'no "../" in your assets keys.'
         )
+
+        if enc := manifest.get('encryption'):
+            assert enc['key'] and enc['packages'], enc
+            assert all(x in manifest['assets'] for x in enc['packages'])
+            assert all(
+                fs.exist('{}/{}'.format(start_directory, x))
+                for x in enc['packages']
+            )
+            if enc['output']:
+                if not fs.exist('{}/{}'.format(start_directory, enc['output'])):
+                    fs.make_dir('{}/{}'.format(start_directory, enc['output']))
+            else:
+                enc['output'] = '.depsland/encrypted_packages'
+                fs.make_dirs('{}/{}'.format(start_directory, enc['output']))
 
         if manifest.get('dependencies'):
             if isinstance(manifest['dependencies'], str):
@@ -463,8 +482,39 @@ class Manifest:
                 'launcher command.'
             )
 
+    # TODO: rename to `_post_process_manifest`?
     @staticmethod
-    def _postcheck_manifest(manifest: T.Manifest1) -> None:
+    def _postcheck_manifest(
+        manifest: T.Manifest1, origin_dependency_setting: T.Dependencies0
+    ) -> None:
+        # inflate assets from tree_shaking cache
+        if (
+            origin_dependency_setting
+            and isinstance(origin_dependency_setting, dict)
+            and origin_dependency_setting['method'] == 'tree_shaking'
+        ):
+            mini_deps_cache_file = '{}/.depsland/{}.pkl'.format(
+                manifest['start_directory'],
+                hash_content(
+                    hash_file_content(
+                        '{}/{}'.format(
+                            manifest['start_directory'],
+                            origin_dependency_setting['base'],
+                        )
+                    )
+                    + hash_file_content(tree_shaking.implicit_hooks_file)
+                ),
+            )
+            print('inflate assets from ".depsland/mini_deps/*"')
+            manifest['assets'].update(fs.load(mini_deps_cache_file))
+
+        # update assets redirection
+        if enc := manifest['encryption']:
+            print('redirect part of assets to encrypted ones', enc['packages'])
+            manifest['assets_redirection'].update(
+                {k: '{}/{}'.format(enc['output'], k) for k in enc['packages']}
+            )
+
         if x := manifest['launcher']['icon']:
             assert x.endswith('.ico'), (
                 'make sure the icon file is ".ico" format. if you have other '
@@ -604,10 +654,7 @@ class Manifest:
         return out  # noqa
 
     def _update_dependencies(
-        self,
-        deps0: T.Dependencies0,
-        assets1: T.Assets1,
-        start_directory: T.StartDirectory,
+        self, deps0: T.Dependencies0, start_directory: T.StartDirectory
     ) -> T.Dependencies1:
         if not deps0:  # None, empty dict, empty str.
             return {}
@@ -629,7 +676,7 @@ class Manifest:
             details.
             """
             dot_dps_dir = '{}/.depsland'.format(start_directory)
-            print(dot_dps_dir, ':v')
+            print(dot_dps_dir, ':vn')
             orig_deps_dir = '{}/orig_deps'.format(dot_dps_dir)
             mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
             mini_deps_cache_file = '{}/{}.pkl'.format(
@@ -645,55 +692,54 @@ class Manifest:
             )
 
             if fs.exist(mini_deps_cache_file):
-                assert fs.exist(mini_deps_dir)
-                assets1.update(fs.load(mini_deps_cache_file))
+                assert not fs.empty(mini_deps_dir)
+                return {}
+
+            if fs.exist(mini_deps_dir):
+                print('incrementally minify dependencies')
             else:
-                if fs.exist(mini_deps_dir):
-                    print('incrementally minify dependencies')
-                else:
-                    print('first time minify dependencies')
+                print('first time minify dependencies')
 
-                fs.make_dir(dot_dps_dir)
-                fs.make_link(
-                    get_venv_root(start_directory, deps0['base'][:-5]),
-                    #   tip: deps0['base'] is either 'poetry.lock' or 'uv.lock'.
-                    orig_deps_dir,
-                )
+            fs.make_dir(dot_dps_dir)
+            fs.make_link(
+                get_venv_root(start_directory, deps0['base'][:-5]),
+                #   tip: deps0['base'] is either 'poetry.lock' or 'uv.lock'.
+                orig_deps_dir,
+            )
 
-                # 1/3. get options
-                options = deps0['options']
-                # 2/3. fill options
-                options['root'] = '..'
-                if 'search_paths' in options:
-                    if '.depsland/orig_deps' not in options['search_paths']:
-                        options['search_paths'].insert(0, '.depsland/orig_deps')
-                else:
-                    options['search_paths'] = ['.depsland/orig_deps', '.']
-                assert options['entries']
-                options['export'] = {
-                    'source': '.depsland/orig_deps',
-                    'target': '.depsland/mini_deps',
-                }
-                # 3/3. dump options
-                fs.dump(
-                    options,
-                    model_file := '{}/.depsland/tree_shaking_model.json'.format(
-                        start_directory
-                    ),
-                )
+            # 1/3. get options
+            options = deps0['options']
+            # 2/3. fill options
+            options['root'] = '..'
+            if 'search_paths' in options:
+                if '.depsland/orig_deps' not in options['search_paths']:
+                    options['search_paths'].insert(0, '.depsland/orig_deps')
+            else:
+                options['search_paths'] = ['.depsland/orig_deps', '.']
+            assert options['entries']
+            options['export'] = {
+                'source': '.depsland/orig_deps',
+                'target': '.depsland/mini_deps',
+            }
+            # 3/3. dump options
+            fs.dump(
+                options,
+                model_file := '{}/tree_shaking_model.json'.format(dot_dps_dir),
+            )
 
-                tree_shaking.build_module_graphs(model_file)
-                tree_shaking.dump_tree(model_file)
+            tree_shaking.build_module_graphs(model_file)
+            tree_shaking.dump_tree(model_file)
 
-                mini_deps_assets_info = self._update_assets(
-                    assets0=['.depsland/mini_deps/*'],
-                    start_directory=start_directory,
-                )
-                fs.dump(mini_deps_assets_info, mini_deps_cache_file)
-                assets1.update(mini_deps_assets_info)
+            mini_deps_assets_info = self._update_assets(
+                assets0=['.depsland/mini_deps/*'],
+                start_directory=start_directory,
+            )
+            fs.dump(mini_deps_assets_info, mini_deps_cache_file)
             return {}
 
-    def _update_encryption(self, options: T.Encryption0) -> T.Encryption1:
+    def _update_encryption(
+        self, options: T.Encryption0, start_directory: T.StartDirectory
+    ) -> T.Encryption1:
         assert options
 
         key: str
@@ -706,11 +752,6 @@ class Manifest:
         if options.get('add_salt'):
             key = pyportable_crypto.keygen.add_salt(key)
         print('key: {} -> {}'.format(options['key'], key), ':r2')
-
-        # assert all(
-        #     fs.exist('{}/{}'.format(start_directory, x))
-        #     for x in options['packages']
-        # )
 
         return {
             'key': key,
