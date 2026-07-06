@@ -1,7 +1,5 @@
 appid: 应用标识码
-appid_help: |-
-  应用标识码由 Depsland 程序生成, 具有唯一性. 该标识码被用作发布到商店时的识别依据.
-  目前, 标识码的格式被设计为一种可读的风格; 未来会考虑使用 UUID 生成以确保全局唯一性.
+appid_help: 应用标识码由 Depsland 程序生成, 具有唯一性. 该标识码被用作发布到商店时的识别依据.
 appid_regenerate: 重新生成
 appinfo: 应用信息
 appname: 应用名称

@@ -8,7 +8,7 @@ import typing as t
 from lk_utils import fs
 from lk_utils import new_thread
 from os.path import exists
-from uuid import uuid1
+from uuid import uuid4
 
 __all__ = [
     'apps',
@@ -450,7 +450,7 @@ class Temp:
         self.root = f'{project.root}/temp'
         
         self.temp_project = f'{self.root}/temp_project'
-        self._temp_root = f'{self.root}/{uuid1().hex}'
+        self._temp_root = f'{self.root}/{uuid4().hex}'
         self._temp_root_created = False
 
         self.enc_max = f'{self.temp_project}/enc_max.json'

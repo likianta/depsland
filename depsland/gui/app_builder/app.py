@@ -4,7 +4,7 @@ if __name__ == '__main__':
 import re
 import typing as t
 from random import randint
-from uuid import uuid1
+from uuid import uuid4
 
 import streamlit as st
 import streamlit_canary as sc
@@ -40,13 +40,10 @@ def main() -> None:
         return
 
     if prjdir not in _state['appinfo']:
-        x = _state['appinfo'][prjdir] = {
-            'appid': _generate_appid(
-                (y := fs.basename(prjdir)).lower().replace('-', '_')
-            ),
+        _state['appinfo'][prjdir] = {
+            'appid': _generate_appid(),
             'version': Version((0, 1, 0)),
         }
-        print('{} -> {}'.format(y, x))
     info = _state['appinfo'][prjdir]
 
     with st.expander(i18n.appinfo, expanded=True):
@@ -58,9 +55,7 @@ def main() -> None:
         with row[1]:
             if sc.long_button(i18n.appid_regenerate):
                 # _state['appinfo'].pop(prjdir)
-                _state['appinfo'][prjdir]['appid'] = _generate_appid(
-                    fs.basename(prjdir).lower().replace('-', '_')
-                )
+                _state['appinfo'][prjdir]['appid'] = _generate_appid()
                 st.rerun()
 
         row = st.columns((8, 2), vertical_alignment='bottom')
@@ -107,13 +102,8 @@ def main() -> None:
             dependency_scheme.main(prjdir)
 
 
-def _generate_appid(basename: str) -> str:
-    assert re.fullmatch(r'[a-z]\w*[a-z]', basename), basename
-    return '{}_0x{:04x}'.format(basename, randint(0, 0xFFFF))
-
-
-def _generate_appid_2() -> str:
-    return uuid1().hex
+def _generate_appid() -> str:
+    return uuid4().hex
 
 
 def _titlize(name: str) -> str:
