@@ -152,7 +152,7 @@ class T(T0):
         {
             'appid': str,
             'name': str,
-            'version': str,
+            'version': tp.Union[str, tp.Literal['$pyproject_version']],
             'start_directory': AnyPath,
             'readme': Readme0,
             'assets': Assets0,

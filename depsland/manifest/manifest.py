@@ -1,4 +1,5 @@
 import os
+import re
 import shlex
 import typing as tp
 from functools import cache
@@ -164,7 +165,9 @@ class Manifest:
             data1 = {
                 'appid': data0['appid'],
                 'name': data0['name'],
-                'version': data0['version'],
+                'version': self._update_version(
+                    data0['version'], start_directory
+                ),
                 'start_directory': start_directory,
                 'readme': self._update_readme_file(
                     data0.get('readme', None), start_directory
@@ -360,15 +363,26 @@ class Manifest:
         # assert required keys
         required_keys = ('appid', 'name', 'version', 'assets', 'launcher')
         assert all(x in manifest for x in required_keys), (
-            'the required keys are not complete',
-            required_keys,
-            tuple(manifest.keys()),
+            'missing required keys',
+            'required: {}'.format(required_keys),
+            'found: {}'.format(tuple(manifest.keys())),
         )
 
         assert norm.check_name_normalized(manifest['appid']), (
             'the appid should be lowercase and only contain alphanumber and '
             'underscore.'
         )
+
+        if manifest['version'][0] == '$':
+            assert manifest['version'] == '$pyproject_version'
+            assert fs.exist('{}/pyproject.toml'.format(start_directory)), (
+                'when you configured version to "$pyproject_version", you '
+                'should have a "pyproject.toml" file in your project root.'
+            )
+        else:
+            assert re.fullmatch(
+                r'\d+\.\d+\.\d+([ab]\d+)?', manifest['version']
+            ), manifest['version']
 
         if manifest.get('readme'):
             assert manifest['readme']
@@ -814,6 +828,15 @@ class Manifest:
                             readme['icon'], start_directory
                         )
         return out
+
+    def _update_version(
+        self, version: str, start_directory: T.StartDirectory
+    ) -> str:
+        if version == '$pyproject_version':
+            return fs.load('{}/pyproject.toml'.format(start_directory))[
+                'project'
+            ]['version']
+        return version
 
     # --------------------------------------------------------------------------
 
