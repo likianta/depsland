@@ -142,8 +142,9 @@ def _upload(
         action: T.Scheme
         info0: t.Optional[T.AssetInfo]
         info1: t.Optional[T.AssetInfo]
+        zipped_file: t.Optional[T.Path]
 
-        for action, relpath, (info0, info1) in diff['assets']:
+        for action, (relpath, real_relpath), (info0, info1) in diff['assets']:
             if action == 'ignore':
                 continue
 
@@ -155,13 +156,18 @@ def _upload(
             )
 
             if action in ('append', 'update'):
-                zipped_file = _compress_asset(info1, relpath)
+                assert info1
+                zipped_file = _compress_asset(
+                    info1, real_relpath, fs.basename(relpath)
+                )
             else:
                 zipped_file = None
 
             if action == 'append':
+                assert zipped_file
                 oss.upload(zipped_file, f'{oss.path.assets}/{info1.uid}')
             elif action == 'update':
+                assert zipped_file
                 oss.delete(f'{oss.path.assets}/{info0.uid}')
                 oss.upload(zipped_file, f'{oss.path.assets}/{info1.uid}')
             else:  # action == 'delete'
@@ -172,6 +178,7 @@ def _upload(
         action: T.Scheme
         info0: t.Optional[T.PackageInfo]
         info1: t.Optional[T.PackageInfo]
+        zipped_file: t.Optional[T.Path]
 
         for action, pkg_name, (info0, info1) in diff['dependencies']:
             if action == 'ignore':
@@ -185,23 +192,31 @@ def _upload(
             )
 
             if action in ('append', 'update'):
-                zipped_file = _compress_dependency(info1['id'], info1['files'])
+                assert info1
+                zipped_file = _compress_dependency(
+                    info1['id'], t.cast(t.Tuple[str, ...], info1['files'])
+                )
             else:
                 zipped_file = None
 
             if action == 'append':
+                assert zipped_file and info1
                 oss.upload(zipped_file, f'{oss.path.pypi}/{info1["id"]}')
             elif action == 'update':
+                assert zipped_file and info0 and info1
                 oss.delete(f'{oss.path.pypi}/{info0["id"]}')
                 oss.upload(zipped_file, f'{oss.path.pypi}/{info1["id"]}')
             else:  # action == 'delete'
+                assert info0
                 oss.delete(f'{oss.path.pypi}/{info0["id"]}')
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
-    def _compress_asset(info: T.AssetInfo, relpath: str) -> T.Path:
-        source_path = fs.normpath(f'{root_new}/{relpath}')
-        temp_path = _copy_assets(source_path, info.scheme)
+    def _compress_asset(
+        info: T.AssetInfo, relpath_i: str, name_o: str
+    ) -> T.Path:
+        source_path = fs.normpath(f'{root_new}/{relpath_i}')
+        temp_path = _copy_assets(source_path, name_o, info.scheme)
         zipped_file = _compress(
             temp_path, temp_path + ('.zip' if info.type == 'dir' else '.fzip')
         )
@@ -262,7 +277,7 @@ def _check_manifest(manifest_new: T.Manifest, manifest_old: T.Manifest) -> None:
     assert compare_version(v_new, '>', v_old), (v_new, v_old)
 
 
-def _save_manifest(manifest_new: T.Manifest) -> str:
+def _save_manifest(manifest_new: T.ManifestObject) -> str:
     dump_manifest(
         manifest_new,
         out := '{}/{}/{}/manifest.pkl'.format(
@@ -284,11 +299,11 @@ def _compress(path_i: T.Path, file_o: T.Path) -> T.Path:
     return file_o
 
 
-def _copy_assets(path_i: T.Path, scheme: T.Scheme) -> T.Path:
+def _copy_assets(path_i: T.Path, name_o: str, scheme: T.Scheme) -> T.Path:
     if os.path.isdir(path_i):
-        dir_o = paths.temp.make_unique_dir(fs.basename(path_i))
+        dir_o = paths.temp.make_unique_dir(name_o)
     else:
-        file_o = '{}/{}'.format(paths.temp.make_dir(), fs.basename(path_i))
+        file_o = '{}/{}'.format(paths.temp.make_dir(), name_o)
         fs.make_link(path_i, file_o)
         return file_o
 

@@ -196,6 +196,8 @@ class T(T0):
     else:
         ManifestObject = Manifest1
 
+    Manifest = tp.Union[Manifest1, ManifestObject]
+
     # --------------------------------------------------------------------------
 
     Action = tp.Literal['append', 'update', 'delete', 'ignore']
@@ -203,7 +205,9 @@ class T(T0):
     AssetsDiff = tp.Iterator[
         tp.Tuple[
             Action,
-            RelPath,
+            tp.Tuple[RelPath, RelPath],
+            #   (relpath, real_relpath)
+            #   the `real_relpath` is only valid for `depsland.api.dev_api`.
             tp.Tuple[tp.Optional[AssetInfo], tp.Optional[AssetInfo]],
         ]
     ]

@@ -1,7 +1,6 @@
 import os
 import shlex
 import typing as tp
-from collections import namedtuple
 from functools import cache
 
 import pyportable_crypto
@@ -25,14 +24,16 @@ def load_manifest(file: T.AnyPath) -> 'Manifest':
     return Manifest.load_from_file(file)
 
 
-def dump_manifest(manifest: 'Manifest', file: T.AnyPath) -> None:
+def dump_manifest(manifest: T.ManifestObject, file: T.AnyPath) -> None:
     assert isinstance(manifest, Manifest)
     manifest.dump_to_file(file)
 
 
-def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
+def diff_manifest(new: T.Manifest, old: T.Manifest) -> T.ManifestDiff:
     return {
-        'assets': _diff_assets(new.model['assets'], old.model['assets']),
+        'assets': _diff_assets(
+            new.model['assets'], old.model['assets'], new['assets_redirection']
+        ),
         'dependencies': _diff_dependencies(
             new['dependencies'], old['dependencies']
         ),
@@ -40,9 +41,6 @@ def diff_manifest(new: 'Manifest', old: 'Manifest') -> T.ManifestDiff:
 
 
 # ------------------------------------------------------------------------------
-
-
-AssetInfo = namedtuple('AssetInfo', ('type', 'scheme', 'utime', 'hash', 'uid'))
 
 
 class Manifest:
@@ -113,7 +111,6 @@ class Manifest:
                 data0 = fs.load(self._file)['tool']['depsland']['manifest']
             elif self._file.endswith('.toml'):
                 try:
-                    # noinspection PyUnusedLocal
                     data0 = fs.load(self._file)['tool']['depsland']['manifest']
                 except KeyError:
                     data0 = fs.load(self._file)
@@ -644,7 +641,7 @@ class Manifest:
                     rpath,
                 )
             ftype = 'file' if os.path.isfile(abspath) else 'dir'
-            out[relpath] = AssetInfo(
+            out[relpath] = T.AssetInfo(
                 type=ftype,
                 scheme=scheme,
                 utime=generate_utime(abspath, scheme),
@@ -787,9 +784,7 @@ class Manifest:
             'add_to_start_menu',
         ):
             if k in launcher0:
-                # noinspection PyTypedDict
                 assert isinstance((v := launcher0[k]), bool)
-                # noinspection PyTypedDict
                 out[k] = v
 
         return out
@@ -843,11 +838,16 @@ class Manifest:
 # ------------------------------------------------------------------------------
 
 
-# noinspection PyTypeChecker
-def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
+def _diff_assets(
+    new: T.Assets1,
+    old: T.Assets1,
+    redirection_map: tp.Optional[T.AssetsRedirection] = None,
+) -> T.AssetsDiff:
     """
-    ref: docs/devnote/assets-diff-strategy.zh.md
+    ref: wiki/src/devnote/assets-diff-strategy.md
     """
+    if not redirection_map:
+        redirection_map = {}
 
     def is_same(new: T.AssetInfo, old: T.AssetInfo) -> bool:
         """
@@ -873,17 +873,30 @@ def _diff_assets(new: T.Assets1, old: T.Assets1) -> T.AssetsDiff:
 
     for key0, info0 in old.items():
         if key0 not in new:
-            yield 'delete', key0, (info0, None)
+            assert key0 not in redirection_map
+            yield 'delete', (key0, key0), (info0, None)
 
     for key1, info1 in new.items():
         if key1 not in old:
-            yield 'append', key1, (None, info1)
+            yield (
+                'append',
+                (key1, redirection_map.get(key1, key1)),
+                (None, info1),
+            )
             continue
         info0 = old[key1]
-        if not is_same(info1, info0):
-            yield 'update', key1, (info0, info1)
+        if is_same(info1, info0):
+            yield (
+                'ignore',
+                (key1, redirection_map.get(key1, key1)),
+                (info0, info1),
+            )
         else:
-            yield 'ignore', key1, (info0, info1)
+            yield (
+                'update',
+                (key1, redirection_map.get(key1, key1)),
+                (info0, info1),
+            )
 
 
 def _diff_dependencies(new: T.Packages, old: T.Packages) -> T.DependenciesDiff:

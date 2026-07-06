@@ -249,7 +249,7 @@ def _install_files(
     assets_diff_cnt = len(assets_diff)
     curr_cnt = 0  # 1-based
 
-    for action, relpath, (info0, info1) in assets_diff:
+    for action, (relpath, _), (info0, info1) in assets_diff:
         curr_cnt += 1
         install_progress.emit(
             'updating_assets',
@@ -311,7 +311,7 @@ def _install_packages(
     pkg_id: T.PackageId
     pkg_name: T.PackageName
 
-    for action, pkg_name, (info0, info1) in deps_diff:
+    for action, pkg_name, (info0, info1) in deps_diff:  # type: ignore
         if action == 'delete':  # this is handled by oss util.
             continue
         pkg_id = info1['id']
@@ -328,10 +328,7 @@ def _install_packages(
                 # this case should always be False in production environment. -
                 # but may be True in development environment.
                 return
-            dl_path = pypi.download_one(
-                info['id'],
-                info['appendix'] and info['appendix'].get('custom_url'),
-            )
+            dl_path = pypi.download_one(info['id'])
             pypi.install_one(info['id'], dl_path)
 
         def oss_download_and_install(info: T.PackageInfo) -> None:
@@ -376,7 +373,7 @@ def _install_packages(
         if package_resolver is pypi:
             resolve = pip_download_and_install
         else:
-            _oss: T.Oss = package_resolver
+            _oss: T.Oss = package_resolver  # type: ignore
             resolve = oss_download_and_install
 
         for i, info in enumerate(tasks_ignitor, 1):

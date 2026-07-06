@@ -45,9 +45,8 @@ def _init_dist_tree(dst_dir: T.AbsPath) -> None:
 
 
 def _copy_assets(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
-    # noinspection PyTypeChecker
     diff = diff_manifest(
-        new=manifest,  # type: ignore
+        new=manifest,
         old=init_manifest(manifest['appid'], manifest['name']),
     )
 
@@ -56,11 +55,11 @@ def _copy_assets(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
     manifest.make_tree(root_o)
 
     # info1: T.AssetInfo
-    for action, relpath, (info0, info1) in diff['assets']:
+    for action, (relpath, real_relpath), (info0, info1) in diff['assets']:
         assert action == 'append', action
 
         print(':i', relpath)
-        path_i = f'{root_i}/{relpath}'
+        path_i = f'{root_i}/{real_relpath}'
         path_o = f'{root_o}/{relpath}'
 
         # ref: `.publish._copy_assets : match case`
@@ -87,7 +86,7 @@ def _copy_assets(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
 
 
 def _encrypt_source(manifest: T.Manifest) -> None:
-    enc: T.Encryption2 = manifest['encryption']
+    enc: T.Encryption2 = manifest['encryption']  # type: ignore
     if any(map(check_folder_content_changed, enc['packages'])):
         fs.copy_tree(
             pyportable_crypto.generate_cipher_package(enc['key']),

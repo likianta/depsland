@@ -5,6 +5,7 @@
 - 完整的迷你启动器以及在线安装器, 用于解决发布体积问题和依赖裁剪的不稳定性
 - 将 uv 作为首要支持的项目环境创建方式
 - 避免使用复杂的安装路径
+- 资产文件路径重定向
 - 在构建清单中集成代码加密选项 ([pyportable-crypto](https://github.com/likianta/pyportable-crypto))
 
 ---

@@ -23,6 +23,8 @@ what does "Hello World.exe" do:
     3. run `python/python.exe -m depsland run hello_world`
         depsland will find the target's location and launch it.
 """
+import typing as tp
+
 from lk_utils import dedent
 from lk_utils import fs
 
@@ -161,7 +163,7 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
         'plain'
     )
     dump_manifest(
-        manifest,
+        tp.cast(T.ManifestObject, manifest),
         f'{root_o}/source/apps/{appid}/{version}/manifest.pkl'
     )
 
@@ -177,11 +179,11 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
     manifest.make_tree(root_o)
     
     # info1: T.AssetInfo
-    for action, relpath, (info0, info1) in diff['assets']:
+    for action, (relpath, real_relpath), (info0, info1) in diff['assets']:
         assert action == 'append', action
         
         print(':i2s', relpath)
-        path_i = f'{root_i}/{relpath}'
+        path_i = f'{root_i}/{real_relpath}'
         path_o = f'{root_o}/{relpath}'
         
         # ref: `.publish._copy_assets : match case`
