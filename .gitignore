@@ -15,7 +15,7 @@
 /deleted/
 /demo/*/dist/
 /depsland/.project/
-/depsland/_cache/**
+/depsland/cache/_cache/**
 /depsland/assets/*
 /docs/*/*.html
 /lib/
@@ -60,7 +60,7 @@ dist/**
 !/depsland/assets/*.ico
 !/depsland/assets/*.md
 !/depsland/assets/*.png
-!/depsland/_cache/folder_snapshot/
+!/depsland/cache/_cache/folder_snapshot/
 !/dist/
 !/dist/standalone/
 !/oss/apps/

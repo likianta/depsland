@@ -4,11 +4,13 @@ from lk_utils import fs
 
 from ... import paths
 from ... import platform
+from ...cache import get_project_cache
+from ...cache import save_project_cache
 from ...manifest import T
 from ...manifest import diff_manifest
 from ...manifest import init_manifest
 from ...manifest import load_manifest
-from ...utils import check_folder_content_changed
+from ...utils import hash_text
 from ...venv import link_venv
 
 
@@ -24,6 +26,7 @@ def build_stripped_offline(manifest_file: T.AnyPath) -> T.AbsPath:
         _encrypt_source(manifest)
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
+    save_project_cache(manifest)
     print('see result at {}'.format(dir_o))
     return dir_o
 
@@ -46,8 +49,7 @@ def _init_dist_tree(dst_dir: T.AbsPath) -> None:
 
 def _copy_assets(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
     diff = diff_manifest(
-        new=manifest,
-        old=init_manifest(manifest['appid'], manifest['name']),
+        new=manifest, old=init_manifest(manifest['appid'], manifest['name'])
     )
 
     root_i = manifest['start_directory']
@@ -87,7 +89,32 @@ def _copy_assets(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
 
 def _encrypt_source(manifest: T.Manifest) -> None:
     enc: T.Encryption2 = manifest['encryption']  # type: ignore
-    if any(map(check_folder_content_changed, enc['packages'])):
+
+    def check_if_reusable() -> bool:
+        cache = get_project_cache(manifest['appid'])
+        if hash_text(enc['key']) != cache['last_encryption_key_(hash)']:
+            return False
+        if not cache['last_encrypted_folders_snapshots']:
+            return False
+        for path in enc['packages']:
+            if path not in cache['last_encrypted_folders_snapshots']:
+                return False
+            shot = cache['last_encrypted_folders_snapshots'][path]
+            for d in fs.findall_dirs(path):
+                if d.relpath not in shot['dirs']:
+                    return False
+                elif fs.filetime(d.path) != shot['dirs'][d.relpath]:
+                    return False
+            for f in fs.findall_files(path):
+                if f.relpath not in shot['files']:
+                    return False
+                elif fs.filetime(f.path) != shot['files'][f.relpath]:
+                    return False
+        return True
+
+    if check_if_reusable():
+        print('reuse encrypted resources', ':v3')
+    else:
         fs.copy_tree(
             pyportable_crypto.generate_cipher_package(enc['key']),
             '{}/pyportable_runtime'.format(enc['output']),
@@ -100,8 +127,6 @@ def _encrypt_source(manifest: T.Manifest) -> None:
                 key=enc['key'],
                 add_runtime_package='none',
             )
-    else:
-        print('reuse encrypted sources')
 
 
 def _make_venv(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
