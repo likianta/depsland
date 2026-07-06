@@ -2,20 +2,25 @@ if __name__ == '__main__':
     __package__ = 'depsland.gui.app_builder'
 
 import re
-import streamlit as st
-import streamlit_canary as sc
 import typing as t
 from random import randint
-from lk_utils import fs
 from uuid import uuid1
+
+import streamlit as st
+import streamlit_canary as sc
+from lk_utils import fs
+
 from . import assets_picker
 from . import dependency_scheme
 from .i18n import i18n
 
-_state = sc.init_state(lambda: {
-    # 'project_to_appid': {},
-    'appinfo': {}  # {project_dir: {...}, ...}
-}, version=5)
+_state = sc.init_state(
+    lambda: {
+        # 'project_to_appid': {},
+        'appinfo': {}  # {project_dir: {...}, ...}
+    },
+    version=5,
+)
 
 
 def main() -> None:
@@ -33,17 +38,17 @@ def main() -> None:
 
     if not (prjdir := sc.path_input(i18n.ask_proj_path, check=2)):
         return
-    
+
     if prjdir not in _state['appinfo']:
         x = _state['appinfo'][prjdir] = {
             'appid': _generate_appid(
                 (y := fs.basename(prjdir)).lower().replace('-', '_')
             ),
-            'version': Version((0, 1, 0))
+            'version': Version((0, 1, 0)),
         }
         print('{} -> {}'.format(y, x))
     info = _state['appinfo'][prjdir]
-    
+
     with st.expander(i18n.appinfo, expanded=True):
         row = st.columns((8, 2), vertical_alignment='bottom')
         with row[0]:
@@ -57,11 +62,11 @@ def main() -> None:
                     fs.basename(prjdir).lower().replace('-', '_')
                 )
                 st.rerun()
-        
+
         row = st.columns((8, 2), vertical_alignment='bottom')
         with row[0]:
             st.text_input(i18n.appname, _titlize(fs.basename(prjdir)))
-        
+
         ver: Version = info['version']
         # row = st.columns((35, 15, 15, 15, 20), vertical_alignment='bottom')
         row = st.columns((4, 4, 2), vertical_alignment='bottom')
@@ -74,7 +79,7 @@ def main() -> None:
                     'formal': i18n.version_formal,
                 },
                 index=2,
-                horizontal=True
+                horizontal=True,
             )
             match x:
                 case 'alpha':
@@ -88,12 +93,14 @@ def main() -> None:
                 ver.bump()
         with row[0]:
             st.text_input(i18n.version, str(ver))
-        
-        tabs = st.tabs((
-            i18n.tab_title_1_assets, 
-            i18n.tab_title_2_deps_scheme, 
-            i18n.tab_title_3_enc
-        ))
+
+        tabs = st.tabs(
+            (
+                i18n.tab_title_1_assets,
+                i18n.tab_title_2_deps_scheme,
+                i18n.tab_title_3_enc,
+            )
+        )
         with tabs[0]:
             assets_picker.main(prjdir)
         with tabs[1]:
@@ -122,7 +129,7 @@ class Version:
         self._alpha = _alpha
         self._beta = _beta
         self._current_state = ''
-    
+
     def __str__(self) -> str:  # noqa
         match self._current_state:
             case '':
@@ -131,7 +138,7 @@ class Version:
                 return '{}.{}.{}a{}'.format(*self._base, self._alpha)
             case 'b':
                 return '{}.{}.{}b{}'.format(*self._base, self._beta)
-        
+
     def bump(self) -> str:
         match self._current_state:
             case '':
@@ -142,20 +149,20 @@ class Version:
             case 'b':
                 self._beta += 1
         return str(self)
-    
+
     def reset(self) -> str:
         self._base = list(self._origin[0])
         self._alpha, self._beta = self._origin[1:]
         return str(self)
-    
+
     def to_alpha(self) -> str:
         self._current_state = 'a'
         return '{}.{}.{}a{}'.format(*self._base, self._alpha)
-    
+
     def to_beta(self) -> str:
         self._current_state = 'b'
         return '{}.{}.{}b{}'.format(*self._base, self._beta)
-    
+
     def to_formal(self) -> str:
         self._current_state = ''
         return '{}.{}.{}'.format(*self._base)
