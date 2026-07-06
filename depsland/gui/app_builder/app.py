@@ -2,8 +2,7 @@ if __name__ == '__main__':
     __package__ = 'depsland.gui.app_builder'
 
 import re
-import typing as t
-from random import randint
+import typing as tp
 from uuid import uuid4
 
 import streamlit as st
@@ -16,10 +15,11 @@ from .i18n import i18n
 
 _state = sc.init_state(
     lambda: {
+        'appinfo': {},  # {project_dir: {...}, ...}
+        'current_project_dir': '',
         # 'project_to_appid': {},
-        'appinfo': {}  # {project_dir: {...}, ...}
     },
-    version=5,
+    version=6,
 )
 
 
@@ -36,7 +36,9 @@ def main() -> None:
     st.title(i18n.title)
     st.markdown(i18n.proj_desc)
 
-    if not (prjdir := sc.path_input(i18n.ask_proj_path, check=2)):
+    if prjdir := sc.path_input(i18n.ask_proj_path, check=2):
+        _state['current_project_dir'] = prjdir
+    else:
         return
 
     if prjdir not in _state['appinfo']:
@@ -47,25 +49,19 @@ def main() -> None:
     info = _state['appinfo'][prjdir]
 
     with st.expander(i18n.appinfo, expanded=True):
-        row = st.columns((8, 2), vertical_alignment='bottom')
-        with row[0]:
+        with sc.row('bottom'):
+            st.text_input(i18n.appname, _titlize(fs.basename(prjdir)), width=240)
             st.text_input(
                 i18n.appid, info['appid'], disabled=True, help=i18n.appid_help
             )
-        with row[1]:
-            if sc.long_button(i18n.appid_regenerate):
+            if st.button(i18n.appid_regenerate, width=120):
                 # _state['appinfo'].pop(prjdir)
                 _state['appinfo'][prjdir]['appid'] = _generate_appid()
                 st.rerun()
 
-        row = st.columns((8, 2), vertical_alignment='bottom')
-        with row[0]:
-            st.text_input(i18n.appname, _titlize(fs.basename(prjdir)))
-
         ver: Version = info['version']
-        # row = st.columns((35, 15, 15, 15, 20), vertical_alignment='bottom')
-        row = st.columns((4, 4, 2), vertical_alignment='bottom')
-        with row[1]:
+        with sc.row('bottom'):
+            place1 = st.empty()
             x = sc.radio(
                 i18n.version_switch,
                 {
@@ -75,6 +71,7 @@ def main() -> None:
                 },
                 index=2,
                 horizontal=True,
+                width='stretch',
             )
             match x:
                 case 'alpha':
@@ -83,11 +80,10 @@ def main() -> None:
                     ver.to_beta()
                 case 'formal':
                     ver.to_formal()
-        with row[2]:
-            if sc.long_button(i18n.version_bump):
+            if st.button(i18n.version_bump, width=120):
                 ver.bump()
-        with row[0]:
-            st.text_input(i18n.version, str(ver))
+            with place1:
+                st.text_input(i18n.version, str(ver), width=240)
 
         tabs = st.tabs(
             (
@@ -100,6 +96,9 @@ def main() -> None:
             assets_picker.main(prjdir)
         with tabs[1]:
             dependency_scheme.main(prjdir)
+    
+    with st.bottom:
+        st.button(i18n.start_building, type='primary', width='stretch')  # TODO
 
 
 def _generate_appid() -> str:
@@ -112,7 +111,7 @@ def _titlize(name: str) -> str:
 
 class Version:
     def __init__(
-        self, base: t.Tuple[int, int, int], _alpha: int = 0, _beta: int = 0
+        self, base: tp.Tuple[int, int, int], _alpha: int = 0, _beta: int = 0
     ) -> None:
         self._origin = (tuple(base), _alpha, _beta)
         self._base = list(base)
@@ -120,7 +119,7 @@ class Version:
         self._beta = _beta
         self._current_state = ''
 
-    def __str__(self) -> str:  # noqa
+    def __str__(self) -> str:  # type: ignore
         match self._current_state:
             case '':
                 return '{}.{}.{}'.format(*self._base)

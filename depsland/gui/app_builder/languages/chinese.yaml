@@ -18,6 +18,7 @@ deps_venv_help: |-
 filetree_title_left: 文件树
 filetree_title_right: 结果预览
 proj_desc: Depsland 应用构建器可将你的 Python 项目打包为独立应用, 并提供 "离线发布", "在线升级" 两种安装方式.
+start_building: 开始构建应用
 tab_title_1_assets: 资产清单
 tab_title_2_deps_scheme: 依赖处理
 tab_title_3_enc: 代码加密

@@ -1,17 +1,17 @@
 import streamlit as st
 import streamlit_canary as sc
-import typing as t
+import typing as tp
 from lk_utils import fs
 from streamlit_tree_select import tree_select as st_tree_select
 
-_state = sc.init_state(version=16)
+_state = sc.init_state(version=20)
 
 
-def main(root: str):
+def main(root: str, _scope: tp.Literal['app', 'fragment'] = 'app'):
     if root not in _state:
         _state[root] = Tree(root)
         _state[f'{root}:cache:checked'] = []
-        _state[f'{root}:cache:expanded'] = []
+        _state[f'{root}:cache:expanded'] = [root]
     tree: Tree = _state[root]
     x = st_tree_select(
         tree.freeze(),
@@ -33,7 +33,7 @@ def main(root: str):
         # print('{} -> {}'.format(len(x['checked']), len(temp)), temp, ':vl')
         _state[f'{root}:cache:checked'] = temp
         _state[f'{root}:cache:expanded'] = x['expanded']
-        st.rerun()
+        st.rerun(scope=_scope)
 
 
 class Tree:
@@ -44,14 +44,14 @@ class Tree:
                 # TODO: replace this key with "abspath"?
                 'parent': self._parent_root,
                 'type': 1,
-                'children': self.mount(root, recursive=1),
-                'mounted': True
+                'children': self.mount(root, recursive=3),
+                'mounted': True,
             }
         }
         self._frozen = None
         self._mounted_cache = set()
-    
-    def expand(self, paths: t.Iterable[str]) -> dict:
+
+    def expand(self, paths: tp.Iterable[str]) -> dict:
         new_mounted = {}
         for p in paths:
             if p not in self._mounted_cache:
@@ -65,9 +65,10 @@ class Tree:
         if new_mounted:
             self._frozen = None
         return new_mounted
-    
+
     def freeze(self) -> list:
         if self._frozen is None:
+
             def recursive_freeze(xdict: dict):
                 out = []
                 for k, v in xdict.items():
@@ -79,15 +80,27 @@ class Tree:
                         x['children'] = recursive_freeze(v['children'])
                     out.append(x)
                 return out
-            
+
             self._frozen = recursive_freeze(self._data)
             self._frozen[0]['label'] += ' (root)'
         return self._frozen
-    
+
     def mount(self, folder: str, recursive: int = 0) -> dict:
         """
         params:
             recursive: the recursion depth.
+                example:
+                    recursive=0
+                        hello-world (root)
+                        |= src (...)
+                        |- README.md
+                    recursive=1
+                        hello-world (root)
+                        |= src
+                            |= data (...)
+                            |- __init__.py
+                            |- main.py
+                        |- README.md
         returns:
             {name, xdict, ...}
                 xdict: {
@@ -102,22 +115,18 @@ class Tree:
             out[d.name] = {
                 'parent': folder,
                 'type': 1,
-                'children':
-                    dict(self.mount(d.path, recursive - 1))
-                    if recursive else {},
+                'children': dict(self.mount(d.path, recursive - 1))
+                if recursive
+                else {},
                 'mounted': bool(recursive),
             }
         for f in fs.find_files(folder):
-            out[f.name] = {
-                'parent': folder,
-                'type': 0,
-                'mounted': True,
-            }
+            out[f.name] = {'parent': folder, 'type': 0, 'mounted': True}
         return out
-    
+
     def _path_to_node(self, path: str) -> dict:
         key_chain = path.removeprefix(self._parent_root + '/').split('/')
-        nodes: t.Dict[str, dict] = self._data
+        nodes: tp.Dict[str, dict] = self._data
         for k in key_chain[:-1]:
             nodes = nodes[k]['children']
         return nodes[key_chain[-1]]
