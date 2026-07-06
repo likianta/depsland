@@ -20,7 +20,7 @@ from ...verspec import compare_version
 
 
 class T(T0):
-    LauncherInfo = T0.Launcher  # alias
+    LauncherInfo = T0.Launcher1  # alias
     Oss = T1.Oss
     PackageResolver = t.Union[LocalPyPI, T1.Oss]
     Path = str

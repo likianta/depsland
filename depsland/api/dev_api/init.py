@@ -1,5 +1,5 @@
 import os
-import typing as t
+import typing as tp
 from random import randint
 
 from lk_utils import fs
@@ -10,11 +10,11 @@ from ...manifest import init_manifest
 
 class T(T0):
     # ref: T0.Launcher0
-    TargetInfo = t.TypedDict(
+    TargetInfo = tp.TypedDict(
         'TargetInfo',
         {
             'target': str,  # relpath
-            'type': t.Literal['executable', 'module', 'package'],
+            'type': tp.Literal['executable', 'module', 'package'],
             'icon': str,  # relpath or empty
         },
     )
@@ -29,16 +29,15 @@ def init(
     dir_o = fs.parent(file_o)
     if not fs.exist(dir_o):
         os.mkdir(dir_o)
-    
+
     dirname = fs.dirname(dir_o)
     if appname == '':
         appname = dirname.replace('-', ' ').replace('_', ' ').title()
     appid = '{}_0x{:04x}'.format(
-        appname.replace(' ', '_').replace('-', '_').lower(),
-        randint(0, 0xFFFF)
+        appname.replace(' ', '_').replace('-', '_').lower(), randint(0, 0xFFFF)
     )
     print(':v2', appname, appid)
-    
+
     manifest = init_user_manifest(appname, appid, init_version)
     fs.dump(manifest, file_o)
     print(f'see manifest file at "{file_o}"', ':tv4')
@@ -46,9 +45,9 @@ def init(
 
 def init_user_manifest(
     appname: str, appid: str, version: str = '0.1.0'
-) -> T.UserManifest:
-    manifest = init_manifest(appid, appname).model
-    manifest.pop('start_directory')  # noqa
+) -> T.Manifest0:
+    manifest = tp.cast(T.Manifest0, init_manifest(appid, appname).model)
+    manifest.pop('start_directory')
     manifest['version'] = version
-    manifest['dependencies'] = 'poetry.lock'
+    manifest['dependencies'] = 'uv'
     return manifest

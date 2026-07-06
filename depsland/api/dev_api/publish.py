@@ -24,10 +24,11 @@ from ...verspec import compare_version
 class T:
     AssetInfo = T0.AssetInfo
     Manifest = T0.Manifest
+    ManifestObject = T0.ManifestObject
     Oss = T1.Oss
     PackageInfo = T0.PackageInfo
     Path = str
-    Scheme = T0.Scheme
+    Scheme = T0.AssetScheme
 
 
 def publish(

@@ -59,8 +59,8 @@ def about() -> None:
     from . import __path__
     from . import __version__
 
-    print(':rs1', '[red b]♥ depsland [u]v{}[/] ♥[/]'.format(__version__))
-    print(':rs1', '  [magenta]located  at [u]{}[/][/]'.format(__path__[0]))
+    print(':rs', '[red b]♥ depsland [u]v{}[/] ♥[/]'.format(__version__))
+    print(':rs', '  [magenta]located at [u]{}[/][/]'.format(__path__[0]))
 
 
 @cli

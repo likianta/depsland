@@ -16,11 +16,11 @@ from ..utils import init_target_tree
 from ..venv import get_venv_root
 
 
-def init_manifest(appid: str, appname: str) -> 'Manifest':
+def init_manifest(appid: str, appname: str) -> T.ManifestObject:
     return Manifest.init(appid, appname)
 
 
-def load_manifest(file: T.AnyPath) -> 'Manifest':
+def load_manifest(file: T.AnyPath) -> T.ManifestObject:
     return Manifest.load_from_file(file)
 
 
