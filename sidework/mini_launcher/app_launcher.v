@@ -49,6 +49,7 @@ fn main() {
         os.execvp(
             './python/python.exe',
             ['main.py', manifest.appid, manifest.version]
+            // see also `./depsland_online_installer/main2.py`.
         )!
         cleanup()!
     }

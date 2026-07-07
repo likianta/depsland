@@ -1,5 +1,5 @@
 import os
-import typing as t
+import typing as tp
 from textwrap import dedent
 
 from lk_utils import fs
@@ -28,7 +28,7 @@ class T:
     Oss = T1.Oss
     PackageInfo = T0.PackageInfo
     Path = str
-    Scheme = T0.AssetScheme
+    Scheme = T0.Scheme
 
 
 def publish(
@@ -127,7 +127,7 @@ def _upload(
         'updating manifest', manifest_old['version'], manifest_new['version']
     )
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     root_new = manifest_new['start_directory']  # noqa
     root_old = manifest_old['start_directory']  # noqa
@@ -137,13 +137,13 @@ def _upload(
 
     diff = diff_manifest(manifest_new, manifest_old)
 
-    # -------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def upload_assets() -> None:
         action: T.Scheme
-        info0: t.Optional[T.AssetInfo]
-        info1: t.Optional[T.AssetInfo]
-        zipped_file: t.Optional[T.Path]
+        info0: tp.Optional[T.AssetInfo]
+        info1: tp.Optional[T.AssetInfo]
+        zipped_file: tp.Optional[T.Path]
 
         for action, (relpath, real_relpath), (info0, info1) in diff['assets']:
             if action == 'ignore':
@@ -177,9 +177,9 @@ def _upload(
     def upload_dependencies_() -> None:
         # `depsland.manifest.manifest._diff_dependencies`
         action: T.Scheme
-        info0: t.Optional[T.PackageInfo]
-        info1: t.Optional[T.PackageInfo]
-        zipped_file: t.Optional[T.Path]
+        info0: tp.Optional[T.PackageInfo]
+        info1: tp.Optional[T.PackageInfo]
+        zipped_file: tp.Optional[T.Path]
 
         for action, pkg_name, (info0, info1) in diff['dependencies']:
             if action == 'ignore':
@@ -195,7 +195,7 @@ def _upload(
             if action in ('append', 'update'):
                 assert info1
                 zipped_file = _compress_dependency(
-                    info1['id'], t.cast(t.Tuple[str, ...], info1['files'])
+                    info1['id'], tp.cast(tp.Tuple[str, ...], info1['files'])
                 )
             else:
                 zipped_file = None
@@ -226,7 +226,7 @@ def _upload(
     _lib_root = get_venv_root(manifest_new['start_directory'])
 
     def _compress_dependency(
-        package_id: str, relpaths: t.Tuple[str, ...]
+        package_id: str, relpaths: tp.Tuple[str, ...]
     ) -> T.Path:
         path0 = '{}/{}.zip'.format(paths.pypi.downloads, package_id)
         path1 = '{}/{}/{}'.format(paths.pypi.installed, *package_id.split('-'))
@@ -234,7 +234,7 @@ def _upload(
             assert fs.exist(path1)
             return path0
 
-        reldirs: t.Set[str] = set()
+        reldirs: tp.Set[str] = set()
         for p in relpaths:
             if p.startswith('../'):
                 reldirs.add('bin')
@@ -266,7 +266,7 @@ def _upload(
     if upload_dependencies:
         upload_dependencies_()
 
-    pkl_file = _save_manifest(manifest_new)
+    pkl_file = _save_manifest(tp.cast(T.ManifestObject, manifest_new))
     oss.upload(pkl_file, oss.path.manifest)
 
     return oss
@@ -344,8 +344,8 @@ def _copy_assets(path_i: T.Path, name_o: str, scheme: T.Scheme) -> T.Path:
 
 def _show_change(
     title: str,
-    old: t.Optional[str],
-    new: t.Optional[str],
+    old: tp.Optional[str],
+    new: tp.Optional[str],
     show_index: bool = False,
 ) -> None:
     """

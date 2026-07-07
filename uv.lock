@@ -154,15 +154,16 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.0.0b17"
+version = "3.0.0"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "aiohttp" },
     { name = "argsense" },
     { name = "lk-utils" },
+    { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2191/airmise/airmise-3.0.0b17-py3-none-any.whl" },
+    { url = "http://localhost:2191/airmise/airmise-3.0.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -661,11 +662,11 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.0.0b17", index = "http://localhost:2191/" },
+    { name = "airmise", specifier = ">=3.0.0", index = "http://localhost:2191/" },
     { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2191/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.6.2a1", index = "http://localhost:2191/" },
-    { name = "neoprint", specifier = ">=0.1.6b1", index = "http://localhost:2191/" },
+    { name = "lk-utils", specifier = ">=3.7.0a6", index = "http://localhost:2191/" },
+    { name = "neoprint", specifier = ">=0.1.7a0", index = "http://localhost:2191/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pyportable-crypto", specifier = ">=1.6.1a1", index = "http://localhost:2191/" },
@@ -1055,7 +1056,7 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.6.2a1"
+version = "3.7.0a6"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -1065,7 +1066,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/lk-utils/lk_utils-3.6.2a1-py3-none-any.whl" },
+    { url = "http://localhost:2191/lk-utils/lk_utils-3.7.0a6-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1283,13 +1284,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.6b1"
+version = "0.1.7a0"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/neoprint/neoprint-0.1.6b1-py3-none-any.whl" },
+    { url = "http://localhost:2191/neoprint/neoprint-0.1.7a0-py3-none-any.whl" },
 ]
 
 [[package]]
