@@ -28,7 +28,7 @@ class T:
     Oss = T1.Oss
     PackageInfo = T0.PackageInfo
     Path = str
-    Scheme = T0.Scheme
+    Scheme = T0.Action
 
 
 def publish(

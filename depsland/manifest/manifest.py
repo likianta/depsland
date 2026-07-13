@@ -2,6 +2,7 @@ import os
 import re
 import shlex
 import typing as tp
+from collections import namedtuple
 from functools import cache
 
 import pyportable_crypto
@@ -42,6 +43,8 @@ def diff_manifest(new: T.Manifest, old: T.Manifest) -> T.ManifestDiff:
 
 
 # ------------------------------------------------------------------------------
+
+AssetInfo = namedtuple('AssetInfo', T.AssetInfo._fields)
 
 
 class Manifest:
@@ -655,7 +658,7 @@ class Manifest:
                     rpath,
                 )
             ftype = 'file' if os.path.isfile(abspath) else 'dir'
-            out[relpath] = T.AssetInfo(
+            out[relpath] = AssetInfo(
                 type=ftype,
                 scheme=scheme,
                 utime=generate_utime(abspath, scheme),

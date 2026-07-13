@@ -27,7 +27,7 @@ def build_stripped_offline(manifest_file: T.AnyPath) -> T.AbsPath:
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
     save_project_cache(manifest)
-    print('see result at {}'.format(dir_o))
+    print('see result at {}'.format(dir_o), ':v4')
     return dir_o
 
 
