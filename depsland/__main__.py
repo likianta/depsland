@@ -163,7 +163,7 @@ def init(target: str = '.', app_name: str = '') -> None:
 
 @cli
 def build(
-    manifest: str = '.', offline: bool = False, remove_depsland: bool = False
+    manifest: str = '.', offline: bool = False, remove_depsland: bool = True
 ) -> None:
     """
     build application from manifest file.

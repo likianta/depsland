@@ -10,4 +10,5 @@
   - [资产变动检测方法](./devnote/assets-diff-strategy.md)
   - [PyPI 索引文件格式](./devnote/pypi-index-file-format.md)
   - [为什么不使用 UV 工具链](./devnote/why-or-why-not/why-not-use-uv-toolchain.md)
+  - [如何给已发布的应用打补丁](./devnote/how-to-patch.md)
 

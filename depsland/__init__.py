@@ -29,11 +29,13 @@ from . import verspec
 from .api import init
 from .api import install
 from .api import publish
+from .manifest import T
 from .manifest import load_manifest
 from .platform import sysinfo
 from .platform.launcher import bat_2_exe
 from .platform.launcher import create_launcher
 from .pypi import pip
 from .pypi import pypi
+from .utils import make_temp_dir
 
 __version__ = '0.12.0a26'

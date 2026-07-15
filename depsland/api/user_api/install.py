@@ -228,7 +228,6 @@ def _install_files(
     _root00 = fs.parent(root0)
     _root10 = fs.parent(root1)
 
-    # noinspection PyUnusedLocal
     def copy_from_old(i: str, o: str, t: str) -> None:
         # `o` must not be child path of `i`.
         assert not o.startswith(i + '/')
@@ -260,6 +259,9 @@ def _install_files(
         )
 
         if action == 'ignore':
+            # 1. if it is an empty directory, create it.
+            # 2. if it exists in the old version, copy it to the new version.
+            # 3. download it from oss (turn `action` from "ignore" to "append").
             if info1.scheme == 0b00:
                 if not fs.exist(f'{root1}/{relpath}'):
                     fs.make_dir(f'{root1}/{relpath}')
@@ -271,10 +273,10 @@ def _install_files(
                     copy_from_old(path0, path1, info1.type)
                     continue
                 else:
-                    print('turn ignore to append action')
+                    print('turn "ignore" to "append" action')
                     action = 'append'
 
-        if action in ('append', 'update'):
+        if action == 'append' or action == 'update':
             path_i = '{}/{}'.format(oss.path.assets, info1.uid)  # an url
             path_m = fs.normpath(  # an intermediate file (zip)
                 '{}/{}.{}'.format(
@@ -315,7 +317,7 @@ def _install_packages(
         if action == 'delete':  # this is handled by oss util.
             continue
         pkg_id = info1['id']
-        if action in ('append', 'update'):
+        if action == 'append' or action == 'update':
             tasks_ignitor.append(info1)
         package_ids.add(pkg_id)
 

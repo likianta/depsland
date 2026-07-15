@@ -1,14 +1,15 @@
 """
 ref: ~/docs/project-structure.md
 """
+
 import atexit
 import os
 import sys
-import typing as t
+import typing as tp
+
 from lk_utils import fs
 from lk_utils import new_thread
-from os.path import exists
-from uuid import uuid4
+from lk_utils import uuid
 
 __all__ = [
     'apps',
@@ -133,9 +134,9 @@ class Project:
         self.python = f'{self.root}/python'
         self.temp = f'{self.root}/temp'
     
-    def _init_project(self) -> t.Tuple[str, str]:
+    def _init_project(self) -> tp.Tuple[str, str]:
         project_file = fs.xpath('../.depsland_project.json')
-        if exists(project_file):
+        if fs.exist(project_file):
             project_info: dict = fs.load(project_file)
         else:
             project_info: dict = {'project_mode': 'package'}
@@ -161,7 +162,7 @@ class Project:
             if project_mode == 'development':
                 return True
             elif project_mode == 'package':
-                return exists(project_root)
+                return fs.exist(project_root)
             else:
                 if project_info.get('initialized'):
                     v0: str = project_info['initialized']
@@ -232,8 +233,6 @@ class Project:
         # os.mkdir(f'{root}/python')  # later
         # os.mkdir(f'{root}/sidework')  # later
         os.mkdir(f'{root}/temp')
-        os.mkdir(f'{root}/temp/.self_upgrade')
-        os.mkdir(f'{root}/temp/.unittests')
         # os.mkdir(f'{root}/unittests')
         
         # make link
@@ -316,7 +315,7 @@ class Apps:
         create or clear a folder for venv packages.
         """
         dir_ = self._venv.format(appid=appid, version=version)
-        if exists(dir_):
+        if fs.exist(dir_):
             if clear_exists and not fs.empty(dir_):
                 fs.remove_tree(dir_)
                 fs.make_dir(dir_)
@@ -361,7 +360,7 @@ class Config:
         if x := _Env.CONFIG_ROOT:
             self.root = fs.abspath(x)
             print(':v1', f'relocate config root to {self.root}')
-        elif exists(f'{project.root}/config/.redirect'):
+        elif fs.exist(f'{project.root}/config/.redirect'):
             with open(f'{project.root}/config/.redirect', 'r') as f:
                 x = f.read().strip()
                 if os.path.isabs(x):
@@ -450,7 +449,7 @@ class Temp:
         self.root = f'{project.root}/temp'
         
         self.temp_project = f'{self.root}/temp_project'
-        self._temp_root = f'{self.root}/{uuid4().hex}'
+        self._temp_root = f'{self.root}/{uuid()}'
         self._temp_root_created = False
 
         self.enc_max = f'{self.temp_project}/enc_max.json'
@@ -477,7 +476,7 @@ class Temp:
         if not self._temp_root_created:
             fs.make_dir(self._temp_root)
             self._temp_root_created = True
-        out = '{}/{}'.format(self._temp_root, uuid1().hex)
+        out = '{}/{}'.format(self._temp_root, uuid())
         fs.make_dir(out)
         return out
     
@@ -485,7 +484,7 @@ class Temp:
         if not self._temp_root_created:
             fs.make_dir(self._temp_root)
             self._temp_root_created = True
-        a = '{}/{}'.format(self._temp_root, uuid1().hex)
+        a = '{}/{}'.format(self._temp_root, uuid())
         b = '{}/{}'.format(a, dirname)
         fs.make_dir(a)
         fs.make_dir(b)
