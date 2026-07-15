@@ -11,9 +11,11 @@ from lk_utils import fs
 
 from .typing import T
 from .. import normalization as norm
+from ..cache import get_project_cache
 from ..depsolver import resolve_dependencies
 from ..utils import hash_content
 from ..utils import hash_file_content
+from ..utils import hash_text
 from ..utils import init_target_tree
 from ..venv import get_venv_root
 
@@ -187,7 +189,7 @@ class Manifest:
                 'assets_redirection': {},
                 'encryption': (
                     self._update_encryption(
-                        data0['encryption'], start_directory
+                        data0['encryption'], data0['appid'], start_directory
                     )
                     if 'encryption' in data0
                     else None
@@ -537,7 +539,16 @@ class Manifest:
                 ':ln',
             )
             manifest['assets_redirection'].update(
-                {k: '{}/{}'.format(enc['output'], k) for k in enc['packages']}
+                {
+                    k: '{}/{}'.format(enc['output'], fs.barename(k))
+                    for k in enc['packages']
+                }
+            )
+            manifest['assets'].update(
+                self._update_assets(
+                    ['{}/pyportable_runtime'.format(enc['output'])],
+                    manifest['start_directory'],
+                )
             )
 
         if x := manifest['launcher']['icon']:
@@ -763,26 +774,84 @@ class Manifest:
             return {}
 
     def _update_encryption(
-        self, options: T.Encryption0, start_directory: T.StartDirectory
+        self,
+        options: T.Encryption0,
+        appid: str,
+        start_directory: T.StartDirectory,
     ) -> T.Encryption1:
         assert options
 
-        key: str
-        if options['key'] == '$env':
-            key = os.environ['DEPSLAND_APP_SECRET_KEY']
-        elif options['key'].startswith('$env:'):
-            key = os.environ[options['key'][5:]]
-        else:
-            key = options['key']
-        if options.get('add_salt'):
-            key = pyportable_crypto.keygen.add_salt(key)
-        print('key: {} -> {}'.format(options['key'], key), ':r2')
+        def determine_encryption_key() -> str:
+            key0 = options['key']
+            if key0 == '$env':
+                key1 = os.environ['DEPSLAND_APP_SECRET_KEY']
+            elif key0.startswith('$env:'):
+                key1 = os.environ[key0[5:]]
+            else:
+                key1 = key0
+            if options.get('add_salt'):
+                key1 = pyportable_crypto.keygen.add_salt(key1)
+            if key1 != key0:
+                print(
+                    'resolved encryption key: {} -> {}'.format(key0, key1),
+                    ':r2',
+                )
+            return key1
 
-        return {
-            'key': key,
-            'packages': options['packages'],
-            'output': options['output'],
-        }
+        options['key'] = determine_encryption_key()
+
+        def check_if_reusable() -> bool:
+            if not fs.exist(
+                _abspath('{}/pyportable_runtime'.format(options['output']))
+            ):
+                return False
+            cache = get_project_cache(appid)
+            if hash_text(options['key']) != cache['last_encryption_key_(hash)']:
+                return False
+            if not cache['last_encrypted_folders_snapshots']:
+                return False
+            for path in options['packages']:
+                if path not in cache['last_encrypted_folders_snapshots']:
+                    return False
+                shot = cache['last_encrypted_folders_snapshots'][path]
+                for d in fs.findall_dirs(path):
+                    if d.relpath not in shot['dirs']:
+                        return False
+                    elif fs.filetime(d.path) != shot['dirs'][d.relpath]:
+                        return False
+                for f in fs.findall_files(path):
+                    if f.relpath not in shot['files']:
+                        return False
+                    elif fs.filetime(f.path) != shot['files'][f.relpath]:
+                        return False
+            return True
+
+        def encrypt_source() -> None:
+            fs.copy_tree(
+                pyportable_crypto.generate_cipher_package(options['key']),
+                _abspath('{}/pyportable_runtime'.format(options['output'])),
+                True,
+            )
+            for pkg_relpath in options['packages']:
+                pyportable_crypto.compile_package(
+                    dir_i=_abspath(pkg_relpath),
+                    dir_o=_abspath(
+                        '{}/{}'.format(
+                            options['output'], fs.barename(pkg_relpath)
+                        )
+                    ),
+                    key=options['key'],
+                    add_runtime_package='none',
+                )
+
+        def _abspath(relpath: T.RelPath) -> T.AbsPath:
+            return '{}/{}'.format(start_directory, relpath)
+
+        if check_if_reusable():
+            print('reuse encrypted resources from last time', ':v3')
+        else:
+            encrypt_source()
+        return options
 
     def _update_launcher(
         self, launcher0: T.Launcher0, start_directory: T.StartDirectory

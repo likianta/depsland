@@ -3,7 +3,6 @@ from functools import cache
 
 from lk_utils import fs
 
-from ..manifest import T as T0
 from ..utils import hash_text
 
 cache_dir = fs.here('_cache')
@@ -14,7 +13,6 @@ class T:
         'FolderSnapshot',
         {'dirs': tp.Dict[str, int], 'files': tp.Dict[str, int]},
     )
-    Manifest = T0.Manifest
     ProjectCache = tp.TypedDict(
         'ProjectCache',
         {
@@ -22,6 +20,14 @@ class T:
             'last_encryption_key_(hash)': str,
         },
     )
+
+    if tp.TYPE_CHECKING:
+        # fmt: off
+        from ..manifest import T as T0
+        Manifest = T0.Manifest
+        # fmt: on
+    else:
+        Manifest = tp.Any
 
 
 @cache
