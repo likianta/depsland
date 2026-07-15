@@ -7,9 +7,24 @@ from lk_utils import uuid
 from neoprint import print
 
 from depsland import make_temp_dir
-from depsland.manifest import T
+from depsland.manifest import T as T0
 from depsland.manifest import diff_manifest
 from depsland.manifest import load_manifest
+
+
+class T:
+    AbsPath = T0.AbsPath
+    FileId = str
+    RelPath = T0.RelPath
+    AssetsDiff = T0.AssetsDiff
+    AssetsMap = tp.Dict[
+        FileId, tp.Tuple[tp.Optional[AbsPath], RelPath, bool, bool]
+    ]
+    #   {
+    #       fileid: (
+    #           src_abspath, dst_relpath, bool isdir, bool append_or_delete
+    #       ), ...
+    #   }
 
 
 @cli
@@ -44,23 +59,28 @@ def _resolve_assets(
     """
     ref: depsland/api/user_api/install.py:_install_files
     """
-    assets_map = {}
-    #   {fileid: (src_abspath, dst_relpath, bool append_or_delete), ...}
+    assets_map: T.AssetsMap = {}
     for action, (relpath, real_relpath), (info0, info1) in assets_diff:
         if action == 'append' or action == 'update':
             abspath = '{}/{}'.format(root_i, real_relpath)
             assert fs.exist(abspath)
-            assets_map[info1.uid] = (abspath, relpath, True)
+            assets_map[info1.uid] = (
+                abspath,
+                relpath,
+                info1.type == 'dir',
+                True,
+            )
         elif action == 'delete':
-            assets_map[info0.uid] = (None, relpath, False)
+            assets_map[info0.uid] = (None, relpath, info0.type == 'dir', False)
 
-    for file_id, (abspath, relpath, _) in assets_map.items():
+    for file_id, (abspath, relpath, isdir, _) in assets_map.items():
         if abspath:
             print('add asset to temp dir', relpath, file_id, ':in')
             fs.make_link(abspath, '{}/{}'.format(root_o, file_id), False)
 
     simplified_assets_map = {
-        k: '{}:{}'.format(v[1], 1 if v[2] else 0) for k, v in assets_map.items()
+        k: '{}:{}{}'.format(v[1], '1' if isdir else '0', '1' if v[2] else '0')
+        for k, v in assets_map.items()
     }
     file_map = fs.here('grocery/assets_map.json')
     file_zip = fs.here('grocery/assets.zip')

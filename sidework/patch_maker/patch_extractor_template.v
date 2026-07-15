@@ -48,23 +48,31 @@ fn main() {
 
 	// apply patch
 	mut relpath := ''
-	mut flag := '0'
+	mut isdir := false // TODO
+	mut do_append := false
 	mut file_i := ''
 	mut file_m := ''
 	mut file_o := ''
 	for file_id, value in assets_map {
-		println('Asset: ${value} (${file_id})')
+		if !dry_run {
+			println('Asset: ${value} (${file_id})')
+		}
 
-		// e.g. '/path/to/file:1' -> ('/path/to/file', '1')
-		relpath = value[..value.len - 2]
-		flag = value[value.len - 1..]
+		// e.g. '/path/to/file:11' -> (
+		//  relpath='/path/to/file', 
+		//  isdir=true, 
+		//  do_append=true
+		// )
+		relpath = value[..value.len - 3]
+		isdir = value[value.len - 2..value.len - 1] == '1'
+		do_append = value[value.len - 1..] == '1'
 
 		file_i = '${root_i}/${file_id}'
 		file_m = '${root_i}/backups/${file_id}'
 		file_o = '${root_o}/${relpath}'
 		
 		if dry_run {
-			if flag == '1' {
+			if do_append {
 				if os.exists(file_o) {
 					println('[dry_run] Update "source/${relpath}" (${file_id})')
 				} else {
@@ -74,7 +82,7 @@ fn main() {
 				println('[dry_run] Delete "source/${relpath}" (${file_id})')
 			}
 		} else {
-			if flag == '1' {
+			if do_append {
 				if os.exists(file_o) {
 					os.mv(file_o, file_m)!
 				}
@@ -89,9 +97,6 @@ fn main() {
 }
 
 fn parse_arguments() bool {
-	// mut args := []string{}
-	// args << arguments()[1..]
-	// args << ['', '', '', '']
 	args := arguments()[1..]
 	dry_run := '-d' in args || '--debug' in args || '--dry-run' in args
 	return dry_run
