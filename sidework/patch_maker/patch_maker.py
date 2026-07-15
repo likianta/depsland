@@ -13,11 +13,12 @@ from depsland.manifest import load_manifest
 
 
 @cli
-def make_patch(old_manifest_file: str, new_manifest_file: str):
+def make_patch(old_manifest_file: str, new_manifest_file: str) -> None:
     old_manifest = load_manifest(old_manifest_file)
     new_manifest = load_manifest(new_manifest_file)
 
-    patch_id = uuid()
+    patch_id = uuid()[::4]  # e.g. 'd514b17f'
+    print(patch_id, ':n')
     temp_dir = make_temp_dir(patch_id)
     fs.make_dir('{}/assets'.format(temp_dir))
     fs.make_dir('{}/dependencies'.format(temp_dir))
@@ -34,6 +35,7 @@ def make_patch(old_manifest_file: str, new_manifest_file: str):
     # _resolve_dependencies(diff['dependencies'], ...)
 
     _generate_patch_executable(new_manifest, patch_id)
+    # print('see generated executable', exe)
 
 
 def _resolve_assets(
@@ -57,9 +59,12 @@ def _resolve_assets(
             print('add asset to temp dir', relpath, file_id, ':in')
             fs.make_link(abspath, '{}/{}'.format(root_o, file_id), False)
 
+    simplified_assets_map = {
+        k: '{}:{}'.format(v[1], 1 if v[2] else 0) for k, v in assets_map.items()
+    }
     file_map = fs.here('grocery/assets_map.json')
     file_zip = fs.here('grocery/assets.zip')
-    fs.dump(assets_map, file_map)
+    fs.dump(simplified_assets_map, file_map)
     fs.zip(root_o, file_zip, True, progress=True)
     return file_map, file_zip
 
@@ -79,8 +84,17 @@ def _resolve_assets(
 
 def _generate_patch_executable(manifest: T.Manifest, patch_id: str) -> str:
     template = fs.load(fs.here('patch_extractor_template.v'))
-    code = template.replace('<PATCH_ID>', patch_id)
-    fs.dump(code, fs.here('results/patch_extractor_{}.v'.format(patch_id)))
+    fs.dump(
+        template.replace('<PATCH_ID>', patch_id),
+        fs.here('generated_extractors/patch_extractor_{}.v'.format(patch_id)),
+    )
+    print(
+        'generate exe: {} -> {}'.format(
+            'patch_extractor_{}.v'.format(patch_id),
+            '{} - Patch v{}.exe'.format(manifest['name'], manifest['version']),
+        ),
+        ':r2',
+    )
     run_cmd_args(
         (
             'v',
@@ -88,15 +102,16 @@ def _generate_patch_executable(manifest: T.Manifest, patch_id: str) -> str:
             '{} - Patch v{}.exe'.format(manifest['name'], manifest['version']),
             'patch_extractor_{}.v'.format(patch_id),
         ),
-        cwd=fs.here('results'),
+        cwd=fs.here('generated_extractors'),
         verbose=True,
     )
     return fs.here(
-        'results/{}'.format(
+        'generated_extractors/{}'.format(
             '{} - Patch v{}.exe'.format(manifest['name'], manifest['version'])
         )
     )
 
 
 if __name__ == '__main__':
+    # uvx sidework/patch_maker/patch_maker.py -h
     cli.run(make_patch)

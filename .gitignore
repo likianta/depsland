@@ -33,8 +33,8 @@
 /sidework/mini_launcher/depsland_online_installer/*
 /sidework/mini_launcher/dist/
 /sidework/mini_launcher/nuitka_general_launcher/*
+/sidework/patch_maker/generated_extractors/*
 /sidework/patch_maker/grocery/*
-/sidework/patch_maker/results/*
 /temp/*
 /test/_config/
 /test/lk_utils_7z_unzip/minideps/

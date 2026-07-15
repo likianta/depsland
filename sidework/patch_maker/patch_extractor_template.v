@@ -3,22 +3,44 @@ import json
 import os
 
 fn main() {
+	dry_run := parse_arguments()
+
 	patch_id := '<PATCH_ID>'
 
-	assets_map_data := $embed_file('grocery/assets_map.json')
-	assets_zip_data := $embed_file('grocery/assets.zip')
+    currdir := os.dir(os.executable())
+    println('Current executable directory: ${currdir}')
+	projdir, currdirname, _ := os.split_path(currdir)
+	root_i := '${currdir}/${patch_id}'.replace('\\', '/')
+	root_o := '${projdir}/source'.replace('\\', '/')
 	
-	root_i := './${patch_id}'
-	root_o := '../source'
+	if !dry_run {
+		if currdirname != 'patches' {
+			panic('You must place this file in "patches" directory.')
+		}
+		if !os.exists('${projdir}/source') {
+			panic('Cannot find "source" directory.')
+		}
+	}
 
+	assets_map_data := $embed_file('../grocery/assets_map.json')
+	assets_zip_data := $embed_file('../grocery/assets.zip')
+	
 	// prepare resources
-	if os.exists(root_i) { os.rmdir_all(root_i)! }
-	os.mkdir(root_i)!
-	os.mkdir('${root_i}/backups')!
-	os.write_bytes('${root_i}/assets_map.json', assets_map_data)!
-	os.write_bytes('${root_i}/assets.zip', assets_zip_data)!
-	szip.extract_zip_to_dir('${root_i}/assets.zip', root_i)!
-	assert os.exists('${root_i}/assets')
+	if dry_run {
+		if !os.exists(root_i) { os.mkdir(root_i)! }
+		if !os.exists('${root_i}/backups') { os.mkdir('${root_i}/backups')! }
+		os.write_bytes('${root_i}/assets_map.json', assets_map_data.to_bytes())!
+		os.write_bytes('${root_i}/assets.zip', assets_zip_data.to_bytes())!
+		szip.extract_zip_to_dir('${root_i}/assets.zip', root_i)!
+	} else {
+		if os.exists(root_i) { os.rmdir_all(root_i)! }
+		os.mkdir(root_i)!
+		os.mkdir('${root_i}/backups')!
+		os.write_bytes('${root_i}/assets_map.json', assets_map_data.to_bytes())!
+		os.write_bytes('${root_i}/assets.zip', assets_zip_data.to_bytes())!
+		szip.extract_zip_to_dir('${root_i}/assets.zip', root_i)!
+		assert os.exists('${root_i}/assets')
+	}
 
 	assets_map := json.decode(
 		map[string]string, assets_map_data.to_string()
@@ -26,31 +48,51 @@ fn main() {
 
 	// apply patch
 	mut relpath := ''
-	mut flag_pos := 0
 	mut flag := '0'
 	mut file_i := ''
 	mut file_m := ''
 	mut file_o := ''
 	for file_id, value in assets_map {
-		println('${value} (${file_id})')
+		println('Asset: ${value} (${file_id})')
 
-		flag_pos = value.last_index(':')!
-		relpath = value[..flag_pos]
-		flag = value[flag_pos + 1..]
+		// e.g. '/path/to/file:1' -> ('/path/to/file', '1')
+		relpath = value[..value.len - 2]
+		flag = value[value.len - 1..]
 
 		file_i = '${root_i}/${file_id}'
 		file_m = '${root_i}/backups/${file_id}'
 		file_o = '${root_o}/${relpath}'
 		
-		if flag == '1' {
-			if os.exists(file_o) {
-				os.mv(file_o, file_m)!
+		if dry_run {
+			if flag == '1' {
+				if os.exists(file_o) {
+					println('[dry_run] Update "source/${relpath}" (${file_id})')
+				} else {
+					println('[dry_run] Append "source/${relpath}" (${file_id})')
+				}
+			} else {
+				println('[dry_run] Delete "source/${relpath}" (${file_id})')
 			}
-			os.mv(file_i, file_o)!
 		} else {
-			if os.exists(file_o) {
-				os.mv(file_o, file_m)!
+			if flag == '1' {
+				if os.exists(file_o) {
+					os.mv(file_o, file_m)!
+				}
+				os.mv(file_i, file_o)!
+			} else {
+				if os.exists(file_o) {
+					os.mv(file_o, file_m)!
+				}
 			}
 		}
 	}
+}
+
+fn parse_arguments() bool {
+	// mut args := []string{}
+	// args << arguments()[1..]
+	// args << ['', '', '', '']
+	args := arguments()[1..]
+	dry_run := '-d' in args || '--debug' in args || '--dry-run' in args
+	return dry_run
 }
