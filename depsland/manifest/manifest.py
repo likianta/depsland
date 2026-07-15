@@ -22,8 +22,10 @@ def init_manifest(appid: str, appname: str) -> T.ManifestObject:
     return Manifest.init(appid, appname)
 
 
-def load_manifest(file: T.AnyPath) -> T.ManifestObject:
-    return Manifest.load_from_file(file)
+def load_manifest(
+    file: T.AnyPath, start_directory: T.AnyPath = ''
+) -> T.ManifestObject:
+    return Manifest.load_from_file(file, start_directory)
 
 
 def dump_manifest(manifest: T.ManifestObject, file: T.AnyPath) -> None:
@@ -86,7 +88,9 @@ class Manifest:
 
     @classmethod
     @cache
-    def load_from_file(cls, file: T.AnyPath) -> 'Manifest':
+    def load_from_file(
+        cls, file: T.AnyPath, start_directory: T.AnyPath = ''
+    ) -> 'Manifest':
         """
         args:
             file: support '.json', '.yaml'/'.yml', '.pkl' formats.
@@ -106,7 +110,7 @@ class Manifest:
         if self._file.endswith('.pkl'):
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
-            data1['start_directory'] = cfg_dir
+            data1['start_directory'] = start_directory or cfg_dir
         else:
             data0: T.Manifest0
             if self._file.endswith(('.json', '.yaml')):
@@ -121,15 +125,19 @@ class Manifest:
             else:
                 raise Exception('unsupported manifest file format', self._file)
 
-            if 'start_directory' in data0:
-                x = data0['start_directory']
-                if x.startswith('.'):
-                    start_directory = fs.normpath('{}/{}'.format(cfg_dir, x))
+            if not start_directory:
+                if 'start_directory' in data0:
+                    x = data0['start_directory']
+                    if x.startswith('.'):
+                        start_directory = fs.normpath(
+                            '{}/{}'.format(cfg_dir, x)
+                        )
+                    else:
+                        start_directory = fs.abspath(x)
                 else:
-                    start_directory = fs.abspath(x)
-                print('change `start_directory` to {}'.format(start_directory))
-            else:
-                start_directory = cfg_dir
+                    start_directory = cfg_dir
+            print(start_directory, ':v2n')
+
             if data0.get('readme'):
                 if isinstance((x := data0['readme']), str):
                     data0['assets'].append(x)
@@ -497,9 +505,8 @@ class Manifest:
             )
 
     # TODO: rename to `_post_process_manifest`?
-    @staticmethod
     def _postcheck_manifest(
-        manifest: T.Manifest1, origin_dependency_setting: T.Dependencies0
+        self, manifest: T.Manifest1, origin_dependency_setting: T.Dependencies0
     ) -> None:
         # inflate assets from tree_shaking cache
         if (
@@ -524,7 +531,11 @@ class Manifest:
 
         # update assets redirection
         if enc := manifest['encryption']:
-            print('redirect part of assets to encrypted ones', enc['packages'])
+            print(
+                'redirect part of assets to encrypted ones',
+                enc['packages'],
+                ':ln',
+            )
             manifest['assets_redirection'].update(
                 {k: '{}/{}'.format(enc['output'], k) for k in enc['packages']}
             )
