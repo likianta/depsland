@@ -8,6 +8,7 @@ from ...cache import get_project_cache
 from ...cache import save_project_cache
 from ...manifest import T
 from ...manifest import diff_manifest
+from ...manifest import dump_manifest
 from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...utils import hash_text
@@ -26,6 +27,7 @@ def build_stripped_offline(manifest_file: T.AnyPath) -> T.AbsPath:
         _encrypt_source(manifest)
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
+    dump_manifest(manifest, '{}/source/.manifest.pkl'.format(dir_o))
     save_project_cache(manifest)
     print('see result at {}'.format(dir_o), ':v4')
     return dir_o
@@ -91,6 +93,8 @@ def _encrypt_source(manifest: T.Manifest) -> None:
     enc: T.Encryption2 = manifest['encryption']  # type: ignore
 
     def check_if_reusable() -> bool:
+        if not fs.exist('{}/pyportable_runtime'.format(enc['output'])):
+            return False
         cache = get_project_cache(manifest['appid'])
         if hash_text(enc['key']) != cache['last_encryption_key_(hash)']:
             return False

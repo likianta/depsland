@@ -170,7 +170,7 @@ class Project:
                         return False
                     else:
                         v1 = '{}-{}-{}'.format(
-                            project_root, fs.filetime(project_file, 'c'), 'true'
+                            project_root, fs.filetime(project_file, by='c'), 'true'
                         )
                         return v1 == v0
                 else:
@@ -200,7 +200,7 @@ class Project:
             raise ValueError(f'unknown project mode: {project_mode}')
         
         project_info['initialized'] = '{}-{}-{}'.format(
-            project_root, fs.filetime(project_file, 'c'), 'true'
+            project_root, fs.filetime(project_file, by='c'), 'true'
         )
         fs.dump(project_info, project_file)
         
