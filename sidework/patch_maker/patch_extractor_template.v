@@ -3,7 +3,7 @@ import json
 import os
 
 fn main() {
-	dry_run := parse_arguments()
+	dry_run, verbose := parse_arguments()
 
 	patch_id := '<PATCH_ID>'
 
@@ -67,21 +67,41 @@ fn main() {
 		isdir = value[value.len - 2..value.len - 1] == '1'
 		do_append = value[value.len - 1..] == '1'
 
-		file_i = '${root_i}/${file_id}'
+		file_i = '${root_i}/assets/${file_id}'
 		file_m = '${root_i}/backups/${file_id}'
 		file_o = '${root_o}/${relpath}'
 		
 		if dry_run {
+			node_type := if isdir { 'dir' } else { 'file' }
 			if do_append {
 				if os.exists(file_o) {
-					println('[dry_run] Update "source/${relpath}" (${file_id})')
+					println(
+						'[dry_run] Update ${node_type} '
+						+ '"source/${relpath}" (${file_id})'
+					)
 				} else {
-					println('[dry_run] Append "source/${relpath}" (${file_id})')
+					println(
+						'[dry_run] Append ${node_type} '
+						+ '"source/${relpath}" (${file_id})'
+					)
 				}
 			} else {
-				println('[dry_run] Delete "source/${relpath}" (${file_id})')
+				println(
+					'[dry_run] Delete ${node_type} '
+					+ '"source/${relpath}" (${file_id})'
+				)
 			}
 		} else {
+			if verbose {
+				println(
+					'[verbose] \n' +
+					'    value=${value}; \n' +
+				    '    file_i=${file_i}; \n' +
+					'    file_o=${file_o}; \n' +
+					'    do_append=${do_append}; \n' +
+					'    target_exists=${os.exists(file_o)}'
+				)
+			}
 			if do_append {
 				if os.exists(file_o) {
 					os.mv(file_o, file_m)!
@@ -96,8 +116,9 @@ fn main() {
 	}
 }
 
-fn parse_arguments() bool {
+fn parse_arguments() (bool, bool) {
 	args := arguments()[1..]
 	dry_run := '-d' in args || '--debug' in args || '--dry-run' in args
-	return dry_run
+	verbose := '-v' in args || '--verbose' in args
+	return dry_run, verbose
 }
