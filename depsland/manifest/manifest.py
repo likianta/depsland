@@ -2,22 +2,20 @@ import os
 import re
 import shlex
 import typing as tp
-from collections import namedtuple
 from functools import cache
 
 import pyportable_crypto
-import tree_shaking
 from lk_utils import fs
 
+from .assets import index_assets
 from .typing import T
 from .. import normalization as norm
 from ..cache import get_project_cache
+from ..depsolver import get_tree_shaking_cache_file
+from ..depsolver import minify_dependencies
 from ..depsolver import resolve_dependencies
-from ..utils import hash_content
-from ..utils import hash_file_content
 from ..utils import hash_text
 from ..utils import init_target_tree
-from ..venv import get_venv_root
 
 
 def init_manifest(appid: str, appname: str) -> T.ManifestObject:
@@ -47,8 +45,6 @@ def diff_manifest(new: T.Manifest, old: T.Manifest) -> T.ManifestDiff:
 
 
 # ------------------------------------------------------------------------------
-
-AssetInfo = namedtuple('AssetInfo', T.AssetInfo._fields)
 
 
 class Manifest:
@@ -191,7 +187,7 @@ class Manifest:
                     self._update_encryption(
                         data0['encryption'], data0['appid'], start_directory
                     )
-                    if 'encryption' in data0
+                    if data0.get('encryption')
                     else None
                 ),
                 'dependencies': self._update_dependencies(
@@ -538,17 +534,8 @@ class Manifest:
             and isinstance(origin_dependency_setting, dict)
             and origin_dependency_setting['method'] == 'tree_shaking'
         ):
-            mini_deps_cache_file = '{}/.depsland/{}.pkl'.format(
-                manifest['start_directory'],
-                hash_content(
-                    hash_file_content(
-                        '{}/{}'.format(
-                            manifest['start_directory'],
-                            origin_dependency_setting['base'],
-                        )
-                    )
-                    + hash_file_content(tree_shaking.implicit_hooks_file)
-                ),
+            mini_deps_cache_file = get_tree_shaking_cache_file(
+                manifest['start_directory'], origin_dependency_setting['base']
             )
             print('inflate assets from ".depsland/mini_deps/*"')
             manifest['assets'].update(fs.load(mini_deps_cache_file))
@@ -590,126 +577,10 @@ class Manifest:
 
     # --------------------------------------------------------------------------
 
-    @staticmethod
     def _update_assets(
-        assets0: T.Assets0, start_directory: T.StartDirectory
+        self, assets0: T.Assets0, start_directory: T.StartDirectory
     ) -> T.Assets1:
-        """
-        doc: /wiki/topics/manifest-assets-path-forms.md
-        varibale abbreviations:
-            ftype: file type
-            rpath or relpath: relative path
-            utime: updated time
-        """
-
-        def unpack_assets(
-            assets: T.Assets0,
-        ) -> tp.Iterator[tp.Tuple[T.RelPath, T.AssetScheme]]:
-            def resolve_wildcard(
-                rpath: str, scheme: T.AssetScheme
-            ) -> tp.Iterator[tp.Tuple[T.RelPath, T.AssetScheme]]:
-                path0, path1 = rpath, rpath.rstrip('/*')
-                if scheme is None:
-                    dirpath = fs.normpath(
-                        '{}/{}'.format(start_directory, path1)
-                    )
-                    for d in fs.find_dirs(dirpath):
-                        yield fs.relpath(d.path, start_directory), None
-                    if path0.endswith('/*'):
-                        for f in fs.find_files(dirpath):
-                            yield fs.relpath(f.path, start_directory), None
-                elif scheme == 0b11:
-                    print(
-                        'glob pattern can be simplified: {}:11 -> {}:11'.format(
-                            path0, path1
-                        ),
-                        ':v5r2',
-                    )
-                    yield path1, 0b11
-                else:
-                    dirpath = fs.normpath(
-                        '{}/{}'.format(start_directory, path1)
-                    )
-                    for d in fs.find_dirs(dirpath):
-                        yield fs.relpath(d.path, start_directory), scheme
-
-            scheme: T.AssetScheme
-            for raw_path in assets:
-                if raw_path.endswith((':0', ':00', ':1', ':01', ':10', ':11')):
-                    rpath, x = raw_path.rsplit(':', 1)
-                    scheme = int(x, 2)
-                else:
-                    rpath = raw_path
-                    scheme = None
-
-                if rpath.endswith(('/*', '/*/')):
-                    yield from resolve_wildcard(rpath, scheme)
-                else:
-                    yield rpath, scheme
-
-        def generate_hash(abspath: str, ftype: str) -> str:
-            if ftype == 'file':
-                return hash_file_content(abspath)
-            # if calculate_dir_hash:
-            #     meta_info = []
-            #     for d in fs.findall_dirs(abspath):
-            #         meta_info.append('dir:{}'.format(d.relpath))
-            #     for f in fs.findall_files(abspath):
-            #         meta_info.append('file:{}:{}'.format(
-            #             f.relpath, os.path.getsize(f.path)
-            #         ))
-            #     return hash_content('\n'.join(meta_info))
-            return ''
-
-        def generate_utime(abspath: str, scheme: T.AssetScheme) -> int:
-            # return get_updated_time(
-            #     abspath, recursive=scheme is None or scheme == 0b11
-            # )
-
-            if os.path.isfile(abspath):
-                return int(os.path.getmtime(abspath))
-            elif os.path.islink(abspath):
-                abspath = os.path.realpath(abspath)
-            else:
-                assert os.path.isdir(abspath), abspath
-                #   if assertion error, this abspath may not exist.
-
-            mtime = int(os.path.getmtime(abspath))
-            recursive = scheme is None or scheme == 0b11
-            if recursive and os.listdir(abspath):
-                # https://stackoverflow.com/questions/29685069
-
-                def walk(entrance: str) -> tp.Iterator[str]:
-                    yield from (x.path for x in fs.findall_dirs(entrance))
-                    yield from (x.path for x in fs.findall_files(entrance))
-
-                return max(
-                    (mtime, max(map(int, map(os.path.getmtime, walk(abspath)))))
-                )
-            else:
-                return mtime
-
-        def generate_uid(ftype: str, rpath: str) -> str:
-            return hash_content(f'{ftype}:{rpath}')
-
-        out = {}
-        for rpath, scheme in unpack_assets(assets0):
-            abspath = fs.normpath(f'{start_directory}/{rpath}')
-            relpath = '' if rpath == '.' else fs.normpath(rpath)
-            if not fs.exist(abspath):
-                raise FileNotFoundError(
-                    'please check the path you defined in manifest does exist',
-                    rpath,
-                )
-            ftype = 'file' if os.path.isfile(abspath) else 'dir'
-            out[relpath] = AssetInfo(
-                type=ftype,
-                scheme=scheme,
-                utime=generate_utime(abspath, scheme),
-                hash=generate_hash(abspath, ftype),
-                uid=generate_uid(ftype, relpath),
-            )
-        return out  # noqa
+        return index_assets(assets0, start_directory)
 
     def _update_dependencies(
         self, deps0: T.Dependencies0, start_directory: T.StartDirectory
@@ -722,62 +593,12 @@ class Manifest:
             else:  # 'poetry'
                 return resolve_dependencies('poetry.lock', start_directory)
         else:  # dict
-            """
-            folder structure:
-                <target_project>
-                |= .depsland
-                    |= orig_deps
-                    |= mini_deps
-                    |- tree_shaking_model.json
-            the `<target_project>/.depsland/mini_deps` path will be added to
-            `sys.path` in the runtime, see also `python/sitecustomize.py` for
-            details.
-            """
-            dot_dps_dir = '{}/.depsland'.format(start_directory)
-            print(dot_dps_dir, ':vn')
-            orig_deps_dir = '{}/orig_deps'.format(dot_dps_dir)
-            mini_deps_dir = '{}/mini_deps'.format(dot_dps_dir)
-            mini_deps_cache_file = '{}/{}.pkl'.format(
-                dot_dps_dir,
-                # this means: if uv.lock / poetry.lock / tree-shaking implicit
-                # hooks file changed, rebuild mini_deps cache.
-                hash_content(
-                    hash_file_content(
-                        '{}/{}'.format(start_directory, deps0['base'])
-                    )
-                    + hash_file_content(tree_shaking.implicit_hooks_file)
-                ),
+            minify_dependencies(
+                start_directory,
+                deps0['entries'],
+                deps0['search_paths'],
+                deps0['base'],
             )
-
-            if fs.exist(mini_deps_cache_file):
-                assert not fs.empty(mini_deps_dir)
-                return {}
-
-            if fs.exist(mini_deps_dir):
-                print('incrementally minify dependencies')
-            else:
-                print('first time minify dependencies')
-
-            fs.make_dir(dot_dps_dir)
-            fs.make_link(
-                get_venv_root(start_directory, deps0['base'][:-5]),
-                #   tip: deps0['base'] is either 'poetry.lock' or 'uv.lock'.
-                orig_deps_dir,
-            )
-
-            fs.dump(
-                deps0['options'],
-                model_file := '{}/tree_shaking_model.json'.format(dot_dps_dir),
-            )
-
-            tree_shaking.build_module_graphs(model_file)
-            tree_shaking.dump_tree(model_file)
-
-            mini_deps_assets_info = self._update_assets(
-                assets0=['.depsland/mini_deps/*'],
-                start_directory=start_directory,
-            )
-            fs.dump(mini_deps_assets_info, mini_deps_cache_file)
             return {}
 
     def _update_encryption(
