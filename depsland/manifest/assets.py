@@ -1,3 +1,10 @@
+"""
+variable abbreviations:
+    ftype: file type
+    rpath or relpath: relative path
+    utime: updated time
+"""
+
 import os
 import typing as tp
 from collections import namedtuple
@@ -16,10 +23,6 @@ def index_assets(
 ) -> T.Assets1:
     """
     doc: @wiki/src/devnote/manifest-assets-path-forms.md
-    variable abbreviations:
-        ftype: file type
-        rpath or relpath: relative path
-        utime: updated time
     """
     out = {}
     for rpath, scheme in _unpack_assets(assets0, start_directory):

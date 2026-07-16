@@ -481,26 +481,23 @@ class Manifest:
 
                 assert 'options' in deps_dict
                 options = deps_dict['options']
-                if 'root' in options:
-                    print(
-                        ':v6',
-                        'manually set "root" field has no effect, since it '
-                        'will be internally overridden. you can remove it from '
-                        'tree-shaking options.',
-                    )
-                if 'export' in options:
-                    print(
-                        ':v6',
-                        'manually set "export" field has no effect, since it '
-                        'will be internally overridden. you can remove it from '
-                        'tree-shaking options.',
-                    )
-                # force overriding
+
+                assert 'root' not in options, (
+                    '"root" field in tree-shaking options is managed by '
+                    'depsland, do not set it manually.'
+                )
                 options['root'] = '..'
-                options['export'] = {
-                    'source': '.depsland/orig_deps',
-                    'target': '.depsland/mini_deps',
-                }
+                
+                if 'export' in options:
+                    assert (
+                        options['export']['source']
+                        and options['export']['target']
+                    )
+                else:
+                    options['export'] = {
+                        'source': '.depsland/orig_deps',
+                        'target': '.depsland/mini_deps',
+                    }
 
                 assert options['entries']
 
@@ -595,8 +592,9 @@ class Manifest:
         else:  # dict
             minify_dependencies(
                 start_directory,
-                deps0['entries'],
-                deps0['search_paths'],
+                deps0['options']['entries'],
+                deps0['options']['search_paths'],
+                deps0['options']['export'],
                 deps0['base'],
             )
             return {}

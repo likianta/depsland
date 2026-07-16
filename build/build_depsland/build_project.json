@@ -9,7 +9,6 @@
             "appid": "depsland",
             "name": "Depsland Standalone",
             "assets": [
-                "CHANGELOG.zh.md",
                 "apps/.bin:0",
                 "build",
                 "chore/pypi_blank",
@@ -24,8 +23,7 @@
                 "temp:0",
                 "temp/temp_project:0",
                 "test:0",
-                "poetry.lock",
-                "requirements.lock"
+                "uv.lock"
             ],
             "dependencies": {
                 "method": "tree_shaking",
@@ -55,11 +53,7 @@
                         "pyside6",
                         "qmlease",
                         "qtpy"
-                    ],
-                    "export": {
-                        "source": "$venv",
-                        "target": "chore/minideps"
-                    }
+                    ]
                 }
             },
             "encryption": {

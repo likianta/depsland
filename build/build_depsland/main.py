@@ -11,7 +11,7 @@ from depsland.api import dev_api
 
 @cli
 def bump_version(new_ver: str = '') -> None:
-    dev_api.bump_version('build/build_depsland/build_project.json', new_ver)
+    dev_api.bump_version_inplaces(fs.here('build_project.json'), new_ver)
 
 
 @cli
@@ -202,35 +202,28 @@ def make_dist(
         fs.copy_tree(f'{root_i}/chore/pypi_blank', f'{root_o}/pypi')
 
     if _add_python_sdk:
-        fs.make_link(f'{root_i}/chore/minideps', f'{root_o}/chore/minideps')
+        os.mkdir(f'{root_o}/chore/minideps')
+        for x in os.listdir(f'{root_i}/.depsland/mini_deps'):
+            if x in ('matplotlib', 'numpy', 'pandas'):
+                # see @chore/disguised_packages/readme.md
+                fs.make_link(
+                    f'{root_i}/chore/disguised_packages/{x}',
+                    f'{root_o}/chore/minideps/{x}',
+                )
+            else:
+                fs.make_link(
+                    f'{root_i}/.depsland/mini_deps/{x}',
+                    f'{root_o}/chore/minideps/{x}',
+                )
         fs.make_link(f'{root_i}/python', f'{root_o}/python')
-
-    _make_disguised_packages('chore/minideps')
 
     print(':t', 'created distribution: {}'.format(fs.relpath(root_o)))
     return root_o
 
 
-def _make_disguised_packages(site_packages_dir: str) -> None:
-    """
-    doc: /chore/disguised_packages/readme.md
-    """
-    for pkg_name in ('matplotlib', 'numpy', 'pandas'):
-        dir_o = f'{site_packages_dir}/{pkg_name}'
-        if fs.exist(dir_o):
-            if fs.islink(dir_o):
-                print('{} linked'.format(pkg_name), ':v')
-                continue
-            else:
-                raise Exception(dir_o)
-        else:
-            dir_i = f'chore/disguised_packages/{pkg_name}'
-            fs.make_link(dir_i, dir_o)
-
-
 if __name__ == '__main__':
     # prerequisites:
     #   1. nushell: `$env.DEPSLAND_CONFIG_ROOT = 'test/_config'`
-    #   2. make sure poetry.lock is latest.
-    # pox build/build_depsland/main.py main -z -u
+    #   2. make sure uv.lock latest.
+    # pox build/build_depsland/main.py main -c -u
     cli.run()
