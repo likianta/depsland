@@ -3,11 +3,10 @@ if __name__ == '__main__':
 
 import re
 import sys
-import typing as t
+import typing as tp
 
 from lk_utils import fs
 from lk_utils import run_cmd_args
-from neoprint import print
 
 from .build_offline import build as build_offline
 from .build_offline_2 import build_stripped_offline
@@ -17,9 +16,9 @@ from ...verspec import compare_version
 
 
 class T:
-    ImageKey = t.Literal['src_max', 'src_min', 'enc_max', 'enc_min']
+    ImageKey = tp.Literal['src_max', 'src_min', 'enc_max', 'enc_min']
     Path = str  # any path form
-    Config = t.TypedDict(
+    Config = tp.TypedDict(
         'Config',
         {
             'root': Path,
@@ -27,14 +26,14 @@ class T:
             # the version_bumps:keys are order sensitive. the first key will be
             # treated as primary key.
             # usually the primary key indicates to "pyproject.toml" file.
-            'version_bumps': t.Dict[Path, str],
-            'images': t.TypedDict(
+            'version_bumps': tp.Dict[Path, str],
+            'images': tp.TypedDict(
                 'Images',
                 {
-                    'src_max': t.Union[Path, dict],
-                    'src_min': t.Union[Path, dict],
-                    'enc_max': t.Union[Path, dict],
-                    'enc_min': t.Union[Path, dict],
+                    'src_max': tp.Union[Path, dict],
+                    'src_min': tp.Union[Path, dict],
+                    'enc_max': tp.Union[Path, dict],
+                    'enc_min': tp.Union[Path, dict],
                 },
             ),
             'post_script': Path,  # TODO: support passing args.
@@ -50,7 +49,7 @@ def build(
     remain_last_version: bool = False,
     remove_depsland: bool = True,
     compress_result: bool = False,
-) -> t.Tuple[str, str]:
+) -> tp.Tuple[str, str]:
     """
     params:
         image_key (-k): suggest 'src_min' or 'enc_max'.
@@ -156,7 +155,7 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
             if isinstance(x, str):
                 images[k] = abspath(x)
             else:  # dict
-                xdict: t.Dict[str, t.Any] = x  # noqa
+                xdict: tp.Dict[str, tp.Any] = x  # noqa
                 if 'start_directory' in xdict:
                     if xdict['start_directory'].startswith('..'):
                         xdict['start_directory'] = fs.normpath(
@@ -184,7 +183,7 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
     else:
         post_script = None
 
-    return t.cast(
+    return tp.cast(
         T.Config,
         {
             'root': root,
@@ -197,7 +196,7 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
 
 
 def _bump_versions(
-    old_ver: str, new_ver: str, places: t.Dict[T.Path, str]
+    old_ver: str, new_ver: str, places: tp.Dict[T.Path, str]
 ) -> None:
     for k, v in places.items():
         content_r = fs.load(k, 'plain')

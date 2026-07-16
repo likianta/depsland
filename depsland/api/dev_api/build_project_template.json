@@ -10,24 +10,5 @@
         "enc_max": "",
         "enc_min": ""
     },
-    "encryption_options": {
-        "key": "",
-        "packages": [],
-        "output": ""
-    },
-    "minideps_options": {
-        "tree_shaking_model": {
-            "search_paths": [".venv", "."],
-            "entries": [
-                ".venv/streamlit/__main__.py",
-                "run.py"
-            ],
-            "ignores": [],
-            "export": {
-                "source": ".venv",
-                "target": ""
-            }
-        }
-    },
     "post_script": ""
 }

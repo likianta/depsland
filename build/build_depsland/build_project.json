@@ -27,7 +27,46 @@
                 "poetry.lock",
                 "requirements.lock"
             ],
-            "dependencies": "",
+            "dependencies": {
+                "method": "tree_shaking",
+                "base": "uv.lock",
+                "options": {
+                    "search_paths": ["$venv", "."],
+                    "entries": [
+                        "depsland/__init__.py",
+                        "depsland/__main__.py",
+                        "depsland/gui/app_manager/app.py",
+                        "depsland/gui/setup_wizard/depsland_installer_client_support.py",
+                        "depsland/gui/setup_wizard/depsland_installer_online.py",
+                        "depsland/gui/setup_wizard/process_manager.py",
+                        "depsland/gui/setup_wizard/setup_wizard.py",
+                        "$venv/streamlit/__init__.py",
+                        "$venv/streamlit/__main__.py",
+                        "$venv/streamlit_extras/__init__.py"
+                    ],
+                    "ignores": [
+                        "ipython",
+                        "matplotlib",
+                        "numpy",
+                        "pandas",
+                        "pil",
+                        "plotly",
+                        "py7zr",
+                        "pyside6",
+                        "qmlease",
+                        "qtpy"
+                    ],
+                    "export": {
+                        "source": "$venv",
+                        "target": "chore/minideps"
+                    }
+                }
+            },
+            "encryption": {
+                "key": "",
+                "packages": [],
+                "output": ""
+            },
             "launcher": {
                 "command": "python -m depsland launch-gui",
                 "icon": "build/icon/launcher.ico",
@@ -44,44 +83,6 @@
         "src_min": "",
         "enc_max": "",
         "enc_min": ""
-    },
-    "encryption_options": {
-        "key": "",
-        "packages": [],
-        "output": ""
-    },
-    "minideps_options": {
-        "tree_shaking_model": {
-            "search_paths": ["$venv", "."],
-            "entries": [
-                "depsland/__init__.py",
-                "depsland/__main__.py",
-                "depsland/gui/app_manager/app.py",
-                "depsland/gui/setup_wizard/depsland_installer_client_support.py",
-                "depsland/gui/setup_wizard/depsland_installer_online.py",
-                "depsland/gui/setup_wizard/process_manager.py",
-                "depsland/gui/setup_wizard/setup_wizard.py",
-                "$venv/streamlit/__init__.py",
-                "$venv/streamlit/__main__.py",
-                "$venv/streamlit_extras/__init__.py"
-            ],
-            "ignores": [
-                "ipython",
-                "matplotlib",
-                "numpy",
-                "pandas",
-                "pil",
-                "plotly",
-                "py7zr",
-                "pyside6",
-                "qmlease",
-                "qtpy"
-            ],
-            "export": {
-                "source": "$venv",
-                "target": "chore/minideps"
-            }
-        }
     },
     "post_script": ""
 }

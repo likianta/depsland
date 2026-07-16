@@ -3,6 +3,7 @@ if 1:
     import os
     import sys
     _parent_dir = os.path.abspath(f'{__file__}/../..')
+    # print(f'{_parent_dir=}, {sys.base_prefix=}')
     if sys.base_prefix.startswith(_parent_dir):
         # we are using an exclusive python interpreter vendored by depsland.
         # since the interpreter is clean and no third party packages installed,
@@ -14,6 +15,7 @@ if 1:
 
 if 2:
     import neoprint as _np
+    # print(f'{_np.__path__=}')
     _np.setup()
 # fmt: on
 
@@ -38,4 +40,4 @@ from .pypi import pip
 from .pypi import pypi
 from .utils import make_temp_dir
 
-__version__ = '0.12.0a26'
+__version__ = '0.12.0b4'

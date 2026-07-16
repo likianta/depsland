@@ -174,7 +174,7 @@ class Manifest:
                             'entries': [deduce_entry()]
                         }
 
-            self._precheck_manifest(data0, start_directory)
+            self._pre_process_manifest(data0, start_directory)
             data1 = {
                 'appid': data0['appid'],
                 'name': data0['name'],
@@ -205,7 +205,7 @@ class Manifest:
                 ),
                 'depsland_version': data0.get('depsland_version', __version__),
             }
-            self._postcheck_manifest(
+            self._post_process_manifest(
                 data1, origin_dependency_setting=data0.get('dependencies')
             )
 
@@ -368,9 +368,8 @@ class Manifest:
 
     # --------------------------------------------------------------------------
 
-    # TODO: rename to `_pre_process_manifest`?
     @staticmethod
-    def _precheck_manifest(
+    def _pre_process_manifest(
         manifest: T.Manifest0, start_directory: T.StartDirectory
     ) -> None:
         # assert required keys
@@ -439,18 +438,25 @@ class Manifest:
         )
 
         if enc := manifest.get('encryption'):
-            assert enc['key'] and enc['packages'], enc
-            assert all(x in manifest['assets'] for x in enc['packages'])
-            assert all(
-                fs.exist('{}/{}'.format(start_directory, x))
-                for x in enc['packages']
-            )
-            if enc['output']:
-                if not fs.exist('{}/{}'.format(start_directory, enc['output'])):
-                    fs.make_dir('{}/{}'.format(start_directory, enc['output']))
+            if not any(enc.values()):
+                manifest['encryption'] = None
             else:
-                enc['output'] = '.depsland/encrypted_packages'
-                fs.make_dirs('{}/{}'.format(start_directory, enc['output']))
+                assert enc['key'] and enc['packages'], enc
+                assert all(x in manifest['assets'] for x in enc['packages'])
+                assert all(
+                    fs.exist('{}/{}'.format(start_directory, x))
+                    for x in enc['packages']
+                )
+                if enc['output']:
+                    if not fs.exist(
+                        '{}/{}'.format(start_directory, enc['output'])
+                    ):
+                        fs.make_dir(
+                            '{}/{}'.format(start_directory, enc['output'])
+                        )
+                else:
+                    enc['output'] = '.depsland/encrypted_packages'
+                    fs.make_dirs('{}/{}'.format(start_directory, enc['output']))
 
         if manifest.get('dependencies'):
             if isinstance(manifest['dependencies'], str):
@@ -470,26 +476,43 @@ class Manifest:
                 assert isinstance(manifest['dependencies'], dict)
                 deps_dict = manifest['dependencies']
 
-                assert deps_dict['method'] == 'tree_shaking'
+                assert deps_dict['method'] == 'tree_shaking', deps_dict
 
-                assert deps_dict['base'] in ('poetry.lock', 'uv.lock')
-                # dir = manifest['start_directory']
-                # if 'base' in deps_dict:
-                #     assert deps_dict['base'] in ('uv.lock', 'poetry.lock')
-                #     assert fs.exist('{}/{}'.format(dir, deps_dict['base']))
-                # else:  # FIXME
-                #     assert (
-                #         x := 'uv.lock'
-                #         if fs.exist('{}/uv.lock'.format(dir))
-                #         else 'poetry.lock'
-                #         if fs.exist('{}/poetry.lock'.format(dir))
-                #         else ''
-                #     ), dir
-                #     deps_dict['base'] = x
+                if 'base' in deps_dict:
+                    assert deps_dict['base'] in ('poetry.lock', 'uv.lock')
+                else:
+                    deps_dict['base'] = 'uv.lock'
 
-                if 'options' in deps_dict:
-                    assert 'root' not in deps_dict['options']
-                    assert 'export' not in deps_dict['options']
+                assert 'options' in deps_dict
+                options = deps_dict['options']
+                if 'root' in options:
+                    print(
+                        ':v6',
+                        'manually set "root" field has no effect, since it '
+                        'will be internally overridden. you can remove it from '
+                        'tree-shaking options.',
+                    )
+                if 'export' in options:
+                    print(
+                        ':v6',
+                        'manually set "export" field has no effect, since it '
+                        'will be internally overridden. you can remove it from '
+                        'tree-shaking options.',
+                    )
+                # force overriding
+                options['root'] = '..'
+                options['export'] = {
+                    'source': '.depsland/orig_deps',
+                    'target': '.depsland/mini_deps',
+                }
+
+                assert options['entries']
+
+                if 'search_paths' in options:
+                    if '.depsland/orig_deps' not in options['search_paths']:
+                        options['search_paths'].insert(0, '.depsland/orig_deps')
+                else:
+                    options['search_paths'] = ['.depsland/orig_deps', '.']
 
         launcher: T.Launcher0 = manifest['launcher']
         assert launcher['command'], 'field `launcher.command` cannot be empty!'
@@ -506,8 +529,7 @@ class Manifest:
                 'launcher command.'
             )
 
-    # TODO: rename to `_post_process_manifest`?
-    def _postcheck_manifest(
+    def _post_process_manifest(
         self, manifest: T.Manifest1, origin_dependency_setting: T.Dependencies0
     ) -> None:
         # inflate assets from tree_shaking cache
@@ -743,23 +765,8 @@ class Manifest:
                 orig_deps_dir,
             )
 
-            # 1/3. get options
-            options = deps0['options']
-            # 2/3. fill options
-            options['root'] = '..'
-            if 'search_paths' in options:
-                if '.depsland/orig_deps' not in options['search_paths']:
-                    options['search_paths'].insert(0, '.depsland/orig_deps')
-            else:
-                options['search_paths'] = ['.depsland/orig_deps', '.']
-            assert options['entries']
-            options['export'] = {
-                'source': '.depsland/orig_deps',
-                'target': '.depsland/mini_deps',
-            }
-            # 3/3. dump options
             fs.dump(
-                options,
+                deps0['options'],
                 model_file := '{}/tree_shaking_model.json'.format(dot_dps_dir),
             )
 

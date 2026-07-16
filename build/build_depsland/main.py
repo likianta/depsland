@@ -1,15 +1,17 @@
 import os
+
 from argsense import cli
-from depsland import paths
-from depsland.api.dev_api import build_project
-from depsland.api.dev_api.build_project import bump_version as _bump_version
 from lk_utils import fs
 from lk_utils import run_cmd_args
+from neoprint import print
+
+from depsland import paths
+from depsland.api import dev_api
 
 
 @cli
 def bump_version(new_ver: str = '') -> None:
-    _bump_version('build/build_depsland/build_project.json', new_ver)
+    dev_api.bump_version('build/build_depsland/build_project.json', new_ver)
 
 
 @cli
@@ -22,14 +24,14 @@ def main(
     """
     params:
         new_version (-v):
-        compress (-z):
+        compress (-c):
         upload_to_oss (-u):
         pypi_scheme (-p): 'full' or 'blank'
     """
-    _, new_ver = build_project(
-        file='build/build_depsland/build_project.json',
+    _, new_ver = dev_api.build_project(
+        file=fs.here('build_project.json'),
+        image_key='src_max',
         new_version=new_version,
-        minify_deps=2,
         publish=0,
     )
 
@@ -107,24 +109,17 @@ def make_dist(
     """
     if fs.exist('depsland/.project'):
         raise Exception('please remove "depsland/.project" to continue.')
-
-    # checks
     if oss_scheme == 'aliyun':
-        # noinspection PyTypeChecker
         assert fs.exist(os.environ['DEPSLAND_CONFIG_ROOT'])
 
     root_i = paths.project.root
-    root_o = '{dist}/standalone/depsland-{version}'.format(
-        dist=paths.project.dist, version=version
-    )
-    # ^ related doc: `wiki/design-tkinking/why-does-dist-standalone-directory
-    #   -like-this.md`
+    root_o = '{}/standalone/depsland-{}'.format(paths.project.dist, version)
     assert not fs.exist(root_o)
     os.mkdir(root_o)
 
-    # -------------------------------------------------------------------------
-
+    # --------------------------------------------------------------------------
     # make empty dirs
+
     # os.mkdir(f'{root_o}/apps')
     # os.mkdir(f'{root_o}/apps/.bin')
     os.mkdir(f'{root_o}/build')
@@ -142,41 +137,28 @@ def make_dist(
     os.mkdir(f'{root_o}/temp')
     os.mkdir(f'{root_o}/temp/temp_project')
 
-    # -------------------------------------------------------------------------
-
+    # --------------------------------------------------------------------------
     # copy files and folders
-    fs.make_link(
-        f'{root_i}/build/exe',
-        f'{root_o}/build/exe',
-    )
+
+    fs.make_link(f'{root_i}/build/exe', f'{root_o}/build/exe')
     # fs.copy_file(
     #     f'{root_i}/build/exe/depsland-cli.exe',
     #     f'{root_o}/apps/.bin/depsland.exe',
     # )
     fs.copy_file(
-        f'{root_i}/build/exe/depsland-gui.exe',
-        f'{root_o}/Depsland.exe',
+        f'{root_i}/build/exe/depsland-gui.exe', f'{root_o}/Depsland.exe'
     )
     fs.copy_file(
         f'{root_i}/build/exe/depsland-gui-debug.exe',
         f'{root_o}/Depsland (Debug).exe',
     )
-    fs.make_link(
-        f'{root_i}/build/icon',
-        f'{root_o}/build/icon',
-    )
-    fs.make_link(
-        f'{root_i}/chore/pypi_blank',
-        f'{root_o}/chore/pypi_blank',
-    )
+    fs.make_link(f'{root_i}/build/icon', f'{root_o}/build/icon')
+    fs.make_link(f'{root_i}/chore/pypi_blank', f'{root_o}/chore/pypi_blank')
     fs.make_link(  # TEST
         f'{root_i}/chore/setup_wizard_logo.png',
         f'{root_o}/chore/setup_wizard_logo.png',
     )
-    fs.make_link(
-        f'{root_i}/depsland',
-        f'{root_o}/depsland',
-    )
+    fs.make_link(f'{root_i}/depsland', f'{root_o}/depsland')
     # fs.copy_tree(
     #     f'{root_i}/sidework',
     #     f'{root_o}/sidework',
@@ -196,8 +178,7 @@ def make_dist(
         custom = os.getenv('DEPSLAND_CONFIG_ROOT')
         assert fs.load(f'{custom}/depsland.yaml')['oss']['server'] == 'aliyun'
         fs.copy_file(
-            f'{custom}/depsland.yaml',
-            f'{root_o}/config/depsland.yaml',
+            f'{custom}/depsland.yaml', f'{root_o}/config/depsland.yaml'
         )
     else:
         assert (
@@ -205,8 +186,7 @@ def make_dist(
             == 'local'
         )
         fs.copy_file(
-            f'{root_i}/config/depsland.yaml',
-            f'{root_o}/config/depsland.yaml',
+            f'{root_i}/config/depsland.yaml', f'{root_o}/config/depsland.yaml'
         )
 
     if pypi_scheme == 'full':

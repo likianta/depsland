@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.0b3"
+version = "0.12.0b4"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
@@ -8,9 +8,9 @@ license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "airmise>=3.0.0",
-    "argsense>=1.1.3a1,<1.2.0",
+    "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.7.1b0",
+    "lk-utils>=3.7.1",
     "neoprint>=0.1.7",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
@@ -32,6 +32,7 @@ requires = ["hatchling>=1.29.0"]
 
 [dependency-groups]
 dev = [
+    "argsense>=1.1.3a1,<1.2.0",
     "freesimplegui>=5.2.0post1",
     "icnsutil>=1.1.0",
     "ipython>=9.15.0",
