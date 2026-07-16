@@ -157,7 +157,7 @@ def _resolve_assets(
             fs.make_link(abspath, '{}/{}'.format(root_o, file_id), False)
 
     simplified_assets_map = {
-        k: '{}:{}{}'.format(v[1], '1' if isdir else '0', '1' if v[2] else '0')
+        k: '{}:{}{}'.format(v[1], '1' if v[2] else '0', '1' if v[3] else '0')
         for k, v in assets_map.items()
     }
     file_map = fs.here('grocery/assets_map.json')

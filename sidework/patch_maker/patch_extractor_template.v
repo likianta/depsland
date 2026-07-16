@@ -82,6 +82,8 @@ fn main() {
 			}
 		}
 	}
+
+	os.input('Patch applied. Press Enter to exit... ')
 }
 
 fn extract_resources(projdir string, patch_id string) !map[string]string {
