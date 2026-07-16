@@ -8,44 +8,11 @@ fn main() {
 	patch_id := get_patch_id()
 	println('Patch ID: ${patch_id}')
 
-    currdir := os.dir(os.executable())
-    println('Current executable directory: ${currdir}')
-	projdir, currdirname, _ := os.split_path(currdir)
-	root_i := '${currdir}/${patch_id}'.replace('\\', '/')
-	root_o := '${projdir}/source'.replace('\\', '/')
+	projdir := locate_target_directory()!
+	root_i := '${projdir}/patches/${patch_id}'
+	root_o := '${projdir}/source'
 	
-	if !dry_run {
-		if currdirname != 'patches' {
-			panic('You must place this file in "patches" directory.')
-		}
-		if !os.exists('${projdir}/source') {
-			panic('Cannot find "source" directory.')
-		}
-	}
-
-	assets_map_data := $embed_file('./grocery/assets_map.json')
-	assets_zip_data := $embed_file('./grocery/assets.zip')
-	
-	// prepare resources
-	if dry_run {
-		if !os.exists(root_i) { os.mkdir(root_i)! }
-		if !os.exists('${root_i}/backups') { os.mkdir('${root_i}/backups')! }
-		os.write_bytes('${root_i}/assets_map.json', assets_map_data.to_bytes())!
-		os.write_bytes('${root_i}/assets.zip', assets_zip_data.to_bytes())!
-		szip.extract_zip_to_dir('${root_i}/assets.zip', root_i)!
-	} else {
-		if os.exists(root_i) { os.rmdir_all(root_i)! }
-		os.mkdir(root_i)!
-		os.mkdir('${root_i}/backups')!
-		os.write_bytes('${root_i}/assets_map.json', assets_map_data.to_bytes())!
-		os.write_bytes('${root_i}/assets.zip', assets_zip_data.to_bytes())!
-		szip.extract_zip_to_dir('${root_i}/assets.zip', root_i)!
-		assert os.exists('${root_i}/assets')
-	}
-
-	assets_map := json.decode(
-		map[string]string, assets_map_data.to_string()
-	)!
+	assets_map := extract_resources(projdir, patch_id)!
 
 	// apply patch
 	mut relpath := ''
@@ -117,6 +84,35 @@ fn main() {
 	}
 }
 
+fn extract_resources(projdir string, patch_id string) !map[string]string {
+	// init directories
+	patch_dir := '${projdir}/patches/${patch_id}'
+	if os.exists(patch_dir) {
+		assert os.exists('${patch_dir}/assets')
+		assert os.exists('${patch_dir}/assets_map.json')
+		assert os.exists('${patch_dir}/backups')
+		assert os.exists('${patch_dir}/manifest.pkl')
+		// remove above except 'backups'
+		os.rmdir_all('${patch_dir}/assets')!
+		os.rm('${patch_dir}/assets_map.json')!
+		os.rm('${patch_dir}/manifest.pkl')!
+	} else {
+		os.mkdir(patch_dir)!
+		os.mkdir('${patch_dir}/backups')!
+	}
+	
+	assets_map_data := $embed_file('./grocery/assets_map.json')
+	assets_zip_data := $embed_file('./grocery/assets.zip')
+	os.write_bytes('${patch_dir}/assets_map.json', assets_map_data.to_bytes())!
+	os.write_bytes('${patch_dir}/assets.zip', assets_zip_data.to_bytes())!
+	szip.extract_zip_to_dir('${patch_dir}/assets.zip', patch_dir)!
+	assert os.exists('${patch_dir}/assets')
+
+	return json.decode(
+		map[string]string, assets_map_data.to_string()
+	)!
+}
+
 fn get_patch_id() string {
 	// try to get patch id from command line arguments. if not exists, turn to
 	// extract it from self file name.
@@ -142,6 +138,68 @@ fn get_patch_id() string {
 	} else {
 		panic('Invalid patch ID: ${patch_id}')
 	}
+}
+
+fn locate_target_directory() !string {
+	currdir := os.dir(os.executable())
+	println('Current executable directory: ${currdir}')
+
+	mut projdir := ''
+	
+	possible_projdir, possible_patch_dirname, _ := os.split_path(currdir)
+	if
+		possible_patch_dirname == 'patches' && 
+		os.exists('${possible_projdir}/source')
+	{
+		// the most ideal case.
+		projdir = possible_projdir.replace('\\', '/')
+	}
+
+	else if 
+		os.exists('${currdir}/source') &&
+		os.exists('${currdir}/python')
+	{
+		// user has put patch besides "source" directory.
+		if !os.exists('${currdir}/patches') {
+			os.mkdir('${currdir}/patches')!
+		}
+		projdir = currdir.replace('\\', '/')
+	}
+
+	else {
+		// ask user to manually input project directory.
+		println('Cannot locate project directory. Please input it manually.')
+		println('Tip:')
+		println('  To continue, input the absolute path of your application ' +
+		        'root path.')
+		println('  To exit, input "exit" or just close the console window.')
+
+		// https://docs.vlang.io/statements-&-expressions.html#bare-for
+		for {
+			projdir = os.input('Project directory: ')
+			if projdir == '' {
+				continue
+			} else if projdir == 'exit' {
+				panic('Exit.')
+			} else if 
+				projdir != '' &&
+				os.exists('${projdir}/source') &&
+				os.exists('${projdir}/python')
+			{
+				break
+			} else {
+				println('Invalid project directory! Please try again.')
+			}
+		}
+
+		projdir = projdir.replace('\\', '/')
+		if !os.exists('${projdir}/patches') {
+			os.mkdir('${projdir}/patches')!
+		}
+	}
+
+	println('Project directory: ${projdir}')
+	return projdir
 }
 
 fn parse_arguments() (bool, bool) {
