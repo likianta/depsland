@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.0b4"
+version = "0.12.0b14"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
@@ -11,7 +11,7 @@ dependencies = [
     "argsense>=1.1.2",
     "conflore>=0.2.2",
     "lk-utils>=3.7.1",
-    "neoprint>=0.1.7",
+    "neoprint>=0.1.8a0",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
     # "poetry>=2.3.2",
@@ -41,7 +41,7 @@ dev = [
     # "pinkrain>=0.0.0a32",
     # "poetry>=2.3.2",
     "py7zr>=1.1.0",
-    "pyapp-window>=2.2.3a0",
+    "pyapp-window>=2.2.3",
     # "pyinstaller>=6.15.0",
     "pyinstrument>=5.1.2",
     # "qmlease[ui]>=4.0.0a6",

@@ -131,8 +131,8 @@ def launch_gui(
         ),
         port=port,
         show_window=True,
-        size=(1200, 2000),
-        icon=paths.build.launcher_icon,
+        window_size=(1200, 2000),
+        window_icon=paths.build.launcher_icon,
     )
 
 
