@@ -9,6 +9,7 @@ from neoprint import print
 from depsland import make_temp_dir
 from depsland.manifest import T as T0
 from depsland.manifest import diff_manifest
+from depsland.manifest import dump_manifest
 from depsland.manifest import load_manifest
 
 
@@ -49,6 +50,7 @@ def make_patch(old_manifest_file: str, new_manifest_file: str) -> None:
     )
     # _resolve_dependencies(diff['dependencies'], ...)
 
+    dump_manifest(new_manifest, fs.here('grocery/manifest.pkl'))
     exe = _generate_patch_executable(patch_id)
     print(
         'see generated executable: {} ({})'.format(

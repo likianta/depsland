@@ -103,8 +103,10 @@ fn extract_resources(projdir string, patch_id string) !map[string]string {
 	
 	assets_map_data := $embed_file('./grocery/assets_map.json')
 	assets_zip_data := $embed_file('./grocery/assets.zip')
+	manifest_data := $embed_file('./grocery/manifest.pkl')
 	os.write_bytes('${patch_dir}/assets_map.json', assets_map_data.to_bytes())!
 	os.write_bytes('${patch_dir}/assets.zip', assets_zip_data.to_bytes())!
+	os.write_bytes('${patch_dir}/manifest.pkl', manifest_data.to_bytes())!
 	szip.extract_zip_to_dir('${patch_dir}/assets.zip', patch_dir)!
 	assert os.exists('${patch_dir}/assets')
 
