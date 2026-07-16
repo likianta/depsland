@@ -2,13 +2,13 @@
 if 1:
     import os
     import sys
-    _parent_dir = os.path.abspath(f'{__file__}/../..')
-    # print(f'{_parent_dir=}, {sys.base_prefix=}')
-    if sys.base_prefix.startswith(_parent_dir):
+    _projdir = os.path.abspath(f'{__file__}/../../')
+    # print(f'{_projdir=}, {sys.base_prefix=}')
+    if sys.base_prefix.startswith(_projdir):
         # we are using an exclusive python interpreter vendored by depsland.
         # since the interpreter is clean and no third party packages installed,
         # we need to lookup another place for packages.
-        assert os.path.exists(x := f'{_parent_dir}/chore/minideps'), (
+        assert os.path.exists(x := f'{_projdir}/chore/minideps'), (
             'see `DEVNOTE.md : search "make site-packages"` for help.'
         )
         sys.path.append(x)
@@ -16,8 +16,16 @@ if 1:
 if 2:
     import neoprint as _np
     # print(f'{_np.__path__=}')
+    from lk_utils import fs as _fs
+    if _fs.exist(f'{_projdir}/.depsland_project.json'):
+        if _fs.load(
+            f'{_projdir}/.depsland_project.json'
+        )['project_mode'] == 'production':
+            _np.config(legacy_windows=True)
     _np.setup()
 # fmt: on
+
+# ------------------------------------------------------------------------------
 
 from . import api
 from . import config
@@ -40,4 +48,4 @@ from .pypi import pip
 from .pypi import pypi
 from .utils import make_temp_dir
 
-__version__ = '0.12.0b4'
+__version__ = '0.12.0b13'
