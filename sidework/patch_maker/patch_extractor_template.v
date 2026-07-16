@@ -5,7 +5,8 @@ import os
 fn main() {
 	dry_run, verbose := parse_arguments()
 
-	patch_id := '<PATCH_ID>'
+	patch_id := get_patch_id()
+	println('Patch ID: ${patch_id}')
 
     currdir := os.dir(os.executable())
     println('Current executable directory: ${currdir}')
@@ -22,8 +23,8 @@ fn main() {
 		}
 	}
 
-	assets_map_data := $embed_file('../grocery/assets_map.json')
-	assets_zip_data := $embed_file('../grocery/assets.zip')
+	assets_map_data := $embed_file('./grocery/assets_map.json')
+	assets_zip_data := $embed_file('./grocery/assets.zip')
 	
 	// prepare resources
 	if dry_run {
@@ -113,6 +114,33 @@ fn main() {
 				}
 			}
 		}
+	}
+}
+
+fn get_patch_id() string {
+	// try to get patch id from command line arguments. if not exists, turn to
+	// extract it from self file name.
+	args := arguments()[1..]
+	mut patch_id := ''
+	if '--patch-id' in args {
+		idx := args.index('--patch-id')
+		patch_id = args[idx + 1]
+	} else {
+		_, self_name, _ := os.split_path(os.executable())
+		// e.g. ['/path/to/', 'patch-d514b17f', '.exe']
+		patch_id = self_name.all_after('patch-')
+	}
+	// validate patch id
+	if patch_id.len == 8 {
+		hex_strings := '0123456789abcdef'
+		for ch in patch_id {
+			if !hex_strings.contains_u8(ch) {
+				panic('Invalid patch ID: ${patch_id}')
+			}
+		}
+		return patch_id
+	} else {
+		panic('Invalid patch ID: ${patch_id}')
 	}
 }
 

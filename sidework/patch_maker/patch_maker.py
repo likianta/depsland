@@ -32,7 +32,7 @@ def make_patch(old_manifest_file: str, new_manifest_file: str) -> None:
     old_manifest = load_manifest(old_manifest_file)
     new_manifest = load_manifest(new_manifest_file)
 
-    patch_id = uuid()[::4]  # e.g. 'd514b17f'
+    patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
     print(patch_id, ':n')
     temp_dir = make_temp_dir(patch_id)
     fs.make_dir('{}/assets'.format(temp_dir))
@@ -49,8 +49,13 @@ def make_patch(old_manifest_file: str, new_manifest_file: str) -> None:
     )
     # _resolve_dependencies(diff['dependencies'], ...)
 
-    _generate_patch_executable(new_manifest, patch_id)
-    # print('see generated executable', exe)
+    exe = _generate_patch_executable(patch_id)
+    print(
+        'see generated executable: {} ({})'.format(
+            fs.relpath(exe, fs.here()), fs.filesize(exe, str)
+        ),
+        ':v4',
+    )
 
 
 def _resolve_assets(
@@ -102,33 +107,19 @@ def _resolve_assets(
 #             ...
 
 
-def _generate_patch_executable(manifest: T.Manifest, patch_id: str) -> str:
-    template = fs.load(fs.here('patch_extractor_template.v'))
-    fs.dump(
-        template.replace('<PATCH_ID>', patch_id),
-        fs.here('generated_extractors/patch_extractor_{}.v'.format(patch_id)),
-    )
-    print(
-        'generate exe: {} -> {}'.format(
-            'patch_extractor_{}.v'.format(patch_id),
-            '{} - Patch v{}.exe'.format(manifest['name'], manifest['version']),
-        ),
-        ':r2',
-    )
+def _generate_patch_executable(patch_id: str) -> str:
     run_cmd_args(
         (
             'v',
             '-o',
-            '{} - Patch v{}.exe'.format(manifest['name'], manifest['version']),
-            'patch_extractor_{}.v'.format(patch_id),
+            'generated_extractors/patch-{}.exe'.format(patch_id),
+            'patch_extractor_template.v',
         ),
-        cwd=fs.here('generated_extractors'),
+        cwd=fs.here(),
         verbose=True,
     )
     return fs.here(
-        'generated_extractors/{}'.format(
-            '{} - Patch v{}.exe'.format(manifest['name'], manifest['version'])
-        )
+        'generated_extractors/{}'.format('patch-{}.exe'.format(patch_id))
     )
 
 
