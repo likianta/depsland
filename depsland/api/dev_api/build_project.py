@@ -2,11 +2,9 @@ if __name__ == '__main__':
     __package__ = 'depsland.api.dev_api'
 
 import re
-import sys
 import typing as tp
 
 from lk_utils import fs
-from lk_utils import run_cmd_args
 
 from .build_offline import build as build_offline
 from .build_offline_2 import build_stripped_offline
@@ -37,7 +35,6 @@ class T:
                     'enc_min': tp.Union[Path, dict],
                 },
             ),
-            'post_script': Path,  # TODO: support passing args.
         },
     )
 
@@ -99,14 +96,6 @@ def build(
             )
     elif publish == 2:
         publish_to_oss(image_file, upload_dependencies=True)
-
-    if config['post_script']:
-        run_cmd_args(
-            sys.executable,
-            config['post_script'],
-            cwd=config['root'],
-            verbose=True,
-        )
 
     return curr_version, new_version
 
@@ -181,11 +170,6 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
             images[k] = None
     assert any(images.values())
 
-    if x := data0.get('post_script'):
-        post_script = abspath(x)
-    else:
-        post_script = None
-
     return tp.cast(
         T.Config,
         {
@@ -193,7 +177,6 @@ def load_config(file: T.Path, **kwargs) -> T.Config:
             'version': version,
             'version_bumps': version_bumps,
             'images': images,
-            'post_script': post_script,
         },
     )
 

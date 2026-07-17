@@ -40,6 +40,7 @@ from .api import init
 from .api import install
 from .api import publish
 from .manifest import T
+from .manifest import dump_manifest
 from .manifest import load_manifest
 from .platform import sysinfo
 from .platform.launcher import bat_2_exe
@@ -48,4 +49,4 @@ from .pypi import pip
 from .pypi import pypi
 from .utils import make_temp_dir
 
-__version__ = '0.12.0b13'
+__version__ = '0.12.0b27'
