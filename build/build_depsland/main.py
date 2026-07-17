@@ -6,7 +6,11 @@ from lk_utils import run_cmd_args
 from neoprint import print
 
 from depsland import paths
+from depsland import dump_manifest
+from depsland import load_manifest
 from depsland.api import dev_api
+from depsland.api.dev_api.build_project import load_config
+from depsland.utils import bump_version as bump_least_version
 
 
 @cli
@@ -28,14 +32,16 @@ def main(
         upload_to_oss (-u):
         pypi_scheme (-p): 'full' or 'blank'
     """
-    _, new_ver = dev_api.build_project(
-        file=fs.here('build_project.json'),
-        image_key='src_max',
-        new_version=new_version,
-        publish=0,
-    )
+    cfg = load_config(fs.here('build_project.json'))
+    old_ver = cfg['version']
+    new_ver = new_version or bump_least_version(cfg['version'])
+    print(':r2', 'bump version: {} -> {}'.format(old_ver, new_ver))
+    dev_api.bump_version_inplaces(fs.here('build_project.json'), new_ver)
 
     dist_dir = make_dist(new_ver, 'aliyun', pypi_scheme)
+    manifest = load_manifest(cfg['images']['src_max'])
+    dump_manifest(manifest, '{}/.manifest.pkl'.format(dist_dir))
+
     if compress:
         dist_file = fs.zip_dir(
             dist_dir,

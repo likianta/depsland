@@ -11,6 +11,7 @@ from .build_offline_2 import build_stripped_offline
 from .publish import publish as publish_to_oss
 from ...manifest import load_manifest
 from ...paths import temp as temp_paths
+from ...utils import bump_version as bump_least_version
 from ...verspec import compare_version
 
 
@@ -47,7 +48,7 @@ def build(
     remain_last_version: bool = False,
     remove_depsland: bool = True,
     compress_result: bool = False,
-) -> tp.Tuple[str, str]:
+) -> T.Config:
     """
     params:
         image_key (-k): suggest 'src_min' or 'enc_max'.
@@ -72,7 +73,7 @@ def build(
         new_version = curr_version
     else:
         if not new_version:
-            new_version = _deduce_new_version(curr_version)
+            new_version = bump_least_version(curr_version)
         print(':r2', 'bump version: {} -> {}'.format(curr_version, new_version))
         _bump_versions(curr_version, new_version, config['version_bumps'])
 
@@ -97,20 +98,22 @@ def build(
     elif publish == 2:
         publish_to_oss(image_file, upload_dependencies=True)
 
-    return curr_version, new_version
+    config['last_version'] = curr_version  # type: ignore
+    config['version'] = new_version
+    return config
 
 
 def bump_version(file: T.Path, new_version: str = '') -> None:
     config = load_config(file)
     curr_ver = config['version']
-    new_ver = new_version or _deduce_new_version(curr_ver)
+    new_ver = new_version or bump_least_version(curr_ver)
     print(':r2', 'bump version: {} -> {}'.format(curr_ver, new_ver))
     if places := config['version_bumps']:
         _bump_versions(curr_ver, new_ver, places)
     # TODO: config['version'] = new_ver
 
 
-def load_config(file: T.Path, **kwargs) -> T.Config:
+def load_config(file: T.Path) -> T.Config:
     data0: T.Config = fs.load(file)
 
     root = fs.abspath('{}/{}'.format(fs.parent(file), data0['root']))
@@ -207,20 +210,6 @@ def _bump_versions(
             ),
         )
         fs.dump(content_w, k, 'plain')
-
-
-def _deduce_new_version(old: str) -> str:
-    """
-    example:
-        0.12.0   -> 0.12.1
-        0.12.1a9 -> 0.12.1a10
-        0.12.1b0 -> 0.12.1b1
-    """
-    a, b, c, d = re.match(r'(\d+)\.(\d+)\.(\d+)([ab]\d+)?', old).groups()
-    if d is None:
-        return f'{a}.{b}.{int(c) + 1}'
-    else:
-        return f'{a}.{b}.{c}{d[0]}{int(d[1:]) + 1}'
 
 
 if __name__ == '__main__':
