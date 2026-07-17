@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.0b27"
+version = "0.12.0b31"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
@@ -10,7 +10,7 @@ dependencies = [
     "airmise>=3.0.0",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.7.1",
+    "lk-utils>=3.7.2a2",
     "neoprint>=0.1.8",
     "oss2>=2.19.1",
     # "pip>=26.0.0",

@@ -5,6 +5,7 @@ import re
 import typing as tp
 
 from lk_utils import fs
+from lk_utils import slice
 
 from .build_offline import build as build_offline
 from .build_offline_2 import build_stripped_offline
@@ -75,7 +76,9 @@ def build(
         if not new_version:
             new_version = bump_least_version(curr_version)
         print(':r2', 'bump version: {} -> {}'.format(curr_version, new_version))
-        _bump_versions(curr_version, new_version, config['version_bumps'])
+        bump_version_inplaces(
+            *config['version_bumps'].keys(), new_version=new_version
+        )
 
     image_file = config['images'][image_key]
     assert image_file, image_key
@@ -103,14 +106,59 @@ def build(
     return config
 
 
-def bump_version(file: T.Path, new_version: str = '') -> None:
-    config = load_config(file)
-    curr_ver = config['version']
-    new_ver = new_version or bump_least_version(curr_ver)
-    print(':r2', 'bump version: {} -> {}'.format(curr_ver, new_ver))
-    if places := config['version_bumps']:
-        _bump_versions(curr_ver, new_ver, places)
-    # TODO: config['version'] = new_ver
+def bump_version_inplaces(*files: T.Path, new_version: str) -> None:
+    for f in files:
+        print(':v', f)
+        content_r: str = fs.load(f, 'plain')
+        match fs.basename(f):
+            case '__init__.py':
+                content_w = (
+                    slice(content_r)
+                    .find("__version__ = '")
+                    .end()
+                    .cut()
+                    .find("'")
+                    .cut()
+                    .inplace(new_version)
+                    .out()
+                )
+            case 'pyproject.toml':
+                content_w = (
+                    slice(content_r)
+                    .find('version = "')
+                    .end()
+                    .cut()
+                    .find('"')
+                    .cut()
+                    .inplace(new_version)
+                    .out()
+                )
+            case x if x.endswith('.json'):
+                content_w = (
+                    slice(content_r)
+                    .find('"version": "')
+                    .end()
+                    .cut()
+                    .find('"')
+                    .cut()
+                    .inplace(new_version)
+                    .out()
+                )
+            case x if x.endswith('.yaml'):
+                content_w = (
+                    slice(content_r)
+                    .find('version: ')
+                    .end()
+                    .cut()
+                    .find('\n')
+                    .cut()
+                    .inplace(new_version)
+                    .out()
+                )
+            case _:
+                raise Exception(f)
+        assert content_w != content_r, (f, new_version)
+        fs.dump(content_w, f, 'plain')
 
 
 def load_config(file: T.Path) -> T.Config:
@@ -133,10 +181,12 @@ def load_config(file: T.Path) -> T.Config:
     if not version:
         # deduce version from places
         assert version_bumps
-        for k, v in version_bumps.items():
-            content: str = fs.load(k, 'plain')
+        for first_item in version_bumps.items():
+            content: str = fs.load(first_item[0], 'plain')
             version = re.search(
-                v.replace('$version_pattern', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
+                first_item[1].replace(
+                    '$version_pattern', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'
+                ),
                 content,
             ).group(1)
             break
@@ -184,38 +234,10 @@ def load_config(file: T.Path) -> T.Config:
     )
 
 
-def _bump_versions(
-    old_ver: str, new_ver: str, places: tp.Dict[T.Path, str]
-) -> None:
-    for k, v in places.items():
-        content_r = fs.load(k, 'plain')
-        # (a) fast but limited
-        # content_w = content_r.replace(
-        #     v.replace('$version_pattern', old_ver),
-        #     v.replace('$version_pattern', new_ver),
-        #     1
-        # )
-        # (b) more flexible
-        content_w = re.sub(
-            v.replace('$version_pattern', r'(\d+\.\d+\.\d+(?:[ab]\d+)?)'),
-            v.replace('$version_pattern', new_ver),
-            content_r,
-            1,
-        )
-        assert content_w != content_r, (
-            k,
-            re.search(
-                v.replace('$version_pattern', r'\d+\.\d+\.\d+(?:[ab]\d+)?'),
-                content_r,
-            ),
-        )
-        fs.dump(content_w, k, 'plain')
-
-
 if __name__ == '__main__':
     # pox depsland/api/dev_api/build_project.py -h
     from argsense import cli
 
     cli.add_cmd(build)
-    cli.add_cmd(bump_version)
+    cli.add_cmd(bump_version_inplaces, 'bump-version')
     cli.run()

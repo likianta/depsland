@@ -8,14 +8,17 @@ from neoprint import print
 from depsland import paths
 from depsland import dump_manifest
 from depsland import load_manifest
-from depsland.api import dev_api
+from depsland.api.dev_api.build_project import bump_version_inplaces
 from depsland.api.dev_api.build_project import load_config
 from depsland.utils import bump_version as bump_least_version
 
 
 @cli
 def bump_version(new_ver: str = '') -> None:
-    dev_api.bump_version_inplaces(fs.here('build_project.json'), new_ver)
+    bump_version_inplaces(
+        *fs.load(fs.here('build_project.json'))['version_bumps'].keys(),
+        new_version=new_ver,
+    )
 
 
 @cli
@@ -36,7 +39,7 @@ def main(
     old_ver = cfg['version']
     new_ver = new_version or bump_least_version(cfg['version'])
     print(':r2', 'bump version: {} -> {}'.format(old_ver, new_ver))
-    dev_api.bump_version_inplaces(fs.here('build_project.json'), new_ver)
+    bump_version_inplaces(*cfg['version_bumps'].keys(), new_version=new_ver)
 
     dist_dir = make_dist(new_ver, 'aliyun', pypi_scheme)
     manifest = load_manifest(cfg['images']['src_max'])
@@ -231,5 +234,7 @@ if __name__ == '__main__':
     # prerequisites:
     #   1. nushell: `$env.DEPSLAND_CONFIG_ROOT = 'test/_config'`
     #   2. make sure uv.lock latest.
-    # pox build/build_depsland/main.py main -c -u
+    # uvx build/build_depsland/main.py main -p full
+    # uvx build/build_depsland/main.py main -c
+    # uvx build/build_depsland/main.py main -c -u
     cli.run()
