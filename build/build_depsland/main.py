@@ -88,6 +88,8 @@ def main(
                 verbose=True,
             )
             # fmt: on
+    else:
+        print('see result at "{}"'.format(fs.relpath(dist_dir)), ':v4t')
 
 
 @cli
