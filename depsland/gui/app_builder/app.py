@@ -3,11 +3,11 @@ if __name__ == '__main__':
 
 import re
 import typing as tp
-from uuid import uuid4
 
 import streamlit as st
 import streamlit_canary as sc
 from lk_utils import fs
+from lk_utils import uuid
 
 from . import assets_picker
 from . import dependency_scheme
@@ -50,7 +50,9 @@ def main() -> None:
 
     with st.expander(i18n.appinfo, expanded=True):
         with sc.row('bottom'):
-            st.text_input(i18n.appname, _titlize(fs.basename(prjdir)), width=240)
+            st.text_input(
+                i18n.appname, _titlize(fs.basename(prjdir)), width=240
+            )
             st.text_input(
                 i18n.appid, info['appid'], disabled=True, help=i18n.appid_help
             )
@@ -96,13 +98,13 @@ def main() -> None:
             assets_picker.main(prjdir)
         with tabs[1]:
             dependency_scheme.main(prjdir)
-    
+
     with st.bottom:
         st.button(i18n.start_building, type='primary', width='stretch')  # TODO
 
 
 def _generate_appid() -> str:
-    return uuid4().hex
+    return uuid()
 
 
 def _titlize(name: str) -> str:

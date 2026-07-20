@@ -10,15 +10,11 @@ from lk_utils import fs
 from .assets import index_assets
 from .typing import T
 from .. import normalization as norm
-from ..cache import check_persistent_key_changed
-from ..cache import save_persistent_key
 from ..depsolver import get_tree_shaking_cache_file
 from ..depsolver import minify_dependencies
 from ..depsolver import resolve_dependencies
-from ..utils import check_folder_changed
 from ..utils import hash_text
 from ..utils import init_target_tree
-from ..utils import save_folder_changes
 
 
 def init_manifest(appid: str, appname: str) -> T.ManifestObject:
@@ -610,6 +606,10 @@ class Manifest:
     ) -> T.Encryption1:
         assert options
 
+        from ..cache import get_project_cache
+        from ..cache import is_project_cached
+        from ..cache import save_project_cache
+
         def determine_encryption_key() -> str:
             key0 = options['key']
             if key0 == '$env':
@@ -627,22 +627,27 @@ class Manifest:
                 )
             return key1
 
-        options['key'] = determine_encryption_key()
-
         def check_if_reusable() -> bool:
             if not fs.exist(
                 _abspath('{}/pyportable_runtime'.format(options['output']))
             ):
                 return False
-            if check_persistent_key_changed(
-                'manifest.encryption.key_hash.' + appid,
-                hash_text(options['key']),
-            ):
+            if not is_project_cached(appid):
                 return False
-            if any(
-                check_folder_changed(_abspath(x)) for x in options['packages']
-            ):
+            proj_cache = get_project_cache(appid, options, start_directory)
+            enc_cache = proj_cache['encryption']
+            assert enc_cache
+            if enc_cache['key_hash'] != hash_text(options['key']):
                 return False
+            if enc_cache['output'] != options['output']:
+                return False
+            for k0, v0 in enc_cache['packages'].items():
+                if k0 not in options['packages']:
+                    return False
+                if v0 != fs.mtime(
+                    '{}/{}'.format(start_directory, k0), recursive=True
+                ):
+                    return False
             return True
 
         def encrypt_source() -> None:
@@ -664,16 +669,12 @@ class Manifest:
                 )
 
         def save_changes() -> None:
-            save_persistent_key(
-                'manifest.encryption.key_hash.' + appid,
-                hash_text(options['key']),
-            )
-            for pkg_relpath in options['packages']:
-                save_folder_changes(_abspath(pkg_relpath))
+            save_project_cache(appid, options, start_directory)
 
         def _abspath(relpath: T.RelPath) -> T.AbsPath:
             return '{}/{}'.format(start_directory, relpath)
 
+        options['key'] = determine_encryption_key()
         if check_if_reusable():
             print('reuse encrypted resources from last time', ':v3')
         else:

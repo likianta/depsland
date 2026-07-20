@@ -3,7 +3,6 @@ from lk_utils import fs
 
 from ... import paths
 from ... import platform
-from ...cache import save_project_cache
 from ...manifest import T
 from ...manifest import diff_manifest
 from ...manifest import dump_manifest
@@ -23,7 +22,6 @@ def build_stripped_offline(manifest_file: T.AnyPath) -> T.AbsPath:
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
     dump_manifest(manifest, '{}/source/.depsland/manifest.pkl'.format(dir_o))
-    save_project_cache(manifest)
     print('see result at {}'.format(dir_o), ':v4')
     return dir_o
 

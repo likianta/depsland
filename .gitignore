@@ -63,6 +63,7 @@ dist/**
 !/depsland/assets/*.md
 !/depsland/assets/*.png
 !/depsland/_cache/folder_snapshot/
+!/depsland/_cache/project_cache/
 !/dist/
 !/dist/standalone/
 !/oss/apps/

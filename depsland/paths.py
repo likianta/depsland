@@ -350,6 +350,7 @@ class Cache:
         self.root = f'{project.root}/depsland/_cache'
         self.folder_snapshot = f'{self.root}/folder_snapshot'
         self.persistent_kv_pairs = f'{self.root}/persistent_kv_pairs.json'
+        self.project_cache = f'{self.root}/project_cache'
 
 
 class Config:
