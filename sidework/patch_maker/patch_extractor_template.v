@@ -82,7 +82,8 @@ fn main() {
 			}
 		}
 	}
-
+	
+	save_record(patch_id, '${projdir}/patches')!
 	os.input('Patch applied. Press Enter to exit... ')
 }
 
@@ -211,4 +212,15 @@ fn parse_arguments() (bool, bool) {
 	dry_run := '-d' in args || '--debug' in args || '--dry-run' in args
 	verbose := '-v' in args || '--verbose' in args
 	return dry_run, verbose
+}
+
+fn save_record(patch_id string, patch_folder string) ! {
+	file := '${patch_folder}/patch_history.txt'
+	if os.exists(file) {
+		old := os.read_file(file)!
+		new := '${patch_id}\n${old}'
+		os.write_file(file, new)!
+	} else {
+		os.write_file(file, patch_id)!
+	}
 }
