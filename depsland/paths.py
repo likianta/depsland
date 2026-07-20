@@ -14,6 +14,7 @@ from lk_utils import uuid
 __all__ = [
     'apps',
     'build',
+    'cache',
     'config',
     'oss',
     'project',
@@ -344,6 +345,13 @@ class Build:
         self.python_icon = '{}/icon/python.{}'.format(self.root, ext)
 
 
+class Cache:
+    def __init__(self) -> None:
+        self.root = f'{project.root}/depsland/_cache'
+        self.folder_snapshot = f'{self.root}/folder_snapshot'
+        self.persistent_kv_pairs = f'{self.root}/persistent_kv_pairs.json'
+
+
 class Config:
     """
     redirect config:
@@ -496,6 +504,7 @@ project = Project()
 
 apps = Apps()
 build = Build()
+cache = Cache()
 config = Config()
 oss = Oss()
 pypi = PyPI()

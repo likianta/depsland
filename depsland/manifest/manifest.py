@@ -10,12 +10,15 @@ from lk_utils import fs
 from .assets import index_assets
 from .typing import T
 from .. import normalization as norm
-from ..cache import get_project_cache
+from ..cache import check_persistent_key_changed
+from ..cache import save_persistent_key
 from ..depsolver import get_tree_shaking_cache_file
 from ..depsolver import minify_dependencies
 from ..depsolver import resolve_dependencies
+from ..utils import check_folder_changed
 from ..utils import hash_text
 from ..utils import init_target_tree
+from ..utils import save_folder_changes
 
 
 def init_manifest(appid: str, appname: str) -> T.ManifestObject:
@@ -487,7 +490,7 @@ class Manifest:
                     'depsland, do not set it manually.'
                 )
                 options['root'] = '..'
-                
+
                 if 'export' in options:
                     assert (
                         options['export']['source']
@@ -631,25 +634,15 @@ class Manifest:
                 _abspath('{}/pyportable_runtime'.format(options['output']))
             ):
                 return False
-            cache = get_project_cache(appid)
-            if hash_text(options['key']) != cache['last_encryption_key_(hash)']:
+            if check_persistent_key_changed(
+                'manifest.encryption.key_hash.' + appid,
+                hash_text(options['key']),
+            ):
                 return False
-            if not cache['last_encrypted_folders_snapshots']:
+            if any(
+                check_folder_changed(_abspath(x)) for x in options['packages']
+            ):
                 return False
-            for path in options['packages']:
-                if path not in cache['last_encrypted_folders_snapshots']:
-                    return False
-                shot = cache['last_encrypted_folders_snapshots'][path]
-                for d in fs.findall_dirs(path):
-                    if d.relpath not in shot['dirs']:
-                        return False
-                    elif fs.filetime(d.path) != shot['dirs'][d.relpath]:
-                        return False
-                for f in fs.findall_files(path):
-                    if f.relpath not in shot['files']:
-                        return False
-                    elif fs.filetime(f.path) != shot['files'][f.relpath]:
-                        return False
             return True
 
         def encrypt_source() -> None:
@@ -670,6 +663,14 @@ class Manifest:
                     add_runtime_package='none',
                 )
 
+        def save_changes() -> None:
+            save_persistent_key(
+                'manifest.encryption.key_hash.' + appid,
+                hash_text(options['key']),
+            )
+            for pkg_relpath in options['packages']:
+                save_folder_changes(_abspath(pkg_relpath))
+
         def _abspath(relpath: T.RelPath) -> T.AbsPath:
             return '{}/{}'.format(start_directory, relpath)
 
@@ -677,6 +678,7 @@ class Manifest:
             print('reuse encrypted resources from last time', ':v3')
         else:
             encrypt_source()
+            save_changes()
         return options
 
     def _update_launcher(
