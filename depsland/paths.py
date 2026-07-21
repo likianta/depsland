@@ -239,11 +239,6 @@ class Project:
         # make link
         fs.make_link(sys.base_exec_prefix, f'{root}/python')
         
-        # unzip files
-        fs.unzip_file(fs.xpath('chore/build.zip'), f'{root}/build')
-        fs.unzip_file(fs.xpath('chore/config.zip'), f'{root}/config')
-        fs.unzip_file(fs.xpath('chore/sidework.zip'), f'{root}/sidework')
-        
         # init files
         fs.dump({}, f'{root}/pypi/index/id_2_paths.json')
         fs.dump({}, f'{root}/pypi/index/name_2_vers.json')

@@ -8,7 +8,6 @@
 /build/windows_patch/windows-8-32bit/*.exe
 /build/windows_patch/windows-8-64bit/*.exe
 /build/manifest.pkl
-/cache/*
 /chore/**
 /config/.redirect
 /config/auto_saved.pkl
