@@ -5,6 +5,7 @@ from lk_utils import fs
 from lk_utils import run_cmd_args
 from neoprint import print
 
+from depsland import __version__ as current_depsland_version
 from depsland import paths
 from depsland import dump_manifest
 from depsland import load_manifest
@@ -15,6 +16,12 @@ from depsland.utils import bump_version as bump_least_version
 
 @cli
 def bump_version(new_ver: str = '') -> None:
+    if not new_ver:
+        new_ver = bump_least_version(current_depsland_version)
+    print(
+        ':r2',
+        'bump version: {} -> {}'.format(current_depsland_version, new_ver),
+    )
     bump_version_inplaces(
         *fs.load(fs.here('build_project.json'))['version_bumps'].keys(),
         new_version=new_ver,
