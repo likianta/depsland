@@ -27,9 +27,13 @@ def load_manifest(
     return Manifest.load_from_file(file, start_directory)
 
 
-def dump_manifest(manifest: T.ManifestObject, file: T.AnyPath) -> None:
+def dump_manifest(
+    manifest: T.ManifestObject,
+    file: T.AnyPath,
+    erase_sensitive_data: bool = False,
+) -> None:
     assert isinstance(manifest, Manifest)
-    manifest.dump_to_file(file)
+    manifest.dump_to_file(file, erase_sensitive_data)
 
 
 def diff_manifest(new: T.Manifest, old: T.Manifest) -> T.ManifestDiff:
@@ -207,7 +211,9 @@ class Manifest:
         self._manifest = data1
         return self
 
-    def dump_to_file(self, file: T.AnyPath = '') -> None:
+    def dump_to_file(
+        self, file: T.AnyPath = '', erase_sensitive_data: bool = False
+    ) -> None:
         if not file:
             file = self._file
         if fs.basename(file) == 'pyproject.toml':
@@ -216,12 +222,16 @@ class Manifest:
 
         data1: T.Manifest1 = self._manifest
         data0: T.Manifest0 = self._manifest.copy()  # type: ignore
+        #   we will save data0 to file.
 
         # modify `data0` fields
         # be noticed some of `data0.values()` are list or dict types, which -
         # should be deep copied if we want to modify their inner items, to -
         # avoid affecting the original data of `data1`.
         data0.pop('start_directory')
+        if erase_sensitive_data:
+            if data0['encryption']:
+                data0['encryption']['key'] = '$erased'
         if not file.endswith('.pkl'):
             data0['assets'] = self._plainify_assets(data1['assets'])
             if file.endswith('.toml'):
@@ -437,6 +447,8 @@ class Manifest:
                 manifest['encryption'] = None
             else:
                 assert enc['key'] and enc['packages'], enc
+                #   we don't check if key is erased here. see 
+                #   `self._update_encryption:determine_encryption_key`.
                 assert all(x in manifest['assets'] for x in enc['packages'])
                 assert all(
                     fs.exist('{}/{}'.format(start_directory, x))
@@ -612,7 +624,9 @@ class Manifest:
 
         def determine_encryption_key() -> str:
             key0 = options['key']
-            if key0 == '$env':
+            if key0 == '$erased':
+                raise Exception('encryption key is erased')
+            elif key0 == '$env':
                 key1 = os.environ['DEPSLAND_APP_SECRET_KEY']
             elif key0.startswith('$env:'):
                 key1 = os.environ[key0[5:]]

@@ -69,6 +69,10 @@ class T(T0):
                 #       - 'AjetGCuXouoQJZiZ3faBgGla04j52VzrVAHnf49MbQw'
                 #       - '$env'
                 #       - '$env:MY_SECRET_KEY'
+                #   there is a special value "$erased" which means the 
+                #   encryption setting is not available. see also 
+                #   `.manifest.Manifest._dump_manifest` and 
+                #   `.manifest.Manifest._update_encryption`.
                 'add_salt': bool,
                 'packages': tp.List[RelPath],
                 'output': RelPath,

@@ -21,7 +21,11 @@ def build_stripped_offline(manifest_file: T.AnyPath) -> T.AbsPath:
     _copy_assets(manifest, dir_o)
     _make_venv(manifest, dir_o)
     _create_launcher(manifest, dir_o)
-    dump_manifest(manifest, '{}/source/.depsland/manifest.pkl'.format(dir_o))
+    dump_manifest(
+        manifest,
+        '{}/source/.depsland/manifest.pkl'.format(dir_o),
+        erase_sensitive_data=True,
+    )
     print('see result at {}'.format(dir_o), ':v4')
     return dir_o
 

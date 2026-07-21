@@ -1,5 +1,6 @@
 if __name__ == '__main__':
     __package__ = 'depsland.api.dev_api'
+    from neoprint import print
 
 import re
 import typing as tp
