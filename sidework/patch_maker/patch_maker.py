@@ -4,6 +4,7 @@ from argsense import cli
 from lk_utils import fs
 from lk_utils import run_cmd_args
 from lk_utils import uuid
+from neoprint import format
 from neoprint import print
 
 from depsland import make_temp_dir
@@ -82,7 +83,7 @@ def make_patch(
 
     _resolve_assets(
         diff['assets'],
-        new_manifest['start_directory'],
+        fs.parent(new_manifest['start_directory']),  # FIXME
         '{}/assets'.format(temp_dir),
         _include=extra_include,
         _exclude=extra_exclude,
@@ -141,7 +142,9 @@ def _resolve_assets(
         )
         if action1 == 'append' or action1 == 'update':
             abspath = '{}/{}'.format(root_i, real_relpath)
-            assert fs.exist(abspath)
+            assert fs.exist(abspath), format(
+                root_i, relpath, real_relpath, ':nl'
+            )
             assets_map[info1.uid] = (
                 abspath,
                 relpath,

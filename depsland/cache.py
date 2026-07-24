@@ -8,8 +8,6 @@ from .manifest import T as T0
 from .paths import cache as cache_paths
 from .utils import hash_text
 
-_cached_results = defaultdict(dict)
-
 
 class T:
     Encryption = T0.Encryption1
@@ -38,6 +36,9 @@ class T:
             ]
         },
     )
+
+
+_cached_results = defaultdict(dict)
 
 
 def cache(namespace: str) -> tp.Callable:

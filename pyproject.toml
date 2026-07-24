@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.2a0"
+version = "0.12.2a1"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
@@ -10,18 +10,18 @@ dependencies = [
     "airmise>=3.0.0",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.7.3",
-    "neoprint>=0.1.8",
+    "lk-utils>=3.7.5a0",
+    "neoprint>=0.1.9",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
     "psutil>=7.2.2",
     "pyportable-crypto>=1.6.1",
     "semver>=3.0.4",
-    "streamlit>=1.59.2",
+    "streamlit>=1.60.0",
     "streamlit-canary>=0.3.2",
     "streamlit-extras>=1.4.1",
     "streamlit-tree-select>=0.0.5",  # DELETE
-    "tree-shaking>=0.3.0",
+    "tree-shaking>=0.4.0a9",
     "windows-toasts>=1.0.0; sys_platform == 'win32'",
 ]
 

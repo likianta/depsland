@@ -57,16 +57,17 @@ def minify_dependencies(
         assert not fs.empty(mini_deps_dir)
         return
 
-    if fs.exist(mini_deps_dir):
-        print('incrementally minify dependencies', ':p')
-    else:
-        print('first time minify dependencies', ':p')
+    # if fs.exist(mini_deps_dir):
+    #     print('incrementally minify dependencies', ':p')
+    # else:
+    #     print('first time minify dependencies', ':p')
 
     fs.make_dir(dot_dps_dir)
     fs.make_link(
         get_venv_root(project_directory, base_locked.removesuffix('.lock')),
         orig_deps_dir,
     )
+    fs.make_dir(mini_deps_dir)
 
     fs.dump(
         {
@@ -78,8 +79,12 @@ def minify_dependencies(
         model_file := '{}/tree_shaking_model.json'.format(dot_dps_dir),
     )
 
+    # tree_shaking.cache_maker.invalidate_cache()  # TEST experimental
     tree_shaking.build_module_graphs(model_file)
-    tree_shaking.dump_tree(model_file)
+    tree_shaking.dump_tree_from_config_file(
+        model_file,
+        cache_reference_file='{}/{}'.format(project_directory, base_locked),
+    )
 
     from ..manifest.assets import index_assets
 

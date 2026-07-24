@@ -372,15 +372,6 @@ wheels = [
 ]
 
 [[package]]
-name = "cachetools"
-version = "7.1.4"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/f4/8b/0d3945a13955303b81272f759a0331e54c5c793da455e6f5706b89d2639c/cachetools-7.1.4.tar.gz", hash = "sha256:437f55a4e0c1b01a4f3077cc470e6991d47430970e36fbcb77e2be0df4fc1cd6", size = 40085, upload-time = "2026-05-21T22:40:43.376Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/8c/7b/1fc1c09cc0756cf25861a3be10565915953876da48bb228fb9a672b20a42/cachetools-7.1.4-py3-none-any.whl", hash = "sha256:323dc4127934744db5b54eb4924482d7edafbf9554e820d1531c2e08c0e4ef54", size = 16761, upload-time = "2026-05-21T22:40:41.845Z" },
-]
-
-[[package]]
 name = "certifi"
 version = "2026.5.20"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
@@ -627,7 +618,7 @@ wheels = [
 
 [[package]]
 name = "depsland"
-version = "0.12.1a0"
+version = "0.12.2a1"
 source = { editable = "." }
 dependencies = [
     { name = "airmise" },
@@ -667,17 +658,17 @@ requires-dist = [
     { name = "airmise", specifier = ">=3.0.0", index = "http://localhost:2191/" },
     { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2191/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.7.3", index = "http://localhost:2191/" },
-    { name = "neoprint", specifier = ">=0.1.8", index = "http://localhost:2191/" },
+    { name = "lk-utils", specifier = ">=3.7.5a0", index = "http://localhost:2191/" },
+    { name = "neoprint", specifier = ">=0.1.9", index = "http://localhost:2191/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pyportable-crypto", specifier = ">=1.6.1", index = "http://localhost:2191/" },
     { name = "semver", specifier = ">=3.0.4" },
-    { name = "streamlit", specifier = ">=1.59.2" },
+    { name = "streamlit", specifier = ">=1.60.0" },
     { name = "streamlit-canary", specifier = ">=0.3.2", index = "http://localhost:2191/" },
     { name = "streamlit-extras", specifier = ">=1.4.1" },
     { name = "streamlit-tree-select", specifier = ">=0.0.5" },
-    { name = "tree-shaking", specifier = ">=0.3.0", index = "http://localhost:2191/" },
+    { name = "tree-shaking", specifier = ">=0.4.0a9", index = "http://localhost:2191/" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'", specifier = ">=1.0.0" },
 ]
 
@@ -1060,7 +1051,7 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.7.3"
+version = "3.7.5a0"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -1070,7 +1061,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/lk-utils/lk_utils-3.7.3-py3-none-any.whl" },
+    { url = "http://localhost:2191/lk-utils/lk_utils-3.7.5a0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1288,13 +1279,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.8"
+version = "0.1.9"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/neoprint/neoprint-0.1.8-py3-none-any.whl" },
+    { url = "http://localhost:2191/neoprint/neoprint-0.1.9-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2366,13 +2357,12 @@ wheels = [
 
 [[package]]
 name = "streamlit"
-version = "1.59.2"
+version = "1.60.0"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "altair" },
     { name = "anyio" },
     { name = "blinker" },
-    { name = "cachetools" },
     { name = "click" },
     { name = "gitpython" },
     { name = "httptools" },
@@ -2394,9 +2384,9 @@ dependencies = [
     { name = "watchdog", marker = "sys_platform != 'darwin'" },
     { name = "websockets" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/9c/13/725a798311129fc13d7e67dc690f12786c22007b34abe9fd88add9d9b044/streamlit-1.59.2.tar.gz", hash = "sha256:8fcb35df152868d33eec7ad2d89e276499a5351fb861eb1752b76476be7eb582", size = 9770703, upload-time = "2026-07-13T09:00:50.858Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/7a/46/fa437e9651af1dbe7e5b28a754fd9c36df656e4a14a2b5ecc1bcd1d90587/streamlit-1.60.0.tar.gz", hash = "sha256:09f2fdd2aabbd3b3560953795681dd675d5479ac82c21fc2dceadaf9bd484ea3", size = 9819884, upload-time = "2026-07-21T21:13:58.04Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/fa/4b/c2902746fb3fcc737ba925865a73475ad51521f26f84652aa9b337e12227/streamlit-1.59.2-py3-none-any.whl", hash = "sha256:5014cb4f0064bd16c58fe334cb0d3c4b7e2be3d1ce4c02202c07114a33576dab", size = 10338011, upload-time = "2026-07-13T09:00:48.464Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/2f/69/7a1984df015d01875c9ac79bfda7c31492cc94f81a2625303ce4707188e5/streamlit-1.60.0-py3-none-any.whl", hash = "sha256:d167d67cf94537600a6e378d8aa0c31eabab26beb243e2a51de9842e2872e393", size = 10419153, upload-time = "2026-07-21T21:13:55.113Z" },
 ]
 
 [[package]]
@@ -2598,7 +2588,7 @@ wheels = [
 
 [[package]]
 name = "tree-shaking"
-version = "0.3.0"
+version = "0.4.0a9"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -2606,7 +2596,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2191/tree-shaking/tree_shaking-0.3.0-py3-none-any.whl" },
+    { url = "http://localhost:2191/tree-shaking/tree_shaking-0.4.0a9-py3-none-any.whl" },
 ]
 
 [[package]]

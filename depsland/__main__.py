@@ -75,23 +75,20 @@ def welcome(confirm_close: bool = False) -> None:
     """
     from . import __version__
 
-    np.show(
-        ':l',
-        np.Markdown(
-            """
-            # DEPSLAND
-            
-            Depsland is a python apps manager for non-developer users.
-            
-            - Version: {}
-            - Author: {}
-            - Official site: {}
-            """.format(
-                __version__,
-                'Likianta (likianta@foxmail.com)',
-                'https://github.com/likianta/depsland',
-            )
-        ),
+    np.markdown(
+        """
+        # DEPSLAND
+        
+        Depsland is a python apps manager for non-developer users.
+        
+        - Version: {}
+        - Author: {}
+        - Official site: {}
+        """.format(
+            __version__,
+            'Likianta (likianta@foxmail.com)',
+            'https://github.com/likianta/depsland',
+        )
     )
 
     if confirm_close:
