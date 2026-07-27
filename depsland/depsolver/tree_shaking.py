@@ -79,12 +79,8 @@ def minify_dependencies(
         model_file := '{}/tree_shaking_model.json'.format(dot_dps_dir),
     )
 
-    # tree_shaking.cache_maker.invalidate_cache()  # TEST experimental
     tree_shaking.build_module_graphs(model_file)
-    tree_shaking.dump_tree_from_config_file(
-        model_file,
-        cache_reference_file='{}/{}'.format(project_directory, base_locked),
-    )
+    tree_shaking.dump_tree_from_config_file(model_file)
 
     from ..manifest.assets import index_assets
 

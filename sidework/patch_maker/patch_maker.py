@@ -3,6 +3,7 @@ import typing as tp
 from argsense import cli
 from lk_utils import fs
 from lk_utils import run_cmd_args
+from lk_utils import textwrap as tw
 from lk_utils import uuid
 from neoprint import format
 from neoprint import print
@@ -17,25 +18,27 @@ from depsland.manifest import load_manifest
 class T:
     AbsPath = T0.AbsPath
     Action = T0.Action
+    AssetsDiff = T0.AssetsDiff
     FileId = str
     RelPath = T0.RelPath
-    AssetsDiff = T0.AssetsDiff
     AssetsMap = tp.Dict[
         FileId, tp.Tuple[tp.Optional[AbsPath], RelPath, bool, bool]
+        #               ^   src_abspath, dst_relpath, bool isdir,
+        #                   bool append_or_delete
     ]
-    #   {
-    #       fileid: (
-    #           src_abspath, dst_relpath, bool isdir, bool append_or_delete
-    #       ), ...
-    #   }
 
 
 @cli
 def make_patch(
-    old_manifest_file: str, new_manifest_file: str, extra_assets: str = ''
+    old_manifest_file: str,
+    new_manifest_file: str,
+    start_directory: str,
+    extra_assets: str = '',
+    preview: bool = False,
 ) -> None:
     """
     params:
+        start_directory (-s): usually the project root directory.
         extra_assets (-e):
             pass a path or a semi-colon-separated list of paths.
             if given path, the format is `@<your_path>`, usually a ".yaml" or -
@@ -53,25 +56,36 @@ def make_patch(
                 '.depsland/mini_deps/pyarrow;.depsland/mini_deps/pyarrow.libs'
             the string will be split by semi-colon, it will only be treated as
             include.
+        preview (-p):
     """
-    old_manifest = load_manifest(old_manifest_file)
-    new_manifest = load_manifest(new_manifest_file)
+    old_manifest = load_manifest(old_manifest_file, start_directory)
+    new_manifest = load_manifest(new_manifest_file, start_directory)
 
     patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
     print(patch_id, ':n')
-    temp_dir = make_temp_dir(patch_id)
-    fs.make_dir('{}/assets'.format(temp_dir))
-    fs.make_dir('{}/dependencies'.format(temp_dir))
+
+    if preview:
+        temp_dir = 'temp'
+    else:
+        temp_dir = make_temp_dir(patch_id)
+        fs.make_dir('{}/assets'.format(temp_dir))
+        fs.make_dir('{}/dependencies'.format(temp_dir))
 
     # ref: depsland/api/dev_api/build_offline_2.py:_copy_assets
     # ref: depsland/api/user_api/install.py:_install_files
     diff = diff_manifest(old=old_manifest, new=new_manifest)
 
+    extra_include: tp.Optional[tp.FrozenSet[str]]
+    extra_exclude: tp.Optional[tp.FrozenSet[str]]
     if extra_assets:
         if extra_assets[0] == '@':
             x = fs.load(extra_assets[1:])
-            extra_include = frozenset(x.get('include', ()))
-            extra_exclude = frozenset(x.get('exclude', ()))
+            if isinstance(x, list):
+                extra_include = None
+                extra_exclude = frozenset(x)  # type: ignore
+            else:
+                extra_include = frozenset(x.get('include', ()))
+                extra_exclude = frozenset(x.get('exclude', ()))
         else:
             extra_include = None
             extra_exclude = frozenset(extra_assets.split(';'))
@@ -83,23 +97,25 @@ def make_patch(
 
     _resolve_assets(
         diff['assets'],
-        fs.parent(new_manifest['start_directory']),  # FIXME
+        new_manifest['start_directory'],
         '{}/assets'.format(temp_dir),
         _include=extra_include,
         _exclude=extra_exclude,
+        dry_run=preview,
     )
     # _resolve_dependencies(diff['dependencies'], ...)
 
-    dump_manifest(new_manifest, fs.here('grocery/manifest.pkl'))
-    #   note: `new_manifest_file` may be json or yaml, but we want pkl format.
-    #   so we use `dump_manifest` instead of `fs.copy_file`.
-    exe = _generate_patch_executable(patch_id)
-    print(
-        'see generated executable: {} ({})'.format(
-            fs.relpath(exe, fs.here()), fs.filesize(exe, str)
-        ),
-        ':v4',
-    )
+    if not preview:
+        dump_manifest(new_manifest, fs.here('grocery/manifest.pkl'))
+        #   note: `new_manifest_file` may be json or yaml, but we want pkl format.
+        #   so we use `dump_manifest` instead of `fs.copy_file`.
+        exe = _generate_patch_executable(patch_id)
+        print(
+            'see generated executable: {} ({})'.format(
+                fs.relpath(exe, fs.here()), fs.filesize(exe, str)
+            ),
+            ':v4',
+        )
 
 
 def _resolve_assets(
@@ -108,7 +124,8 @@ def _resolve_assets(
     root_o: str,
     _include: tp.Optional[tp.FrozenSet[T.RelPath]] = None,
     _exclude: tp.Optional[tp.FrozenSet[T.RelPath]] = None,
-) -> tp.Tuple[T.AbsPath, T.AbsPath]:
+    dry_run: bool = False,
+) -> tp.Optional[tp.Tuple[T.AbsPath, T.AbsPath]]:
     """
     ref: depsland/api/user_api/install.py:_install_files
     """
@@ -131,8 +148,11 @@ def _resolve_assets(
                 return 'update'
             return 'ignore'
 
+    sizes = {}
     for action0, (relpath, real_relpath), (info0, info1) in assets_diff:
         action1 = transform_action(action0)
+        if action1 == 'ignore':
+            continue
         print(
             action1
             if action1 == action0
@@ -143,7 +163,10 @@ def _resolve_assets(
         if action1 == 'append' or action1 == 'update':
             abspath = '{}/{}'.format(root_i, real_relpath)
             assert fs.exist(abspath), format(
-                root_i, relpath, real_relpath, ':nl'
+                root_i, relpath, real_relpath, abspath, ':nl'
+            )
+            sizes[relpath] = tp.cast(
+                int, fs.filesize(abspath, recursive=info1.type == 'dir')
             )
             assets_map[info1.uid] = (
                 abspath,
@@ -153,6 +176,10 @@ def _resolve_assets(
             )
         elif action1 == 'delete':
             assets_map[info0.uid] = (None, relpath, info0.type == 'dir', False)
+
+    _preview_size(sizes)
+    if dry_run:
+        return
 
     for file_id, (abspath, relpath, isdir, _) in assets_map.items():
         if abspath:
@@ -197,6 +224,21 @@ def _generate_patch_executable(patch_id: str) -> str:
     return fs.here(
         'generated_extractors/{}'.format('patch-{}.exe'.format(patch_id))
     )
+
+
+def _preview_size(sizes: tp.Dict[str, int]) -> int:
+    total = sum(sizes.values())
+    print(':v2', 'total size: {}'.format(fs.pretty_size(total, ' ')))
+
+    rows = [('index', 'relpath', 'size')]
+    for i, (k, v) in enumerate(
+        sorted(sizes.items(), key=lambda x: x[1], reverse=True)[:10]
+    ):
+        rows.append((str(i + 1), k, fs.pretty_size(v, sep=' ')))
+    rows.append(('11', '...', ''))
+    print(':r2', rows)
+
+    return total
 
 
 if __name__ == '__main__':

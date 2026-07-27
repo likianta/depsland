@@ -111,7 +111,9 @@ class Manifest:
         if self._file.endswith('.pkl'):
             data0: T.Manifest1 = fs.load(self._file)
             data1 = data0
-            data1['start_directory'] = start_directory or cfg_dir
+            data1['start_directory'] = (
+                fs.abspath(start_directory) if start_directory else cfg_dir
+            )
         else:
             data0: T.Manifest0
             if self._file.endswith(('.json', '.yaml')):
@@ -126,7 +128,9 @@ class Manifest:
             else:
                 raise Exception('unsupported manifest file format', self._file)
 
-            if not start_directory:
+            if start_directory:
+                start_directory = fs.abspath(start_directory)
+            else:
                 if 'start_directory' in data0:
                     x = data0['start_directory']
                     if x.startswith('.'):
@@ -447,7 +451,7 @@ class Manifest:
                 manifest['encryption'] = None
             else:
                 assert enc['key'] and enc['packages'], enc
-                #   we don't check if key is erased here. see 
+                #   we don't check if key is erased here. see
                 #   `self._update_encryption:determine_encryption_key`.
                 assert all(x in manifest['assets'] for x in enc['packages'])
                 assert all(

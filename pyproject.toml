@@ -10,7 +10,7 @@ dependencies = [
     "airmise>=3.0.0",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.7.5a0",
+    "lk-utils>=3.7.5b1",
     "neoprint>=0.1.9",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
@@ -21,7 +21,7 @@ dependencies = [
     "streamlit-canary>=0.3.2",
     "streamlit-extras>=1.4.1",
     "streamlit-tree-select>=0.0.5",  # DELETE
-    "tree-shaking>=0.4.0a9",
+    "tree-shaking>=0.4.0a12",
     "windows-toasts>=1.0.0; sys_platform == 'win32'",
 ]
 
@@ -36,7 +36,7 @@ dev = [
     "icnsutil>=1.1.0",
     "ipython>=9.15.0",
     "nuitka>=4.1.3",
-    "pandas<3.0.0",  # `^3.0` caused circular import error, so we use `<3.0`.
+    "pandas<3.0.0",  # `^3.0` caused circular import error in `streamlit-tree-select`, so we use `<3.0`.
     # "pandas>=3.0.3",
     "pillow>=12.2.0",
     # "pinkrain>=0.0.0a32",
@@ -55,8 +55,8 @@ dev = [
 [project.scripts]
 depsland = 'depsland.__main__:_cli_entrance'
 
-# [project.urls]
-# homepage = "https://github.com/likianta/depsland"
+[project.urls]
+homepage = "https://github.com/likianta/depsland"
 
 [tool.hatch.build.targets.wheel]
 packages = ["depsland"]
