@@ -1,5 +1,8 @@
 import os
+import sys
+from glob import glob
 
+import tree_shaking
 from argsense import cli
 from lk_utils import fs
 from lk_utils import run_cmd_args
@@ -48,8 +51,9 @@ def main(
     print(':r2', 'bump version: {} -> {}'.format(old_ver, new_ver))
     bump_version_inplaces(*cfg['version_bumps'].keys(), new_version=new_ver)
 
-    dist_dir = make_dist(new_ver, 'aliyun', pypi_scheme)
     manifest = load_manifest(cfg['images']['src_max'])
+    #   loading manifest will trigger tree shaking recalculation.
+    dist_dir = make_dist(new_ver, 'aliyun', pypi_scheme)
     dump_manifest(manifest, '{}/.manifest.pkl'.format(dist_dir))
 
     if compress:
@@ -239,11 +243,45 @@ def make_dist(
     return root_o
 
 
+@cli
+def shrink_dependencies(  # DELETE: not work
+    output_dir: str = 'chore/mini_deps', dry_run: bool = False
+) -> None:
+    """
+    params:
+        dry_run (-d):
+    """
+    # activate all entrances
+    import pyapp_window  # noqa
+    import streamlit  # noqa
+    import streamlit_canary  # noqa
+    import toga  # noqa
+    from depsland.gui.app_manager import app  # noqa
+
+    tree_shaking.dump_tree_from_modules(dir_o=output_dir, dry_run=dry_run)
+
+    def get_one_package(name_pattern):
+        xlist = glob(f'{pkg_root}/{name_pattern}')
+        assert len(xlist) == 1
+        return fs.normpath(xlist[0])
+
+    pkg_root = '{}/Lib/site-packages'.format(sys.exec_prefix)
+    fs.make_link(
+        f'{pkg_root}/tree_shaking', f'{output_dir}/tree_shaking', False
+    )
+    fs.make_link(
+        x := get_one_package('travertino-*.dist-info'),
+        f'{output_dir}/{fs.basename(x)}'
+    )
+
+
 if __name__ == '__main__':
     # prerequisites:
     #   1. nushell: `$env.DEPSLAND_CONFIG_ROOT = 'test/_config'`
     #   2. make sure uv.lock latest.
-    # uvx build/build_depsland/main.py main -p full
-    # uvx build/build_depsland/main.py main -c
-    # uvx build/build_depsland/main.py main -c -u
+    # uvx build/build_depsland/standalone.py main -p full
+    # uvx build/build_depsland/standalone.py main -c
+    # uvx build/build_depsland/standalone.py main -c -u
+    # rm -r chore/mini_deps
+    # uvx build/build_depsland/standalone.py shrink_dependencies
     cli.run()

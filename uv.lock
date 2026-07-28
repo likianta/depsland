@@ -618,7 +618,7 @@ wheels = [
 
 [[package]]
 name = "depsland"
-version = "0.12.2a1"
+version = "0.12.2a4"
 source = { editable = "." }
 dependencies = [
     { name = "airmise" },
@@ -668,7 +668,7 @@ requires-dist = [
     { name = "streamlit-canary", specifier = ">=0.3.2", index = "http://localhost:2191/" },
     { name = "streamlit-extras", specifier = ">=1.4.1" },
     { name = "streamlit-tree-select", specifier = ">=0.0.5" },
-    { name = "tree-shaking", specifier = ">=0.4.0a12", index = "http://localhost:2191/" },
+    { name = "tree-shaking", specifier = ">=0.4.0b0", index = "http://localhost:2191/" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'", specifier = ">=1.0.0" },
 ]
 
@@ -2588,7 +2588,7 @@ wheels = [
 
 [[package]]
 name = "tree-shaking"
-version = "0.4.0a12"
+version = "0.4.0b0"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -2596,7 +2596,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2191/tree-shaking/tree_shaking-0.4.0a12-py3-none-any.whl" },
+    { url = "http://localhost:2191/tree-shaking/tree_shaking-0.4.0b0-py3-none-any.whl" },
 ]
 
 [[package]]

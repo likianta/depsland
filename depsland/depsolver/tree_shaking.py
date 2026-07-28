@@ -67,7 +67,7 @@ def minify_dependencies(
         get_venv_root(project_directory, base_locked.removesuffix('.lock')),
         orig_deps_dir,
     )
-    fs.make_dir(mini_deps_dir)
+    # fs.make_dir(mini_deps_dir)
 
     fs.dump(
         {
@@ -79,8 +79,14 @@ def minify_dependencies(
         model_file := '{}/tree_shaking_model.json'.format(dot_dps_dir),
     )
 
-    tree_shaking.build_module_graphs(model_file)
-    tree_shaking.dump_tree_from_config_file(model_file)
+    tree_shaking.build_module_graphs(
+        model_file,
+        reference_file='{}/{}'.format(project_directory, base_locked),
+    )
+    tree_shaking.dump_tree_from_config_file(
+        model_file,
+        reference_file='{}/{}'.format(project_directory, base_locked),
+    )
 
     from ..manifest.assets import index_assets
 
