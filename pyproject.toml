@@ -10,7 +10,7 @@ dependencies = [
     "airmise>=3.0.0",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.7.5b1",
+    "lk-utils>=3.7.5",
     "neoprint>=0.1.9",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
@@ -108,7 +108,7 @@ default = true
 [[tool.uv.index]]
 name = "likianta"
 url = "http://localhost:2191/"
-# explicit = true
+explicit = true
 
 [tool.uv.sources]
 airmise = { index = "likianta" }

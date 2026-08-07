@@ -8,8 +8,7 @@ import typing as tp
 from lk_utils import fs
 from lk_utils import slice
 
-from .build_offline import build as build_offline
-from .build_offline_2 import build_stripped_offline
+from .build_offline import build_offline
 from .publish import publish as publish_to_oss
 from ...manifest import load_manifest
 from ...paths import temp as temp_paths
@@ -87,10 +86,9 @@ def build(
     if publish == 0:
         load_manifest(image_file)  # make tree-shaking and encryption work.
     elif publish == 1:
-        if remove_depsland:
-            dir_o = build_stripped_offline(image_file)
-        else:
-            dir_o = build_offline(image_file)
+        dir_o = build_offline(
+            image_file, embed_depsland_engine=not remove_depsland
+        )
         if compress_result:
             fs.zip(
                 dir_o,

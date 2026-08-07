@@ -25,24 +25,47 @@ pyproject.toml: 我们使用现代的 Python 项目管理方式 (uv + ruff + ty)
 
 ## 代码核心架构
 
-```yaml
-# ./depsland
-|- manifest: |
-    Depsland 使用 "清单" 管理其他项目的打包细节. 清单的原始文件是一个 JSON 文件. 我们的 `manifest` 模块用来解析和返回一个 Manifest 对象. 
-    清单的主结构参考 `depsland/manifest/typing.py:T:Manifest1`.
-|- api: |
-    Depsland 主接口函数. 有 "dev_api", "self_api", "user_api" 三个子包.
-    它们用来构建/打包/上传/下载 Python 项目.
-|- gui: 可视化界面. 仍在开发中.
-|- depsolver: |
-    处理复杂的依赖关系, 将它们最终转化为展平的 (没有嵌套关系的) PackageInfo 对象 (参考 `depsland/depsolver/uv_lock_resolver.py:T:PackageInfo`).
-    目前我们主要使用基于 uv.lock 的 `depsland/depsolver/uv_lock_resolver.py` 处理器.
-|- oss: 辅助 `depsland/api` 完成资产文件上传/下载.
-|- paths: 由于项目牵涉的路径非常多而且复杂, 我们使用 paths 模块来统一管理.
-|- normalization: 用于格式化杂乱的依赖包名称, 统一版本号形式, 使 SemVer 规范可以继续处理它们.
-|- pypi: 加载已缓存的依赖包, 更新依赖列表, 复用本地依赖.
-|- platform: 创建平台相关的启动器.
-```
+- `./depsland/manifest`
+
+  Depsland 使用 "清单" 管理其他项目的打包细节. 清单的原始文件是一个 JSON 文件. 我们的 `manifest` 模块用来解析和返回一个 Manifest 对象.
+
+  清单的主结构参考 `depsland/manifest/typing.py:T:Manifest1`.
+
+- `./depsland/api`
+
+  Depsland 主接口函数. 有 "dev_api", "self_api", "user_api" 三个子包.
+
+  它们用来构建/打包/上传/下载 Python 项目.
+
+- `./depsland/gui`
+
+  可视化界面. 仍在开发中.
+
+- `./depsland/depsolver`
+
+  处理复杂的依赖关系, 将它们最终转化为展平的 (没有嵌套关系的) PackageInfo 对象 (参考 `depsland/depsolver/uv_lock_resolver.py:T:PackageInfo`).
+
+  目前我们主要使用基于 uv.lock 的 `depsland/depsolver/uv_lock_resolver.py` 处理器.
+
+- `./depsland/oss`
+
+  辅助 `depsland/api` 完成资产文件上传/下载.
+
+- `./depsland/paths`
+
+  由于项目牵涉的路径非常多而且复杂, 我们使用 paths 模块来统一管理.
+
+- `./depsland/normalization`
+
+  用于格式化杂乱的依赖包名称, 统一版本号形式, 使 SemVer 规范可以继续处理它们.
+
+- `./depsland/pypi`
+
+  加载已缓存的依赖包, 更新依赖列表, 复用本地依赖.
+
+- `./depsland/platform`
+
+  创建平台相关的启动器.
 
 ## 工具链
 

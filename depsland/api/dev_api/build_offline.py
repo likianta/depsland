@@ -25,45 +25,67 @@ what does "Hello World.exe" do:
 """
 
 import typing as tp
+from functools import partial
 
 from lk_utils import dedent
 from lk_utils import fs
 
 from ... import paths
-from ...manifest import T
+from ... import platform
+from ...manifest import T as T0
 from ...manifest import diff_manifest
 from ...manifest import dump_manifest
 from ...manifest import init_manifest
 from ...manifest import load_manifest
 from ...platform import sysinfo
-from ...platform.launcher import bat_2_exe
-from ...platform.launcher import create_launcher
 from ...pypi import pypi
 from ...venv import link_venv
 
 
-def build(manifest_file: str) -> str:
+class T(T0):
+    DistributionKeyPaths = tp.TypedDict(
+        'DistributionKeyPaths',
+        {'dst_app_root': T0.AbsPath, 'dst_app_venv': T0.AbsPath},
+    )
+
+
+def build_offline(manifest_file: str, embed_depsland_engine: bool = False) -> str:
     manifest = load_manifest(manifest_file)
     dir_i = manifest['start_directory']
     dir_o = '{}/dist/{}-{}'.format(
         dir_i, manifest['appid'], manifest['version']
     )
-    _init_dist_tree(manifest, dir_o)
-    _copy_assets(manifest, dir_o)
-    _make_venv(manifest, dir_o)
-    _relink_pypi(manifest, dir_o)
-    # with lk_logger.spinner('creating launcher...'):
-    _create_launcher(manifest, dir_o)
-    _create_updator(manifest, dir_o)
-    print('see result at {}'.format(dir_o))
+    if embed_depsland_engine:
+        dst_paths = _init_dist_tree_full(manifest, dir_o)
+    else:
+        dst_paths = _init_dist_tree_lite(dir_o)
+    _copy_assets(manifest, dst_paths['dst_app_root'])
+    _make_venv(manifest, dst_paths['dst_app_venv'])
+    if embed_depsland_engine:
+        _relink_pypi(manifest, dir_o)
+    if embed_depsland_engine:
+        _create_launcher(manifest, dir_o)
+        if manifest['readme']:
+            create_readme_opener(manifest, dir_o)
+        _create_updator(manifest, dir_o)
+    else:
+        _create_launcher(manifest, dir_o)
+        # TODO: no-depsland mode does not support creating readme opener yet.
+        dump_manifest(
+            manifest,
+            '{}/source/.depsland/manifest.pkl'.format(dir_o),
+            erase_sensitive_data=True,
+        )
+    print('see result at "{}"'.format(dir_o), ':v4t')
     return dir_o
 
 
-def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
-    """
-    params:
-        pypi: 'standard', 'least'
-    """
+build_stripped_offline = partial(build_offline, embed_depsland_engine=False)
+
+
+def _init_dist_tree_full(
+    manifest: T.Manifest, dst_dir: str
+) -> T.DistributionKeyPaths:
     from ... import __version__
 
     root_i = paths.project.root
@@ -146,14 +168,39 @@ def _init_dist_tree(manifest: T.Manifest, dst_dir: str) -> None:
         f'{root_o}/source/apps/{appid}/{version}/manifest.pkl',
     )
 
+    return {
+        'dst_app_root': f'{root_o}/source/apps/{appid}/{version}',
+        'dst_app_venv': f'{root_o}/source/apps/{appid}/{version}/.venv',
+    }
 
-def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
+
+def _init_dist_tree_lite(dst_dir: T.AbsPath) -> T.DistributionKeyPaths:
+    """
+    tree structure:
+        <dist_app>
+        |= source
+        |= python
+        |= library
+        |- launcher.exe
+    """
+    fs.make_dir('{}'.format(dst_dir))
+    # TODO: fs.make_dir('{}/library'.format(dst_dir))
+    # fs.make_dir('{}/python'.format(dst_dir))
+    fs.make_link(paths.project.python, '{}/python'.format(dst_dir))
+    fs.make_dir('{}/source'.format(dst_dir))
+    return {
+        'dst_app_root': f'{dst_dir}/source',
+        'dst_app_venv': f'{dst_dir}/library',
+    }
+
+
+def _copy_assets(manifest: T.Manifest, dir_o: T.AbsPath) -> None:
     diff = diff_manifest(
         new=manifest, old=init_manifest(manifest['appid'], manifest['name'])
     )
 
     root_i = manifest['start_directory']
-    root_o = f'{dst_dir}/source/apps/{manifest["appid"]}/{manifest["version"]}'
+    root_o = dir_o
     manifest.make_tree(root_o)
 
     # info1: T.AssetInfo
@@ -187,22 +234,11 @@ def _copy_assets(manifest: T.Manifest, dst_dir: str) -> None:
             raise Exception(info1.scheme)
 
 
-def _make_venv(manifest: T.Manifest, dst_dir: str) -> None:
-    """
-    TODO: make sure all required packages have already been installed and
-        indexed in pypi. see also `sidework/merge_external_venv_to_local_pypi
-        .py`
-    """
-    # assert all(pypi.exists(x['id']) for x in manifest['dependencies'].values())
-    link_venv(
-        (x['id'] for x in manifest['dependencies'].values()),
-        '{}/source/apps/{}/{}/.venv'.format(
-            dst_dir, manifest['appid'], manifest['version']
-        ),
-    )
+def _make_venv(manifest: T.Manifest, dir_o: T.AbsPath) -> None:
+    link_venv((x['id'] for x in manifest['dependencies'].values()), dir_o)
 
 
-def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
+def _relink_pypi(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
     info: T.PackageInfo
     for name, info in manifest['dependencies'].items():
         fs.make_dir('{}/source/pypi/installed/{}'.format(dst_dir, name))
@@ -224,33 +260,55 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: str) -> None:
     fs.dump(name_2_vers, f'{dst_dir}/source/pypi/index/name_2_vers.json')
 
 
-def _create_launcher(manifest: T.Manifest, dst_dir: str) -> None:
+def _create_launcher(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
     icon = manifest['launcher']['icon'] or paths.build.python_icon
-    create_launcher(manifest, dir_o=dst_dir, icon=icon, custom_cd='cd source')
-    if sysinfo.SYSTEM == 'windows':
-        create_launcher(
-            manifest,
-            dir_o=dst_dir,
-            name=manifest['name'] + ' (Debug).exe',
-            debug=True,
-            icon=icon,
-            # keep_bat=True,
-            # uac_admin=True,
-            custom_cd='cd source',
+
+    # default launcher
+    script = dedent(
+        """
+        @echo off
+        cd /d %~dp0
+        cd source
+        set "PYTHONUTF8=1"
+        {}
+        """.format(
+            manifest['launcher']['command']
+            .replace('python', '..\\python\\python.exe', 1)
+            .replace("'", '"')
         )
-    if manifest['readme']:
-        # if x['standalone']:
-        #     fs.make_link(
-        #         manifest['readme']['file'],
-        #         '{}/{}.{}'.format(
-        #             dst_dir,
-        #             manifest['readme']['name'],
-        #             manifest['readme']['file'].rsplit('.', 1)[-1]
-        #         )
-        #     )
-        # else:
-        #     create_readme_opener(manifest, dst_dir)
-        create_readme_opener(manifest, dst_dir)
+    )
+    fs.dump(script, x := '{}/{}.bat'.format(dst_dir, manifest['name']))
+    platform.launcher.bat_2_exe(
+        file_bat=x,
+        file_exe=fs.replace_ext(x, 'exe'),
+        icon=icon,
+        show_console=manifest['launcher']['show_console'],
+    )
+    fs.remove_file(x)
+
+    # debug launcher
+    script = dedent(
+        """
+        cd /d %~dp0
+        cd source
+        set "PYTHONUTF8=1"
+        {}
+        pause
+        """.format(
+            manifest['launcher']['command']
+            .replace('python', '..\\python\\python.exe', 1)
+            .replace("'", '"')
+        )
+    )
+    fs.dump(script, x := '{}/{} (Debug).bat'.format(dst_dir, manifest['name']))
+    platform.launcher.bat_2_exe(
+        file_bat=x,
+        file_exe=fs.replace_ext(x, 'exe'),
+        icon=icon,
+        show_console=True,
+        # uac_admin=True,
+    )
+    fs.remove_file(x)
 
 
 def create_readme_opener(manifest: T.Manifest, dst_dir: T.AbsPath) -> T.AbsPath:
@@ -267,7 +325,7 @@ def create_readme_opener(manifest: T.Manifest, dst_dir: T.AbsPath) -> T.AbsPath:
         ),
         x := '{}/open_readme.bat'.format(paths.temp.root),
     )
-    bat_2_exe(
+    platform.launcher.bat_2_exe(
         file_bat=x,
         file_exe=(y := '{}/{}.exe'.format(dst_dir, manifest['readme']['name'])),
         icon=manifest['readme']['icon'] or paths.build.help_icon,
@@ -310,7 +368,7 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
         )
         script = template.format(appid=manifest['appid'])
         fs.dump(script, file_bat)
-        bat_2_exe(
+        platform.launcher.bat_2_exe(
             file_bat,
             file_exe,
             icon=manifest['launcher']['icon'] or paths.build.launcher_icon,

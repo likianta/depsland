@@ -173,10 +173,7 @@ def build(
     """
     manifest = _normalize_manifest_path(manifest)
     if offline:
-        if remove_depsland:
-            api.build_stripped_offline(manifest)
-        else:
-            api.build_offline(manifest)
+        api.build_offline(manifest, embed_depsland_engine=not remove_depsland)
     else:
         api.build(manifest)
 
@@ -404,7 +401,6 @@ def show_packages(
     indx = 0
     for name, info in pkgs.items():
         indx += 1
-        # noinspection PyTypeChecker
         rows.append((str(indx), name, info['version'], str(len(info['files']))))
     np.show(rows, ':l2')
     if save_result:
