@@ -23,7 +23,7 @@
 
 1. 准备新旧快照文件
 2. 比较差异, 并将变化的文件复制到补丁包中 (同时会准备一个路径映射表)
-3. 通过模板生成 v 代码, 然后编译为 exe, 预计体积在 1MB 左右
+3. 通过模板生成 v 代码, 然后编译为 exe, 预计体积在 1MB ~ 10MB 之间
 4. 将 exe 分享给用户, 用户将它放在正确的位置 (`<目标应用>/patches/`), 双击执行
 5. 执行时, 会将包内的差异文件释放到临时目录, 然后根据映射表替换到对应位置
 6. 替换完成后, 被替换的文件不要删除, 而是放到备份区, 以便执行回退操作
@@ -31,7 +31,32 @@
 
 相关工作见 `sidework/patch_maker`.
 
+## 具体操作步骤
+
+1. 首先, 有一个旧版本的应用, 假设为 `~/projects/hello-world-project/dist/hello_world-0.1.0`, 其目录下有一个清单快照: `.../hello_world-0.1.0/source/.depsland/manifest.pkl`
+2. 确认 `hello-world-project` 中已经产生了更新 (比如, 源代码更新, 或者依赖更新)
+3. 确认本项目包含 depsland image profile, 用于构建新版本应用
+4. 构建新版本应用, 生成 `~/projects/hello-world-project/dist/hello_world-0.1.1`, 同样, 在其目录下有一个清单快照
+5. 现在运行
+
+   ```sh
+   python sidework/patch_maker/patch_maker.py \
+       -s ~/projects/hello-world-project \
+       -o ~/projects/hello-world-project/dist/hello_world-0.1.0/source/.depsland/manifest.pkl \
+       -n ~/projects/hello-world-project/dist/hello_world-0.1.1/source/.depsland/manifest.pkl \
+       -p
+   ```
+
+   参数说明:
+   - `-s`: 设置项目根路径
+   - `-o`: 旧版本清单快照路径
+   - `-n`: 新版本清单快照路径
+   - `-p`: 预览模式, 小写 (`-p`) 是开启预览, 大写 (`-P`) 是不启用. 不传这个参数, 则使用默认值 (false)
+
+   此外, 该命令还有更多参数, 请阅读源码了解.
+
+6. 生成结果: `<depsland_project>/sidework/patch_maker/generated_patches/patch-<uid>.exe`
+
 ## 困难与阻碍
 
 ...
-

@@ -38,6 +38,8 @@ def make_patch(
 ) -> None:
     """
     params:
+        old_manifest_file (-o):
+        new_manifest_file (-n):
         start_directory (-s): usually the project root directory.
         extra_assets (-e):
             pass a path or a semi-colon-separated list of paths.
@@ -215,14 +217,14 @@ def _generate_patch_executable(patch_id: str) -> str:
         (
             'v',
             '-o',
-            'generated_extractors/patch-{}.exe'.format(patch_id),
+            'generated_patches/patch-{}.exe'.format(patch_id),
             'patch_extractor_template.v',
         ),
         cwd=fs.here(),
         verbose=True,
     )
     return fs.here(
-        'generated_extractors/{}'.format('patch-{}.exe'.format(patch_id))
+        'generated_patches/{}'.format('patch-{}.exe'.format(patch_id))
     )
 
 
