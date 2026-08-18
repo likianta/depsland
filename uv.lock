@@ -632,7 +632,6 @@ dependencies = [
 [package.dev-dependencies]
 dev = [
     { name = "argsense" },
-    { name = "freesimplegui" },
     { name = "icnsutil" },
     { name = "ipython" },
     { name = "nuitka" },
@@ -649,24 +648,23 @@ requires-dist = [
     { name = "airmise", specifier = ">=3.0.0", index = "http://localhost:2191/" },
     { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2191/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.8.0a6", index = "http://localhost:2191/" },
-    { name = "neoprint", specifier = ">=0.1.10a0", index = "http://localhost:2191/" },
+    { name = "lk-utils", specifier = ">=3.8.0a8", index = "http://localhost:2191/" },
+    { name = "neoprint", specifier = ">=0.1.9", index = "http://localhost:2191/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pyportable-crypto", specifier = ">=1.6.1", index = "http://localhost:2191/" },
     { name = "semver", specifier = ">=3.0.4" },
-    { name = "streamlit", specifier = ">=1.60.0" },
+    { name = "streamlit", specifier = ">=1.61.0" },
     { name = "streamlit-canary", specifier = ">=0.3.2", index = "http://localhost:2191/" },
     { name = "streamlit-extras", specifier = ">=1.4.1" },
     { name = "streamlit-tree-select", specifier = ">=0.0.5" },
-    { name = "tree-shaking", specifier = ">=0.4.0b0", index = "http://localhost:2191/" },
+    { name = "tree-shaking", specifier = ">=0.4.0", index = "http://localhost:2191/" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'", specifier = ">=1.0.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "argsense", specifier = ">=1.1.3a1,<1.2.0", index = "http://localhost:2191/" },
-    { name = "freesimplegui", specifier = ">=5.2.0.post1" },
     { name = "icnsutil", specifier = ">=1.1.0" },
     { name = "ipython", specifier = ">=9.16.0" },
     { name = "nuitka", specifier = ">=4.1.3" },
@@ -702,15 +700,6 @@ wheels = [
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/49/4e/652d1580c5f4e39f7d103b0c793e4773129ad633dce4addd0cf4dfebde02/fonttools-4.63.0-cp314-cp314t-macosx_10_15_universal2.whl", hash = "sha256:6db5140a60a5d731d21ec076745b40a310607731b0a565b50776393188649001", size = 2958152, upload-time = "2026-05-14T12:04:08.706Z" },
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/0e/55/ad864c9a9b219f552eb46b32cd7906c466e5a578ba0c3abfcc0fe7413eb6/fonttools-4.63.0-cp314-cp314t-macosx_10_15_x86_64.whl", hash = "sha256:7d76edbff9014094dbf03bd2d074709dfa6ec7aba13d838c937a2b33d2d6a86e", size = 2460809, upload-time = "2026-05-14T12:04:10.783Z" },
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/2c/47/c99d5268f354002ce80f8d029cd9d7d872969da1de8b93d32de4dc56d6f4/fonttools-4.63.0-py3-none-any.whl", hash = "sha256:445af2eab030a16b9171ea8bdda7ebf7d96bda2df88ee182a464252f6e05e20d", size = 1164562, upload-time = "2026-05-14T12:04:29.092Z" },
-]
-
-[[package]]
-name = "freesimplegui"
-version = "5.2.0.post1"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/97/41/8a56f3d4a3760fec6b1f63ff48fa57620f0552eb5f0986fb4aa35f4119f1/freesimplegui-5.2.0.post1.tar.gz", hash = "sha256:e58a0e6758e9a9e87152256911f94fcc3998356d1309973a9f4d9df2dc55f98a", size = 718668, upload-time = "2025-03-17T17:50:24.402Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/73/b4/ce89b4b40d1d2f726583b4d00b99589ba37580012890a8bc4b88d1d2a239/freesimplegui-5.2.0.post1-py3-none-any.whl", hash = "sha256:3d61eb519324503232f86b2f1bd7f5c6813ce225f6e189d0fd737ddb036af4d5", size = 733618, upload-time = "2025-03-17T17:50:22.559Z" },
 ]
 
 [[package]]
@@ -800,30 +789,6 @@ wheels = [
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/89/76/c615883b7b521ead2944bb3480398cbb07e12b7b4e4d073d3752eb721558/frozenlist-1.8.0-cp314-cp314t-win_amd64.whl", hash = "sha256:06be8f67f39c8b1dc671f5d83aaefd3358ae5cdcf8314552c57e7ed3e6475bdd", size = 49451, upload-time = "2025-10-06T05:37:53.425Z" },
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/e0/a3/5982da14e113d07b325230f95060e2169f5311b1017ea8af2a29b374c289/frozenlist-1.8.0-cp314-cp314t-win_arm64.whl", hash = "sha256:102e6314ca4da683dca92e3b1355490fed5f313b768500084fbe6371fddfdb79", size = 42507, upload-time = "2025-10-06T05:37:54.513Z" },
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/9a/9a/e35b4a917281c0b8419d4207f4334c8e8c5dbf4f3f5f9ada73958d937dcc/frozenlist-1.8.0-py3-none-any.whl", hash = "sha256:0c18a16eab41e82c295618a77502e17b195883241c563b00f0aa5106fc4eaa0d", size = 13409, upload-time = "2025-10-06T05:38:16.721Z" },
-]
-
-[[package]]
-name = "gitdb"
-version = "4.0.12"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-dependencies = [
-    { name = "smmap" },
-]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/72/94/63b0fc47eb32792c7ba1fe1b694daec9a63620db1e313033d18140c2320a/gitdb-4.0.12.tar.gz", hash = "sha256:5ef71f855d191a3326fcfbc0d5da835f26b13fbcba60c32c21091c349ffdb571", size = 394684, upload-time = "2025-01-02T07:20:46.413Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl", hash = "sha256:67073e15955400952c6565cc3e707c554a4eea2e428946f7a4c162fab9bd9bcf", size = 62794, upload-time = "2025-01-02T07:20:43.624Z" },
-]
-
-[[package]]
-name = "gitpython"
-version = "3.1.50"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-dependencies = [
-    { name = "gitdb" },
-]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/33/f6/354ae6491228b5eb40e10d89c4d13c651fe1cf7556e35ebdded50cff57ce/gitpython-3.1.50.tar.gz", hash = "sha256:80da2d12504d52e1f998772dc5baf6e553f8d2fcfe1fcc226c9d9a2ee3372dcc", size = 219798, upload-time = "2026-05-06T04:01:26.571Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/20/7a/1c6e3562dfd8950adbb11ffbc65d21e7c89d01a6e4f137fa981056de25c5/gitpython-3.1.50-py3-none-any.whl", hash = "sha256:d352abe2908d07355014abdd21ddf798c2a961469239afec4962e9da884858f9", size = 212507, upload-time = "2026-05-06T04:01:23.799Z" },
 ]
 
 [[package]]
@@ -1041,7 +1006,7 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.8.0a6"
+version = "3.8.0a8"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -1051,7 +1016,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/lk-utils/lk_utils-3.8.0a6-py3-none-any.whl" },
+    { url = "http://localhost:2191/lk-utils/lk_utils-3.8.0a8-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2310,15 +2275,6 @@ wheels = [
 ]
 
 [[package]]
-name = "smmap"
-version = "5.0.3"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/1f/ea/49c993d6dfdd7338c9b1000a0f36817ed7ec84577ae2e52f890d1a4ff909/smmap-5.0.3.tar.gz", hash = "sha256:4d9debb8b99007ae47165abc08670bd74cb74b5227dda7f643eccc4e9eb5642c", size = 22506, upload-time = "2026-03-09T03:43:26.1Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/c1/d4/59e74daffcb57a07668852eeeb6035af9f32cbfd7a1d2511f17d2fe6a738/smmap-5.0.3-py3-none-any.whl", hash = "sha256:c106e05d5a61449cf6ba9a1e650227ecfb141590d2a98412103ff35d89fc7b2f", size = 24390, upload-time = "2026-03-09T03:43:24.361Z" },
-]
-
-[[package]]
 name = "stack-data"
 version = "0.6.3"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
@@ -2347,14 +2303,13 @@ wheels = [
 
 [[package]]
 name = "streamlit"
-version = "1.60.0"
+version = "1.61.1"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "altair" },
     { name = "anyio" },
     { name = "blinker" },
     { name = "click" },
-    { name = "gitpython" },
     { name = "httptools" },
     { name = "itsdangerous" },
     { name = "numpy" },
@@ -2374,9 +2329,9 @@ dependencies = [
     { name = "watchdog", marker = "sys_platform != 'darwin'" },
     { name = "websockets" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/7a/46/fa437e9651af1dbe7e5b28a754fd9c36df656e4a14a2b5ecc1bcd1d90587/streamlit-1.60.0.tar.gz", hash = "sha256:09f2fdd2aabbd3b3560953795681dd675d5479ac82c21fc2dceadaf9bd484ea3", size = 9819884, upload-time = "2026-07-21T21:13:58.04Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ad/4a/6d0bf2f78de59924564caf47298341c09f61bf3814f15f0d15ef09fe1e3d/streamlit-1.61.1.tar.gz", hash = "sha256:68acf1ff1b6005b19205c2777d832deea0c1edd6fbbf7f43f091b96220e5e35f", size = 9907073, upload-time = "2026-08-05T14:51:01.956Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/2f/69/7a1984df015d01875c9ac79bfda7c31492cc94f81a2625303ce4707188e5/streamlit-1.60.0-py3-none-any.whl", hash = "sha256:d167d67cf94537600a6e378d8aa0c31eabab26beb243e2a51de9842e2872e393", size = 10419153, upload-time = "2026-07-21T21:13:55.113Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/4f/e3/deeea39117e1ffbce29755b45bceb214692e0a0aa496a17ce742b98ef3e1/streamlit-1.61.1-py3-none-any.whl", hash = "sha256:3f0ebf6764c3f938f8107414c9533942fa85a84b57affdaa7727d562210d8ece", size = 10512871, upload-time = "2026-08-05T14:50:59.246Z" },
 ]
 
 [[package]]
@@ -2578,7 +2533,7 @@ wheels = [
 
 [[package]]
 name = "tree-shaking"
-version = "0.4.0b0"
+version = "0.4.0"
 source = { registry = "http://localhost:2191/" }
 dependencies = [
     { name = "argsense" },
@@ -2586,7 +2541,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2191/tree-shaking/tree_shaking-0.4.0b0-py3-none-any.whl" },
+    { url = "http://localhost:2191/tree-shaking/tree_shaking-0.4.0-py3-none-any.whl" },
 ]
 
 [[package]]

@@ -6,7 +6,7 @@ import re
 import typing as tp
 
 from lk_utils import fs
-from lk_utils import slice
+from lk_utils import manipulate_text
 
 from .build_offline import build_offline
 from .publish import publish as publish_to_oss
@@ -112,47 +112,43 @@ def bump_version_inplaces(*files: T.Path, new_version: str) -> None:
         match fs.basename(f):
             case '__init__.py':
                 content_w = (
-                    slice(content_r)
+                    manipulate_text(content_r)
                     .find("__version__ = '")
-                    .end()
-                    .cut()
+                    .then_cut()
                     .find("'")
                     .cut()
-                    .inplace(new_version)
-                    .out()
+                    .replace(new_version)
+                    .output()
                 )
             case 'pyproject.toml':
                 content_w = (
-                    slice(content_r)
+                    manipulate_text(content_r)
                     .find('version = "')
-                    .end()
-                    .cut()
+                    .then_cut()
                     .find('"')
                     .cut()
-                    .inplace(new_version)
-                    .out()
+                    .replace(new_version)
+                    .output()
                 )
             case x if x.endswith('.json'):
                 content_w = (
-                    slice(content_r)
+                    manipulate_text(content_r)
                     .find('"version": "')
-                    .end()
-                    .cut()
+                    .then_cut()
                     .find('"')
                     .cut()
-                    .inplace(new_version)
-                    .out()
+                    .replace(new_version)
+                    .output()
                 )
             case x if x.endswith('.yaml'):
                 content_w = (
-                    slice(content_r)
+                    manipulate_text(content_r)
                     .find('version: ')
-                    .end()
-                    .cut()
+                    .then_cut()
                     .find('\n')
                     .cut()
-                    .inplace(new_version)
-                    .out()
+                    .replace(new_version)
+                    .output()
                 )
             case _:
                 raise Exception(f)
