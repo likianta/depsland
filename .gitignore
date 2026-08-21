@@ -1,6 +1,5 @@
 /.bin/
 /.ruff_cache/
-/.venv/
 /apps/**
 /build/fuzzy_workflow.py
 /build/windows_patch/windows-7-sp1-32bit/*.msu
@@ -45,6 +44,7 @@
 
 .depsland/
 .idea/
+.venv/
 .web/
 __pycache__/
 dist/**

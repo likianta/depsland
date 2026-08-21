@@ -117,6 +117,18 @@ mdbook serve -n 0.0.0.0 -p 3000
 python build/build_depsland/standalone.py bump_version $new_version
 ```
 
+## 版本发布节奏
+
+Alpha -> beta -> formal.
+
+示例: 0.12.2a0 -> 0.12.2a1 -> 0.12.2b0 -> 0.12.2b1 -> 0.12.2.
+
+在发布正式版时, 有以下注意事项:
+
+- 确保 pyproject.toml 中的依赖全部升到 PyPI 可用的版本.
+- 更新 wiki/src/changelog.md.
+- 对于大版本更新 (x.y.0), 需要发布相应的独立版应用, 并推送到 GitHub Releases (目前非必须).
+
 ## 杂项
 
 ### 减轻 PyCharm 索引压力

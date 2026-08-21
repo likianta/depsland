@@ -1,0 +1,58 @@
+[project]
+name = "depsland-updater"
+version = "0.12.2b2"
+description = "Depsland authored updater toolkit: check and apply incremental updates."
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "argsense>=1.1.2",
+    "lk-utils>=3.8.0a9",
+    "neoprint>=0.1.10a0",
+]
+
+[build-system]
+build-backend = "hatchling.build"
+requires = ["hatchling>=1.29.0"]
+
+# [dependency-groups]
+# dev = []
+
+[project.urls]
+homepage = "https://github.com/likianta/depsland"
+
+[tool.hatch.build.targets.wheel]
+packages = ["depsland_updater"]
+
+[tool.ruff]
+line-length = 80
+
+[tool.ruff.format]
+quote-style = "single"
+skip-magic-trailing-comma = true
+
+[tool.ruff.lint.isort]
+force-single-line = true
+relative-imports-order = "closest-to-furthest"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 83
+
+[tool.uv]
+prerelease = "allow"
+
+[[tool.uv.index]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple/"
+default = true
+
+[[tool.uv.index]]
+name = "likianta"
+url = "http://localhost:2191/"
+explicit = true
+
+[tool.uv.sources]
+lk-utils = { index = "likianta" }
+neoprint = { index = "likianta" }

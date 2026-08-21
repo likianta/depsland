@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.2b1"
+version = "0.12.2b2"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
@@ -84,7 +84,7 @@ force-single-line = true
 relative-imports-order = "closest-to-furthest"
 
 [tool.ruff.lint.per-file-ignores]
-"__init__.py" = ["F401", "F403"]
+"__init__.py" = ["F401"]
 
 [tool.ruff.lint.pycodestyle]
 max-line-length = 83
