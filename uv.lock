@@ -154,8 +154,8 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.0.0"
-source = { registry = "http://localhost:2191/" }
+version = "3.0.1a1"
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "aiohttp" },
     { name = "argsense" },
@@ -163,7 +163,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2191/airmise/airmise-3.0.0-py3-none-any.whl" },
+    { url = "http://localhost:2131/airmise/airmise-3.0.1a1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -220,13 +220,13 @@ wheels = [
 [[package]]
 name = "argsense"
 version = "1.1.3a1"
-source = { registry = "http://localhost:2191/" }
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "neoprint" },
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/argsense/argsense-1.1.3a1-py3-none-any.whl" },
+    { url = "http://localhost:2131/argsense/argsense-1.1.3a1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -609,7 +609,7 @@ wheels = [
 
 [[package]]
 name = "depsland"
-version = "0.12.2a4"
+version = "0.12.2b2"
 source = { editable = "." }
 dependencies = [
     { name = "airmise" },
@@ -634,6 +634,8 @@ dev = [
     { name = "argsense" },
     { name = "icnsutil" },
     { name = "ipython" },
+    { name = "lk-utils" },
+    { name = "neoprint" },
     { name = "nuitka" },
     { name = "pandas" },
     { name = "pillow" },
@@ -645,33 +647,35 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.0.0", index = "http://localhost:2191/" },
-    { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2191/" },
+    { name = "airmise", specifier = ">=3.0.0", index = "http://localhost:2131/" },
+    { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2131/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.8.0a8", index = "http://localhost:2191/" },
-    { name = "neoprint", specifier = ">=0.1.9", index = "http://localhost:2191/" },
+    { name = "lk-utils", specifier = ">=3.7.5", index = "http://localhost:2131/" },
+    { name = "neoprint", specifier = ">=0.1.9", index = "http://localhost:2131/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
-    { name = "pyportable-crypto", specifier = ">=1.6.1", index = "http://localhost:2191/" },
+    { name = "pyportable-crypto", specifier = ">=1.6.1", index = "http://localhost:2131/" },
     { name = "semver", specifier = ">=3.0.4" },
     { name = "streamlit", specifier = ">=1.61.0" },
-    { name = "streamlit-canary", specifier = ">=0.3.2", index = "http://localhost:2191/" },
+    { name = "streamlit-canary", specifier = ">=0.3.2", index = "http://localhost:2131/" },
     { name = "streamlit-extras", specifier = ">=1.4.1" },
     { name = "streamlit-tree-select", specifier = ">=0.0.5" },
-    { name = "tree-shaking", specifier = ">=0.4.0", index = "http://localhost:2191/" },
+    { name = "tree-shaking", specifier = ">=0.4.0", index = "http://localhost:2131/" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'", specifier = ">=1.0.0" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "argsense", specifier = ">=1.1.3a1,<1.2.0", index = "http://localhost:2191/" },
+    { name = "argsense", specifier = ">=1.1.3a1,<1.2.0", index = "http://localhost:2131/" },
     { name = "icnsutil", specifier = ">=1.1.0" },
     { name = "ipython", specifier = ">=9.16.0" },
+    { name = "lk-utils", specifier = ">=3.8.0b5", index = "http://localhost:2131/" },
+    { name = "neoprint", specifier = ">=0.1.10a2", index = "http://localhost:2131/" },
     { name = "nuitka", specifier = ">=4.1.3" },
     { name = "pandas", specifier = "<3.0.0" },
     { name = "pillow", specifier = ">=12.2.0" },
     { name = "py7zr", specifier = ">=1.1.0" },
-    { name = "pyapp-window", specifier = ">=2.2.3", index = "http://localhost:2191/" },
+    { name = "pyapp-window", specifier = ">=2.2.3", index = "http://localhost:2131/" },
     { name = "pyinstrument", specifier = ">=5.1.2" },
     { name = "zstandard", specifier = ">=0.25.0" },
 ]
@@ -1006,8 +1010,8 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.8.0a8"
-source = { registry = "http://localhost:2191/" }
+version = "3.8.0b5"
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
     { name = "neoprint" },
@@ -1016,7 +1020,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/lk-utils/lk_utils-3.8.0a8-py3-none-any.whl" },
+    { url = "http://localhost:2131/lk-utils/lk_utils-3.8.0b5-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1234,13 +1238,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.10a0"
-source = { registry = "http://localhost:2191/" }
+version = "0.1.10a2"
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2191/neoprint/neoprint-0.1.10a0-py3-none-any.whl" },
+    { url = "http://localhost:2131/neoprint/neoprint-0.1.10a2-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1670,7 +1674,7 @@ wheels = [
 [[package]]
 name = "pyapp-window"
 version = "2.2.3"
-source = { registry = "http://localhost:2191/" }
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
     { name = "lk-utils" },
@@ -1680,7 +1684,7 @@ dependencies = [
     { name = "toga", marker = "python_full_version < '3.15' and sys_platform != 'linux'" },
 ]
 wheels = [
-    { url = "http://localhost:2191/pyapp-window/pyapp_window-2.2.3-py3-none-any.whl" },
+    { url = "http://localhost:2131/pyapp-window/pyapp_window-2.2.3-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1932,7 +1936,7 @@ wheels = [
 [[package]]
 name = "pyportable-crypto"
 version = "1.6.1"
-source = { registry = "http://localhost:2191/" }
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
     { name = "cryptography" },
@@ -1941,7 +1945,7 @@ dependencies = [
     { name = "nuitka" },
 ]
 wheels = [
-    { url = "http://localhost:2191/pyportable-crypto/pyportable_crypto-1.6.1-py3-none-any.whl" },
+    { url = "http://localhost:2131/pyportable-crypto/pyportable_crypto-1.6.1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2336,8 +2340,8 @@ wheels = [
 
 [[package]]
 name = "streamlit-canary"
-version = "0.3.2"
-source = { registry = "http://localhost:2191/" }
+version = "0.4.0a1"
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
     { name = "lk-utils" },
@@ -2347,7 +2351,7 @@ dependencies = [
     { name = "streamlit" },
 ]
 wheels = [
-    { url = "http://localhost:2191/streamlit-canary/streamlit_canary-0.3.2-py3-none-any.whl" },
+    { url = "http://localhost:2131/streamlit-canary/streamlit_canary-0.4.0a1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2534,14 +2538,14 @@ wheels = [
 [[package]]
 name = "tree-shaking"
 version = "0.4.0"
-source = { registry = "http://localhost:2191/" }
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
     { name = "lk-utils" },
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2191/tree-shaking/tree_shaking-0.4.0-py3-none-any.whl" },
+    { url = "http://localhost:2131/tree-shaking/tree_shaking-0.4.0-py3-none-any.whl" },
 ]
 
 [[package]]

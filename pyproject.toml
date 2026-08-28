@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.12.2b2"
+version = "0.12.2"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
@@ -10,7 +10,7 @@ dependencies = [
     "airmise>=3.0.0",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.8.0a8",
+    "lk-utils>=3.7.5",
     "neoprint>=0.1.9",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
@@ -35,6 +35,8 @@ dev = [
     # "freesimplegui>=5.2.0post1",
     "icnsutil>=1.1.0",
     "ipython>=9.16.0",
+    "lk-utils>=3.8.0b5",
+    "neoprint>=0.1.10a2",
     "nuitka>=4.1.3",
     "pandas<3.0.0",  # `^3.0` caused circular import error in `streamlit-tree-select`, so we use `<3.0`.
     # "pandas>=3.0.3",
@@ -106,7 +108,7 @@ default = true
 
 [[tool.uv.index]]
 name = "likianta"
-url = "http://localhost:2191/"
+url = "http://localhost:2131/"
 explicit = true
 
 [tool.uv.sources]
