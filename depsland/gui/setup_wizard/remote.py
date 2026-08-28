@@ -19,7 +19,7 @@ def aircall(func_name: str, *args, **kwargs) -> tp.Any:
     return State.air_client.call(func_name, *args, **kwargs)
 
 
-def airexec(code, **kwargs):
+def airexec(code: str, **kwargs) -> tp.Any:
     return State.air_client.exec(code, **kwargs)
 
 

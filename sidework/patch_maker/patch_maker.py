@@ -23,8 +23,7 @@ class T:
     RelPath = T0.RelPath
     AssetsMap = tp.Dict[
         FileId, tp.Tuple[tp.Optional[AbsPath], RelPath, bool, bool]
-        #                ^ src_abspath, dst_relpath, bool isdir, 
-        #                  bool append_or_delete
+        #                ^ src_abspath, dst_relpath, isdir, append_or_delete
     ]
 
 

@@ -1,0 +1,298 @@
+"""
+Docs:
+    - wiki/src/devnote/patch-maker-workflow.md
+    - wiki/src/devnote/difference-between-setup-wizard-and-patch-maker.md
+"""
+
+if not __package__:
+    __package__ = 'depsland.gui.patch_maker_online'
+
+import typing as tp
+
+import streamlit as st
+import streamlit_canary as sc
+from argsense import cli
+from lk_utils import fs
+from neoprint import format
+
+from . import remote_client as remote
+from ... import paths
+from ...manifest import T as T0
+from ...manifest import diff_manifest
+from ...manifest import load_manifest
+from ...utils import make_temp_dir
+
+
+class T:
+    AssetInfo = T0.AssetInfo
+    AssetsMap = tp.Dict[
+        str, tp.Tuple[tp.Optional[T0.AbsPath], T0.RelPath, bool, int, T0.Action]
+        # ^ file_id   ^ src_abspath, dst_relpath, isdir, size, action
+    ]
+    Manifest = T0.ManifestObject
+    TableData = tp.List[tp.Tuple[str, ...]]
+
+
+class _State:
+    appid_to_project_path: tp.Dict[str, str]
+    accepted_keys: tp.Iterable[str]
+    assets_map: tp.Optional[T.AssetsMap]
+    init: bool
+    new_manifest: T.Manifest
+    old_manifest: T.Manifest
+    # table_diff_data: tp.Optional[T.TableData]
+    target_project_path: str
+    user_manifest: tp.Optional[dict]
+    user_manifest_file: str
+
+    def __init__(self) -> None:
+        self.init = False
+        self.appid_to_project_path = fs.load(
+            fs.here('_appid_to_project.yaml'), default=dict
+        )
+        self.user_manifest_file = ''
+        self.assets_map = None
+        # self.table_diff_data = None
+
+
+state = tp.cast(_State, sc.init_state(_State, version=14))
+
+
+@cli
+def main(debug: bool = False, developer_mode: bool = False, **kwargs) -> None:
+    st.set_page_config('Depsland Patch Maker Online')
+    if developer_mode:
+        st.title(':red[Depsland Patch Maker]')
+    else:
+        st.title('Depsland Patch Maker')
+
+    if not state.init:
+        if not remote.State.air_client:
+            dir = remote.init_air_client(debug, **kwargs)
+            if debug:
+                state.user_manifest_file = 'test/_example_manifest.pkl'
+            else:
+                state.user_manifest_file = (
+                    '{}/source/.depsland/manifest.pkl'.format(dir)
+                )
+                remote.airexec(
+                    'assert fs.exist(file)', file=state.user_manifest_file
+                )
+        fs.dump(
+            remote.aircall('get_manifest_data', state.user_manifest_file),
+            fs.here('_user_manifest.pkl'),
+            'binary',
+        )
+        state.user_manifest = fs.load(fs.here('_user_manifest.pkl'))
+        state.target_project_path = state.appid_to_project_path[
+            state.user_manifest['appid']
+        ]
+        print(state.user_manifest['appid'], state.target_project_path)
+        state.init = True
+
+    if developer_mode:
+        with st.container(border=True):
+            st.markdown('Project path: `{}`'.format(state.target_project_path))
+            file0 = st.text_input(
+                'User manifest file', state.user_manifest_file
+            )
+            file1 = st.text_input('Latest manifest file')
+
+    main_button_row = sc.row()
+    with main_button_row:
+        if st.button('Analyze manifest', type='primary'):
+            state.old_manifest = load_manifest(file0, state.target_project_path)
+            state.new_manifest = load_manifest(file1, state.target_project_path)
+            state.assets_map = _analyze_assets_diff(
+                state.old_manifest, state.new_manifest
+            )
+        if st.button(
+            'Create & apply patch',
+            type='primary',
+            disabled=not state.assets_map,
+        ):
+            assert state.assets_map
+            assert state.accepted_keys
+            _apply_patch(state.assets_map, state.accepted_keys)
+
+    if state.assets_map:
+        with main_button_row:
+            st.space('stretch')
+            with st.popover('Custom filter'):
+                with st.container(width=500):
+                    state.accepted_keys = _custom_filter(state.assets_map)
+            # sort_by = st.radio('Sort by', ('native', 'size'), horizontal=True)
+            sort_by_size = sc.toggle_button('Sort by size', True)
+        _preview_assets_diff(
+            state.assets_map, 'size' if sort_by_size else 'native'
+        )
+
+    if debug or developer_mode:
+        with st.bottom:
+            _debug_tool(debug=debug, **kwargs)
+
+
+def _custom_filter(assets_map: T.AssetsMap):
+    incremental_keys = frozenset(
+        x for x in assets_map.keys() if assets_map[x][3] != -1
+    )
+    excluded_keys = st.multiselect(
+        'Select assets to be excluded',
+        sorted(incremental_keys, key=lambda k: assets_map[k][3], reverse=True),
+        format_func=lambda k: '{} ({})'.format(
+            assets_map[k][1], fs.pretty_size(assets_map[k][3], sep='')
+        ),
+        # accept_new_options=True,  # TODO: support glob pattern
+    )
+
+    if st.button('Apply', width='stretch', disabled=not excluded_keys):
+        total_size = sum(assets_map[k][3] for k in incremental_keys)
+        excluded_size = sum(assets_map[k][3] for k in excluded_keys)
+        remaining_size = total_size - excluded_size
+        st.table(
+            {
+                'Total items': str(len(incremental_keys)),
+                'Total size': fs.pretty_size(total_size, sep=' '),
+                'Excluded items': sc.red(len(excluded_keys)),
+                'Excluded size': sc.red(fs.pretty_size(excluded_size, sep=' ')),
+                'Remaining items': sc.green(
+                    len(incremental_keys) - len(excluded_keys)
+                ),
+                'Remaining size': sc.green(
+                    fs.pretty_size(remaining_size, sep=' ')
+                ),
+            }
+        )
+
+    return incremental_keys - frozenset(excluded_keys)
+
+
+def _debug_tool(**kwargs):
+    if remote.State.air_client:
+        if st.button(
+            ':red[Close client]', disabled=not bool(remote.State.air_client)
+        ):
+            remote.close_air_client()
+            st.rerun()
+    else:
+        if st.button(
+            ':green[Start client]', disabled=bool(remote.State.air_client)
+        ):
+            remote.init_air_client(**kwargs)
+            st.rerun()
+
+
+def _preview_assets_diff(assets_map: T.AssetsMap, sort_by: str = 'native'):
+    table_data = [('Index', 'Action', 'RelPath', 'Size')]
+    if sort_by == 'native':
+        keys = assets_map.keys()
+    elif sort_by == 'size':
+        keys = sorted(
+            assets_map.keys(),
+            key=lambda k: (
+                0 if assets_map[k][3] == -1 else 1,
+                assets_map[k][3],
+            ),
+            reverse=True,
+        )
+    else:
+        raise Exception(sort_by)
+    for i, k in enumerate(keys, 1):
+        _, relpath, is_dir, size, action = assets_map[k]
+        action_label = (
+            ':green[APPEND]'
+            if action == 'append'
+            else ':yellow[UPDATE]'
+            if action == 'update'
+            else ':red[DELETE]'
+        )
+        icon = (
+            ':orange[:material/folder:]'
+            if is_dir
+            else ':blue[:material/description:]'
+        )
+        table_data.append(
+            (
+                str(i),
+                action_label,
+                icon + ' ' + relpath,
+                'N/A' if size == -1 else fs.pretty_size(size, sep=' '),
+            )
+        )
+    st.table(table_data)
+
+
+# ------------------------------------------------------------------------------
+
+
+def _analyze_assets_diff(
+    old_manifest: T.Manifest, new_manifest: T.Manifest
+) -> T.AssetsMap:
+    root = new_manifest['start_directory']
+    diff = diff_manifest(old=old_manifest, new=new_manifest)
+
+    assets_map: T.AssetsMap = {}
+    for action, (relpath, real_relpath), (info0, info1) in diff['assets']:
+        if action == 'ignore':
+            continue
+        if action == 'append' or action == 'update':
+            abspath = '{}/{}'.format(root, real_relpath)
+            assert fs.exist(abspath), format(root, relpath, real_relpath, ':nl')
+            size = tp.cast(
+                int, fs.filesize(abspath, recursive=info1.type == 'dir')
+            )
+            assets_map[info1.uid] = (
+                abspath,
+                relpath,
+                info1.type == 'dir',
+                size,
+                action,
+            )
+        else:  # 'delete'
+            assets_map[info0.uid] = (
+                None,
+                relpath,
+                info0.type == 'dir',
+                -1,
+                action,
+            )
+    print(len(assets_map), ':n')
+    return assets_map
+
+
+def _apply_patch(assets_map: T.AssetsMap, used_keys: tp.Iterable[str]):
+    temp_dir = make_temp_dir()
+    for k in used_keys:
+        abspath, relpath, is_dir, size, action = assets_map[k]
+        relpath = 'source/' + relpath
+        if action == 'delete' or action == 'update':
+            if is_dir:
+                remote.airexec('fs.remove_tree(path)', path=relpath)
+            else:
+                remote.airexec('fs.remove_file(path)', path=relpath)
+        if action == 'append' or action == 'update':
+            assert abspath
+            if is_dir:
+                fs.zip(abspath, '{}/{}.zip'.format(temp_dir, k))
+                remote.aircall(
+                    'fs.dump(bytes_i, path_m)\nfs.unzip(path_m, path_o)',
+                    bytes_i=fs.load('{}/{}.zip'.format(temp_dir, k), 'binary'),
+                    path_m=relpath + '.zip',
+                    path_o=relpath,
+                )
+            else:
+                remote.aircall(
+                    'fs.dump(bytes_i, path_o)',
+                    bytes_i=fs.load(abspath, 'binary'),
+                    path_o=relpath,
+                )
+
+
+if __name__ == '__main__':
+    # production:
+    #   strun 2190 depsland/gui/patch_maker_online/app.py
+    # debug:
+    #   python -m airmise run_server --port 2192
+    #   strun 2190 depsland/gui/patch_maker_online/app.py -- --debug
+    #       --developer-mode --client-host localhost --client-port 2192
+    cli.run(main)
