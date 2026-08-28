@@ -64,8 +64,8 @@ class System:
         # FIXME: `setx` command runs very slow in some computer.
         # from lk_utils import run_cmd_args
         # depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
-        # run_cmd_args('setx', 'DEPSLAND', depsland_dir, verbose=True)
-        # run_cmd_args('setx', 'PYTHONUTF8', '1', verbose=True)
+        # run_cmd_args(('setx', 'DEPSLAND', depsland_dir), verbose=True)
+        # run_cmd_args(('setx', 'PYTHONUTF8', '1'), verbose=True)
         
         # --- b) use winreg
         import ctypes

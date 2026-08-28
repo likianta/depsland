@@ -88,7 +88,7 @@ class SetupWizard(QObject):
             file_o=file_o.replace('/', '\\'),
         )
         dumps(command, vbs, type='plain')
-        run_cmd_args('cscript', '/nologo', vbs)
+        run_cmd_args(('cscript', '/nologo', vbs))
         fs.remove_file(vbs)
     
     @staticmethod
@@ -146,9 +146,9 @@ class SetupWizard(QObject):
             
             def set_depsland_variable(self, new: str) -> None:
                 if self.level == 'user':
-                    run_cmd_args('setx', 'DEPSLAND', new)
+                    run_cmd_args(('setx', 'DEPSLAND', new))
                 else:
-                    run_cmd_args('setx', 'DEPSLAND', new, '/m')
+                    run_cmd_args(('setx', 'DEPSLAND', new, '/m'))
             
             def set_depsland_to_path_variable(
                     self, paths: t.List[str], new: str

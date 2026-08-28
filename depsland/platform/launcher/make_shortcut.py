@@ -40,4 +40,4 @@ def make_shortcut(file_i: str, file_o: str = None) -> None:
     )
     fs.dump(script, paths.temp.shortcut_vbs, type='plain')
     
-    run_cmd_args('cscript', '/nologo', paths.temp.shortcut_vbs)
+    run_cmd_args(('cscript', '/nologo', paths.temp.shortcut_vbs))

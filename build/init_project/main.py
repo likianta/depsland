@@ -37,7 +37,7 @@ def make_all_exe_files():
         print(name, ':piv2')
         file_i = file
         file_o = 'build/exe/{}'.format(name)
-        run_cmd_args('v', '-prod', '-o', file_o, file_i, verbose=True)
+        run_cmd_args(('v', '-prod', '-o', file_o, file_i), verbose=True)
         add_icon_to_exe(file_o, icon)
     
     make(

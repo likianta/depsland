@@ -1,6 +1,7 @@
 """
 a wrapper for pip command.
 """
+
 import sys
 import typing as t
 
@@ -18,7 +19,7 @@ class T:
 class Pip:
     _pip_exec: T.PipExecute
     _pip_general_options: t.Tuple[T.PopenArg, ...]
-    
+
     def __init__(
         self,
         pip_exec: T.PipExecute = (sys.executable, '-m', 'pip'),
@@ -34,22 +35,21 @@ class Pip:
             ('--index-url', index_url),
             ('--trusted-host', index_url.split('/')[2]),
         )
-    
+
     def pip_cmd(self, *args: T.PopenArg) -> str:
         return run_cmd_args(
-            *self._pip_exec, *args,
-            verbose=True, ignore_error=False
+            (*self._pip_exec, *args), verbose=True, ignore_error=False
         )
-    
+
     def test(self) -> None:
         self.pip_cmd('--version')
-    
+
     def pip_version(self) -> str:
         r = self.pip_cmd('--version')
         return r.split(' ', 2)[1]  # ['pip', '22.3', 'from ...'] -> '22.3'
-    
+
     # -------------------------------------------------------------------------
-    
+
     def download(
         self,
         name: str,
@@ -76,7 +76,7 @@ class Pip:
             '--no-index' if no_index else '',
             *self._pip_general_options,
         )
-    
+
     def download_r(
         self,
         file: str,
@@ -91,7 +91,7 @@ class Pip:
             '--no-index' if no_index else '',
             *self._pip_general_options,
         )
-    
+
     def install(
         self,
         name: str,
@@ -107,7 +107,7 @@ class Pip:
             *self._pip_general_options,
             '--no-warn-script-location',
         )
-    
+
     def install_r(
         self,
         file: str,
@@ -123,9 +123,9 @@ class Pip:
             *self._pip_general_options,
             '--no-warn-script-location',
         )
-    
+
     # -------------------------------------------------------------------------
-    
+
     # def show_dependencies(self, name: str) -> t.List[str]:
     #     resp = self._run(*self._template.pip_show(name))
     #     #   it can be considered as a YAML string.
@@ -183,5 +183,5 @@ class Pip:
 
 pip = Pip(
     pip_exec=(paths.python.python, '-m', 'pip'),
-    index_url=app_settings['pip']['index_url']
+    index_url=app_settings['pip']['index_url'],
 )

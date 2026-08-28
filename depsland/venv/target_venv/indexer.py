@@ -195,9 +195,11 @@ class LibraryIndexer:
         ]:
             _poetry = (sys.executable, '-m', 'poetry')
             content = run_cmd_args(
-                _poetry,
-                ('show', '-t', '--no-dev', '--no-ansi'),
-                ('--directory', self.working_root),
+                (
+                    _poetry,
+                    ('show', '-t', '--no-dev', '--no-ansi'),
+                    ('--directory', self.working_root),
+                ),
                 cwd=self.working_root,
             )
 

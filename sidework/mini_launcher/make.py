@@ -190,15 +190,17 @@ def nuitka_compile_depsland_online_installer() -> None:
     # warning: this is time consuming.
     # the output exe file size is ~17mb.
     run_cmd_args(
-        sys.executable,
-        '-m',
-        'nuitka',
-        '--onefile',
-        '--standalone',
-        '--windows-console-mode=force',
-        '--noinclude-IPython-mode=nofollow',
-        '--output-filename=depsland_online_installer.exe',
-        'main2.py',
+        (
+            sys.executable,
+            '-m',
+            'nuitka',
+            '--onefile',
+            '--standalone',
+            '--windows-console-mode=force',
+            '--noinclude-IPython-mode=nofollow',
+            '--output-filename=depsland_online_installer.exe',
+            'main2.py'
+        ),
         verbose=True,
         cwd='depsland_online_installer',
     )
@@ -215,26 +217,30 @@ def nuitka_build_general_launcher() -> None:
     https://chatgpt.com/share/69ddb859-0b78-8321-8407-fc3b8a7d8976
     """
     run_cmd_args(
-        sys.executable,
-        '-m',
-        'nuitka',
-        '--onefile',
-        '--standalone',
-        '--windows-console-mode=force',
-        '--output-filename=general_launcher_console.exe',
-        'template.py',
+        (
+            sys.executable,
+            '-m',
+            'nuitka',
+            '--onefile',
+            '--standalone',
+            '--windows-console-mode=force',
+            '--output-filename=general_launcher_console.exe',
+            'template.py'
+        ),
         verbose=True,
         cwd='general_launcher',
     )
     run_cmd_args(
-        sys.executable,
-        '-m',
-        'nuitka',
-        '--onefile',
-        '--standalone',
-        '--windows-console-mode=disable',
-        '--output-filename=general_launcher_noconsole.exe',
-        'template.py',
+        (
+            sys.executable,
+            '-m',
+            'nuitka',
+            '--onefile',
+            '--standalone',
+            '--windows-console-mode=disable',
+            '--output-filename=general_launcher_noconsole.exe',
+            'template.py'
+        ),
         verbose=True,
         cwd='general_launcher',
     )

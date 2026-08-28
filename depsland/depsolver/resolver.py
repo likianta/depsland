@@ -86,12 +86,14 @@ def resolve_dependencies(
         dir_m = paths.temp.make_dir()
         fs.dump(raw_requirements, f'{dir_m}/requirements.txt')
         json_data = run_cmd_args(
-            'pipgrip',
-            '--json',
-            '--sort',
-            ('-r', 'requirements.txt'),
-            # ('--cache-dir', paths.pypi.cache),
-            ('--index-url', 'https://pypi.tuna.tsinghua.edu.cn/simple'),
+            (
+                'pipgrip',
+                '--json',
+                '--sort',
+                ('-r', 'requirements.txt'),
+                # ('--cache-dir', paths.pypi.cache),
+                ('--index-url', 'https://pypi.tuna.tsinghua.edu.cn/simple'),
+            ),
             cwd=dir_m,
             verbose=False,
         )

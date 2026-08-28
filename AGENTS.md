@@ -17,7 +17,7 @@ build: 构建自身项目的一些脚本和资产 (启动器图标, 启动器源
 depsland: 项目的源代码.
 pypi: Depsland 会自己管理所有项目的依赖包. 类似于 uv cache, poetry cache 的设计目的.
 run: 这是一个目录, 里面包含了很多一行 CLI 可搞定的常用命令.
-sidework: 周边工作, 例如转换图标格式, 迷你启动器, BAT 转 EXE 等.
+sidework: 周边工作, 例如转换图标格式, 迷你启动器, 补丁工具, BAT 转 EXE 工具等.
 test: 当需要测试和验证一些功能时, 会在这里创建测试脚本.
 wiki/src: 项目使用说明和开发文档都放在这里.
 pyproject.toml: 我们使用现代的 Python 项目管理方式 (uv + ruff + ty).
@@ -78,6 +78,6 @@ pyproject.toml: 我们使用现代的 Python 项目管理方式 (uv + ruff + ty)
 
 - 优先使用 `format` 而不是 `f-string`.
 - 代码中使用全英文, 不要有中文注释.
-- 不需要在入口脚本的顶部添加 `sys.path.append(...)`. 因为我们已经设置好了环境变量 `PYTHONPATH=.;src;lib;.venv/Lib/site-packages`.
+- 不需要在入口脚本的顶部添加 `sys.path.append(...)`. 因为我们已经设置好了环境变量 (`PYTHONPATH=.;src;lib;.venv/Lib/site-packages`).
 - 每行代码不超过 80 字符 (见 `pyproject.toml:[tool.ruff]:line-length`).
 - 每当完成修改后, 使用 `ty check`, `ruff check`, `ruff format` 等命令检查代码风格.

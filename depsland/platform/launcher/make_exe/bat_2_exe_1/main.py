@@ -47,12 +47,14 @@ def bat_2_exe(
 
 
 def add_icon_to_exe(file_exe: str, file_ico: str) -> None:
-    run_cmd_args(_rcedit_exe, file_exe, '--set-icon', file_ico)
+    run_cmd_args((_rcedit_exe, file_exe, '--set-icon', file_ico))
 
 
 def elevate_privilege(file_exe: str) -> None:  # noqa
-    # run_cmd_args(_rcedit_exe, file_exe, '--set-requested-execution-level',
-    #              'requireAdministrator')
+    # run_cmd_args((
+    #     _rcedit_exe, file_exe, '--set-requested-execution-level',
+    #     'requireAdministrator'
+    # ))
     raise Exception(
         'using rcedit.exe to elevate privilege is not supported. '
         'please turn to `util_b` or see reason in `../readme.zh.md`.'

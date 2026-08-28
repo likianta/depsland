@@ -51,12 +51,14 @@ def get_venv_root(
             del os.environ['VIRTUAL_ENV']
         venv_root = fs.normpath(
             run_cmd_args(
-                (sys.executable, '-m', 'poetry'),
-                'env',
-                'info',
-                '--path',
-                '--no-ansi',
-                '--directory',
+                (
+                    (sys.executable, '-m', 'poetry'),
+                    'env',
+                    'info',
+                    '--path',
+                    '--no-ansi',
+                    '--directory'
+                ),
                 working_root,
                 cwd=working_root,
             )
@@ -112,9 +114,11 @@ def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
     yield from map(
         normalize_name,
         run_cmd_args(
-            (sys.executable, '-m', 'poetry'),
-            ('show', '-T', '--no-ansi'),
-            ('--directory', working_root),
+            (
+                (sys.executable, '-m', 'poetry'),
+                ('show', '-T', '--no-ansi'),
+                ('--directory', working_root)
+            ),
             cwd=working_root,
         ).splitlines(),
     )
@@ -122,9 +126,11 @@ def _get_top_names_by_poetry_1(working_root: str) -> t.Iterator[T.PackageName]:
 
 def _get_top_names_by_poetry_2(working_root: str) -> t.Iterator[T.PackageName]:
     content = run_cmd_args(
-        (sys.executable, '-m', 'poetry'),
-        ('show', '-t', '--no-dev', '--no-ansi'),
-        ('--directory', working_root),
+        (
+            (sys.executable, '-m', 'poetry'),
+            ('show', '-t', '--no-dev', '--no-ansi'),
+            ('--directory', working_root)
+        ),
         cwd=working_root,
     )
     re_pkg_name = re.compile(r'^[-\w]+')

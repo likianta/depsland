@@ -44,5 +44,5 @@ def start_streamlit_app(blocking: bool):
     sc.run(
         'depsland/gui/setup_wizard/depsland_installer_online.py',
         port=2185,
-        subthread=not blocking,
+        blocking=blocking,
     )
