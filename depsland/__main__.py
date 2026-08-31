@@ -14,7 +14,7 @@ if 2:
 
 import subprocess
 import sys
-import typing as t
+import typing as tp
 
 import neoprint as np
 from argsense import CommandLineInterface
@@ -103,7 +103,7 @@ def welcome(confirm_close: bool = False) -> None:
 def launch_gui(
     port: int = 2181,
     _app_token: str = '',
-    _run_at_once: t.Optional[bool] = False,
+    _run_at_once: tp.Optional[bool] = False,
 ) -> None:
     """
     launch depsland gui.
@@ -160,20 +160,24 @@ def init(target: str = '.', app_name: str = '') -> None:
 
 @cli
 def build(
-    manifest: str = '.', offline: bool = False, remove_depsland: bool = True
+    manifest: str = '.',
+    offline: bool = False,
+    embed_depsland: bool = False,
+    embed_python: bool = True,
 ) -> None:
     """
-    build application from manifest file.
-    the result will be at "dist" directory.
-    [dim i](if "dist" folder not exists, it will be auto created.)[/]
+    Build application from manifest file.
+    The result will be at "dist" directory.
+    [dim i](If "dist" folder not exists, it will be auto created.)[/]
 
-    params:
+    Args:
         offline (-o):
-        remove_depsland (-r):
+        embed_depsland (-d):
+        embed_python (-p):
     """
     manifest = _normalize_manifest_path(manifest)
     if offline:
-        api.build_offline(manifest, embed_depsland_engine=not remove_depsland)
+        api.build_offline(manifest, embed_depsland, embed_python)
     else:
         api.build(manifest)
 
@@ -223,7 +227,7 @@ def upgrade(appid: str) -> None:
 
 
 @cli
-def uninstall(appid: str, version: t.Optional[str] = None) -> None:
+def uninstall(appid: str, version: tp.Optional[str] = None) -> None:
     """
     uninstall an application.
     """
@@ -336,6 +340,18 @@ def _cli_entrance() -> None:
 
 
 # ------------------------------------------------------------------------------
+# upgrade application
+
+
+@cli
+def patch_maker_server() -> None:
+    # fmt: off
+    from .gui.patch_maker_online import listen_for_clients
+    listen_for_clients()
+    # fmt: on
+
+
+# ------------------------------------------------------------------------------
 # view application
 
 
@@ -374,7 +390,7 @@ def list_apps() -> None:
 
 
 @cli
-def show(appid: str, version: t.Optional[str] = None) -> None:
+def show(appid: str, version: tp.Optional[str] = None) -> None:
     """
     show manifest of an app.
     """
@@ -394,7 +410,7 @@ def view_manifest(manifest: str = '.') -> None:
 
 @cli
 def show_packages(
-    poetry_file: str, save_result: t.Optional[str] = None
+    poetry_file: str, save_result: tp.Optional[str] = None
 ) -> None:
     pkgs = resolve_dependencies('poetry.lock', fs.parent(poetry_file))
     rows = [('index', 'name', 'version', 'files count')]
@@ -410,7 +426,7 @@ def show_packages(
 @cli
 def get_package_size(
     name: str,
-    version: t.Optional[str] = None,
+    version: tp.Optional[str] = None,
     include_dependencies: bool = False,
 ) -> None:
     """
@@ -444,7 +460,7 @@ def open_readme(appid: str) -> None:
 # misc
 
 
-def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
+def _get_dir_to_last_installed_version(appid: str) -> tp.Optional[str]:
     if last_ver := get_last_installed_version(appid):
         dir_ = '{}/{}/{}'.format(paths.project.apps, appid, last_ver)
         assert fs.exist(dir_), dir_
@@ -452,7 +468,7 @@ def _get_dir_to_last_installed_version(appid: str) -> t.Optional[str]:
     return None
 
 
-def _get_manifests(appid: str) -> t.Tuple[t.Optional[T.Manifest], T.Manifest]:
+def _get_manifests(appid: str) -> tp.Tuple[tp.Optional[T.Manifest], T.Manifest]:
     """get old and new manifests by appid."""
     from .oss import get_oss_client
 

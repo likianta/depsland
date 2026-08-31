@@ -47,7 +47,8 @@ def build(
     new_version: str = '',
     publish: int = 0,
     remain_last_version: bool = False,
-    remove_depsland: bool = True,
+    embed_depsland: bool = False,
+    embed_python: bool = True,
     compress_result: bool = False,
 ) -> T.Config:
     """
@@ -62,7 +63,7 @@ def build(
             official server.
             tip: if you set `minify_deps` other than 0, we recommend setting -
             this option 1 or 0.
-        remove_depsland (-r):
+        embed_depsland (-d):
         compress_result (-z): if true, compress to ".7z" format.
             this option is only valid when `publish==1`.
     """
@@ -86,9 +87,7 @@ def build(
     if publish == 0:
         load_manifest(image_file)  # make tree-shaking and encryption work.
     elif publish == 1:
-        dir_o = build_offline(
-            image_file, embed_depsland_engine=not remove_depsland
-        )
+        dir_o = build_offline(image_file, embed_depsland, embed_python)
         if compress_result:
             fs.zip(
                 dir_o,

@@ -49,21 +49,23 @@ class T(T0):
     )
 
 
-def build_offline(manifest_file: str, embed_depsland_engine: bool = False) -> str:
+def build_offline(
+    manifest_file: str, embed_depsland: bool = False, embed_python: bool = True
+) -> str:
     manifest = load_manifest(manifest_file)
     dir_i = manifest['start_directory']
     dir_o = '{}/dist/{}-{}'.format(
         dir_i, manifest['appid'], manifest['version']
     )
-    if embed_depsland_engine:
-        dst_paths = _init_dist_tree_full(manifest, dir_o)
+    if embed_depsland:
+        dst_paths = _init_dist_tree_full(manifest, dir_o, embed_python)
     else:
-        dst_paths = _init_dist_tree_lite(dir_o)
+        dst_paths = _init_dist_tree_lite(dir_o, embed_python)
     _copy_assets(manifest, dst_paths['dst_app_root'])
     _make_venv(manifest, dst_paths['dst_app_venv'])
-    if embed_depsland_engine:
+    if embed_depsland:
         _relink_pypi(manifest, dir_o)
-    if embed_depsland_engine:
+    if embed_depsland:
         _create_launcher(manifest, dir_o)
         if manifest['readme']:
             create_readme_opener(manifest, dir_o)
@@ -80,11 +82,11 @@ def build_offline(manifest_file: str, embed_depsland_engine: bool = False) -> st
     return dir_o
 
 
-build_stripped_offline = partial(build_offline, embed_depsland_engine=False)
+build_stripped_offline = partial(build_offline, embed_depsland=False)
 
 
 def _init_dist_tree_full(
-    manifest: T.Manifest, dst_dir: str
+    manifest: T.Manifest, dst_dir: str, embed_python: bool = True
 ) -> T.DistributionKeyPaths:
     from ... import __version__
 
@@ -143,7 +145,10 @@ def _init_dist_tree_full(
         f'{root_i}/chore/site_packages', f'{root_o}/source/chore/site_packages'
     )
     fs.make_link(f'{root_i}/depsland', f'{root_o}/source/depsland')
-    fs.make_link(f'{root_i}/python', f'{root_o}/source/python')
+    if embed_python:
+        fs.make_link(f'{root_i}/python', f'{root_o}/source/python')
+    else:
+        fs.make_dir(f'{root_o}/source/python')
     # fs.make_link(
     #     f'{root_i}/sidework',
     #     f'{root_o}/source/sidework'
@@ -174,7 +179,9 @@ def _init_dist_tree_full(
     }
 
 
-def _init_dist_tree_lite(dst_dir: T.AbsPath) -> T.DistributionKeyPaths:
+def _init_dist_tree_lite(
+    dst_dir: T.AbsPath, embed_python: bool = True
+) -> T.DistributionKeyPaths:
     """
     tree structure:
         <dist_app>
@@ -186,7 +193,10 @@ def _init_dist_tree_lite(dst_dir: T.AbsPath) -> T.DistributionKeyPaths:
     fs.make_dir('{}'.format(dst_dir))
     # TODO: fs.make_dir('{}/library'.format(dst_dir))
     # fs.make_dir('{}/python'.format(dst_dir))
-    fs.make_link(paths.project.python, '{}/python'.format(dst_dir))
+    if embed_python:
+        fs.make_link(paths.project.python, '{}/python'.format(dst_dir))
+    else:
+        fs.make_dir('{}/python'.format(dst_dir))
     fs.make_dir('{}/source'.format(dst_dir))
     return {
         'dst_app_root': f'{dst_dir}/source',
@@ -263,52 +273,73 @@ def _relink_pypi(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
 def _create_launcher(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
     icon = manifest['launcher']['icon'] or paths.build.python_icon
 
-    # default launcher
-    script = dedent(
-        """
-        @echo off
-        cd /d %~dp0
-        cd source
-        set "PYTHONUTF8=1"
-        {}
-        """.format(
-            manifest['launcher']['command']
-            .replace('python', '..\\python\\python.exe', 1)
-            .replace("'", '"')
+    def bat_2_exe(
+        vb_script_code: str, file_exe: str, show_console: bool
+    ) -> None:
+        file_bat = fs.replace_ext(file_exe, 'bat')
+        fs.dump(vb_script_code, file_bat)
+        platform.launcher.bat_2_exe(
+            file_bat=file_bat,
+            file_exe=file_exe,
+            icon=icon,
+            show_console=show_console,
         )
-    )
-    fs.dump(script, x := '{}/{}.bat'.format(dst_dir, manifest['name']))
-    platform.launcher.bat_2_exe(
-        file_bat=x,
-        file_exe=fs.replace_ext(x, 'exe'),
-        icon=icon,
+        fs.remove_file(file_bat)
+
+    # default launcher
+    bat_2_exe(
+        dedent(
+            """
+            @echo off
+            cd /d %~dp0
+            cd source
+            set "PYTHONUTF8=1"
+            {}
+            """.format(
+                manifest['launcher']['command']
+                .replace('python', '..\\python\\python.exe', 1)
+                .replace("'", '"')
+            )
+        ),
+        '{}/{}.exe'.format(dst_dir, manifest['name']),
         show_console=manifest['launcher']['show_console'],
     )
-    fs.remove_file(x)
 
     # debug launcher
-    script = dedent(
-        """
-        cd /d %~dp0
-        cd source
-        set "PYTHONUTF8=1"
-        {}
-        pause
-        """.format(
-            manifest['launcher']['command']
-            .replace('python', '..\\python\\python.exe', 1)
-            .replace("'", '"')
-        )
-    )
-    fs.dump(script, x := '{}/{} (Debug).bat'.format(dst_dir, manifest['name']))
-    platform.launcher.bat_2_exe(
-        file_bat=x,
-        file_exe=fs.replace_ext(x, 'exe'),
-        icon=icon,
+    bat_2_exe(
+        dedent(
+            """
+            cd /d %~dp0
+            cd source
+            set "PYTHONUTF8=1"
+            {}
+            pause
+            """.format(
+                manifest['launcher']['command']
+                .replace('python', '..\\python\\python.exe', 1)
+                .replace("'", '"')
+            )
+        ),
+        '{}/{} (Debug).exe'.format(dst_dir, manifest['name']),
         show_console=True,
-        # uac_admin=True,
     )
-    fs.remove_file(x)
+
+    # patch maker
+    bat_2_exe(
+        dedent(
+            """
+            cd /d %~dp0
+            cd source
+            set "PYTHONUTF8=1"
+            ..\\python\\python.exe -m depsland_updater request_patch
+            pause
+            """
+        ),
+        '{}/Request Patch.exe'.format(dst_dir),
+        show_console=True,
+    )
+
+    # TODO: create readme opener here.
 
 
 def create_readme_opener(manifest: T.Manifest, dst_dir: T.AbsPath) -> T.AbsPath:
