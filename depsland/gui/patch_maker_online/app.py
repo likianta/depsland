@@ -14,9 +14,9 @@ import streamlit_canary as sc
 from argsense import cli
 from lk_utils import fs
 from neoprint import format
+from neoprint import print
 
 from . import remote_client as remote
-from ... import paths
 from ...manifest import T as T0
 from ...manifest import diff_manifest
 from ...manifest import load_manifest
@@ -34,8 +34,8 @@ class T:
 
 
 class _State:
-    appid_to_project_path: tp.Dict[str, str]
     accepted_keys: tp.Iterable[str]
+    appid_to_project_path: tp.Dict[str, str]
     assets_map: tp.Optional[T.AssetsMap]
     init: bool
     new_manifest: T.Manifest
@@ -50,12 +50,12 @@ class _State:
         self.appid_to_project_path = fs.load(
             fs.here('_appid_to_project.yaml'), default=dict
         )
-        self.user_manifest_file = ''
+        # self.user_manifest_file = 'test/_example_manifest.pkl'
         self.assets_map = None
         # self.table_diff_data = None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=14))
+state = tp.cast(_State, sc.init_state(_State, version=21))
 
 
 @cli
@@ -68,16 +68,18 @@ def main(debug: bool = False, developer_mode: bool = False, **kwargs) -> None:
 
     if not state.init:
         if not remote.State.air_client:
-            dir = remote.init_air_client(debug, **kwargs)
-            if debug:
-                state.user_manifest_file = 'test/_example_manifest.pkl'
-            else:
-                state.user_manifest_file = (
-                    '{}/source/.depsland/manifest.pkl'.format(dir)
+            remote.init_air_client(debug, **kwargs)
+        if debug:
+            state.user_manifest_file = 'test/_example_manifest.pkl'
+        else:
+            state.user_manifest_file = (
+                '{}/source/.depsland/manifest.pkl'.format(
+                    remote.State.current_working_dir
                 )
-                remote.airexec(
-                    'assert fs.exist(file)', file=state.user_manifest_file
-                )
+            )
+            remote.airexec(
+                'assert fs.exist(file)', file=state.user_manifest_file
+            )
         fs.dump(
             remote.aircall('get_manifest_data', state.user_manifest_file),
             fs.here('_user_manifest.pkl'),

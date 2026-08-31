@@ -1,13 +1,14 @@
 [project]
 name = "depsland-updater"
-version = "0.12.2b2"
+version = "0.13.0a3"
 description = "Depsland authored updater toolkit: check and apply incremental updates."
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
+    "airmise>=3.0.1a6",
     "argsense>=1.1.2",
-    "lk-utils>=3.8.0a9",
-    "neoprint>=0.1.10a0",
+    "lk-utils>=3.8.0b5",
+    "neoprint>=0.1.10a3",
 ]
 
 [build-system]
@@ -50,9 +51,10 @@ default = true
 
 [[tool.uv.index]]
 name = "likianta"
-url = "http://localhost:2191/"
+url = "http://localhost:2131/"
 explicit = true
 
 [tool.uv.sources]
+airmise = { index = "likianta" }
 lk-utils = { index = "likianta" }
 neoprint = { index = "likianta" }

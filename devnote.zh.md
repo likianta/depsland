@@ -75,6 +75,18 @@
 2186: depsland installer online - backend transceiver
 2187: depsland installer online - default client server
 2188: localnet resources
+2189: depsland wiki
+2190: depsland patch-maker online - frontend
+2191: depsland patch-maker online - backend
+2192: depsland patch-maker server (listening to incoming clients)
+2193: depsland patch-maker client
+```
+
+## 预览文档 (静态站点)
+
+```sh
+cd wiki
+mdbook serve -n 0.0.0.0 -p 3000
 ```
 
 ## 运行命令
@@ -95,12 +107,20 @@
 
 ...
 
-## 预览文档 (静态站点)
+## 补丁服务器
 
 ```sh
-cd wiki
-mdbook serve -n 0.0.0.0 -p 3000
+python -m depsland patch_maker_server
 ```
+
+### 创建独立的补丁工具
+
+```sh
+python build/build_depsland/standalone.py bump_version $new_version
+python -m depsland build depsland_updater/manifest.json -o -D -P
+```
+
+生成结果: `depsland_updater/dist/<appid>-<version>`.
 
 ## 提升版本
 
@@ -109,6 +129,8 @@ mdbook serve -n 0.0.0.0 -p 3000
 手动修改 (不推荐, 仅作了解):
 
 - `depsland/__init__.py:__version__`
+- `depsland_updater/manifest.json:version`
+- `depsland_updater/pyproject.toml:project:version`
 - `pyproject.toml:project:version`
 
 脚本修改:

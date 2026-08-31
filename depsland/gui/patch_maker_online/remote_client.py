@@ -8,6 +8,7 @@ import streamlit_canary as sc
 @sc.init_state
 class State:
     air_client: tp.Optional[air.Client] = None
+    current_working_dir: str = ''
 
 
 def aircall(func_name: str, *args, **kwargs) -> tp.Any:
@@ -24,25 +25,25 @@ def close_air_client() -> None:
         State.air_client = None
 
 
-def init_air_client(debug: bool = False, **kwargs) -> str:
+def init_air_client(debug: bool = False, **kwargs) -> None:
     if debug:
         client_host = kwargs['client_host']
         client_port = kwargs['client_port']
     else:
-        # the incoming url should be like:
-        # `http://<host>:<port>/?client-open-port=<open_port>`
+        # the incoming url for example:
+        #   http://localhost:2190/?ip=172.20.128.101&port=2193
         if st.query_params:
-            client_host = 'localhost'
-            client_port = int(st.query_params['client-open-port'])
+            print(st.query_params, ':n')
+            client_host = st.query_params['ip']
+            client_port = int(st.query_params['port'])
         else:
             st.warning('Invalid query parameter.')
             st.stop()
 
-    State.air_client = air.Client(client_host, client_port)
-    State.air_client.open()
+    State.air_client = air.Client().open(client_host, client_port)
 
     _init_remote_env()
-    return aircall('get_current_working_dir')
+    State.current_working_dir = aircall('get_current_working_dir')
 
 
 def _init_remote_env() -> None:

@@ -2,6 +2,7 @@
     "root": "../../",
     "version_bumps": {
         "pyproject.toml": "version = \"$version_pattern\"",
+        "depsland_updater/manifest.json": "\"version\": \"$version_pattern\"",
         "depsland_updater/pyproject.toml": "version = \"$version_pattern\"",
         "depsland/__init__.py": "__version__ = '$version_pattern'"
     },

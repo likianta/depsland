@@ -17,6 +17,7 @@
 /depsland/assets/*
 /depsland/gui/patch_maker_online/_appid_to_project.yaml
 /depsland/gui/patch_maker_online/_user_manifest.pkl
+/depsland_updater/dist/
 /docs/*/*.html
 /lib/
 /oss/**
