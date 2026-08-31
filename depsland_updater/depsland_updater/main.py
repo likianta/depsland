@@ -10,7 +10,7 @@ def check_updates(manifest_file: str):
 def request_patch(port: int = 2193) -> None:
     try_sites = (
         # 'localhost',  # mostly used in development
-        air.get_local_ip_address(),  # used in local network
+        '172.20.128.100',  # used in local area network
         # '47.102.108.149'  # TODO: how to get a free port from public host?
     )
     client = air.Client()

@@ -15,6 +15,7 @@
 /depsland/.project/
 /depsland/_cache/**
 /depsland/assets/*
+/depsland/gui/patch_maker_online/_grocery/
 /depsland/gui/patch_maker_online/_appid_to_project.yaml
 /depsland/gui/patch_maker_online/_user_manifest.pkl
 /depsland_updater/dist/
@@ -58,6 +59,10 @@ dist/**
 !/chore/disguised_packages/
 !/chore/disguised_packages/*/__init__.py
 !/chore/disguised_packages/readme.md
+!/chore/patch_maker/
+!/chore/patch_maker/generated_patches/
+!/chore/patch_maker/grocery/
+!/chore/patch_maker/patch_extractor_template.v
 !/depsland/assets/*.ico
 !/depsland/assets/*.md
 !/depsland/assets/*.png

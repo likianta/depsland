@@ -1,7 +1,3 @@
-"""
-ref: ~/docs/project-structure.md
-"""
-
 import atexit
 import os
 import sys
@@ -15,6 +11,7 @@ __all__ = [
     'apps',
     'build',
     'cache',
+    'chore',
     'config',
     'oss',
     'project',
@@ -45,7 +42,7 @@ class System:
             self.temp = fs.normpath(os.environ['TEMP'])
         else:
             pass  # TODO
-    
+
     @staticmethod
     @new_thread()
     def set_environment_variables(depsland_dir: str) -> None:
@@ -59,45 +56,46 @@ class System:
         depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
         if os.getenv('DEPSLAND') == depsland_dir:
             return
-        
+
         # --- a) use `setx`
         # FIXME: `setx` command runs very slow in some computer.
         # from lk_utils import run_cmd_args
         # depsland_dir = fs.abspath(depsland_dir).replace('/', '\\')
         # run_cmd_args(('setx', 'DEPSLAND', depsland_dir), verbose=True)
         # run_cmd_args(('setx', 'PYTHONUTF8', '1'), verbose=True)
-        
+
         # --- b) use winreg
         import ctypes
         import winreg
-        
+
         class EnvironmentVariablesAccess:
-            
             def __init__(self) -> None:
                 self._registry = self._open_registry()
-            
+
             @staticmethod
             def _open_registry() -> winreg.HKEYType:
                 """
                 ref: https://stackoverflow.com/questions/573817
                 """
                 return winreg.OpenKey(
-                    winreg.HKEY_CURRENT_USER, 'Environment', 0,
-                    winreg.KEY_ALL_ACCESS
+                    winreg.HKEY_CURRENT_USER,
+                    'Environment',
+                    0,
+                    winreg.KEY_ALL_ACCESS,
                 )
-            
+
             def get_key(self, key: str) -> str:
                 try:
                     value, _ = winreg.QueryValueEx(self._registry, key)
                     return value
                 except Exception:  # ValueError or FileNotFoundError
                     return ''
-            
+
             def set_key(self, key: str, val: str) -> None:
                 winreg.SetValueEx(
                     self._registry, key, 0, winreg.REG_EXPAND_SZ, val
                 )
-            
+
             # noinspection PyPep8Naming
             def close(self) -> None:
                 winreg.CloseKey(self._registry)
@@ -107,10 +105,15 @@ class System:
                 WM_SETTING_CHANGED = 0x1A
                 SMTO_ABORT_IF_HUNG = 0x0002
                 ctypes.windll.user32.SendMessageTimeoutW(  # noqa
-                    HWND_BROADCAST, WM_SETTING_CHANGED, 0, 'Environment',
-                    SMTO_ABORT_IF_HUNG, 1000, ctypes.byref(ctypes.c_long())
+                    HWND_BROADCAST,
+                    WM_SETTING_CHANGED,
+                    0,
+                    'Environment',
+                    SMTO_ABORT_IF_HUNG,
+                    1000,
+                    ctypes.byref(ctypes.c_long()),
                 )
-        
+
         env = EnvironmentVariablesAccess()
         env.set_key('DEPSLAND', depsland_dir)
         env.close()
@@ -121,7 +124,7 @@ class Project:
         root, mode = self._init_project()
         self.root = root
         self.project_mode = mode
-        
+
         self.apps = f'{self.root}/apps'
         self.build = f'{self.root}/build'
         self.config = f'{self.root}/config'
@@ -134,14 +137,14 @@ class Project:
         self.pypi = f'{self.root}/pypi'
         self.python = f'{self.root}/python'
         self.temp = f'{self.root}/temp'
-    
+
     def _init_project(self) -> tp.Tuple[str, str]:
         project_file = fs.xpath('../.depsland_project.json')
         if fs.exist(project_file):
             project_info: dict = fs.load(project_file)
         else:
             project_info: dict = {'project_mode': 'package'}
-        
+
         """
         project_info: {
             'project_mode': (
@@ -158,7 +161,7 @@ class Project:
             #   .md
         }
         """
-        
+
         def check_initialized() -> bool:
             if project_mode == 'development':
                 return True
@@ -171,24 +174,27 @@ class Project:
                         return False
                     else:
                         v1 = '{}-{}-{}'.format(
-                            project_root, fs.filetime(project_file, by='c'), 'true'
+                            project_root,
+                            fs.filetime(project_file, by='c'),
+                            'true',
                         )
                         return v1 == v0
                 else:
                     return False
-        
+
         project_mode = project_info['project_mode']
         project_root = (
-            fs.xpath('.project') if project_mode == 'package' else
-            fs.xpath('..')
+            fs.xpath('.project')
+            if project_mode == 'package'
+            else fs.xpath('..')
         )
         initialized = check_initialized()
-        
+
         if initialized:
             return project_root, project_mode
-        
+
         # ---------------------------------------------------------------------
-        
+
         if project_mode == 'development':
             self._setup_development_mode()
         elif project_mode == 'package':
@@ -199,27 +205,31 @@ class Project:
             self._setup_shipboard_mode(project_root)
         else:
             raise ValueError(f'unknown project mode: {project_mode}')
-        
+
         project_info['initialized'] = '{}-{}-{}'.format(
             project_root, fs.filetime(project_file, by='c'), 'true'
         )
         fs.dump(project_info, project_file)
-        
+
         return project_root, project_mode
-    
+
     @staticmethod
     def _setup_development_mode() -> None:
         os.environ['LK_LOGGER_FORCE_COLOR'] = '1'
-        
+
     @staticmethod
     def _setup_package_mode(root: str) -> None:
         print('first time run depsland, init a virtual project root...', ':v1')
-        
+
         # see: `build/build.py:backup_project_resources`
         os.mkdir(f'{root}')
         os.mkdir(f'{root}/apps')
         os.mkdir(f'{root}/apps/.bin')
         # os.mkdir(f'{root}/build')  # later
+        os.mkdir(f'{root}/chore')
+        os.mkdir(f'{root}/chore/patch_maker')
+        os.mkdir(f'{root}/chore/patch_maker/generated_patches')
+        os.mkdir(f'{root}/chore/patch_maker/grocery')
         # os.mkdir(f'{root}/config')  # later
         os.mkdir(f'{root}/dist')
         os.mkdir(f'{root}/oss')
@@ -235,22 +245,25 @@ class Project:
         # os.mkdir(f'{root}/sidework')  # later
         os.mkdir(f'{root}/temp')
         # os.mkdir(f'{root}/unittests')
-        
-        # make link
-        fs.make_link(sys.base_exec_prefix, f'{root}/python')
-        
+
+        # copy files
+        fs.make_link(sys.base_exec_prefix, f'{root}/python', True)
+        fs.copy_file(
+            f'{root}/gui/patch_maker_online/patch_extractor_template.v',
+            f'{root}/chore/patch_maker/patch_extractor_template.v',
+            True,
+        )
+
         # init files
         fs.dump({}, f'{root}/pypi/index/id_2_paths.json')
         fs.dump({}, f'{root}/pypi/index/name_2_vers.json')
-        
+
     def _setup_production_mode(self, project_root: str) -> None:
         fs.make_shortcut(
-            f'{project_root}/Depsland.exe',
-            '<desktop>/Depsland.lnk',
-            True
+            f'{project_root}/Depsland.exe', '<desktop>/Depsland.lnk', True
         )
         self._setup_system_environment(project_root)
-    
+
     def _setup_shipboard_mode(self, project_root: str) -> None:
         """
         <user_programs>
@@ -267,10 +280,10 @@ class Project:
         fs.make_shortcut(
             '{}/Depsland.exe'.format(project_root),
             '<desktop>/Depsland.lnk',
-            None
+            None,
         )
         self._setup_system_environment(project_root)
-    
+
     @staticmethod
     def _setup_system_environment(dir: str) -> None:
         system.set_environment_variables(dir)
@@ -294,16 +307,16 @@ class Apps:
         #   published and installed the same app on the same computer, the -
         #   incremental-update scheme reported "target version exists" error.
         self._venv = f'{self.root}/{{appid}}/{{version}}/.venv'
-    
+
     def get_distribution_history(self, appid: str) -> str:
         return self._dist_history.format(appid=appid)
-    
+
     def get_installation_history(self, appid: str) -> str:
         return self._inst_history.format(appid=appid)
-    
+
     def get_venv_dir(self, appid: str, version: str) -> str:
         return self._venv.format(appid=appid, version=version)
-    
+
     def make_venv_dir(
         self, appid: str, version: str, clear_exists: bool = False
     ) -> str:
@@ -323,17 +336,16 @@ class Apps:
 class Build:
     def __init__(self) -> None:
         self.root = f'{project.root}/build'
-        
+
         self.exe = f'{self.root}/exe'  # the folder
         # self.icon = f'{self.root}/icon'  # the folder
-        
-        self.depsland_runapp_exe = \
-            f'{self.exe}/depsland-runapp.exe'
-        self.depsland_runapp_console_exe = \
+
+        self.depsland_runapp_exe = f'{self.exe}/depsland-runapp.exe'
+        self.depsland_runapp_console_exe = (
             f'{self.exe}/depsland-runapp-console.exe'
-        self.depsland_runapp_debug_exe = \
-            f'{self.exe}/depsland-runapp-debug.exe'
-        
+        )
+        self.depsland_runapp_debug_exe = f'{self.exe}/depsland-runapp-debug.exe'
+
         ext = {'darwin': 'icns', 'linux': 'png', 'win32': 'ico'}[sys.platform]
         self.help_icon = '{}/icon/help.{}'.format(self.root, ext)
         self.launcher_icon = '{}/icon/launcher.{}'.format(self.root, ext)
@@ -348,6 +360,20 @@ class Cache:
         self.project_cache = f'{self.root}/project_cache'
 
 
+class Chore:
+    def __init__(self) -> None:
+        self.root = f'{project.root}/chore'
+
+        self.patch_maker = f'{self.root}/patch_maker'
+
+        self.generated_patches = f'{self.patch_maker}/generated_patches'
+        self.grocery = f'{self.patch_maker}/grocery'
+
+        self.assets_map = f'{self.grocery}/assets_map.json'
+        self.assets_zip = f'{self.grocery}/assets.zip'
+        self.manifest_pkl = f'{self.grocery}/manifest.pkl'
+
+
 class Config:
     """
     redirect config:
@@ -359,7 +385,7 @@ class Config:
                 a relative or absolute path points to the new config root.
         the dynamic is prior to the static.
     """
-    
+
     def __init__(self) -> None:
         if x := _Env.CONFIG_ROOT:
             self.root = fs.abspath(x)
@@ -374,7 +400,7 @@ class Config:
             print(':v1', f'relocate config root to {self.root}')
         else:
             self.root = f'{project.root}/config'
-        
+
         self.auto_saved = f'{self.root}/auto_saved.pkl'
         self.depsland = f'{self.root}/depsland.yaml'
         # self.oss_client = f'{self.root}/oss_client.yaml'
@@ -394,7 +420,7 @@ class PyPI:
     to redirect pypi root, use environment variable 'DEPSLAND_PYPI_ROOT'.
     see also: `build/init.py`
     """
-    
+
     def __init__(self) -> None:
         if x := _Env.PYPI_ROOT:
             print(':v1', f'relocate pypi root to "{x}"')
@@ -404,15 +430,16 @@ class PyPI:
         self.is_symlink = fs.islink(self.root)
         self.real_root = (
             fs.normpath(os.path.realpath(self.root))
-            if self.is_symlink else self.root
+            if self.is_symlink
+            else self.root
         )
-        
+
         # DELETE: is it better not to use custom cache dir?
         self.cache = f'{self.root}/cache'
         self.downloads = f'{self.root}/downloads'
         self.index = f'{self.root}/index'
         self.installed = f'{self.root}/installed'
-        
+
         self.id_2_paths = f'{self.index}/id_2_paths.json'
         self.name_2_vers = f'{self.index}/name_2_vers.json'
         self.snapdep = f'{self.index}/snapdep'
@@ -451,7 +478,7 @@ class Python:
 class Temp:
     def __init__(self) -> None:
         self.root = f'{project.root}/temp'
-        
+
         self.temp_project = f'{self.root}/temp_project'
         self._temp_root = f'{self.root}/{uuid()}'
         self._temp_root_created = False
@@ -463,19 +490,19 @@ class Temp:
         self.src_max = f'{self.temp_project}/src_max.json'
         self.src_min = f'{self.temp_project}/src_min.json'
         self.tree_shaking_model = f'{self.temp_project}/tree_shaking_model.json'
-        
+
         # fs.make_dir(self._temp_root)
-        
+
         @atexit.register
         def _cleanup() -> None:
             if self._temp_root_created:
                 print(
                     'remove temp dir',
                     'temp/{}'.format(fs.basename(self._temp_root)),
-                    ':v'
+                    ':v',
                 )
                 fs.remove_tree(self._temp_root)
-    
+
     def make_dir(self) -> str:
         if not self._temp_root_created:
             fs.make_dir(self._temp_root)
@@ -483,7 +510,7 @@ class Temp:
         out = '{}/{}'.format(self._temp_root, uuid())
         fs.make_dir(out)
         return out
-    
+
     def make_unique_dir(self, dirname: str) -> str:
         if not self._temp_root_created:
             fs.make_dir(self._temp_root)
@@ -501,6 +528,7 @@ project = Project()
 apps = Apps()
 build = Build()
 cache = Cache()
+chore = Chore()
 config = Config()
 oss = Oss()
 pypi = PyPI()

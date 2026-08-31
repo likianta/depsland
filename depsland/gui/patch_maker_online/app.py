@@ -13,12 +13,16 @@ import streamlit as st
 import streamlit_canary as sc
 from argsense import cli
 from lk_utils import fs
+from lk_utils import run_cmd_args
+from lk_utils import uuid
 from neoprint import format
 from neoprint import print
 
 from . import remote_client as remote
+from ... import paths
 from ...manifest import T as T0
 from ...manifest import diff_manifest
+from ...manifest import dump_manifest
 from ...manifest import load_manifest
 from ...utils import make_temp_dir
 
@@ -40,6 +44,7 @@ class _State:
     init: bool
     new_manifest: T.Manifest
     old_manifest: T.Manifest
+    registered_project_paths: tp.Tuple[str, ...]
     # table_diff_data: tp.Optional[T.TableData]
     target_project_path: str
     user_manifest: tp.Optional[dict]
@@ -47,6 +52,7 @@ class _State:
 
     def __init__(self) -> None:
         self.init = False
+        self.registered_project_paths = ()
         self.appid_to_project_path = fs.load(
             fs.here('_appid_to_project.yaml'), default=dict
         )
@@ -55,11 +61,16 @@ class _State:
         # self.table_diff_data = None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=21))
+state = tp.cast(_State, sc.init_state(_State, version=22))
 
 
 @cli
-def main(debug: bool = False, developer_mode: bool = False, **kwargs) -> None:
+def main(
+    debug: bool = False,
+    developer_mode: bool = False,
+    local_test: bool = False,
+    **kwargs,
+) -> None:
     st.set_page_config('Depsland Patch Maker Online')
     if developer_mode:
         st.title(':red[Depsland Patch Maker]')
@@ -67,33 +78,39 @@ def main(debug: bool = False, developer_mode: bool = False, **kwargs) -> None:
         st.title('Depsland Patch Maker')
 
     if not state.init:
-        if not remote.State.air_client:
-            remote.init_air_client(debug, **kwargs)
-        if debug:
-            state.user_manifest_file = 'test/_example_manifest.pkl'
+        if local_test:
+            state.init = True
         else:
-            state.user_manifest_file = (
-                '{}/source/.depsland/manifest.pkl'.format(
-                    remote.State.current_working_dir
+            if not remote.State.air_client:
+                remote.init_air_client(debug, **kwargs)
+            if debug:
+                state.user_manifest_file = 'test/_example_manifest.pkl'
+            else:
+                state.user_manifest_file = (
+                    '{}/source/.depsland/manifest.pkl'.format(
+                        remote.State.current_working_dir
+                    )
                 )
+                remote.airexec(
+                    'assert fs.exist(file)', file=state.user_manifest_file
+                )
+            fs.dump(
+                remote.aircall('get_manifest_data', state.user_manifest_file),
+                fs.here('_user_manifest.pkl'),
+                'binary',
             )
-            remote.airexec(
-                'assert fs.exist(file)', file=state.user_manifest_file
-            )
-        fs.dump(
-            remote.aircall('get_manifest_data', state.user_manifest_file),
-            fs.here('_user_manifest.pkl'),
-            'binary',
-        )
-        state.user_manifest = fs.load(fs.here('_user_manifest.pkl'))
-        state.target_project_path = state.appid_to_project_path[
-            state.user_manifest['appid']
-        ]
-        print(state.user_manifest['appid'], state.target_project_path)
-        state.init = True
+            state.user_manifest = fs.load(fs.here('_user_manifest.pkl'))
+            state.target_project_path = state.appid_to_project_path[
+                state.user_manifest['appid']
+            ]
+            print(state.user_manifest['appid'], state.target_project_path)
+            state.init = True
 
-    if developer_mode:
-        with st.container(border=True):
+    with st.container(border=True):
+        if local_test:
+            if x := _local_test_manifests():
+                state.old_manifest, state.new_manifest = x
+        else:
             st.markdown('Project path: `{}`'.format(state.target_project_path))
             file0 = st.text_input(
                 'User manifest file', state.user_manifest_file
@@ -101,21 +118,39 @@ def main(debug: bool = False, developer_mode: bool = False, **kwargs) -> None:
             file1 = st.text_input('Latest manifest file')
 
     main_button_row = sc.row()
+    info_area = st.empty()
     with main_button_row:
         if st.button('Analyze manifest', type='primary'):
-            state.old_manifest = load_manifest(file0, state.target_project_path)
-            state.new_manifest = load_manifest(file1, state.target_project_path)
+            if not local_test:
+                state.old_manifest = load_manifest(
+                    file0, state.target_project_path
+                )
+                state.new_manifest = load_manifest(
+                    file1, state.target_project_path
+                )
             state.assets_map = _analyze_assets_diff(
                 state.old_manifest, state.new_manifest
             )
-        if st.button(
-            'Create & apply patch',
-            type='primary',
-            disabled=not state.assets_map,
-        ):
-            assert state.assets_map
-            assert state.accepted_keys
-            _apply_patch(state.assets_map, state.accepted_keys)
+        if local_test:
+            if st.button('Generate patch result', type='primary'):
+                assert state.assets_map and state.accepted_keys
+                patch_exe = _generate_patch(
+                    state.assets_map, state.accepted_keys
+                )
+                with info_area:
+                    st.success(
+                        'Patch executable generated: `{}` ({})'.format(
+                            patch_exe, fs.filesize(patch_exe, str)
+                        )
+                    )
+        else:
+            if st.button(
+                'Create & apply patch',
+                type='primary',
+                disabled=not state.assets_map,
+            ):
+                assert state.assets_map and state.accepted_keys
+                _apply_patch(state.assets_map, state.accepted_keys)
 
     if state.assets_map:
         with main_button_row:
@@ -184,6 +219,27 @@ def _debug_tool(**kwargs):
             st.rerun()
 
 
+def _local_test_manifests() -> tp.Optional[tp.Tuple[T.Manifest, T.Manifest]]:
+    if not state.registered_project_paths:
+        state.registered_project_paths = fs.load(
+            fs.here('_project_paths.yaml'), default=()
+        )
+    proj_path = st.selectbox('Select project', state.registered_project_paths)
+    old_manifest_path = st.text_input('Old manifest file')
+    new_manifest_path = st.text_input('New manifest file')
+    if (
+        old_manifest_path
+        and new_manifest_path
+        and fs.exist(old_manifest_path)
+        and fs.exist(new_manifest_path)
+    ):
+        return load_manifest(old_manifest_path, proj_path), load_manifest(
+            new_manifest_path, proj_path
+        )
+    else:
+        return None
+
+
 def _preview_assets_diff(assets_map: T.AssetsMap, sort_by: str = 'native'):
     table_data = [('Index', 'Action', 'RelPath', 'Size')]
     if sort_by == 'native':
@@ -237,6 +293,7 @@ def _analyze_assets_diff(
     for action, (relpath, real_relpath), (info0, info1) in diff['assets']:
         if action == 'ignore':
             continue
+        print(action, relpath, ':inv')
         if action == 'append' or action == 'update':
             abspath = '{}/{}'.format(root, real_relpath)
             assert fs.exist(abspath), format(root, relpath, real_relpath, ':nl')
@@ -290,6 +347,54 @@ def _apply_patch(assets_map: T.AssetsMap, used_keys: tp.Iterable[str]):
                 )
 
 
+def _generate_patch(
+    assets_map: T.AssetsMap, used_keys: tp.Iterable[str]
+) -> str:
+    temp_dir = make_temp_dir()
+    fs.make_dir('{}/assets'.format(temp_dir))
+    simplified_assets_map = {}
+    for k in used_keys:
+        abspath, relpath, is_dir, size, action = assets_map[k]
+        if abspath:
+            print('add resource', '{} ({})'.format(relpath, k), ':iv2')
+            fs.make_link(abspath, '{}/assets/{}'.format(temp_dir, k), False)
+        simplified_assets_map[k] = '{}:{}{}'.format(
+            relpath,
+            '1' if is_dir else '0',
+            '0' if size == -1 else '1',
+            # format: `<relpath>:<is_dir><action>`
+            #   action: 1 for append/update, 0 for delete.
+        )
+
+    fs.dump(simplified_assets_map, paths.chore.assets_map)
+    fs.zip(
+        '{}/assets'.format(temp_dir),
+        paths.chore.assets_zip,
+        True,
+        progress=True,
+    )
+    dump_manifest(state.new_manifest, paths.chore.manifest_pkl)
+    patch_exe = _generate_patch_executable()
+    return patch_exe
+
+
+def _generate_patch_executable() -> str:
+    # requires vlang # requires vlang to be installed globally.
+    patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
+    print(patch_id, ':n')
+    run_cmd_args(
+        (
+            'v',
+            '-o',
+            'generated_patches/patch-{}.exe'.format(patch_id),
+            'patch_extractor_template.v',
+        ),
+        cwd=paths.chore.patch_maker,
+        verbose=True,
+    )
+    return '{}/patch-{}.exe'.format(paths.chore.generated_patches, patch_id)
+
+
 if __name__ == '__main__':
     # production:
     #   strun 2190 depsland/gui/patch_maker_online/app.py
@@ -297,4 +402,7 @@ if __name__ == '__main__':
     #   python -m airmise run_server --port 2192
     #   strun 2190 depsland/gui/patch_maker_online/app.py -- --debug
     #       --developer-mode --client-host localhost --client-port 2192
+    # local test:
+    #   strun 2190 depsland/gui/patch_maker_online/app.py -- --debug
+    #       --developer-mode --local-test
     cli.run(main)
