@@ -157,14 +157,14 @@ def _get_valid_package_names(
         #     for x in pyproj_data
         #     ['tool']['poetry']['group']['dev']['dependencies'].keys()
         # )
-        content: str = run_cmd_args(
+        content = t.cast(str, run_cmd_args(
             (
                 (sys.executable, '-m', 'poetry'),
                 ('show', '--no-ansi'),
                 ('--directory', working_root),
             ),
             cwd=working_root,
-        )
+        ))
         pattern = re.compile(r'[^ ]+')
         for line in content.splitlines():
             # print(':vi2', line)

@@ -8,6 +8,7 @@ if not __package__:
     __package__ = 'depsland.gui.patch_maker_online'
 
 import typing as tp
+from functools import partial
 
 import streamlit as st
 import streamlit_canary as sc
@@ -132,7 +133,7 @@ def main(
                 state.old_manifest, state.new_manifest
             )
         if local_test:
-            if st.button('Generate patch result', type='primary'):
+            if st.button('Generate patch result', type='secondary'):
                 assert state.assets_map and state.accepted_keys
                 patch_exe = _generate_patch(
                     state.assets_map, state.accepted_keys
@@ -164,7 +165,7 @@ def main(
             state.assets_map, 'size' if sort_by_size else 'native'
         )
 
-    if debug or developer_mode:
+    if developer_mode and not local_test:
         with st.bottom:
             _debug_tool(debug=debug, **kwargs)
 
@@ -225,11 +226,40 @@ def _local_test_manifests() -> tp.Optional[tp.Tuple[T.Manifest, T.Manifest]]:
             fs.here('_project_paths.yaml'), default=()
         )
     proj_path = st.selectbox('Select project', state.registered_project_paths)
-    old_manifest_path = st.text_input('Old manifest file')
-    new_manifest_path = st.text_input('New manifest file')
+    old_manifest_path = st.text_input(
+        'Old manifest file', key='local_test:old_manifest_path:input'
+    )
+    with sc.row('bottom'):
+        new_manifest_path = st.text_input(
+            'New manifest file', key='local_test:new_manifest_path:input'
+        )
+
+        def _swap_path(clear: bool) -> None:
+            _ = st.session_state['local_test:old_manifest_path:input']
+            b = st.session_state['local_test:new_manifest_path:input']
+            st.session_state['local_test:old_manifest_path:input'] = b
+            st.session_state['local_test:new_manifest_path:input'] = (
+                '' if clear else b
+            )
+
+        st.button(
+            ':material/arrow_circle_up:',
+            help='Swap path and clear this field.',
+            disabled=not new_manifest_path,
+            on_click=partial(_swap_path, clear=True),
+        )
+
+        st.button(
+            ':material/arrows_up_down_circle:',
+            help='Duplicate new manifest path.',
+            disabled=not new_manifest_path,
+            on_click=partial(_swap_path, clear=False),
+        )
+
     if (
         old_manifest_path
         and new_manifest_path
+        and new_manifest_path != old_manifest_path
         and fs.exist(old_manifest_path)
         and fs.exist(new_manifest_path)
     ):
