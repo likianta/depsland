@@ -1,1 +1,1 @@
-from .main import request_patch
+from .patch_client import patch_online

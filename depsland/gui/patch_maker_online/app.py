@@ -19,7 +19,7 @@ from lk_utils import uuid
 from neoprint import format
 from neoprint import print
 
-from . import remote_client as remote
+from . import air_client as air
 from ... import paths
 from ...manifest import T as T0
 from ...manifest import diff_manifest
@@ -79,24 +79,22 @@ def main(
         st.title('Depsland Patch Maker')
 
     if not state.init:
-        if local_test:
-            state.init = True
-        else:
-            if not remote.State.air_client:
-                remote.init_air_client(debug, **kwargs)
+        if not local_test:
+            if not air.state.air_client:
+                air.init_air_client(debug, **kwargs)
             if debug:
                 state.user_manifest_file = 'test/_example_manifest.pkl'
             else:
                 state.user_manifest_file = (
                     '{}/source/.depsland/manifest.pkl'.format(
-                        remote.State.current_working_dir
+                        air.state.current_working_dir
                     )
                 )
-                remote.airexec(
+                air.airexec(
                     'assert fs.exist(file)', file=state.user_manifest_file
                 )
             fs.dump(
-                remote.aircall('get_manifest_data', state.user_manifest_file),
+                air.aircall('get_manifest_data', state.user_manifest_file),
                 fs.here('_user_manifest.pkl'),
                 'binary',
             )
@@ -105,7 +103,7 @@ def main(
                 state.user_manifest['appid']
             ]
             print(state.user_manifest['appid'], state.target_project_path)
-            state.init = True
+        state.init = True
 
     with st.container(border=True):
         if local_test:
@@ -206,17 +204,17 @@ def _custom_filter(assets_map: T.AssetsMap):
 
 
 def _debug_tool(**kwargs):
-    if remote.State.air_client:
+    if air.state.air_client:
         if st.button(
-            ':red[Close client]', disabled=not bool(remote.State.air_client)
+            ':red[Close client]', disabled=not bool(air.state.air_client)
         ):
-            remote.close_air_client()
+            air.close_air_client()
             st.rerun()
     else:
         if st.button(
-            ':green[Start client]', disabled=bool(remote.State.air_client)
+            ':green[Start client]', disabled=bool(air.state.air_client)
         ):
-            remote.init_air_client(**kwargs)
+            air.init_air_client(**kwargs)
             st.rerun()
 
 
@@ -356,21 +354,21 @@ def _apply_patch(assets_map: T.AssetsMap, used_keys: tp.Iterable[str]):
         relpath = 'source/' + relpath
         if action == 'delete' or action == 'update':
             if is_dir:
-                remote.airexec('fs.remove_tree(path)', path=relpath)
+                air.airexec('fs.remove_tree(path)', path=relpath)
             else:
-                remote.airexec('fs.remove_file(path)', path=relpath)
+                air.airexec('fs.remove_file(path)', path=relpath)
         if action == 'append' or action == 'update':
             assert abspath
             if is_dir:
                 fs.zip(abspath, '{}/{}.zip'.format(temp_dir, k))
-                remote.aircall(
+                air.aircall(
                     'fs.dump(bytes_i, path_m)\nfs.unzip(path_m, path_o)',
                     bytes_i=fs.load('{}/{}.zip'.format(temp_dir, k), 'binary'),
                     path_m=relpath + '.zip',
                     path_o=relpath,
                 )
             else:
-                remote.aircall(
+                air.aircall(
                     'fs.dump(bytes_i, path_o)',
                     bytes_i=fs.load(abspath, 'binary'),
                     path_o=relpath,
