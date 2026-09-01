@@ -1,7 +1,7 @@
 {
     "appid": "depsland_updater_0x932d",
     "name": "Depsland Updater",
-    "version": "0.13.0a3",
+    "version": "0.13.0a4",
     "assets": [
         "depsland_updater",
         "launcher.ico",

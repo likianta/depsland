@@ -335,7 +335,7 @@ def _create_launcher(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
             pause
             """
         ),
-        '{}/Request Patch.exe'.format(dst_dir),
+        '{}/Check Updates.exe'.format(dst_dir),
         show_console=True,
     )
 
