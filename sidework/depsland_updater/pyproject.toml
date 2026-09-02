@@ -1,11 +1,11 @@
 [project]
 name = "depsland-updater"
-version = "0.13.0a4"
+version = "0.13.0a6"
 description = "Depsland authored updater toolkit: check and apply incremental updates."
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.1.0b0",
+    "airmise>=3.2.0a1",
     "argsense>=1.1.2",
     # "lk-utils>=3.8.0b5",
     "neoprint>=0.1.10a3",
@@ -16,10 +16,10 @@ dependencies = [
 build-backend = "hatchling.build"
 requires = ["hatchling>=1.29.0"]
 
-[dependency-groups]
-dev = [
-    "lk-utils>=3.8.0b5",
-]
+# [dependency-groups]
+# dev = [
+#     "lk-utils>=3.8.0b5",
+# ]
 
 [project.urls]
 homepage = "https://github.com/likianta/depsland"

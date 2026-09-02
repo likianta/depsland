@@ -20,10 +20,11 @@ def patch_online(open_window: bool = True) -> None:
             continue
         else:
             print(
-                'connect to server',
-                os.environ['USERNAME'],
+                'successfully connected to proxy server',
                 svr_host,
-                client.uid,
+                client.user_name,
+                client.user_ip,
+                client.user_id,
                 ':v4lnt',
             )
             break
@@ -43,6 +44,7 @@ def patch_online(open_window: bool = True) -> None:
             verbose=True,
         )
 
+    client.set_passive()
     client.mainloop()  # blocking
 
 
