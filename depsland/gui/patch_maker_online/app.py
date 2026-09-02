@@ -39,9 +39,11 @@ class T:
 
 
 class _State:
-    accepted_keys: tp.Iterable[str]
+    # accepted_keys: tp.Iterable[str]
     appid_to_project_path: tp.Dict[str, str]
     assets_map: tp.Optional[T.AssetsMap]
+    assets_map_generation: int
+    filtered_assets_map: tp.Optional[T.AssetsMap]
     init: bool
     new_manifest: T.Manifest
     old_manifest: T.Manifest
@@ -49,7 +51,8 @@ class _State:
     # table_diff_data: tp.Optional[T.TableData]
     target_project_path: str
     user_manifest: tp.Optional[dict]
-    user_manifest_file: str
+    user_manifest_file: str  # always local path
+    # _filtered_assets_map: tp.Optional[T.AssetsMap]
 
     def __init__(self) -> None:
         self.init = False
@@ -59,7 +62,12 @@ class _State:
         )
         # self.user_manifest_file = 'test/_example_manifest.pkl'
         self.assets_map = None
+        self.assets_map_generation = 0
+        self.filtered_assets_map = None
         # self.table_diff_data = None
+
+    # @property
+    # def filtered_assets_map
 
 
 state = tp.cast(_State, sc.init_state(_State, version=22))
@@ -82,23 +90,25 @@ def main(
         if not local_test:
             if not air.state.air_client:
                 air.init_air_client(debug, **kwargs)
+
+            # remote to local
+            remote_manifest_file = '{}/source/.depsland/manifest.pkl'.format(
+                air.state.remote_working_dir
+            )
+            air.airexec('assert fs.exist(file)', file=state.user_manifest_file)
             if debug:
                 state.user_manifest_file = 'test/_example_manifest.pkl'
             else:
-                state.user_manifest_file = (
-                    '{}/source/.depsland/manifest.pkl'.format(
-                        air.state.current_working_dir
-                    )
-                )
-                air.airexec(
-                    'assert fs.exist(file)', file=state.user_manifest_file
-                )
+                state.user_manifest_file = fs.here('_user_manifest.pkl')
+                #   TODO: use `paths.temp.user_manifest_pkl` path.
             fs.dump(
-                air.aircall('get_manifest_data', state.user_manifest_file),
-                fs.here('_user_manifest.pkl'),
+                air.aircall('get_manifest_data', remote_manifest_file),
+                state.user_manifest_file,
                 'binary',
             )
-            state.user_manifest = fs.load(fs.here('_user_manifest.pkl'))
+
+            # locate project path
+            state.user_manifest = fs.load(state.user_manifest_file)
             state.target_project_path = state.appid_to_project_path[
                 state.user_manifest['appid']
             ]
@@ -130,11 +140,16 @@ def main(
             state.assets_map = _analyze_assets_diff(
                 state.old_manifest, state.new_manifest
             )
-        if local_test:
-            if st.button('Generate patch result', type='secondary'):
-                assert state.assets_map and state.accepted_keys
-                patch_exe = _generate_patch(
-                    state.assets_map, state.accepted_keys
+            state.assets_map_generation += 1
+
+        if st.button('Generate patch result', type='secondary'):
+            assets_map = state.filtered_assets_map or state.assets_map
+            assert assets_map
+            assets_dir, patch_id = _generate_patch_result(assets_map)
+
+            if local_test:
+                patch_exe = _generate_patch_executable(
+                    assets_map, assets_dir, patch_id
                 )
                 with info_area:
                     st.success(
@@ -142,21 +157,13 @@ def main(
                             patch_exe, fs.filesize(patch_exe, str)
                         )
                     )
-        else:
-            if st.button(
-                'Create & apply patch',
-                type='primary',
-                disabled=not state.assets_map,
-            ):
-                assert state.assets_map and state.accepted_keys
-                _apply_patch(state.assets_map, state.accepted_keys)
 
     if state.assets_map:
         with main_button_row:
             st.space('stretch')
             with st.popover('Custom filter'):
                 with st.container(width=500):
-                    state.accepted_keys = _custom_filter(state.assets_map)
+                    state.filtered_assets_map = _custom_filter(state.assets_map)
             # sort_by = st.radio('Sort by', ('native', 'size'), horizontal=True)
             sort_by_size = sc.toggle_button('Sort by size', True)
         _preview_assets_diff(
@@ -168,7 +175,7 @@ def main(
             _debug_tool(debug=debug, **kwargs)
 
 
-def _custom_filter(assets_map: T.AssetsMap):
+def _custom_filter(assets_map: T.AssetsMap) -> T.AssetsMap:
     incremental_keys = frozenset(
         x for x in assets_map.keys() if assets_map[x][3] != -1
     )
@@ -179,6 +186,7 @@ def _custom_filter(assets_map: T.AssetsMap):
             assets_map[k][1], fs.pretty_size(assets_map[k][3], sep='')
         ),
         # accept_new_options=True,  # TODO: support glob pattern
+        key='_:custom_filter:{}'.format(state.assets_map_generation),
     )
 
     if st.button('Apply', width='stretch', disabled=not excluded_keys):
@@ -200,7 +208,12 @@ def _custom_filter(assets_map: T.AssetsMap):
             }
         )
 
-    return incremental_keys - frozenset(excluded_keys)
+    # return incremental_keys - frozenset(excluded_keys)
+    return (
+        {k: assets_map[k] for k in incremental_keys - frozenset(excluded_keys)}
+        if excluded_keys
+        else assets_map
+    )
 
 
 def _debug_tool(**kwargs):
@@ -375,17 +388,26 @@ def _apply_patch(assets_map: T.AssetsMap, used_keys: tp.Iterable[str]):
                 )
 
 
-def _generate_patch(
-    assets_map: T.AssetsMap, used_keys: tp.Iterable[str]
-) -> str:
-    temp_dir = make_temp_dir()
-    fs.make_dir('{}/assets'.format(temp_dir))
-    simplified_assets_map = {}
-    for k in used_keys:
-        abspath, relpath, is_dir, size, action = assets_map[k]
+def _generate_patch_result(assets_map: T.AssetsMap) -> tp.Tuple[str, str]:
+    """
+    Dump assets map to a temp directory. The remote can download resources by
+    urls in multi-thread.
+    """
+    patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
+    print(patch_id, ':n')
+    assets_dir = '{}/{}'.format(paths.chore.assets_dir, patch_id)
+    for uid, (abspath, relpath, is_dir, size, action) in assets_map.items():
         if abspath:
-            print('add resource', '{} ({})'.format(relpath, k), ':iv2')
-            fs.make_link(abspath, '{}/assets/{}'.format(temp_dir, k), False)
+            print('add resource', '{} ({})'.format(relpath, uid), ':iv2')
+            fs.make_link(abspath, '{}/{}'.format(assets_dir, uid), False)
+    return assets_dir, patch_id
+
+
+def _generate_patch_executable(
+    assets_map: T.AssetsMap, assets_dir, patch_id: str
+) -> str:
+    simplified_assets_map = {}
+    for k, (abspath, relpath, is_dir, size, action) in assets_map.items():
         simplified_assets_map[k] = '{}:{}{}'.format(
             relpath,
             '1' if is_dir else '0',
@@ -394,22 +416,13 @@ def _generate_patch(
             #   action: 1 for append/update, 0 for delete.
         )
 
+    # `chore/patch_maker/patch_extractor_template.v` requires the following
+    # three files.
     fs.dump(simplified_assets_map, paths.chore.assets_map)
-    fs.zip(
-        '{}/assets'.format(temp_dir),
-        paths.chore.assets_zip,
-        True,
-        progress=True,
-    )
+    fs.zip(assets_dir, paths.chore.assets_zip, True, progress=True)
     dump_manifest(state.new_manifest, paths.chore.manifest_pkl)
-    patch_exe = _generate_patch_executable()
-    return patch_exe
 
-
-def _generate_patch_executable() -> str:
-    # requires vlang # requires vlang to be installed globally.
-    patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
-    print(patch_id, ':n')
+    # requires vlang to be installed globally.
     run_cmd_args(
         (
             'v',

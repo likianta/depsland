@@ -1,24 +1,24 @@
 [project]
 name = "depsland"
-version = "0.13.0a4"
+version = "0.13.0a6"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
 # readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.1.0b0",
+    "airmise>=3.2.0a2",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.8.0b5",
-    "neoprint>=0.1.10a3",
+    "lk-utils>=3.8.0",
+    "neoprint>=0.1.10b0",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
     "psutil>=7.2.2",
     "pyportable-crypto>=1.6.1",
     "semver>=3.0.4",
-    "streamlit>=1.61.0",
-    "streamlit-canary>=0.4.0a5",
+    "streamlit>=1.63.0",
+    "streamlit-canary>=0.4.0a7",
     "streamlit-extras>=1.4.1",
     "streamlit-tree-select>=0.0.5",  # DELETE
     "tree-shaking>=0.4.0",

@@ -113,6 +113,17 @@ mdbook serve -n 0.0.0.0 -p 3000
 python -m depsland patch_maker_server
 ```
 
+### 开发测试流程
+
+1. 主机: 开发者启动 GUI: `strun 2190 depsland/gui/patch_maker_online/app.py -- --developer-mode`
+2. 主机: 开发者启动代理服务器: `python depsland/gui/patch_maker_online/server.py mainloop`
+3. 虚拟机: 在虚拟机中安装由 depsland 打包的第三方应用 (no-embed-depsland 模式构建产物)
+4. 虚拟机: 打开命令行, cd 到应用安装目录, 然后从私有源安装 depsland-udpater
+5. 虚拟机: 运行: `python -m depsland_updater patch_online`
+6. 主机: 发现已连接的用户: `python depsland/gui/patch_maker_online/server.py list_users`. 可以得到 unique_id 等信息
+7. 主机: 浏览器访问 `http://localhost:2190/?uid=<unique_id>` (把刚才获得的 id 代进去)
+8. ...
+
 ### 创建独立的补丁工具
 
 ```sh

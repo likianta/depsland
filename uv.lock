@@ -154,7 +154,7 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.1.0b0"
+version = "3.2.0a1"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "aiohttp" },
@@ -163,7 +163,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2131/airmise/airmise-3.1.0b0-py3-none-any.whl" },
+    { url = "http://localhost:2131/airmise/airmise-3.2.0a1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -292,15 +292,6 @@ wheels = [
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/eb/f4/46b2f29d2938a80e56e61a19f11ab093f531a9f8cd0ec8eeaac1246bcd99/backports_zstd-1.6.0-cp313-cp313-win32.whl", hash = "sha256:3e689af303df287142770abe3a48bbefd24dab4a09da5807d0e1fa8c75bab026", size = 291451, upload-time = "2026-06-14T10:50:38.518Z" },
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/d1/ad/b529f92166da61f496621345f95d2dc583c8ca5ac553c084a4ef6c12cd71/backports_zstd-1.6.0-cp313-cp313-win_amd64.whl", hash = "sha256:b067b1ef9c8e41fb0882c828aa37829938b5c0dab067eca72b23fc24c563b9da", size = 329023, upload-time = "2026-06-14T10:50:39.742Z" },
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/30/d8/6be904d20345fbebec583ca83676e01f30c76118b283eb666d8ec8291ca1/backports_zstd-1.6.0-cp313-cp313-win_arm64.whl", hash = "sha256:a838296f5b84c920172fb579cac894d255c1fc25457c7234613ddcfa385e49b7", size = 291636, upload-time = "2026-06-14T10:50:41.004Z" },
-]
-
-[[package]]
-name = "blinker"
-version = "1.9.0"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/21/28/9b3f50ce0e048515135495f198351908d99540d69bfdc8c1d15b73dc55ce/blinker-1.9.0.tar.gz", hash = "sha256:b4ce2265a7abece45e7cc896e98dbebe6cead56bcf805a3d23136d145f5445bf", size = 22460, upload-time = "2024-11-08T17:25:47.436Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/10/cb/f2ad4230dc2eb1a74edf38f1a38b9b52277f75bef262d8908e60d957e13c/blinker-1.9.0-py3-none-any.whl", hash = "sha256:ba0efaa9080b619ff2f3459d1d500c57bddea4a6b424b60a91141db6fd2f08bc", size = 8458, upload-time = "2024-11-08T17:25:46.184Z" },
 ]
 
 [[package]]
@@ -609,7 +600,7 @@ wheels = [
 
 [[package]]
 name = "depsland"
-version = "0.13.0a4"
+version = "0.13.0a6"
 source = { editable = "." }
 dependencies = [
     { name = "airmise" },
@@ -645,17 +636,17 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.1.0b0", index = "http://localhost:2131/" },
+    { name = "airmise", specifier = ">=3.2.0a1", index = "http://localhost:2131/" },
     { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2131/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.8.0b5", index = "http://localhost:2131/" },
-    { name = "neoprint", specifier = ">=0.1.10a3", index = "http://localhost:2131/" },
+    { name = "lk-utils", specifier = ">=3.8.0", index = "http://localhost:2131/" },
+    { name = "neoprint", specifier = ">=0.1.10b0", index = "http://localhost:2131/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pyportable-crypto", specifier = ">=1.6.1", index = "http://localhost:2131/" },
     { name = "semver", specifier = ">=3.0.4" },
-    { name = "streamlit", specifier = ">=1.61.0" },
-    { name = "streamlit-canary", specifier = ">=0.4.0a5", index = "http://localhost:2131/" },
+    { name = "streamlit", specifier = ">=1.63.0" },
+    { name = "streamlit-canary", specifier = ">=0.4.0a7", index = "http://localhost:2131/" },
     { name = "streamlit-extras", specifier = ">=1.4.1" },
     { name = "streamlit-tree-select", specifier = ">=0.0.5" },
     { name = "tree-shaking", specifier = ">=0.4.0", index = "http://localhost:2131/" },
@@ -1006,7 +997,7 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.8.0b5"
+version = "3.8.0"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
@@ -1016,7 +1007,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2131/lk-utils/lk_utils-3.8.0b5-py3-none-any.whl" },
+    { url = "http://localhost:2131/lk-utils/lk_utils-3.8.0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1234,13 +1225,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.10a3"
+version = "0.1.10b0"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2131/neoprint/neoprint-0.1.10a3-py3-none-any.whl" },
+    { url = "http://localhost:2131/neoprint/neoprint-0.1.10b0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2303,12 +2294,11 @@ wheels = [
 
 [[package]]
 name = "streamlit"
-version = "1.61.1"
+version = "1.63.0"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "altair" },
     { name = "anyio" },
-    { name = "blinker" },
     { name = "click" },
     { name = "httptools" },
     { name = "itsdangerous" },
@@ -2322,21 +2312,20 @@ dependencies = [
     { name = "python-multipart" },
     { name = "requests" },
     { name = "starlette" },
-    { name = "tenacity" },
     { name = "toml" },
     { name = "typing-extensions" },
     { name = "uvicorn" },
     { name = "watchdog", marker = "sys_platform != 'darwin'" },
     { name = "websockets" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ad/4a/6d0bf2f78de59924564caf47298341c09f61bf3814f15f0d15ef09fe1e3d/streamlit-1.61.1.tar.gz", hash = "sha256:68acf1ff1b6005b19205c2777d832deea0c1edd6fbbf7f43f091b96220e5e35f", size = 9907073, upload-time = "2026-08-05T14:51:01.956Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ce/8a/ccd27f3d5fb05734659a3c188b2c4014454d263e30ae31bb93445290b9cb/streamlit-1.63.0.tar.gz", hash = "sha256:1ea0121884d5606cf055b8c42600528daf07d0401eaabfc8e22f00e235ea53eb", size = 9911883, upload-time = "2026-09-01T17:12:32.456Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/4f/e3/deeea39117e1ffbce29755b45bceb214692e0a0aa496a17ce742b98ef3e1/streamlit-1.61.1-py3-none-any.whl", hash = "sha256:3f0ebf6764c3f938f8107414c9533942fa85a84b57affdaa7727d562210d8ece", size = 10512871, upload-time = "2026-08-05T14:50:59.246Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/18/60/2acf1a5cac2b2fa6b09fea362abf81f210cf25cee40082ab11beb754cf70/streamlit-1.63.0-py3-none-any.whl", hash = "sha256:c24fd38170543ffb749321c801627aaa09068219539d7b81ef77633ea2408b36", size = 10497212, upload-time = "2026-09-01T17:12:30.021Z" },
 ]
 
 [[package]]
 name = "streamlit-canary"
-version = "0.4.0a5"
+version = "0.4.0a7"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
@@ -2347,7 +2336,7 @@ dependencies = [
     { name = "streamlit" },
 ]
 wheels = [
-    { url = "http://localhost:2131/streamlit-canary/streamlit_canary-0.4.0a5-py3-none-any.whl" },
+    { url = "http://localhost:2131/streamlit-canary/streamlit_canary-0.4.0a7-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2373,15 +2362,6 @@ dependencies = [
 sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/83/b5/ec39a5b4cce1fb1cc920d341263bc1f08f73412eb10ea09df7c5e0566a4f/streamlit-tree-select-0.0.5.tar.gz", hash = "sha256:985f5d4c357c403723fd69d4c4fca38193e0f9105974ec36259c43d9e6b78044", size = 1205495, upload-time = "2022-09-05T14:08:51.938Z" }
 wheels = [
     { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ba/02/8e298f4a4556d2f1ceecc0fcde9a795596520b681aeff4288e5daac588e6/streamlit_tree_select-0.0.5-py3-none-any.whl", hash = "sha256:9bfee4d9394fcb0b3e98801cca32f179c85f9f7fdf7005904bf88811f73db05c", size = 1225810, upload-time = "2022-09-05T14:08:50.009Z" },
-]
-
-[[package]]
-name = "tenacity"
-version = "9.1.4"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/47/c6/ee486fd809e357697ee8a44d3d69222b344920433d3b6666ccd9b374630c/tenacity-9.1.4.tar.gz", hash = "sha256:adb31d4c263f2bd041081ab33b498309a57c77f9acf2db65aadf0898179cf93a", size = 49413, upload-time = "2026-02-07T10:45:33.841Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/d7/c1/eb8f9debc45d3b7918a32ab756658a0904732f75e555402972246b0b8e71/tenacity-9.1.4-py3-none-any.whl", hash = "sha256:6095a360c919085f28c6527de529e76a06ad89b23659fa881ae0649b867a9d55", size = 28926, upload-time = "2026-02-07T10:45:32.24Z" },
 ]
 
 [[package]]

@@ -4,7 +4,7 @@ import pyapp_window
 from neoprint import print
 
 
-def patch_online(open_window: bool = True) -> None:
+def patch_online(open_window: bool = False) -> None:
     possible_server_hosts = (
         # 'localhost',  # mostly used in development
         '172.20.128.100',  # used in local area network

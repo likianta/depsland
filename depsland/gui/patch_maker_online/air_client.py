@@ -11,19 +11,19 @@ class _State:
     air_client: tp.Optional[tp.Union[air.Client, air.ProxyCaller]]
     # connection_hub: air.Client
     # connection_sub: air.Client
-    current_working_dir: str
+    remote_working_dir: str
 
     def __init__(self) -> None:
         # self.air_caller = None
         self.air_client = None
-        self.current_working_dir = ''
+        self.remote_working_dir = ''
 
     @property
     def connected(self) -> bool:
         return self.air_client is not None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=1))
+state = tp.cast(_State, sc.init_state(_State, version=2))
 
 
 def aircall(func_name: str, *args, **kwargs) -> tp.Any:
@@ -46,7 +46,7 @@ def init_air_client(debug: bool = False, **kwargs) -> None:
     else:
         # the incoming url format: http://localhost:2190/?uid=<uid>
         if st.query_params:
-            print(st.query_params, ':n')
+            print(st.query_params, ':nv')
             uid = st.query_params['uid']
             state.air_client = air.ProxyCaller(uid).connect(port=2192)
         else:
@@ -54,7 +54,8 @@ def init_air_client(debug: bool = False, **kwargs) -> None:
             st.stop()
 
     _init_remote_env(state.air_client)
-    state.current_working_dir = aircall('get_current_working_dir')
+    state.remote_working_dir = aircall('get_current_working_dir')
+    print(state.remote_working_dir, ':n')
 
 
 def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
@@ -66,7 +67,7 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
         from time import sleep
 
         def get_current_working_dir() -> str:
-            return os.getcwd()
+            return fs.normpath(os.getcwd())
         
         # def get_manifest_data(file: str = '') -> bytes:
         def get_manifest_data(file: str) -> bytes:

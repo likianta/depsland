@@ -369,6 +369,7 @@ class Chore:
         self.generated_patches = f'{self.patch_maker}/generated_patches'
         self.grocery = f'{self.patch_maker}/grocery'
 
+        self.assets_dir = f'{self.grocery}/assets'
         self.assets_map = f'{self.grocery}/assets_map.json'
         self.assets_zip = f'{self.grocery}/assets.zip'
         self.manifest_pkl = f'{self.grocery}/manifest.pkl'
@@ -480,6 +481,7 @@ class Temp:
         self.root = f'{project.root}/temp'
 
         self.temp_project = f'{self.root}/temp_project'
+        self.user_manifest_pkl = f'{self.root}/user_manifest.pkl'
         self._temp_root = f'{self.root}/{uuid()}'
         self._temp_root_created = False
 
