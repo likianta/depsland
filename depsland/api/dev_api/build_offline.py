@@ -60,7 +60,7 @@ def build_offline(
     if embed_depsland:
         dst_paths = _init_dist_tree_full(manifest, dir_o, embed_python)
     else:
-        dst_paths = _init_dist_tree_lite(dir_o, embed_python)
+        dst_paths = _init_dist_tree_lite(dir_o, manifest['appid'], embed_python)
     _copy_assets(manifest, dst_paths['dst_app_root'])
     _make_venv(manifest, dst_paths['dst_app_venv'])
     if embed_depsland:
@@ -180,24 +180,40 @@ def _init_dist_tree_full(
 
 
 def _init_dist_tree_lite(
-    dst_dir: T.AbsPath, embed_python: bool = True
+    dst_dir: T.AbsPath, appid: str, embed_python: bool = True
 ) -> T.DistributionKeyPaths:
     """
-    tree structure:
+    Tree structure:
         <dist_app>
-        |= source
         |= python
         |= library
-        |- launcher.exe
+        |= source
+        |= patches
+            |- history.txt
+            |- profile.json
+        |- Launcher.exe
+        |- Launcher (Debug).exe
+        |- Check Updates.exe
     """
-    fs.make_dir('{}'.format(dst_dir))
-    # TODO: fs.make_dir('{}/library'.format(dst_dir))
-    # fs.make_dir('{}/python'.format(dst_dir))
+    fs.make_dir(dst_dir)
+    # fs.make_dir('{}/library'.format(dst_dir))  # TODO
+    fs.make_dir('{}/patches'.format(dst_dir))
+    # fs.make_dir('{}/python'.format(dst_dir))  # see below
+    fs.make_dir('{}/source'.format(dst_dir))
+
+    # see also `sidework/depsland_updater/check_updates.v
+    # :apply_resources,save_record`.
+    fs.dump('', '{}/patches/history.txt'.format(dst_dir))
+    fs.dump(
+        {'appid': appid, 'current_patch': '', 'latest_patch': ''},
+        '{}/patches/profile.json'.format(dst_dir),
+    )
+
     if embed_python:
         fs.make_link(paths.project.python, '{}/python'.format(dst_dir))
     else:
         fs.make_dir('{}/python'.format(dst_dir))
-    fs.make_dir('{}/source'.format(dst_dir))
+
     return {
         'dst_app_root': f'{dst_dir}/source',
         'dst_app_venv': f'{dst_dir}/library',
@@ -324,21 +340,8 @@ def _create_launcher(manifest: T.Manifest, dst_dir: T.AbsPath) -> None:
         show_console=True,
     )
 
-    # patch maker
-    bat_2_exe(
-        dedent(
-            """
-            cd /d %~dp0
-            cd source
-            set "PYTHONUTF8=1"
-            ..\\python\\python.exe -m depsland_updater request_patch
-            pause
-            """
-        ),
-        '{}/Check Updates.exe'.format(dst_dir),
-        show_console=True,
-    )
-
+    # check updates
+    _create_updator(manifest, dst_dir)
     # TODO: create readme opener here.
 
 
@@ -366,7 +369,7 @@ def create_readme_opener(manifest: T.Manifest, dst_dir: T.AbsPath) -> T.AbsPath:
 
 
 def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
-    if sysinfo.SYSTEM == 'darwin' or sysinfo.SYSTEM == 'linux':
+    if sysinfo.SYSTEM == 'darwin' or sysinfo.SYSTEM == 'linux':  # FIXME
         file_sh = f'{dst_dir}/Check Updates.sh'
         template = dedent(
             """
@@ -384,27 +387,32 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
         script = template.format(appid=manifest['appid'])
         fs.dump(script, file_sh)
 
+    # elif sysinfo.SYSTEM == 'windows':
+    #     file_bat = f'{dst_dir}/Check Updates.bat'
+    #     file_exe = f'{dst_dir}/Check Updates.exe'
+    #     template = dedent(
+    #         r"""
+    #         @echo off
+    #         cd /d %~dp0
+    #         cd source
+    #         set "PYTHONPATH=.;chore/site_packages"
+    #         set "PYTHONUTF8=1"
+    #         .\python\python.exe -m depsland launch-gui --app-token {appid}
+    #         """
+    #     )
+    #     script = template.format(appid=manifest['appid'])
+    #     fs.dump(script, file_bat)
+    #     platform.launcher.bat_2_exe(
+    #         file_bat,
+    #         file_exe,
+    #         icon=manifest['launcher']['icon'] or paths.build.launcher_icon,
+    #         show_console=False,
+    #         # show_console=False,
+    #         uac_admin=True,
+    #     )
+    #     fs.remove_file(file_bat)
+
     elif sysinfo.SYSTEM == 'windows':
-        file_bat = f'{dst_dir}/Check Updates.bat'
-        file_exe = f'{dst_dir}/Check Updates.exe'
-        template = dedent(
-            r"""
-            @echo off
-            cd /d %~dp0
-            cd source
-            set "PYTHONPATH=.;chore/site_packages"
-            set "PYTHONUTF8=1"
-            .\python\python.exe -m depsland launch-gui --app-token {appid}
-            """
+        fs.make_link(
+            paths.build.check_updates_exe, f'{dst_dir}/Check Updates.exe'
         )
-        script = template.format(appid=manifest['appid'])
-        fs.dump(script, file_bat)
-        platform.launcher.bat_2_exe(
-            file_bat,
-            file_exe,
-            icon=manifest['launcher']['icon'] or paths.build.launcher_icon,
-            show_console=False,
-            # show_console=False,
-            uac_admin=True,
-        )
-        fs.remove_file(file_bat)

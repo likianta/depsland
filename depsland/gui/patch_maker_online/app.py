@@ -50,7 +50,7 @@ class _State:
     registered_project_paths: tp.Tuple[str, ...]
     # table_diff_data: tp.Optional[T.TableData]
     target_project_path: str
-    user_manifest: tp.Optional[dict]
+    # user_manifest: tp.Optional[dict]
     user_manifest_file: str  # always local path
     # _filtered_assets_map: tp.Optional[T.AssetsMap]
 
@@ -92,27 +92,23 @@ def main(
                 air.init_air_client(debug, **kwargs)
 
             # remote to local
-            remote_manifest_file = '{}/source/.depsland/manifest.pkl'.format(
-                air.state.remote_working_dir
-            )
-            air.airexec('assert fs.exist(file)', file=state.user_manifest_file)
             if debug:
                 state.user_manifest_file = 'test/_example_manifest.pkl'
             else:
                 state.user_manifest_file = fs.here('_user_manifest.pkl')
                 #   TODO: use `paths.temp.user_manifest_pkl` path.
             fs.dump(
-                air.aircall('get_manifest_data', remote_manifest_file),
+                air.aircall('get_manifest_data'),
                 state.user_manifest_file,
                 'binary',
             )
 
             # locate project path
-            state.user_manifest = fs.load(state.user_manifest_file)
-            state.target_project_path = state.appid_to_project_path[
-                state.user_manifest['appid']
-            ]
-            print(state.user_manifest['appid'], state.target_project_path)
+            profile: dict = air.aircall('get_profile')
+            appid = profile['appid']
+            # state.user_manifest = fs.load(state.user_manifest_file)
+            state.target_project_path = state.appid_to_project_path[appid]
+            print(appid, state.target_project_path)
         state.init = True
 
     with st.container(border=True):
@@ -127,7 +123,7 @@ def main(
             file1 = st.text_input('Latest manifest file')
 
     main_button_row = sc.row()
-    info_area = st.empty()
+    stat_area = st.empty()
     with main_button_row:
         if st.button('Analyze manifest', type='primary'):
             if not local_test:
@@ -151,12 +147,18 @@ def main(
                 patch_exe = _generate_patch_executable(
                     assets_map, assets_dir, patch_id
                 )
-                with info_area:
+                with stat_area:
                     st.success(
                         'Patch executable generated: `{}` ({})'.format(
                             patch_exe, fs.filesize(patch_exe, str)
                         )
                     )
+
+        if not local_test:
+            if st.button('Push patch to client'):
+                with stat_area:
+                    with st.spinner('Working...'):
+                        _push_patch_to_client(assets_dir, patch_id)
 
     if state.assets_map:
         with main_button_row:
@@ -360,6 +362,7 @@ def _analyze_assets_diff(
     return assets_map
 
 
+# FIXME or DELETE
 def _apply_patch(assets_map: T.AssetsMap, used_keys: tp.Iterable[str]):
     temp_dir = make_temp_dir()
     for k in used_keys:
@@ -434,6 +437,20 @@ def _generate_patch_executable(
         verbose=True,
     )
     return '{}/patch-{}.exe'.format(paths.chore.generated_patches, patch_id)
+
+
+def _push_patch_to_client(assets_dir: str, patch_id: str):
+    """
+    TODO:
+        - provide a download url.
+        - multi-thread download.
+    """
+    fs.zip(assets_dir, paths.chore.assets_zip, True, progress=True)
+    air.aircall(
+        'download_patch_2',
+        data=fs.load(paths.chore.assets_zip, 'binary'),
+        patch_id=patch_id,
+    )
 
 
 if __name__ == '__main__':

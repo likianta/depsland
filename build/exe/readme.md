@@ -1,12 +1,16 @@
 
+- check_updates.exe (1.1MB)
+
+    Created by `v -o "build/exe/check_updates.exe" build/exe/check_updates.v`.
+
 - depsland-runapp.bat
 
-    run target app with no console window.
+    Run target app with no console window.
 
 - depsland-runapp-console.bat
 
-    run target app with console window.
+    Run target app with console window.
 
 - depsland-runapp-debug.bat
 
-    run target app with console window, and prompt user to confirm exit.
+    Run target app with console window, and prompt user to confirm exit.

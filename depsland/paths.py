@@ -340,6 +340,7 @@ class Build:
         self.exe = f'{self.root}/exe'  # the folder
         # self.icon = f'{self.root}/icon'  # the folder
 
+        self.check_updates_exe = f'{self.exe}/check_updates.exe'
         self.depsland_runapp_exe = f'{self.exe}/depsland-runapp.exe'
         self.depsland_runapp_console_exe = (
             f'{self.exe}/depsland-runapp-console.exe'
