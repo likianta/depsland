@@ -4,7 +4,7 @@ import pyapp_window
 from neoprint import print
 
 
-def patch_online(open_window: bool = False) -> None:
+def patch_online(open_window: bool = False, debug: bool = False) -> None:
     possible_server_hosts = (
         # 'localhost',  # mostly used in development
         '172.20.128.100',  # used in local area network
@@ -27,6 +27,11 @@ def patch_online(open_window: bool = False) -> None:
                 client.user_id,
                 ':v4lnt',
             )
+            if debug:
+                import pyperclip  # type: ignore
+                pyperclip.copy(
+                    'uvx test/request_to_patch_client.py {}'.format(client.uid)
+                )
             break
     else:
         raise Exception('no server site available')
@@ -44,8 +49,27 @@ def patch_online(open_window: bool = False) -> None:
             verbose=True,
         )
 
+    # if debug:
+    #     assert _get_manifest_data() is not None
+    #     client._user_namespace['get_manifest_data_2'] = _get_manifest_data
+
     client.set_passive()
-    client.mainloop()  # blocking
+    client.mainloop(verbose=debug)  # blocking
+    # client.mainloop(verbose=debug, fragile=debug)  # blocking
+
+
+def _get_manifest_data(file: str = 'source/.depsland/manifest.pkl') -> bytes:
+    import os
+    from lk_utils import fs
+    assert fs.exist(file), file
+    print(
+        os.getcwd(),
+        file,
+        fs.filesize(file, str),
+        (x := fs.load(file, 'binary'))[:100], 
+        ':nvl'
+    )
+    return x
 
 
 if __name__ == '__main__':

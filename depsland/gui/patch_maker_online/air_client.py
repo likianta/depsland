@@ -9,6 +9,7 @@ class _State:
     # init: bool
     # air_caller: tp.Optional[air.ProxyCaller]
     air_client: tp.Optional[tp.Union[air.Client, air.ProxyCaller]]
+    client_id: str
     # connection_hub: air.Client
     # connection_sub: air.Client
     remote_working_dir: str
@@ -16,6 +17,7 @@ class _State:
     def __init__(self) -> None:
         # self.air_caller = None
         self.air_client = None
+        self.client_id = ''
         self.remote_working_dir = ''
 
     @property
@@ -23,7 +25,7 @@ class _State:
         return self.air_client is not None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=2))
+state = tp.cast(_State, sc.init_state(_State, version=9))
 
 
 def aircall(func_name: str, *args, **kwargs) -> tp.Any:
@@ -34,25 +36,40 @@ def airexec(code: str, **kwargs) -> tp.Any:
     return state.air_client.exec(code, **kwargs)
 
 
+def check_init(debug: bool = False) -> tp.Tuple[str, bool]:
+    old_id = state.client_id
+    if debug or not st.query_params:
+        with sc.row():
+            new_id = st.text_input(':red[Enter client ID]')
+            if debug:
+                if st.button('Force refresh', disabled=not new_id):
+                    return new_id, False
+    else:
+        # the incoming url format: http://localhost:2190/?uid=<uid>
+        new_id = st.query_params['uid']
+
+    if old_id:
+        if new_id:
+            return new_id, new_id == old_id
+        else:
+            return old_id, True
+    elif new_id:
+        return new_id, False
+    else:
+        return '', False
+
+
 def close_air_client() -> None:
     if state.air_client:
         state.air_client.close()
         state.air_client = None
 
 
-def init_air_client(debug: bool = False, **kwargs) -> None:
+def init_air_client(*, client_id: str, debug: bool = False, **kwargs) -> None:
     if debug:
         state.air_client = air.Client().connect(host='localhost', port=2191)
     else:
-        # the incoming url format: http://localhost:2190/?uid=<uid>
-        if st.query_params:
-            print(st.query_params, ':nv')
-            uid = st.query_params['uid']
-            state.air_client = air.ProxyCaller(uid).connect(port=2192)
-        else:
-            st.warning('Invalid query parameter.')
-            st.stop()
-
+        state.air_client = air.ProxyCaller(client_id).connect(port=2192)
     _init_remote_env(state.air_client)
     state.remote_working_dir = aircall('get_current_working_dir')
     print(state.remote_working_dir, ':n')
@@ -94,6 +111,8 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
             # transmit the raw data (bytes) to server.
             assert fs.exist(file), file
             return fs.load(file, 'binary')
+
+        assert get_manifest_data() is not None  # TEST
         
         def get_profile() -> dict:
             return fs.load('patches/profile.json')
@@ -104,7 +123,5 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
         assert fs.exist('source')
         assert fs.exist('source/.depsland/manifest.pkl')
         assert fs.exist('Check Updates.exe')
-
-        return None
         """
     )

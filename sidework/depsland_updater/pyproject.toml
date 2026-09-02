@@ -5,7 +5,7 @@ description = "Depsland authored updater toolkit: check and apply incremental up
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.2.0a5",
+    "airmise>=3.2.0b0",
     "argsense>=1.1.2",
     # "lk-utils>=3.8.0b5",
     "neoprint>=0.1.10a3",
@@ -16,10 +16,11 @@ dependencies = [
 build-backend = "hatchling.build"
 requires = ["hatchling>=1.29.0"]
 
-# [dependency-groups]
-# dev = [
+[dependency-groups]
+dev = [
 #     "lk-utils>=3.8.0b5",
-# ]
+    "pyperclip>=1.11.0",
+]
 
 [project.urls]
 homepage = "https://github.com/likianta/depsland"

@@ -41,12 +41,14 @@ class T:
 class _State:
     # accepted_keys: tp.Iterable[str]
     appid_to_project_path: tp.Dict[str, str]
+    assets_dir: str
     assets_map: tp.Optional[T.AssetsMap]
     assets_map_generation: int
     filtered_assets_map: tp.Optional[T.AssetsMap]
     init: bool
     new_manifest: T.Manifest
     old_manifest: T.Manifest
+    patch_id: str
     registered_project_paths: tp.Tuple[str, ...]
     # table_diff_data: tp.Optional[T.TableData]
     target_project_path: str
@@ -66,11 +68,8 @@ class _State:
         self.filtered_assets_map = None
         # self.table_diff_data = None
 
-    # @property
-    # def filtered_assets_map
 
-
-state = tp.cast(_State, sc.init_state(_State, version=22))
+state = tp.cast(_State, sc.init_state(_State, version=27))
 
 
 @cli
@@ -88,27 +87,33 @@ def main(
 
     if not state.init:
         if not local_test:
-            if not air.state.air_client:
-                air.init_air_client(debug, **kwargs)
+            client_id, air_init = air.check_init(debug=debug)
+            if not air_init:
+                if client_id:
+                    air.init_air_client(
+                        client_id=client_id, debug=debug, **kwargs
+                    )
+                    # remote to local
+                    if debug:
+                        state.user_manifest_file = 'test/_example_manifest.pkl'
+                    else:
+                        state.user_manifest_file = fs.here('_user_manifest.pkl')
+                        #   TODO: use `paths.temp.user_manifest_pkl` path.
+                    assert air.aircall('get_manifest_data') is not None  # TEST
+                    fs.dump(
+                        air.aircall('get_manifest_data'),
+                        state.user_manifest_file,
+                        'binary',
+                    )
 
-            # remote to local
-            if debug:
-                state.user_manifest_file = 'test/_example_manifest.pkl'
-            else:
-                state.user_manifest_file = fs.here('_user_manifest.pkl')
-                #   TODO: use `paths.temp.user_manifest_pkl` path.
-            fs.dump(
-                air.aircall('get_manifest_data'),
-                state.user_manifest_file,
-                'binary',
-            )
-
-            # locate project path
-            profile: dict = air.aircall('get_profile')
-            appid = profile['appid']
-            # state.user_manifest = fs.load(state.user_manifest_file)
-            state.target_project_path = state.appid_to_project_path[appid]
-            print(appid, state.target_project_path)
+                    # locate project path
+                    # state.user_manifest = fs.load(state.user_manifest_file)
+                    state.target_project_path = state.appid_to_project_path[
+                        appid := air.aircall('get_profile')['appid']
+                    ]
+                    print(appid, state.target_project_path)
+                else:
+                    return
         state.init = True
 
     with st.container(border=True):
@@ -142,6 +147,8 @@ def main(
             assets_map = state.filtered_assets_map or state.assets_map
             assert assets_map
             assets_dir, patch_id = _generate_patch_result(assets_map)
+            state.assets_dir = assets_dir
+            state.patch_id = patch_id
 
             if local_test:
                 patch_exe = _generate_patch_executable(
@@ -158,7 +165,7 @@ def main(
             if st.button('Push patch to client'):
                 with stat_area:
                     with st.spinner('Working...'):
-                        _push_patch_to_client(assets_dir, patch_id)
+                        _push_patch_to_client(state.assets_dir, state.patch_id)
 
     if state.assets_map:
         with main_button_row:
@@ -399,6 +406,7 @@ def _generate_patch_result(assets_map: T.AssetsMap) -> tp.Tuple[str, str]:
     patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
     print(patch_id, ':n')
     assets_dir = '{}/{}'.format(paths.chore.assets_dir, patch_id)
+    fs.make_dir(assets_dir)
     for uid, (abspath, relpath, is_dir, size, action) in assets_map.items():
         if abspath:
             print('add resource', '{} ({})'.format(relpath, uid), ':iv2')
