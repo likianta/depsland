@@ -154,7 +154,7 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.2.0a1"
+version = "3.2.0b1"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "aiohttp" },
@@ -163,7 +163,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2131/airmise/airmise-3.2.0a1-py3-none-any.whl" },
+    { url = "http://localhost:2131/airmise/airmise-3.2.0b1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -600,7 +600,7 @@ wheels = [
 
 [[package]]
 name = "depsland"
-version = "0.13.0a6"
+version = "0.13.0a8"
 source = { editable = "." }
 dependencies = [
     { name = "airmise" },
@@ -636,10 +636,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.2.0a1", index = "http://localhost:2131/" },
+    { name = "airmise", specifier = ">=3.2.0a2", index = "http://localhost:2131/" },
     { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2131/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.8.0", index = "http://localhost:2131/" },
+    { name = "lk-utils", specifier = ">=3.8.1a1", index = "http://localhost:2131/" },
     { name = "neoprint", specifier = ">=0.1.10b0", index = "http://localhost:2131/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
@@ -997,7 +997,7 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.8.0"
+version = "3.8.1a1"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
@@ -1007,7 +1007,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2131/lk-utils/lk_utils-3.8.0-py3-none-any.whl" },
+    { url = "http://localhost:2131/lk-utils/lk_utils-3.8.1a1-py3-none-any.whl" },
 ]
 
 [[package]]

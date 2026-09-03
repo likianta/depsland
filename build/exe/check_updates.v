@@ -19,7 +19,11 @@ fn main() {
     )!
 
     if profile.current_patch == profile.latest_patch {
-        println('You are up to date (${profile.latest_patch}).')
+		if profile.latest_patch == '' {
+			println('You are up to date.')
+		} else {
+        	println('You are up to date (${profile.latest_patch}).')
+		}
     } else {
         patch_id := profile.latest_patch
 
@@ -28,6 +32,7 @@ fn main() {
 
         profile.current_patch = profile.latest_patch
         save_record(profile, proj_dir)!
+		println('Patch applied (${profile.latest_patch}).')
     }
 
 	os.input('Press Enter or close the console window to exit...')
