@@ -101,19 +101,27 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
             fs.dump(data2, '{}/assets_map.json'.format(patch_dir), 'binary')
             fs.dump(data3, '{}/manifest.pkl'.format(patch_dir), 'binary')
             
-            profile = get_profile()
             profile['latest_patch'] = patch_id
             fs.dump(profile, 'patches/profile.json')
 
         def get_appid() -> str:
-            return get_profile()['appid']
+            return profile['appid']
 
         def get_current_working_dir() -> str:
             return fs.normpath(os.getcwd())
         
         def get_manifest_data(
-            file: str = 'source/.depsland/manifest.pkl'
+            # file: str = 'source/.depsland/manifest.pkl'
         ) -> bytes:
+            if profile['current_patch']:
+                file = 'patches/{}/manifest.pkl'.format(
+                    profile['current_patch']
+                )
+            else:
+                file = 'source/.depsland/manifest.pkl'
+                # TODO: or use 'patches/initial_manifest.pkl'? need 
+                # `depsland/api/dev_api/build_offline.py` to support this.
+            print('current manifest file', file)
             # transmit the raw data (bytes) to server.
             assert fs.exist(file), file
             return fs.load(file, 'binary')
@@ -127,7 +135,8 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
         assert fs.exist('patches/profile.json')
         assert fs.exist('python')
         assert fs.exist('source')
-        assert fs.exist('source/.depsland/manifest.pkl')
         assert fs.exist('Check Updates.exe')
+
+        profile = get_profile()
         """
     )
