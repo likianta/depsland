@@ -33,6 +33,9 @@ class T:
     AssetsMap = tp.Dict[
         str, tp.Tuple[tp.Optional[T0.AbsPath], T0.RelPath, bool, int, T0.Action]
         # ^ file_id   ^ src_abspath, dst_relpath, isdir, size, action
+        #   notice: AssetsMap is order sensitive: the "delete" action must be
+        #   first. because if we have both `append:A` and `delete:A/B`, latter
+        #   delete will make loss to append action.
     ]
     Manifest = T0.ManifestObject
     TableData = tp.List[tp.Tuple[str, ...]]
@@ -373,7 +376,13 @@ def _analyze_assets_diff(
                 action,
             )
     print(len(assets_map), ':n')
-    return assets_map
+    return dict(
+        sorted(
+            assets_map.items(),
+            key=lambda kv: (0 if kv[1][4] == 'delete' else 1, kv[0]),
+            #   put delete actions first. see reason in `T.AssetsMap:comment`.
+        )
+    )
 
 
 # FIXME or DELETE
