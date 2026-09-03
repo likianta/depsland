@@ -195,9 +195,9 @@ def main(
 
 
 def _custom_filter(assets_map: T.AssetsMap) -> T.AssetsMap:
-    incremental_keys = frozenset(
-        x for x in assets_map.keys() if assets_map[x][3] != -1
-    )
+    all_keys = frozenset(assets_map.keys())
+    incremental_keys = frozenset(x for x in all_keys if assets_map[x][3] != -1)
+    decremental_keys = all_keys - incremental_keys
     excluded_keys = st.multiselect(
         'Select assets to be excluded',
         sorted(incremental_keys, key=lambda k: assets_map[k][3], reverse=True),
@@ -227,12 +227,15 @@ def _custom_filter(assets_map: T.AssetsMap) -> T.AssetsMap:
             }
         )
 
-    # return incremental_keys - frozenset(excluded_keys)
-    return (
-        {k: assets_map[k] for k in incremental_keys - frozenset(excluded_keys)}
-        if excluded_keys
-        else assets_map
-    )
+    if excluded_keys:
+        final_keys = (
+            *sorted(decremental_keys),  
+            #   delete actions go first. see reason in `T.AssetsMap:comment`.
+            *sorted(incremental_keys - frozenset(excluded_keys)),
+        )
+        return {k: assets_map[k] for k in final_keys}
+    else:
+        return assets_map
 
 
 def _debug_tool(**kwargs):
