@@ -12,22 +12,25 @@ mut:
 fn main() {
 	dry_run, verbose := parse_arguments()
     proj_dir := get_project_directory()
+	println('Project directory: ${proj_dir}')
 
     mut profile := json.decode(
 		Profile, os.read_file('${proj_dir}/patches/profile.json')!
     )!
 
     if profile.current_patch == profile.latest_patch {
-        println('You are up to date.')
+        println('You are up to date (${profile.latest_patch}).')
     } else {
         patch_id := profile.latest_patch
 
-        extract_resources('${proj_dir}/patches/{patch_id}')!
+        extract_resources('${proj_dir}/patches/${patch_id}')!
         apply_resources(proj_dir, patch_id, verbose, dry_run)!
 
         profile.current_patch = profile.latest_patch
         save_record(profile, proj_dir)!
     }
+
+	os.input('Press Enter or close the console window to exit...')
 }
 
 fn apply_resources(
@@ -112,23 +115,22 @@ fn apply_resources(
 }
 
 fn extract_resources(patch_dir string) ! {
+	println('Patch directory: ${patch_dir}')
+
 	if !os.exists('${patch_dir}/assets') {
         // we have downloaded the patch in some way, but not extracted yet.
-        assert os.exists('${patch_dir}/assets.zip')
         println('Extract resources from "assets.zip".')
-        szip.extract_zip_to_dir(
-            '${patch_dir}/assets.zip',
-            '${patch_dir}/assets',
-        )!
+        assert os.exists('${patch_dir}/assets.zip')
+        szip.extract_zip_to_dir('${patch_dir}/assets.zip', patch_dir)!
         if !os.exists('${patch_dir}/backups') {
             os.mkdir('${patch_dir}/backups')!
         }
 	}
 
-	// assert os.exists('${patch_dir}/assets')
+	assert os.exists('${patch_dir}/assets')
 	assert os.exists('${patch_dir}/assets_map.json')
 	assert os.exists('${patch_dir}/backups')
-	// assert os.exists('${patch_dir}/manifest.pkl')
+	assert os.exists('${patch_dir}/manifest.pkl')
 }
 
 fn get_project_directory() string {
@@ -136,11 +138,12 @@ fn get_project_directory() string {
 	println('Current executable directory: ${curr_dir}')
 
     assert os.exists('${curr_dir}/patches')
+    assert os.exists('${curr_dir}/patches/history.txt')
     assert os.exists('${curr_dir}/patches/profile.json')
     // assert os.exists('${curr_dir}/python')
     assert os.exists('${curr_dir}/source')
 	
-	return curr_dir
+	return curr_dir.replace('\\', '/')
 }
 
 fn parse_arguments() (bool, bool) {

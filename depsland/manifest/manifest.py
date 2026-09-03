@@ -32,7 +32,7 @@ def dump_manifest(
     file: T.AnyPath,
     erase_sensitive_data: bool = False,
 ) -> None:
-    assert isinstance(manifest, Manifest)
+    assert isinstance(manifest, Manifest), (manifest, type(manifest))
     manifest.dump_to_file(file, erase_sensitive_data)
 
 

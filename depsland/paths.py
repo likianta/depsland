@@ -362,6 +362,23 @@ class Cache:
 
 
 class Chore:
+    """
+    Directory structure:
+        chore
+        |= patch_maker
+            |= generated_patches
+                |- patch-<patch_id>.exe
+                |- ...
+            |= grocery
+                |= <patch_id>
+                    |= assets
+                |= ...
+                |- assets.zip
+                |- assets_map.json
+                |- manifest.pkl
+            |- patch_extractor_template.v
+    """
+
     def __init__(self) -> None:
         self.root = f'{project.root}/chore'
 
@@ -370,7 +387,6 @@ class Chore:
         self.generated_patches = f'{self.patch_maker}/generated_patches'
         self.grocery = f'{self.patch_maker}/grocery'
 
-        self.assets_dir = f'{self.grocery}/assets'
         self.assets_map = f'{self.grocery}/assets_map.json'
         self.assets_zip = f'{self.grocery}/assets.zip'
         self.manifest_pkl = f'{self.grocery}/manifest.pkl'

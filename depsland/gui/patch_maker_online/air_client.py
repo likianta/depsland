@@ -25,7 +25,7 @@ class _State:
         return self.air_client is not None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=9))
+state = tp.cast(_State, sc.init_state(_State, version=11))
 
 
 def aircall(func_name: str, *args, **kwargs) -> tp.Any:
@@ -92,9 +92,15 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
             profile['latest_patch'] = patch_id
             fs.dump(profile, 'patches/profile.json')
 
-        def download_patch_2(data: bytes, patch_id: str) -> None:
-            fs.make_dir('patches/{}'.format(patch_id))
-            fs.dump(data, 'patches/{}/assets.zip'.format(patch_id), 'binary')
+        def download_patch_2(
+            data1: bytes, data2: bytes, data3: bytes, patch_id: str
+        ) -> None:
+            patch_dir = 'patches/{}'.format(patch_id)
+            fs.make_dir(patch_dir)
+            fs.dump(data1, '{}/assets.zip'.format(patch_dir), 'binary')
+            fs.dump(data2, '{}/assets_map.json'.format(patch_dir), 'binary')
+            fs.dump(data3, '{}/manifest.pkl'.format(patch_dir), 'binary')
+            
             profile = get_profile()
             profile['latest_patch'] = patch_id
             fs.dump(profile, 'patches/profile.json')

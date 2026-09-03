@@ -69,7 +69,7 @@ class _State:
         # self.table_diff_data = None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=27))
+state = tp.cast(_State, sc.init_state(_State, version=28))
 
 
 @cli
@@ -165,7 +165,14 @@ def main(
             if st.button('Push patch to client'):
                 with stat_area:
                     with st.spinner('Working...'):
-                        _push_patch_to_client(state.assets_dir, state.patch_id)
+                        _push_patch_to_client(
+                            tp.cast(
+                                T.AssetsMap,
+                                state.filtered_assets_map or state.assets_map,
+                            ),
+                            state.assets_dir,
+                            state.patch_id,
+                        )
 
     if state.assets_map:
         with main_button_row:
@@ -405,8 +412,8 @@ def _generate_patch_result(assets_map: T.AssetsMap) -> tp.Tuple[str, str]:
     """
     patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
     print(patch_id, ':n')
-    assets_dir = '{}/{}'.format(paths.chore.assets_dir, patch_id)
-    fs.make_dir(assets_dir)
+    assets_dir = '{}/{}/assets'.format(paths.chore.grocery, patch_id)
+    fs.make_dirs(assets_dir)
     for uid, (abspath, relpath, is_dir, size, action) in assets_map.items():
         if abspath:
             print('add resource', '{} ({})'.format(relpath, uid), ':iv2')
@@ -447,16 +454,35 @@ def _generate_patch_executable(
     return '{}/patch-{}.exe'.format(paths.chore.generated_patches, patch_id)
 
 
-def _push_patch_to_client(assets_dir: str, patch_id: str):
+def _push_patch_to_client(
+    assets_map: T.AssetsMap, assets_dir: str, patch_id: str
+):
     """
     TODO:
         - provide a download url.
         - multi-thread download.
     """
+
+    simplified_assets_map = {}
+    for k, (abspath, relpath, is_dir, size, action) in assets_map.items():
+        simplified_assets_map[k] = '{}:{}{}'.format(
+            relpath,
+            '1' if is_dir else '0',
+            '0' if size == -1 else '1',
+            # format: `<relpath>:<is_dir><action>`
+            #   action: 1 for append/update, 0 for delete.
+        )
+
+    # `build/exe/check_updates.v` requires the following three files.
+    fs.dump(simplified_assets_map, paths.chore.assets_map)
     fs.zip(assets_dir, paths.chore.assets_zip, True, progress=True)
+    dump_manifest(state.new_manifest, paths.chore.manifest_pkl)
+
     air.aircall(
         'download_patch_2',
-        data=fs.load(paths.chore.assets_zip, 'binary'),
+        data1=fs.load(paths.chore.assets_zip, 'binary'),
+        data2=fs.load(paths.chore.assets_map, 'binary'),
+        data3=fs.load(paths.chore.manifest_pkl, 'binary'),
         patch_id=patch_id,
     )
 
