@@ -137,7 +137,7 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.2.0b0"
+version = "3.2.0b1"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "aiohttp" },
@@ -146,7 +146,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2131/airmise/airmise-3.2.0b0-py3-none-any.whl" },
+    { url = "http://localhost:2131/airmise/airmise-3.2.0b1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -368,7 +368,7 @@ wheels = [
 
 [[package]]
 name = "depsland-updater"
-version = "0.13.0a6"
+version = "0.13.0a8"
 source = { editable = "." }
 dependencies = [
     { name = "airmise" },
@@ -379,19 +379,23 @@ dependencies = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "lk-utils" },
     { name = "pyperclip" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.2.0b0", index = "http://localhost:2131/" },
+    { name = "airmise", specifier = ">=3.2.0b1", index = "http://localhost:2131/" },
     { name = "argsense", specifier = ">=1.1.2" },
-    { name = "neoprint", specifier = ">=0.1.10a3", index = "http://localhost:2131/" },
+    { name = "neoprint", specifier = ">=0.1.10b0", index = "http://localhost:2131/" },
     { name = "pyapp-window", specifier = ">=2.2.3", index = "http://localhost:2131/" },
 ]
 
 [package.metadata.requires-dev]
-dev = [{ name = "pyperclip", specifier = ">=1.11.0" }]
+dev = [
+    { name = "lk-utils", specifier = ">=3.8.1a1", index = "http://localhost:2131/" },
+    { name = "pyperclip", specifier = ">=1.11.0" },
+]
 
 [[package]]
 name = "fonttools"
@@ -510,8 +514,8 @@ wheels = [
 
 [[package]]
 name = "lk-utils"
-version = "3.8.0"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
+version = "3.8.1a1"
+source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
     { name = "neoprint" },
@@ -520,7 +524,7 @@ dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/50/c6/18876f17d9011192e6d5166cec0fc7a2d61bd0d800e90258454157e34389/lk_utils-3.8.0-py3-none-any.whl", hash = "sha256:1a076bbde9827f5cd1291322429c66328e014e07f8d984d47387d9aebedfa734", size = 50842, upload-time = "2026-09-01T09:19:48.138Z" },
+    { url = "http://localhost:2131/lk-utils/lk_utils-3.8.1a1-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -645,13 +649,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.10a3"
+version = "0.1.10b0"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2131/neoprint/neoprint-0.1.10a3-py3-none-any.whl" },
+    { url = "http://localhost:2131/neoprint/neoprint-0.1.10b0-py3-none-any.whl" },
 ]
 
 [[package]]

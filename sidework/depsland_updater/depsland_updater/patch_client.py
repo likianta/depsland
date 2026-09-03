@@ -28,13 +28,17 @@ def patch_online(open_window: bool = False, debug: bool = False) -> None:
                 ':v4lnt',
             )
             if debug:
+                # fmt: off
                 import pyperclip  # type: ignore
                 pyperclip.copy(
                     'uvx test/request_to_patch_client.py {}'.format(client.uid)
                 )
+                # fmt: on
             break
     else:
-        raise Exception('no server site available')
+        # raise Exception('no server site available')
+        print(':v8', 'no server site available')
+        return
 
     if open_window:
         pyapp_window.open_window(
@@ -56,20 +60,6 @@ def patch_online(open_window: bool = False, debug: bool = False) -> None:
     client.set_passive()
     client.mainloop(verbose=debug)  # blocking
     # client.mainloop(verbose=debug, fragile=debug)  # blocking
-
-
-def _get_manifest_data(file: str = 'source/.depsland/manifest.pkl') -> bytes:
-    import os
-    from lk_utils import fs
-    assert fs.exist(file), file
-    print(
-        os.getcwd(),
-        file,
-        fs.filesize(file, str),
-        (x := fs.load(file, 'binary'))[:100], 
-        ':nvl'
-    )
-    return x
 
 
 if __name__ == '__main__':

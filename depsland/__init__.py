@@ -49,4 +49,4 @@ from .pypi import pip
 from .pypi import pypi
 from .utils import make_temp_dir
 
-__version__ = '0.13.0a0'
+__version__ = '0.13.0a8'

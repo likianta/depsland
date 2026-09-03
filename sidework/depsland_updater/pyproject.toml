@@ -1,14 +1,14 @@
 [project]
 name = "depsland-updater"
-version = "0.13.0a6"
+version = "0.13.0a8"
 description = "Depsland authored updater toolkit: check and apply incremental updates."
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.2.0b0",
+    "airmise>=3.2.0b1",
     "argsense>=1.1.2",
-    # "lk-utils>=3.8.0b5",
-    "neoprint>=0.1.10a3",
+    # "lk-utils>=3.8.1a1",
+    "neoprint>=0.1.10b0",
     "pyapp-window>=2.2.3",  # TODO: mark this optional
 ]
 
@@ -18,7 +18,7 @@ requires = ["hatchling>=1.29.0"]
 
 [dependency-groups]
 dev = [
-#     "lk-utils>=3.8.0b5",
+    "lk-utils>=3.8.1a1",
     "pyperclip>=1.11.0",
 ]
 
