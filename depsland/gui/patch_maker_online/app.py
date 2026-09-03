@@ -72,15 +72,12 @@ class _State:
         # self.table_diff_data = None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=28))
+state = tp.cast(_State, sc.init_state(_State, version=32))
 
 
 @cli
 def main(
-    debug: bool = False,
-    developer_mode: bool = False,
-    local_test: bool = False,
-    **kwargs,
+    debug: bool = False, developer_mode: bool = False, local_test: bool = False
 ) -> None:
     st.set_page_config('Depsland Patch Maker Online')
     if developer_mode:
@@ -93,9 +90,7 @@ def main(
             client_id, air_init = air.check_init(debug=debug)
             if not air_init:
                 if client_id:
-                    air.init_air_client(
-                        client_id=client_id, debug=debug, **kwargs
-                    )
+                    air.init_air_client(client_id=client_id)
                     # remote to local
                     if debug:
                         state.user_manifest_file = 'test/_example_manifest.pkl'
@@ -191,7 +186,7 @@ def main(
 
     if developer_mode and not local_test:
         with st.bottom:
-            _debug_tool(debug=debug, **kwargs)
+            _debug_tool()
 
 
 def _custom_filter(assets_map: T.AssetsMap) -> T.AssetsMap:
@@ -229,7 +224,7 @@ def _custom_filter(assets_map: T.AssetsMap) -> T.AssetsMap:
 
     if excluded_keys:
         final_keys = (
-            *sorted(decremental_keys),  
+            *sorted(decremental_keys),
             #   delete actions go first. see reason in `T.AssetsMap:comment`.
             *sorted(incremental_keys - frozenset(excluded_keys)),
         )
@@ -238,7 +233,7 @@ def _custom_filter(assets_map: T.AssetsMap) -> T.AssetsMap:
         return assets_map
 
 
-def _debug_tool(**kwargs):
+def _debug_tool() -> None:
     if air.state.air_client:
         if st.button(
             ':red[Close client]', disabled=not bool(air.state.air_client)
@@ -249,7 +244,8 @@ def _debug_tool(**kwargs):
         if st.button(
             ':green[Start client]', disabled=bool(air.state.air_client)
         ):
-            air.init_air_client(**kwargs)
+            assert air.state.client_id
+            air.init_air_client(air.state.client_id)
             st.rerun()
 
 

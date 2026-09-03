@@ -140,14 +140,16 @@ python -m depsland build depsland_updater/manifest.json -o -D -P
 手动修改 (不推荐, 仅作了解):
 
 - `depsland/__init__.py:__version__`
-- `depsland_updater/manifest.json:version`
 - `depsland_updater/pyproject.toml:project:version`
 - `pyproject.toml:project:version`
 
 脚本修改:
 
 ```sh
-python build/build_depsland/standalone.py bump_version $new_version
+# a. auto-bump least number
+python run/version_bump.py
+# b. manual assign new version
+python run/version_bump.py $new_version
 ```
 
 ## 版本发布节奏
