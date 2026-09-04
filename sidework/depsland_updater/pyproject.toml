@@ -5,7 +5,7 @@ description = "Depsland authored updater toolkit: check and apply incremental up
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.2.0b2",
+    "airmise>=3.2.0b4",
     "argsense>=1.1.2",
     # "lk-utils>=3.8.1a1",
     "neoprint>=0.1.10b0",

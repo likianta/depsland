@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>补丁工作流程图</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    background: #f5f7fa;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #888;
+    font-size: 14px;
+    margin-bottom: 30px;
+  }
+  .legend {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 36px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #555;
+  }
+  .legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid;
+  }
+  .flowchart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    position: relative;
+    min-width: 600px;
+  }
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    border-radius: 10px;
+    border: 2px solid;
+    background: #fff;
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 520px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    position: relative;
+    z-index: 1;
+  }
+  .step .actor-tag {
+    position: absolute;
+    left: -90px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+  .step .content {
+    flex: 1;
+  }
+
+  /* Actor color themes */
+  .actor-user {
+    border-color: #4A90D9;
+    background: #EBF5FF;
+  }
+  .actor-user .actor-tag {
+    background: #4A90D9;
+    color: #fff;
+  }
+  .actor-app {
+    border-color: #27AE60;
+    background: #EAFAF1;
+  }
+  .actor-app .actor-tag {
+    background: #27AE60;
+    color: #fff;
+  }
+  .actor-server {
+    border-color: #E67E22;
+    background: #FDF2E9;
+  }
+  .actor-server .actor-tag {
+    background: #E67E22;
+    color: #fff;
+  }
+  .actor-patch {
+    border-color: #8E44AD;
+    background: #F4ECF7;
+  }
+  .actor-patch .actor-tag {
+    background: #8E44AD;
+    color: #fff;
+  }
+
+  /* Arrow */
+  .arrow {
+    width: 2px;
+    height: 28px;
+    background: #aaa;
+    position: relative;
+  }
+  .arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #aaa;
+  }
+
+  /* Decision diamond */
+  .decision-row {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    position: relative;
+  }
+  .diamond {
+    width: 240px;
+    height: 80px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .diamond-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #FFF3CD;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  }
+  .diamond-border {
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    background: #F0AD4E;
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+    z-index: 0;
+  }
+  .diamond-text {
+    position: relative;
+    z-index: 1;
+    font-size: 15px;
+    font-weight: 700;
+    color: #856404;
+  }
+  .branch-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 60px;
+    width: 100%;
+    margin-top: 12px;
+  }
+  .branch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+  .branch-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #888;
+    background: #f5f7fa;
+    padding: 2px 12px;
+    border-radius: 4px;
+    margin-bottom: 4px;
+  }
+  .branch-arrow {
+    width: 2px;
+    height: 24px;
+    background: #aaa;
+    position: relative;
+  }
+  .branch-arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #aaa;
+  }
+  .branch-left { width: 240px; }
+  .branch-right { width: 260px; }
+  .branch-right .step {
+    max-width: 260px;
+  }
+  .branch-left .step {
+    max-width: 240px;
+  }
+
+  /* Horizontal connector from diamond to branch */
+  .h-connector {
+    height: 2px;
+    background: #aaa;
+  }
+
+  /* Merge point */
+  .merge-arrow {
+    width: 2px;
+    height: 28px;
+    background: #aaa;
+    position: relative;
+  }
+  .merge-arrow::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #aaa;
+  }
+
+  .legend-dot.user { border-color: #4A90D9; background: #EBF5FF; }
+  .legend-dot.app { border-color: #27AE60; background: #EAFAF1; }
+  .legend-dot.server { border-color: #E67E22; background: #FDF2E9; }
+  .legend-dot.patch { border-color: #8E44AD; background: #F4ECF7; }
+
+  .end-step {
+    border-style: dashed;
+    opacity: 0.85;
+  }
+</style>
+</head>
+<body>
+
+<h1>补丁工作流程图</h1>
+<p class="subtitle">Depsland Patch Workflow</p>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot user"></span> 用户</div>
+  <div class="legend-item"><span class="legend-dot app"></span> 应用</div>
+  <div class="legend-item"><span class="legend-dot server"></span> 服务器</div>
+  <div class="legend-item"><span class="legend-dot patch"></span> 补丁工具</div>
+</div>
+
+<div class="flowchart">
+
+  <!-- Step 1 -->
+  <div class="step actor-user">
+    <span class="actor-tag">用户</span>
+    <span class="content">用户启动应用</span>
+  </div>
+  <div class="arrow"></div>
+
+  <!-- Step 2 -->
+  <div class="step actor-app">
+    <span class="actor-tag">应用</span>
+    <span class="content">创建子线程, 启动检查更新器</span>
+  </div>
+  <div class="arrow"></div>
+
+  <!-- Step 3 -->
+  <div class="step actor-app">
+    <span class="actor-tag">应用</span>
+    <span class="content">更新器查询服务器是否有更新</span>
+  </div>
+  <div class="arrow"></div>
+
+  <!-- Decision -->
+  <div class="decision-row">
+    <div class="diamond">
+      <div class="diamond-border"></div>
+      <div class="diamond-bg"></div>
+      <span class="diamond-text">有更新?</span>
+    </div>
+
+    <div class="branch-container">
+      <!-- YES branch -->
+      <div class="branch branch-right">
+        <span class="branch-label">是</span>
+        <div class="branch-arrow"></div>
+
+        <div class="step actor-server" style="max-width:260px;">
+          <span class="actor-tag">服务器</span>
+          <span class="content">检测到有新的用户连接</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-server" style="max-width:260px;">
+          <span class="actor-tag">服务器</span>
+          <span class="content">对比用户的补丁版本和线上补丁版本差异</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-server" style="max-width:260px;">
+          <span class="actor-tag">服务器</span>
+          <span class="content">将差异结果导出为资产变化表</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-server" style="max-width:260px;">
+          <span class="actor-tag">服务器</span>
+          <span class="content">将变化表以及"新增/更新"的资产进行打包推送</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-user" style="max-width:260px;">
+          <span class="actor-tag">用户</span>
+          <span class="content">收到变化表和更新资产, 储存在本地补丁缓存</span>
+        </div>
+        <div class="arrow"></div>
+
+        <!-- Merge: both branches continue below -->
+        <div class="step actor-user">
+          <span class="actor-tag">用户</span>
+          <span class="content">启动 "Check Updates.exe", 激活本地补丁工具</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-patch">
+          <span class="actor-tag">补丁工具</span>
+          <span class="content">本地补丁应用器检查本地缓存的最新补丁</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-patch">
+          <span class="actor-tag">补丁工具</span>
+          <span class="content">根据资产变化表, 完成"先删后增"操作</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-patch end-step">
+          <span class="actor-tag">补丁工具</span>
+          <span class="content">完成后退出</span>
+        </div>
+        <div class="arrow"></div>
+
+        <div class="step actor-user end-step">
+          <span class="actor-tag">用户</span>
+          <span class="content">重新启动应用, 会看到升级后的内容</span>
+        </div>
+      </div>
+
+      <!-- NO branch -->
+      <div class="branch branch-left">
+        <span class="branch-label">否</span>
+        <div class="branch-arrow"></div>
+        <div class="step actor-user end-step" style="max-width:240px;">
+          <span class="actor-tag">用户</span>
+          <span class="content">结束子线程, 应用正常运行</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

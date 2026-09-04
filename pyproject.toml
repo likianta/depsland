@@ -7,7 +7,7 @@ license = "MIT"
 # readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.2.0b2",
+    "airmise>=3.2.0b4",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
     "lk-utils>=3.8.1a1",

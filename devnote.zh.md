@@ -110,7 +110,7 @@ mdbook serve -n 0.0.0.0 -p 3000
 ## 补丁服务器
 
 ```sh
-python -m depsland patch_maker_server
+python run/patch_maker.py launch_gui_and_server --debug
 ```
 
 ### 开发测试流程
