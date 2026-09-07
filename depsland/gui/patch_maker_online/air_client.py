@@ -12,20 +12,19 @@ class _State:
     client_id: str
     # connection_hub: air.Client
     # connection_sub: air.Client
-    remote_working_dir: str
+    # remote_working_dir: str
 
     def __init__(self) -> None:
         # self.air_caller = None
         self.air_client = None
         self.client_id = ''
-        self.remote_working_dir = ''
 
     @property
     def connected(self) -> bool:
         return self.air_client is not None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=16))
+state = tp.cast(_State, sc.init_state(_State, version=17))
 
 
 def aircall(func_name: str, *args, **kwargs) -> tp.Any:
@@ -72,8 +71,8 @@ def init_air_client(client_id: str) -> None:
     #     state.air_client = air.ProxyCaller(client_id).connect(port=2192)
     state.air_client = air.ProxyCaller(client_id).connect(port=2192)
     _init_remote_env(state.air_client)
-    state.remote_working_dir = aircall('get_current_working_dir')
-    print(state.remote_working_dir, ':n')
+    # state.remote_working_dir = aircall('get_current_working_dir')
+    # print(state.remote_working_dir, ':n')
 
 
 def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
@@ -89,6 +88,7 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
         else:
             proj_dir = fs.normpath(os.getcwd())
         assert fs.exist('{}/patches'.format(proj_dir))
+        assert fs.exist('{}/patches/initial_manifest.pkl'.format(proj_dir))
         assert fs.exist('{}/patches/profile.json'.format(proj_dir))
         assert fs.exist('{}/python'.format(proj_dir))
         assert fs.exist('{}/source'.format(proj_dir))
@@ -131,9 +131,8 @@ def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
                     proj_dir, profile['current_patch']
                 )
             else:
-                file = '{}/source/.depsland/manifest.pkl'.format(proj_dir)
-                # TODO: or use '{proj_dir}/patches/initial_manifest.pkl'? need 
-                # `depsland/api/dev_api/build_offline.py` to support this.
+                # file = '{}/source/.depsland/manifest.pkl'.format(proj_dir)
+                file = '{}/patches/initial_manifest.pkl'.format(proj_dir)
             print('current manifest file', file)
             # transmit the raw data (bytes) to server.
             assert fs.exist(file), file

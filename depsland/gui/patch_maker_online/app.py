@@ -72,7 +72,7 @@ class _State:
         # self.table_diff_data = None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=32))
+state = tp.cast(_State, sc.init_state(_State, version=33))
 
 
 @cli

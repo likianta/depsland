@@ -6,7 +6,7 @@ reference:
 
 import re
 import sys
-import typing as t
+import typing as tp
 
 from lk_utils import fs
 from lk_utils import run_cmd_args
@@ -19,36 +19,37 @@ class T:
     PackageId = str  # str['{name}-{version}']
     PackageName = str
 
-    # DependenciesTree0 = t.Dict[PackageName, t.Iterable[PackageName]]
-    # DependenciesTree1 = t.Dict[PackageId, t.Sequence[PackageId]]
-    DependenciesTree = t.Dict[PackageId, t.Sequence[PackageId]]
+    # DependenciesTree0 = tp.Dict[PackageName, tp.Iterable[PackageName]]
+    # DependenciesTree1 = tp.Dict[PackageId, tp.Sequence[PackageId]]
+    DependenciesTree = tp.Dict[PackageId, tp.Sequence[PackageId]]
 
-    # noinspection PyTypedDict
-    PackageInfo = t.TypedDict(
+    PackageInfo = tp.TypedDict(
         'PackageInfo',
         {
             'id': PackageId,
             'name': PackageName,
             'version': ExactVersion,
-            # 'dependencies': t.Sequence[PackageId],
-            'appendix': t.Optional[
-                t.TypedDict('Appendix', {'custom_url': str}, total=False)
+            # 'dependencies': tp.Sequence[PackageId],
+            'appendix': tp.Optional[
+                tp.TypedDict('Appendix', {'custom_url': str}, total=False)
             ],
-            # 'appendix': t.TypedDict('Appendix', {'custom_url': str}, total=False)
+            # 'appendix': tp.TypedDict(
+            #     'Appendix', {'custom_url': str}, total=False
+            # )
         },
     )
 
-    # Packages = t.Dict[PackageId, PackageInfo]
-    Packages = t.Dict[PackageName, PackageInfo]
+    # Packages = tp.Dict[PackageId, PackageInfo]
+    Packages = tp.Dict[PackageName, PackageInfo]
 
 
 class _Regex:
     @staticmethod
     def simple_extract_name_and_version(
         text: str,
-    ) -> t.Tuple[T.PackageName, T.ExactVersion]:
-        return t.cast(
-            t.Tuple[T.PackageName, T.ExactVersion],
+    ) -> tp.Tuple[T.PackageName, T.ExactVersion]:
+        return tp.cast(
+            tp.Tuple[T.PackageName, T.ExactVersion],
             re.match(r'(.+)==(.+)', text).groups(),
         )
 
@@ -89,25 +90,24 @@ def resolve_requirements_lock(
             if (name := pkg['name']) in valid_names:
                 out[name] = pkg
             else:
-                print(f'drop line in requirements.lock', line, ':vs')
+                print('drop line in requirements.lock', line, ':vs')
     return out
 
 
-# noinspection PyPep8Naming
 def _get_valid_package_names(
     pyproj_data: dict,  # noqa
     poetry_data: dict,
     reqlock_data: str,
     working_root: str,
-) -> t.Set[T.PackageName]:
+) -> tp.Set[T.PackageName]:
     class T1:
         # ((str pkg, iter direct_deps), ...)
-        A = t.Iterator[t.Tuple[T.PackageName, t.Iterator[T.PackageName]]]
+        A = tp.Iterator[tp.Tuple[T.PackageName, tp.Iterator[T.PackageName]]]
         # {str pkg: tuple direct_deps, ...}
-        B = t.Dict[T.PackageName, t.Tuple[T.PackageName, ...]]
+        B = tp.Dict[T.PackageName, tp.Tuple[T.PackageName, ...]]
         # ((str pkg, iter expanded_deps), ...)
         C = A
-        D = t.Iterator[T.PackageName]
+        D = tp.Iterator[T.PackageName]
 
     def get_all_package_names() -> T1.A:
         for item in poetry_data['package']:
@@ -118,8 +118,8 @@ def _get_valid_package_names(
 
     def expand_dependencies(all_pkgs: T1.B) -> T1.C:
         def recurse(
-            key: str, _recorded: set = None
-        ) -> t.Iterator[T.PackageName]:
+            key: str, _recorded: tp.Optional[set] = None
+        ) -> tp.Iterator[T.PackageName]:
             if _recorded is None:
                 _recorded = set()
             for dep_name in all_pkgs[key]:
@@ -157,14 +157,17 @@ def _get_valid_package_names(
         #     for x in pyproj_data
         #     ['tool']['poetry']['group']['dev']['dependencies'].keys()
         # )
-        content = t.cast(str, run_cmd_args(
-            (
-                (sys.executable, '-m', 'poetry'),
-                ('show', '--no-ansi'),
-                ('--directory', working_root),
+        content = tp.cast(
+            str,
+            run_cmd_args(
+                (
+                    (sys.executable, '-m', 'poetry'),
+                    ('show', '--no-ansi'),
+                    ('--directory', working_root),
+                ),
+                cwd=working_root,
             ),
-            cwd=working_root,
-        ))
+        )
         pattern = re.compile(r'[^ ]+')
         for line in content.splitlines():
             # print(':vi2', line)

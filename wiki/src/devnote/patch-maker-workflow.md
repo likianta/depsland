@@ -24,7 +24,7 @@
     - 用户正在使用的应用归属于哪个开发项目 (路径)
 
 4. 开发者找到这个项目的 dist 目录, 对比下用户的应用版本和最新的版本是否一致, 如果不一致, 继续下面的操作
-5. 将最新的版本的资产清单的绝对路径 (`<target_project>/dist/<appid>-<version>/source/.depsland/manifest.pkl`) 粘贴到 GUI 的 "Latest manifest file" 输入框
+5. 将最新的版本的资产清单的绝对路径 (`<target_project>/dist/<appid>-<version>/patches/initial_manifest.pkl`) 粘贴到 GUI 的 "Latest manifest file" 输入框
 6. 点击分析按钮, 获得资产差异分析结果
 
     开发者可以根据需要选择哪些资产可以推送. 一般来说, 有以下技巧:

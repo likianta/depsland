@@ -33,7 +33,7 @@
 
 ## 具体操作步骤
 
-1. 首先, 有一个旧版本的应用, 假设为 `~/projects/hello-world-project/dist/hello_world-0.1.0`, 其目录下有一个清单快照: `.../hello_world-0.1.0/source/.depsland/manifest.pkl`
+1. 首先, 有一个旧版本的应用, 假设为 `~/projects/hello-world-project/dist/hello_world-0.1.0`, 其目录下有一个清单快照: `.../hello_world-0.1.0/patches/initial_manifest.pkl`
 2. 确认 `hello-world-project` 中已经产生了更新 (比如, 源代码更新, 或者依赖更新)
 3. 确认本项目包含 depsland image profile, 用于构建新版本应用
 4. 构建新版本应用, 生成 `~/projects/hello-world-project/dist/hello_world-0.1.1`, 同样, 在其目录下有一个清单快照
@@ -42,8 +42,8 @@
    ```sh
    python sidework/patch_maker/patch_maker.py \
        -s ~/projects/hello-world-project \
-       -o ~/projects/hello-world-project/dist/hello_world-0.1.0/source/.depsland/manifest.pkl \
-       -n ~/projects/hello-world-project/dist/hello_world-0.1.1/source/.depsland/manifest.pkl \
+       -o ~/projects/hello-world-project/dist/hello_world-0.1.0/patches/initial_manifest.pkl \
+       -n ~/projects/hello-world-project/dist/hello_world-0.1.1/patches/initial_manifest.pkl \
        -p
    ```
 

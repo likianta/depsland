@@ -72,10 +72,10 @@ def build_offline(
         _create_updator(manifest, dir_o)
     else:
         _create_launcher(manifest, dir_o)
-        # TODO: no-depsland mode does not support creating readme opener yet.
         dump_manifest(
             manifest,
-            '{}/source/.depsland/manifest.pkl'.format(dir_o),
+            # '{}/source/.depsland/manifest.pkl'.format(dir_o),
+            '{}/patches/initial_manifest.pkl'.format(dir_o),
             erase_sensitive_data=True,
         )
     print('see result at "{}"'.format(dir_o), ':v4t')

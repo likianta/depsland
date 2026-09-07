@@ -35,7 +35,7 @@ def main(uid):
             return fs.normpath(os.getcwd())
         
         def get_manifest_data(
-            file: str = 'source/.depsland/manifest.pkl'
+            file: str = 'patches/initial_manifest.pkl'
         ) -> bytes:
             # transmit the raw data (bytes) to server.
             # assert fs.exist(file), file
@@ -57,10 +57,10 @@ def main(uid):
             return fs.load('patches/profile.json')
 
         assert fs.exist('patches')
+        assert fs.exist('patches/initial_manifest.pkl')
         assert fs.exist('patches/profile.json')
         assert fs.exist('python')
         assert fs.exist('source')
-        assert fs.exist('source/.depsland/manifest.pkl')
         assert fs.exist('Check Updates.exe')
 
         print('cwd', get_current_working_dir())
