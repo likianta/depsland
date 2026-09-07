@@ -137,7 +137,7 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.2.0b4"
+version = "3.2.1a0"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "aiohttp" },
@@ -146,7 +146,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2131/airmise/airmise-3.2.0b4-py3-none-any.whl" },
+    { url = "http://localhost:2131/airmise/airmise-3.2.1a0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -374,26 +374,26 @@ dependencies = [
     { name = "airmise" },
     { name = "argsense" },
     { name = "neoprint" },
-    { name = "pyapp-window" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "lk-utils" },
+    { name = "pyapp-window" },
     { name = "pyperclip" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.2.0b4", index = "http://localhost:2131/" },
+    { name = "airmise", specifier = ">=3.2.1a0", index = "http://localhost:2131/" },
     { name = "argsense", specifier = ">=1.1.2" },
-    { name = "neoprint", specifier = ">=0.1.10b0", index = "http://localhost:2131/" },
-    { name = "pyapp-window", specifier = ">=2.2.3", index = "http://localhost:2131/" },
+    { name = "neoprint", specifier = ">=0.1.10b1", index = "http://localhost:2131/" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "lk-utils", specifier = ">=3.8.1a1", index = "http://localhost:2131/" },
+    { name = "pyapp-window", specifier = ">=2.2.3", index = "http://localhost:2131/" },
     { name = "pyperclip", specifier = ">=1.11.0" },
 ]
 
@@ -649,13 +649,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.10b0"
+version = "0.1.10b1"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2131/neoprint/neoprint-0.1.10b0-py3-none-any.whl" },
+    { url = "http://localhost:2131/neoprint/neoprint-0.1.10b1-py3-none-any.whl" },
 ]
 
 [[package]]
