@@ -1,8 +1,6 @@
 import typing as tp
 from types import NoneType
 
-import tree_shaking
-
 from ..depsolver import T as T0
 
 
@@ -11,8 +9,8 @@ class T(T0):
     Appinfo = tp.TypedDict(
         'Appinfo',
         {
-            'appid'  : str,
-            'name'   : str,
+            'appid': str,
+            'name': str,
             'version': str,
             'src_dir': str,  # abspath
             'dst_dir': str,  # abspath
@@ -48,9 +46,28 @@ class T(T0):
             tp.TypedDict(
                 'TreeShakingDependencies',
                 {
-                    'method': 'tree_shaking',
+                    'method': tp.Literal['tree_shaking'],
                     'base': tp.Literal['poetry.lock', 'uv.lock'],
-                    'options': tree_shaking.T.Config0,
+                    # 'options': tree_shaking.T.Config0,
+                    'options': tp.TypedDict(
+                        'TreeShakingOptions',
+                        {
+                            'search_paths': tp.List[RelPath],
+                            'entries': tp.List[RelPath],
+                            'ignores': tp.List[str],
+                            #   ignored names follow `tree_shaking.T
+                            #   .IgnoredName`. e.g. 'IPython', 'PySide6', 
+                            #   'lk_utils', 'hid', 'serial', 'PIL'.
+                            'export': tp.TypedDict(
+                                'TreeShakingExport',
+                                {
+                                    'source': RelPath,
+                                    'target': RelPath,
+                                }
+                            ),
+                        },
+                        total=False,
+                    ),
                 },
                 total=False,
             ),
@@ -69,9 +86,9 @@ class T(T0):
                 #       - 'AjetGCuXouoQJZiZ3faBgGla04j52VzrVAHnf49MbQw'
                 #       - '$env'
                 #       - '$env:MY_SECRET_KEY'
-                #   there is a special value "$erased" which means the 
-                #   encryption setting is not available. see also 
-                #   `.manifest.Manifest._dump_manifest` and 
+                #   there is a special value "$erased" which means the
+                #   encryption setting is not available. see also
+                #   `.manifest.Manifest._dump_manifest` and
                 #   `.manifest.Manifest._update_encryption`.
                 'add_salt': bool,
                 'packages': tp.List[RelPath],

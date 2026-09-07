@@ -30,8 +30,9 @@ def get_cache_file(
 
 def minify_dependencies(
     project_directory: str,
-    entries: tp.Sequence[str],
     search_paths: tp.Sequence[str],
+    entries: tp.Sequence[str],
+    ignores: tp.Sequence[str],
     export: tp.TypedDict('Export', {'source': str, 'target': str}),
     base_locked: tp.Literal['poetry.lock', 'uv.lock'] = 'uv.lock',
 ) -> None:
@@ -72,8 +73,9 @@ def minify_dependencies(
     fs.dump(
         {
             'root': '..',
-            'entries': entries,
             'search_paths': search_paths,
+            'entries': entries,
+            'ignores': ignores or [],
             'export': export,
         },
         model_file := '{}/tree_shaking_model.json'.format(dot_dps_dir),

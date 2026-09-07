@@ -503,6 +503,17 @@ class Manifest:
                 )
                 options['root'] = '..'
 
+                if 'search_paths' in options:
+                    if '.depsland/orig_deps' not in options['search_paths']:
+                        options['search_paths'].insert(0, '.depsland/orig_deps')
+                else:
+                    options['search_paths'] = ['.depsland/orig_deps', '.']
+
+                assert options['entries']
+
+                if 'ignores' in options:
+                    assert all('-' not in x for x in options['ignores'])
+
                 if 'export' in options:
                     assert (
                         options['export']['source']
@@ -513,14 +524,6 @@ class Manifest:
                         'source': '.depsland/orig_deps',
                         'target': '.depsland/mini_deps',
                     }
-
-                assert options['entries']
-
-                if 'search_paths' in options:
-                    if '.depsland/orig_deps' not in options['search_paths']:
-                        options['search_paths'].insert(0, '.depsland/orig_deps')
-                else:
-                    options['search_paths'] = ['.depsland/orig_deps', '.']
 
         launcher: T.Launcher0 = manifest['launcher']
         assert launcher['command'], 'field `launcher.command` cannot be empty!'
@@ -607,8 +610,9 @@ class Manifest:
         else:  # dict
             minify_dependencies(
                 start_directory,
-                deps0['options']['entries'],
                 deps0['options']['search_paths'],
+                deps0['options']['entries'],
+                deps0['options']['ignores'],
                 deps0['options']['export'],
                 deps0['base'],
             )
