@@ -1,14 +1,14 @@
 [project]
 name = "depsland-updater"
-version = "0.13.0b0"
+version = "0.13.0b3"
 description = "Depsland authored updater toolkit: check and apply incremental updates."
 license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.2.1",
+    "airmise>=3.2.2a5",
     "argsense>=1.1.2",
     # "lk-utils>=3.8.1",
-    "neoprint>=0.1.10b3",
+    "neoprint>=0.1.11b0",
 ]
 
 [build-system]

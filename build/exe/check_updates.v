@@ -1,6 +1,7 @@
 import compress.szip
 import json
 import os
+import time
 
 struct Profile {
     appid         string
@@ -24,6 +25,20 @@ fn main() {
 		} else {
         	println('You are up to date (${profile.latest_patch}).')
 		}
+
+		if os.exists(
+			'${proj_dir}/source/.depsland/mini_deps/depsland_updater'
+		) {
+			println(
+				'The updater is going to spwan a subprocess to request ' +
+				'available patches from server. You can wait for it done, ' + 
+				'or, to prevent this behavior, you can manually close this ' +
+				'window at now.'
+			)
+			if !spawn_patch_request(proj_dir) {
+				println('Failed requesting patch from server.')
+			}
+		}
     } else {
         patch_id := profile.latest_patch
 
@@ -37,6 +52,8 @@ fn main() {
 
 	os.input('Press Enter or close the console window to exit...')
 }
+
+// -----------------------------------------------------------------------------
 
 fn apply_resources(
 	proj_dir string, patch_id string, verbose bool, dry_run bool
@@ -167,4 +184,54 @@ fn save_record(profile Profile, proj_dir string) ! {
 
     json_str := json.encode(profile)
     os.write_file('${proj_dir}/patches/profile.json', json_str)!
+}
+
+fn spawn_patch_request(proj_dir string) bool {
+	// https://chatgpt.com/share/6aa11917-d214-83ee-b737-1895be702072
+	
+	// os.setenv('PYTHONPATH', 'source;source/.depsland/mini_deps')
+	// os.setenv('PYTHONUTF8', '1')
+	// os.setenv('NEOPRINT_LEGACY_WINDOWS', '1')
+
+	mut proc := os.new_process('python/python.exe')
+	proc.set_args(['-u', '-m', 'depsland_updater', 'patch_online'])
+	proc.set_environment({
+		'PYTHONPATH': 'source;source/.depsland/mini_deps',
+		'PYTHONUTF8': '1',
+		'NEOPRINT_LEGACY_WINDOWS': '1'
+	})
+	// redirect stdio to main console.
+	proc.set_redirect_stdio()
+
+	// start asynchronously
+	proc.run()
+	println('Python process started (PID ${proc.pid})')
+	
+	exit_code := drain_output(mut proc)
+	proc.wait()
+	proc.close()
+	return exit_code == 0
+}
+
+// -----------------------------------------------------------------------------
+
+fn drain_output(mut process os.Process) int {
+	for process.is_alive() {
+		if output := process.pipe_read(.stdout) {
+			print(output)
+		} else if output := process.pipe_read(.stderr) {
+			eprint(output)
+		} else {
+			time.sleep(50 * time.millisecond)
+		}
+	}
+	if output := process.pipe_read(.stdout) {
+		print(output)
+	} else if output := process.pipe_read(.stderr) {
+		eprint(output)
+	}
+	if process.code != 0 {
+		'Error occurred in Python process (exit code ${process.code})'
+	}
+	return process.code
 }

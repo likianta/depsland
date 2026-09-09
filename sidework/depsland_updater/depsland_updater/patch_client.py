@@ -38,7 +38,7 @@ def patch_online(open_window: bool = False, debug: bool = False) -> None:
     #     assert _get_manifest_data() is not None
     #     client._user_namespace['get_manifest_data_2'] = _get_manifest_data
 
-    client.set_passive()
+    # client.set_passive()
     client.mainloop(verbose=debug)  # blocking
     # client.mainloop(verbose=debug, fragile=debug)  # blocking
 

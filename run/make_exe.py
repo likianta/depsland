@@ -10,6 +10,8 @@ from lk_utils import run_cmd_args
 
 @cli
 def make_check_updates_exe():
+    # you can also merely call this command:
+    #   v -o build/exe/check_updates.exe build/exe/check_updates.v
     run_cmd_args(('v', 'check_updates.v'), verbose=True, cwd='build/exe')
     add_icon_to_exe(
         file_exe='build/exe/check_updates.exe', file_ico='build/icon/patch.ico'
