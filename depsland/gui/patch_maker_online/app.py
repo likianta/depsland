@@ -48,7 +48,7 @@ class _State:
     assets_map: tp.Optional[T.AssetsMap]
     assets_map_generation: int
     filtered_assets_map: tp.Optional[T.AssetsMap]
-    init: bool
+    # init: bool
     new_manifest: T.Manifest
     old_manifest: T.Manifest
     patch_id: str
@@ -60,7 +60,6 @@ class _State:
     # _filtered_assets_map: tp.Optional[T.AssetsMap]
 
     def __init__(self) -> None:
-        self.init = False
         self.registered_project_paths = ()
         self.appid_to_project_path = fs.load(
             fs.here('_appid_to_project.yaml'), default=dict
@@ -72,7 +71,7 @@ class _State:
         # self.table_diff_data = None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=33))
+state = tp.cast(_State, sc.init_state(_State, version=34))
 
 
 @cli
@@ -85,34 +84,32 @@ def main(
     else:
         st.title('Depsland Patch Maker')
 
-    if not state.init:
-        if not local_test:
-            client_id, air_init = air.check_init(debug=debug)
-            if not air_init:
-                if client_id:
-                    air.init_air_client(client_id=client_id)
-                    # remote to local
-                    if debug:
-                        state.user_manifest_file = 'test/_example_manifest.pkl'
-                    else:
-                        state.user_manifest_file = fs.here('_user_manifest.pkl')
-                        #   TODO: use `paths.temp.user_manifest_pkl` path.
-                    assert air.aircall('get_manifest_data') is not None  # TEST
-                    fs.dump(
-                        air.aircall('get_manifest_data'),
-                        state.user_manifest_file,
-                        'binary',
-                    )
-
-                    # locate project path
-                    # state.user_manifest = fs.load(state.user_manifest_file)
-                    state.target_project_path = state.appid_to_project_path[
-                        appid := air.aircall('get_profile')['appid']
-                    ]
-                    print(appid, state.target_project_path)
+    if not air.state.air_client and not local_test:
+        client_id, air_init = air.check_init(debug=debug)
+        if not air_init:
+            if client_id:
+                air.init_air_client(client_id=client_id)
+                # remote to local
+                if debug:
+                    state.user_manifest_file = 'test/_example_manifest.pkl'
                 else:
-                    return
-        state.init = True
+                    state.user_manifest_file = fs.here('_user_manifest.pkl')
+                    #   TODO: use `paths.temp.user_manifest_pkl` path.
+                assert air.aircall('get_manifest_data') is not None  # TEST
+                fs.dump(
+                    air.aircall('get_manifest_data'),
+                    state.user_manifest_file,
+                    'binary',
+                )
+
+                # locate project path
+                # state.user_manifest = fs.load(state.user_manifest_file)
+                state.target_project_path = state.appid_to_project_path[
+                    appid := air.aircall('get_profile')['appid']
+                ]
+                print(appid, state.target_project_path)
+            else:
+                return
 
     with st.container(border=True):
         if local_test:

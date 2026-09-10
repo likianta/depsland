@@ -1,17 +1,17 @@
 [project]
 name = "depsland"
-version = "0.13.0b3"
+version = "0.13.0b6"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
 # readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.2.2b0",
+    "airmise>=3.2.3a1",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
     "lk-utils>=3.8.2a1",
-    "neoprint>=0.1.11b0",
+    "neoprint>=0.1.11",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
     "psutil>=7.2.2",

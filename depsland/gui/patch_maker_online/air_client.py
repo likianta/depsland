@@ -20,7 +20,7 @@ class _State:
         return self.air_client is not None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=18))
+state = tp.cast(_State, sc.init_state(_State, version=19))
 
 
 def aircall(func_name: str, *args, **kwargs) -> tp.Any:
@@ -58,6 +58,7 @@ def close_air_client() -> None:
     if state.air_client:
         state.air_client.close(peer_close=True)
         state.air_client = None
+        state.client_id = ''
 
 
 def init_air_client(client_id: str) -> None:
