@@ -107,7 +107,7 @@ def main(
                 state.target_project_path = state.appid_to_project_path[
                     appid := air.aircall('get_profile')['appid']
                 ]
-                print(appid, state.target_project_path)
+                print(appid, state.target_project_path, ':n')
             else:
                 return
 
@@ -120,13 +120,16 @@ def main(
             file0 = st.text_input(
                 'User manifest file', state.user_manifest_file
             )
-            file1 = st.text_input('Latest manifest file')
+            file1 = st.text_input(
+                'Latest manifest file', _auto_find_latest_manifest_file(appid)
+            )
 
     main_button_row = sc.row()
     stat_area = st.empty()
     with main_button_row:
         if st.button('Analyze manifest', type='primary'):
             if not local_test:
+                assert file0 and file1
                 state.old_manifest = load_manifest(
                     file0, state.target_project_path
                 )
@@ -142,6 +145,7 @@ def main(
             assets_map = state.filtered_assets_map or state.assets_map
             assert assets_map
             assets_dir, patch_id = _generate_patch_result(assets_map)
+            print(patch_id, ':nv2')
             state.assets_dir = assets_dir
             state.patch_id = patch_id
 
@@ -408,6 +412,17 @@ def _apply_patch(assets_map: T.AssetsMap, used_keys: tp.Iterable[str]):
                     bytes_i=fs.load(abspath, 'binary'),
                     path_o=relpath,
                 )
+
+
+def _auto_find_latest_manifest_file(appid: str) -> str:
+    proj_dir = state.appid_to_project_path[appid]
+    pyproj_data = fs.load('{}/pyproject.toml'.format(proj_dir))
+    latest_version = pyproj_data['project']['version']
+    dist_dir = '{}/dist/{}-{}'.format(proj_dir, appid, latest_version)
+    if fs.exist(dist_dir):
+        assert fs.exist('{}/patches/initial_manifest.pkl'.format(dist_dir))
+        return '{}/patches/initial_manifest.pkl'.format(dist_dir)
+    return ''
 
 
 def _generate_patch_result(assets_map: T.AssetsMap) -> tp.Tuple[str, str]:
