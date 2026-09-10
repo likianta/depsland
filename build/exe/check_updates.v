@@ -56,7 +56,11 @@ fn main() {
 					println(color('Patch applied (${patch_id}).', .cyan))
 				}
 			} else {
-				println(color('Failed requesting patch from server.', .red))
+				println(color(
+					'Failed requesting patch from server. ' +
+					'You may see the exception message shown above.', 
+					.red
+				))
 			}
 		}
     } else {
