@@ -154,7 +154,7 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.2.2a6"
+version = "3.2.2b0"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "aiohttp" },
@@ -163,7 +163,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2131/airmise/airmise-3.2.2a6-py3-none-any.whl" },
+    { url = "http://localhost:2131/airmise/airmise-3.2.2b0-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -635,7 +635,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.2.2a6", index = "http://localhost:2131/" },
+    { name = "airmise", specifier = ">=3.2.2b0", index = "http://localhost:2131/" },
     { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2131/" },
     { name = "conflore", specifier = ">=0.2.2" },
     { name = "lk-utils", specifier = ">=3.8.2a1", index = "http://localhost:2131/" },

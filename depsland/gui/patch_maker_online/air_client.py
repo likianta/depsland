@@ -6,16 +6,12 @@ import streamlit_canary as sc
 
 
 class _State:
-    # init: bool
-    # air_caller: tp.Optional[air.ProxyCaller]
-    air_client: tp.Optional[tp.Union[air.Client, air.ProxyCaller]]
+    # air_client: tp.Optional[tp.Union[air.Client, air.ProxyCaller]]
+    air_client: tp.Optional[air.ProxyCaller]
     client_id: str
-    # connection_hub: air.Client
-    # connection_sub: air.Client
     # remote_working_dir: str
 
     def __init__(self) -> None:
-        # self.air_caller = None
         self.air_client = None
         self.client_id = ''
 
@@ -24,7 +20,7 @@ class _State:
         return self.air_client is not None
 
 
-state = tp.cast(_State, sc.init_state(_State, version=17))
+state = tp.cast(_State, sc.init_state(_State, version=18))
 
 
 def aircall(func_name: str, *args, **kwargs) -> tp.Any:
@@ -60,7 +56,7 @@ def check_init(debug: bool = False) -> tp.Tuple[str, bool]:
 
 def close_air_client() -> None:
     if state.air_client:
-        state.air_client.close()
+        state.air_client.close(peer_close=True)
         state.air_client = None
 
 
@@ -71,7 +67,7 @@ def init_air_client(client_id: str) -> None:
     # print(state.remote_working_dir, ':n')
 
 
-def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
+def _init_remote_env(air_client: air.ProxyCaller) -> None:
     air_client.exec(
         """
         # fixup for legacy versions
