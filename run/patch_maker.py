@@ -41,4 +41,5 @@ if __name__ == '__main__':
     # python run/patch_maker.py launch_server
     # python run/patch_maker.py launch_gui --debug
     # python run/patch_maker.py launch_gui --debug --local
+    # python run/patch_maker.py launch_gui_and_server --debug :true
     cli.run()

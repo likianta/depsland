@@ -21,22 +21,25 @@ fn main() {
 
     if profile.current_patch == profile.latest_patch {
 		if profile.latest_patch == '' {
-			println('You are up to date.')
+			println(color('You are up to date.', .green))
 		} else {
-        	println('You are up to date (${profile.latest_patch}).')
+        	println(
+				color('You are up to date (${profile.latest_patch}).', .green)
+			)
 		}
 
 		if os.exists(
 			'${proj_dir}/source/.depsland/mini_deps/depsland_updater'
 		) {
-			println(
+			println(color(
 				'The updater is going to spwan a subprocess to request ' +
 				'available patches from server. You can wait for it done, ' + 
 				'or, to prevent this behavior, you can manually close this ' +
-				'window at now.'
-			)
+				'window at now.',
+				.blue
+			))
 			if !spawn_patch_request(proj_dir) {
-				println('Failed requesting patch from server.')
+				println(color('Failed requesting patch from server.', .red))
 			}
 		}
     } else {
@@ -47,7 +50,7 @@ fn main() {
 
         profile.current_patch = profile.latest_patch
         save_record(profile, proj_dir)!
-		println('Patch applied (${profile.latest_patch}).')
+		println(color('Patch applied (${profile.latest_patch}).', .blue))
     }
 
 	os.input('Press Enter or close the console window to exit...')
@@ -188,18 +191,53 @@ fn save_record(profile Profile, proj_dir string) ! {
 
 fn spawn_patch_request(proj_dir string) bool {
 	// https://chatgpt.com/share/6aa11917-d214-83ee-b737-1895be702072
-	
+
+	mut proc := os.new_process('${proj_dir}/python/python.exe')
+
+	// proc.set_work_folder('${proj_dir}/source/.depsland/mini_deps')
+	// proc.set_work_folder(proj_dir)
+	proc.set_work_folder('${proj_dir}/source')
+	//	set working dir to $proj_dir or $proj_dir/source. this is required by 
+	//	`depsland/gui/patch_maker_online/air_client.py:_init_remote_env
+	//	:proj_dir`.
+
+	// set environ
+	// (a)
 	// os.setenv('PYTHONPATH', 'source;source/.depsland/mini_deps')
 	// os.setenv('PYTHONUTF8', '1')
 	// os.setenv('NEOPRINT_LEGACY_WINDOWS', '1')
+	// (b)
+	// proc.set_environment({
+	// 	'PYTHONPATH': '.',
+	// 	'PYTHONUTF8': '1',
+	// 	'NEOPRINT_LEGACY_WINDOWS': '1'
+	// })
+	// (c)
+	mut env := os.environ()
+	env['PYTHONPATH'] = '.;.depsland/mini_deps'
+	// env['PYTHONPATH'] = (
+	// 	'${proj_dir}/source;${proj_dir}/source/.depsland/mini_deps'
+	// )
+	env['PYTHONUTF8'] = '1'
+	env['NEOPRINT_LEGACY_WINDOWS'] = '1'
+	proc.set_environment(env)
 
-	mut proc := os.new_process('python/python.exe')
-	proc.set_args(['-u', '-m', 'depsland_updater', 'patch_online'])
-	proc.set_environment({
-		'PYTHONPATH': 'source;source/.depsland/mini_deps',
-		'PYTHONUTF8': '1',
-		'NEOPRINT_LEGACY_WINDOWS': '1'
-	})
+	if os.exists(
+		'${proj_dir}/source/.depsland/mini_deps/depsland_updater/__main__.py'
+	) {
+		// the canonical way
+		proc.set_args(['-u', '-m', 'depsland_updater', 'patch_online'])	
+	} else {
+		// in some old versions, tree-shaking may not include "__main__.py" to 
+		// `.../mini_deps/depsland_updater`, so we fallback to the script 
+		// entrance.
+		proc.set_args([
+			'-u', 
+			'${proj_dir}/source/.depsland/mini_deps/depsland_updater' +
+			'/patch_client.py'
+		])
+	}
+
 	// redirect stdio to main console.
 	proc.set_redirect_stdio()
 
@@ -215,12 +253,24 @@ fn spawn_patch_request(proj_dir string) bool {
 
 // -----------------------------------------------------------------------------
 
+enum Color {
+	red = 31
+	green = 32
+	yellow = 33
+	blue = 34
+}
+
+fn color(text string, color_ Color) string {
+	// usage: println(color('hello', .green))
+	return '\x1b[${int(color_)}m${text}\x1b[0m'
+}
+
 fn drain_output(mut process os.Process) int {
 	for process.is_alive() {
 		if output := process.pipe_read(.stdout) {
 			print(output)
 		} else if output := process.pipe_read(.stderr) {
-			eprint(output)
+			print(color(output, .red))
 		} else {
 			time.sleep(50 * time.millisecond)
 		}
@@ -228,7 +278,7 @@ fn drain_output(mut process os.Process) int {
 	if output := process.pipe_read(.stdout) {
 		print(output)
 	} else if output := process.pipe_read(.stderr) {
-		eprint(output)
+		print(color(output, .red))
 	}
 	if process.code != 0 {
 		'Error occurred in Python process (exit code ${process.code})'
