@@ -123,10 +123,10 @@ def resolve_dependencies(
 
 def _get_snapshot_file(deps0: T.Dependencies0) -> str:
     if isinstance(deps0, str):
-        hash = utils.get_file_hash(deps0)[::4]  # 8 chars
+        hash = utils.hash_file_content(deps0)[::4]  # 8 chars
     elif isinstance(deps0, list):
         raw_requirements = '\n'.join(deps0)
-        hash = utils.get_content_hash(raw_requirements)[::4]  # 8 chars
+        hash = utils.hash_content(raw_requirements)[::4]  # 8 chars
     elif isinstance(deps0, dict):
         raise NotImplementedError
     else:

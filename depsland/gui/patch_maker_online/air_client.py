@@ -65,10 +65,6 @@ def close_air_client() -> None:
 
 
 def init_air_client(client_id: str) -> None:
-    # if debug:
-    #     state.air_client = air.Client().connect(host='localhost', port=2191)
-    # else:
-    #     state.air_client = air.ProxyCaller(client_id).connect(port=2192)
     state.air_client = air.ProxyCaller(client_id).connect(port=2192)
     _init_remote_env(state.air_client)
     # state.remote_working_dir = aircall('get_current_working_dir')
