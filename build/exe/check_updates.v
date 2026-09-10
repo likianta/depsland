@@ -36,7 +36,7 @@ fn main() {
 				'available patches from server. You can wait for it done, ' + 
 				'or, to prevent this behavior, you can manually close this ' +
 				'window at now.',
-				.blue
+				.cyan
 			))
 			if !spawn_patch_request(proj_dir) {
 				println(color('Failed requesting patch from server.', .red))
@@ -50,7 +50,7 @@ fn main() {
 
         profile.current_patch = profile.latest_patch
         save_record(profile, proj_dir)!
-		println(color('Patch applied (${profile.latest_patch}).', .blue))
+		println(color('Patch applied (${profile.latest_patch}).', .cyan))
     }
 
 	os.input('Press Enter or close the console window to exit...')
@@ -254,10 +254,14 @@ fn spawn_patch_request(proj_dir string) bool {
 // -----------------------------------------------------------------------------
 
 enum Color {
+	black = 30
 	red = 31
 	green = 32
 	yellow = 33
 	blue = 34
+	magenta = 35
+	cyan = 36
+	white = 37
 }
 
 fn color(text string, color_ Color) string {

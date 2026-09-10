@@ -74,6 +74,59 @@ def init_air_client(client_id: str) -> None:
 def _init_remote_env(air_client: tp.Union[air.Client, air.ProxyCaller]) -> None:
     air_client.exec(
         """
+        # fixup for legacy versions
+        import os
+        from lk_utils import dedent, fs, uuid
+
+        if os.getcwd().endswith('source'):
+            proj_dir = fs.parent(os.getcwd())
+        else:
+            proj_dir = fs.normpath(os.getcwd())
+        
+        if not fs.exist('{}/patches/initial_manifest.pkl'.format(proj_dir)):
+            fs.copy_file(
+                '{}/source/.depsland/manifest.pkl'.format(proj_dir),
+                '{}/patches/initial_manifest.pkl'.format(proj_dir),
+            )
+        
+        if not fs.exist(
+            '{}/source/.depsland/mini_deps/depsland_updater/__main__.py'
+            .format(proj_dir)
+        ):
+            fs.dump(
+                dedent(
+                    '''
+                    from argsense import cli
+                    from .patch_client import patch_online
+                    cli.add_cmd(patch_online)
+                    if __name__ == '__main__':
+                        cli.run()
+                    '''
+                ),
+                '{}/source/.depsland/mini_deps/depsland_updater/__main__.py'
+                .format(proj_dir),
+                'plain',
+            )
+        
+        # _chk_uid = uuid(
+        #     fs.load('{}/Check Updates.exe'.format(proj_dir), 'binary')
+        # )[::4]
+
+        # def get_check_updates_version() -> str:
+        #     return _chk_uid
+
+        # def replace_check_updates_exe(raw: bytes) -> None:
+        #     fs.copy_file(
+        #         '{}/Check Updates.exe'.format(proj_dir),
+        #         '{}/Check Updates (Deprecated {}).exe'
+        #         .format(proj_dir, _chk_uid),
+        #     )
+        #     fs.dump(raw, '{}/Check Updates.exe'.format(proj_dir), 'binary')
+        """
+    )
+
+    air_client.exec(
+        """
         import os
         import sys
         from lk_utils import fs
