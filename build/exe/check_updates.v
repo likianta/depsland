@@ -38,7 +38,24 @@ fn main() {
 				'window at now.',
 				.cyan
 			))
-			if !spawn_patch_request(proj_dir) {
+			if spawn_patch_request(proj_dir) {
+				// if patch work exits with code 0, the profile.json may change
+				// during the subprocess session. so we need to recheck profile
+				// from local disk.
+				patch_id, new_patch_available := check_latest_patch(proj_dir)!
+				if new_patch_available {
+					println(
+						'Found new patch (${profile.current_patch} -> ' +
+						'${patch_id}), applying...'
+					)
+					extract_resources('${proj_dir}/patches/${patch_id}')!
+					apply_resources(proj_dir, patch_id, verbose, dry_run)!
+
+					profile.current_patch = patch_id
+					save_record(profile, proj_dir)!
+					println(color('Patch applied (${patch_id}).', .cyan))
+				}
+			} else {
 				println(color('Failed requesting patch from server.', .red))
 			}
 		}
@@ -48,9 +65,9 @@ fn main() {
         extract_resources('${proj_dir}/patches/${patch_id}')!
         apply_resources(proj_dir, patch_id, verbose, dry_run)!
 
-        profile.current_patch = profile.latest_patch
+        profile.current_patch = patch_id
         save_record(profile, proj_dir)!
-		println(color('Patch applied (${profile.latest_patch}).', .cyan))
+		println(color('Patch applied (${patch_id}).', .cyan))
     }
 
 	os.input('Press Enter or close the console window to exit...')
@@ -137,6 +154,29 @@ fn apply_resources(
 			}
 		}
 	}
+}
+
+fn check_latest_patch(proj_dir string) !(string, bool) {
+	profile := json.decode(
+		Profile, os.read_file('${proj_dir}/patches/profile.json')!
+    )!
+	return profile.latest_patch, profile.current_patch == profile.latest_patch
+}
+
+enum Color {
+	black = 30
+	red = 31
+	green = 32
+	yellow = 33
+	blue = 34
+	magenta = 35
+	cyan = 36
+	white = 37
+}
+
+fn color(text string, color_ Color) string {
+	// usage: println(color('hello', .green))
+	return '\x1b[${int(color_)}m${text}\x1b[0m'
 }
 
 fn extract_resources(patch_dir string) ! {
@@ -249,24 +289,6 @@ fn spawn_patch_request(proj_dir string) bool {
 	proc.wait()
 	proc.close()
 	return exit_code == 0
-}
-
-// -----------------------------------------------------------------------------
-
-enum Color {
-	black = 30
-	red = 31
-	green = 32
-	yellow = 33
-	blue = 34
-	magenta = 35
-	cyan = 36
-	white = 37
-}
-
-fn color(text string, color_ Color) string {
-	// usage: println(color('hello', .green))
-	return '\x1b[${int(color_)}m${text}\x1b[0m'
 }
 
 fn drain_output(mut process os.Process) int {
