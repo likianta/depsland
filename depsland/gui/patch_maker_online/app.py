@@ -160,6 +160,47 @@ def main(
                         )
                     )
 
+        if developer_mode:
+            if st.button('Save assets diff'):
+                appid = state.new_manifest['appid']
+                old_ver = state.old_manifest['version']
+                new_ver = state.new_manifest['version']
+
+                ov = fs.load(paths.chore.overview, default=dict)
+                if appid not in ov:
+                    ov[appid] = {}
+                if old_ver not in ov[appid]:
+                    ov[appid][old_ver] = []
+                ov[appid][old_ver].append(new_ver)
+
+                simplified_assets_map = {}
+                for k, (
+                    abspath,
+                    relpath,
+                    is_dir,
+                    size,
+                    action,
+                ) in assets_map.items():
+                    simplified_assets_map[k] = '{}:{}{}'.format(
+                        relpath,
+                        '1' if is_dir else '0',
+                        '0' if size == -1 else '1',
+                        # format: `<relpath>:<is_dir><action>`
+                        #   action: 1 for append/update, 0 for delete.
+                    )
+                file = '{}/{}-to-{}.json'.format(
+                    paths.chore.patch_diff, old_ver, new_ver
+                )
+                fs.dump(simplified_assets_map, file)
+                fs.dump(ov, paths.chore.overview)
+
+                with stat_area:
+                    st.success(
+                        'Assets diff saved: `{}` ({})'.format(
+                            file, fs.filesize(file, str)
+                        )
+                    )
+
         if not local_test:
             if st.button('Push patch to client'):
                 with stat_area:

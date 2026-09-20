@@ -390,6 +390,8 @@ class Chore:
         self.assets_map = f'{self.grocery}/assets_map.json'
         self.assets_zip = f'{self.grocery}/assets.zip'
         self.manifest_pkl = f'{self.grocery}/manifest.pkl'
+        self.overview = f'{self.grocery}/overview.json'
+        self.patch_diff = f'{self.grocery}/patch_diff'
 
 
 class Config:
