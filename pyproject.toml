@@ -7,10 +7,10 @@ license = "MIT"
 # readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "airmise>=3.2.3a1",
+    "airmise>=3.2.3b5",
     "argsense>=1.1.2",
     "conflore>=0.2.2",
-    "lk-utils>=3.8.2a1",
+    "lk-utils>=3.8.2a20",
     "neoprint>=0.1.11",
     "oss2>=2.19.1",
     # "pip>=26.0.0",
@@ -18,10 +18,10 @@ dependencies = [
     "pyportable-crypto>=1.6.1",
     "semver>=3.0.4",
     "streamlit>=1.63.0",
-    "streamlit-canary>=0.4.0a9",
+    "streamlit-canary>=0.4.0a37",
     "streamlit-extras>=1.4.1",
     "streamlit-tree-select>=0.0.5",  # DELETE
-    "tree-shaking>=0.4.1",
+    "tree-shaking>=0.4.3a0",
     "windows-toasts>=1.0.0; sys_platform == 'win32'",
 ]
 
