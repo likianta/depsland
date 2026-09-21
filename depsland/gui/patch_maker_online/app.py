@@ -20,6 +20,11 @@ from neoprint import format
 from neoprint import print
 
 from . import air_client as air
+from .logic import analyze_assets_diff
+from .logic import create_patch_id
+from .logic import generate_patch_result
+from .logic import load_current_manifest
+from .logic import reload_user_manifest
 from ... import paths
 from ...manifest import T as T0
 from ...manifest import diff_manifest
@@ -136,7 +141,12 @@ def main(
                 state.new_manifest = load_manifest(
                     file1, state.target_project_path
                 )
-            state.assets_map = _analyze_assets_diff(
+            state.patch_id = create_patch_id(
+                state.new_manifest['appid'],
+                state.old_manifest['version'],
+                state.new_manifest['version'],
+            )
+            state.assets_map = analyze_assets_diff(
                 state.old_manifest, state.new_manifest
             )
             state.assets_map_generation += 1
@@ -144,14 +154,11 @@ def main(
         if st.button('Generate patch result', type='secondary'):
             assets_map = state.filtered_assets_map or state.assets_map
             assert assets_map
-            assets_dir, patch_id = _generate_patch_result(assets_map)
-            print(patch_id, ':nv2')
-            state.assets_dir = assets_dir
-            state.patch_id = patch_id
-
+            state.assets_dir = generate_patch_result(state.patch_id, assets_map)
+            
             if local_test:
                 patch_exe = _generate_patch_executable(
-                    assets_map, assets_dir, patch_id
+                    assets_map, state.assets_dir, state.patch_id
                 )
                 with stat_area:
                     st.success(
@@ -384,48 +391,6 @@ def _preview_assets_diff(assets_map: T.AssetsMap, sort_by: str = 'native'):
 # ------------------------------------------------------------------------------
 
 
-def _analyze_assets_diff(
-    old_manifest: T.Manifest, new_manifest: T.Manifest
-) -> T.AssetsMap:
-    root = new_manifest['start_directory']
-    diff = diff_manifest(old=old_manifest, new=new_manifest)
-
-    assets_map: T.AssetsMap = {}
-    for action, (relpath, real_relpath), (info0, info1) in diff['assets']:
-        if action == 'ignore':
-            continue
-        print(action, relpath, ':inv')
-        if action == 'append' or action == 'update':
-            abspath = '{}/{}'.format(root, real_relpath)
-            assert fs.exist(abspath), format(root, relpath, real_relpath, ':nl')
-            size = tp.cast(
-                int, fs.filesize(abspath, recursive=info1.type == 'dir')
-            )
-            assets_map[info1.uid] = (
-                abspath,
-                relpath,
-                info1.type == 'dir',
-                size,
-                action,
-            )
-        else:  # 'delete'
-            assets_map[info0.uid] = (
-                None,
-                relpath,
-                info0.type == 'dir',
-                -1,
-                action,
-            )
-    print(len(assets_map), ':n')
-    return dict(
-        sorted(
-            assets_map.items(),
-            key=lambda kv: (0 if kv[1][4] == 'delete' else 1, kv[0]),
-            #   put delete actions first. see reason in `T.AssetsMap:comment`.
-        )
-    )
-
-
 # FIXME or DELETE
 def _apply_patch(assets_map: T.AssetsMap, used_keys: tp.Iterable[str]):
     temp_dir = make_temp_dir()
@@ -464,55 +429,6 @@ def _auto_find_latest_manifest_file(appid: str) -> str:
         assert fs.exist('{}/patches/initial_manifest.pkl'.format(dist_dir))
         return '{}/patches/initial_manifest.pkl'.format(dist_dir)
     return ''
-
-
-def _generate_patch_result(assets_map: T.AssetsMap) -> tp.Tuple[str, str]:
-    """
-    Dump assets map to a temp directory. The remote can download resources by
-    urls in multi-thread.
-    """
-    patch_id = uuid()[::4]  # 8-character hex string. e.g. 'd514b17f'
-    print(patch_id, ':n')
-    assets_dir = '{}/{}/assets'.format(paths.chore.grocery, patch_id)
-    fs.make_dirs(assets_dir)
-    for uid, (abspath, relpath, is_dir, size, action) in assets_map.items():
-        if abspath:
-            print('add resource', '{} ({})'.format(relpath, uid), ':iv2')
-            fs.make_link(abspath, '{}/{}'.format(assets_dir, uid), False)
-    return assets_dir, patch_id
-
-
-def _generate_patch_executable(
-    assets_map: T.AssetsMap, assets_dir, patch_id: str
-) -> str:
-    simplified_assets_map = {}
-    for k, (abspath, relpath, is_dir, size, action) in assets_map.items():
-        simplified_assets_map[k] = '{}:{}{}'.format(
-            relpath,
-            '1' if is_dir else '0',
-            '0' if size == -1 else '1',
-            # format: `<relpath>:<is_dir><action>`
-            #   action: 1 for append/update, 0 for delete.
-        )
-
-    # `chore/patch_maker/patch_extractor_template.v` requires the following
-    # three files.
-    fs.dump(simplified_assets_map, paths.chore.assets_map)
-    fs.zip(assets_dir, paths.chore.assets_zip, True, progress=True)
-    dump_manifest(state.new_manifest, paths.chore.manifest_pkl)
-
-    # requires vlang to be installed globally.
-    run_cmd_args(
-        (
-            'v',
-            '-o',
-            'generated_patches/patch-{}.exe'.format(patch_id),
-            'patch_extractor_template.v',
-        ),
-        cwd=paths.chore.patch_maker,
-        verbose=True,
-    )
-    return '{}/patch-{}.exe'.format(paths.chore.generated_patches, patch_id)
 
 
 def _push_patch_to_client(

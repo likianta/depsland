@@ -11,4 +11,4 @@ Usage:
     run_new_thread(depsland_updater.patch_online)
 """
 
-from .patch_client import patch_online
+from .proxy_service import patch_online

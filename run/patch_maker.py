@@ -22,23 +22,34 @@ def launch_gui(
 
 
 @cli
-def launch_server(bore_secret: str = '') -> None:
+def launch_local_server(bore_secret: str = '') -> None:
+    server.launch_server(bore_secret)
+
+
+@cli
+def launch_proxy_server(bore_secret: str = '') -> None:
     print(
         'server will start at port 2192, the next step you can bring up '
         '`sidework/depsland_updater/patch_client.py:patch_online`',
         ':v2',
     )
-    server.mainloop(bore_secret)  # blocking
+    server.launch_proxy_server(bore_secret)  # blocking
 
 
 @cli
 def launch_gui_and_server(**kwargs) -> None:
     bore_secret = kwargs.pop('bore_secret', '')
     launch_gui(**kwargs, _blocking=False)
-    launch_server(bore_secret)
+    launch_proxy_server(bore_secret)
 
 
 if __name__ == '__main__':
+    """
+    client requests patches from server test:
+        python run/patch_maker.py launch_local_server <bore_secret>
+        cd sidework/depsland_updater
+        python -m depsland_updater request_patch --debug
+    """
     # python run/patch_maker.py launch_server
     # python run/patch_maker.py launch_server <bore_secret>
     # python run/patch_maker.py launch_gui --debug

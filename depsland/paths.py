@@ -384,8 +384,10 @@ class Chore:
 
         self.patch_maker = f'{self.root}/patch_maker'
 
+        self.appid_to_project = f'{self.patch_maker}/appid_to_project.yaml'
         self.generated_patches = f'{self.patch_maker}/generated_patches'
         self.grocery = f'{self.patch_maker}/grocery'
+        self.user_manifest = f'{self.patch_maker}/user_manifest.pkl'
 
         self.assets_map = f'{self.grocery}/assets_map.json'
         self.assets_zip = f'{self.grocery}/assets.zip'

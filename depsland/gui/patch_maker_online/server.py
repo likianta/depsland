@@ -1,6 +1,3 @@
-if __name__ == '__main__':
-    __package__ = 'depsland.gui.patch_maker_online'
-
 from functools import partial
 
 import airmise as air
@@ -10,15 +7,30 @@ from lk_utils import fs
 from lk_utils import uuid
 from neoprint import print
 
+from .logic import analyze_assets_diff
+from .logic import compress_patch_result
+from .logic import create_patch_id
+from .logic import generate_patch_result
+from .logic import get_latest_version
+from .logic import get_manifest_file
+from .logic import get_project_path
+from .logic import init as init_logic
+from .logic import load_current_manifest
+from .logic import reload_user_manifest
 from ... import paths
 
 
 def launch_server(bore_secret: str = '') -> None:
+    init_logic()
     svr = air.Server()
     svr.run(
         {
-            'has_available_patch': _has_available_patch,
             'download_patch': _download_patch,
+            'get_compressed_asset': _get_compressed_asset,
+            'get_latest_version': get_latest_version,
+            'get_manifest': _get_manifest,
+            'has_available_patch': _has_available_patch,
+            'prepare_assets': _prepare_assets,
         },
         port=2191,
         proxy_host='47.102.108.149' if bore_secret else '',
@@ -26,17 +38,8 @@ def launch_server(bore_secret: str = '') -> None:
     )
 
 
-_appid_to_project_path = None
-
-
 def _download_patch(appid: str, client_app_version: str) -> bytes:
-    global _appid_to_project_path
-    if _appid_to_project_path is None:
-        _appid_to_project_path = fs.load(
-            fs.here('_appid_to_project.yaml'), default=dict
-        )
-    # assert appid in _appid_to_project_path
-    project_path = _appid_to_project_path[appid]
+    project_path = get_project_path(appid)
 
     version_chain = [client_app_version]
 
@@ -164,6 +167,15 @@ def _download_patch(appid: str, client_app_version: str) -> bytes:
     return fs.load(file_o, 'binary')
 
 
+def _get_compressed_asset(local_path: str) -> bytes:
+    return fs.load(local_path, 'binary')
+
+
+def _get_manifest(appid, version):
+    return fs.load(get_manifest_file(appid, version), 'binary')
+
+
+# DELETE
 def _has_available_patch(appid: str, client_app_version: str) -> str:
     ov = fs.load(paths.chore.overview)
     if appid in ov:
@@ -177,6 +189,26 @@ def _has_available_patch(appid: str, client_app_version: str) -> str:
                 else:
                     return temp_key
     return ''
+
+
+def _prepare_assets(
+    appid: str, client_manifest_raw_data: bytes, request_version: str = ''
+):
+    old_manifest = reload_user_manifest(appid, client_manifest_raw_data)
+    new_manifest = load_current_manifest(appid)
+    if request_version:
+        assert new_manifest['version'] == request_version
+
+    patch_id = create_patch_id(
+        appid, old_manifest['version'], new_manifest['version']
+    )
+    assets_map = analyze_assets_diff(old_manifest, new_manifest)
+    assets_dir = generate_patch_result(patch_id, assets_map)
+
+    compress_dir = '{}/compressed'.format(assets_dir)
+    fs.make_dir(compress_dir)
+    compress_patch_result(assets_map, assets_dir, compress_dir)
+    return assets_map, compress_dir
 
 
 # ------------------------------------------------------------------------------
@@ -216,12 +248,10 @@ def list_users() -> None:
 
 
 if __name__ == '__main__':
-    # launch server:
-    #   python depsland/gui/patch_maker_online/server.py mainloop
-    # or by depsland:
-    #   python -m depsland patch_maker_server
-    # expose service to public (optional):
-    #   bore local -s <secret> -t 47.102.108.149 -p 2192 2192
+    # python -m depsland.gui.patch_maker_online.server launch_server \
+    #   <bore_secret>
+    # python -m depsland.gui.patch_maker_online.server launch_proxy_server \
+    #   <bore_secret>
     # ---
     # cd sidework/depsland_updater
     # python -m depsland_updater patch_online :f

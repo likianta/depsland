@@ -60,7 +60,7 @@ def build_offline(
     if embed_depsland:
         dst_paths = _init_dist_tree_full(manifest, dir_o, embed_python)
     else:
-        dst_paths = _init_dist_tree_lite(dir_o, manifest['appid'], embed_python)
+        dst_paths = _init_dist_tree_lite(manifest, dir_o, embed_python)
     _copy_assets(manifest, dst_paths['dst_app_root'])
     _make_venv(manifest, dst_paths['dst_app_venv'])
     if embed_depsland:
@@ -72,12 +72,7 @@ def build_offline(
         _create_updator(manifest, dir_o)
     else:
         _create_launcher(manifest, dir_o)
-        dump_manifest(
-            manifest,
-            # '{}/source/.depsland/manifest.pkl'.format(dir_o),
-            '{}/patches/initial_manifest.pkl'.format(dir_o),
-            erase_sensitive_data=True,
-        )
+    _store_app_info(manifest)
     print('see result at "{}"'.format(dir_o), ':v4t')
     return dir_o
 
@@ -180,7 +175,7 @@ def _init_dist_tree_full(
 
 
 def _init_dist_tree_lite(
-    dst_dir: T.AbsPath, appid: str, embed_python: bool = True
+    manifest: T.Manifest, dst_dir: T.AbsPath, embed_python: bool = True
 ) -> T.DistributionKeyPaths:
     """
     Tree structure:
@@ -189,8 +184,9 @@ def _init_dist_tree_lite(
         |= library
         |= source
         |= patches
-            |- history.txt
-            |- profile.json
+            |= 0.1.0
+                |- manifest.pkl
+            |- overview.json
         |- Launcher.exe
         |- Launcher (Debug).exe
         |- Check Updates.exe
@@ -198,15 +194,30 @@ def _init_dist_tree_lite(
     fs.make_dir(dst_dir)
     # fs.make_dir('{}/library'.format(dst_dir))  # TODO
     fs.make_dir('{}/patches'.format(dst_dir))
+    fs.make_dir('{}/patches/{}'.format(dst_dir, manifest['version']))
     # fs.make_dir('{}/python'.format(dst_dir))  # see below
     fs.make_dir('{}/source'.format(dst_dir))
 
     # see also `sidework/depsland_updater/check_updates.v
     # :apply_resources,save_record`.
-    fs.dump('', '{}/patches/history.txt'.format(dst_dir))
+    # fs.dump('', '{}/patches/history.txt'.format(dst_dir))
+    # fs.dump(
+    #     {'appid': manifest['appid'], 'current_patch': '', 'latest_patch': ''},
+    #     '{}/patches/profile.json'.format(dst_dir),
+    # )
+    dump_manifest(
+        tp.cast(T.ManifestObject, manifest),
+        '{}/patches/{}/manifest.pkl'.format(dst_dir, manifest['version']),
+        erase_sensitive_data=True,
+    )
     fs.dump(
-        {'appid': appid, 'current_patch': '', 'latest_patch': ''},
-        '{}/patches/profile.json'.format(dst_dir),
+        {
+            'appid': manifest['appid'],
+            'initial_version': manifest['version'],
+            'current_version': manifest['version'],
+            'downloaded_version': '',
+        },
+        '{}/patches/overview.json'.format(dst_dir),
     )
 
     if embed_python:
@@ -416,3 +427,13 @@ def _create_updator(manifest: T.Manifest, dst_dir: str) -> None:  # TODO
         fs.make_link(
             paths.build.check_updates_exe, f'{dst_dir}/Check Updates.exe'
         )
+
+
+def _store_app_info(manifest: T.ManifestObject) -> None:
+    dir0 = '{}/{}'.format(paths.apps.root, manifest['appid'])
+    dir1 = '{}/{}'.format(dir0, manifest['version'])
+    fs.make_dirs(dir1)
+    dump_manifest(manifest, '{}/manifest.pkl'.format(dir1))
+    history = fs.load('{}/history.txt'.format(dir0), 'plain', default='')
+    history = manifest['version'] + '\n' + history
+    fs.dump(history, '{}/history.txt'.format(dir0))
