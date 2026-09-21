@@ -28,6 +28,7 @@ def make_check_updates_exe_2():
         icon='build/icon/patch.ico',
         show_console=True,
     )
+    fs.filesize('build/exe/check_updates_2.exe', echo=True)
 
 
 if __name__ == '__main__':

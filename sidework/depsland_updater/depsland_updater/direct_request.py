@@ -117,7 +117,7 @@ def apply_patch_from_local(
             if fs.exist(path_o):
                 fs.move(path_o, '{}/{}'.format(delete_dir, uid), True)
             fs.make_link(path_i, path_o, False)
-    print('patch applied', ':v4')
+    print('patch applied (v{})'.format(version), ':v4')
 
 
 def download_latest_manifest(
@@ -171,7 +171,6 @@ def get_project_dir() -> str:
     else:
         proj_dir = fs.normpath(os.getcwd())
     assert fs.exist('{}/patches'.format(proj_dir))
-    assert fs.exist('{}/patches/initial_manifest.pkl'.format(proj_dir))
     assert fs.exist('{}/patches/overview.json'.format(proj_dir))
     assert fs.exist('{}/python'.format(proj_dir))
     assert fs.exist('{}/source'.format(proj_dir))
