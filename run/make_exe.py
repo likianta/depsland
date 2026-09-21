@@ -4,6 +4,7 @@ This script is going to replace a legacy one: sidework/make_launcher.py
 
 from argsense import cli
 from depsland.platform.launcher.make_exe import add_icon_to_exe
+from depsland.platform.launcher.make_exe.bat_2_exe_2 import bat_2_exe
 from lk_utils import fs
 from lk_utils import run_cmd_args
 
@@ -19,7 +20,18 @@ def make_check_updates_exe():
     fs.filesize('build/exe/check_updates.exe', str, echo=True)
 
 
+@cli
+def make_check_updates_exe_2():
+    bat_2_exe(
+        file_i='build/exe/check_updates_2.bat',
+        file_o='build/exe/check_updates_2.exe',
+        icon='build/icon/patch.ico',
+        show_console=True,
+    )
+
+
 if __name__ == '__main__':
     # python run/make_exe.py -h
     # python run/make_exe.py make_check_updates_exe
+    # python run/make_exe.py make_check_updates_exe_2
     cli.run()

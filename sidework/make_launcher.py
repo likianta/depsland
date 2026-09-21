@@ -1,3 +1,7 @@
+"""
+DELETE: This script is deprecated. Turn to `run/make_exe.py`.
+"""
+
 from argsense import cli
 from depsland.platform.launcher.make_exe import add_icon_to_exe as _i2e
 from depsland.platform.launcher.make_exe.bat_2_exe_2 import bat_2_exe as _b2e
