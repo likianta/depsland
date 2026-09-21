@@ -112,52 +112,6 @@ def apply_patch_from_local(
     print('patch applied', ':v4')
 
 
-# DELETE
-def apply_patch_from_remote(
-    client,
-    version,
-    proj_dir: tp.Optional[str] = None,
-    assets_map: tp.Optional[dict] = None,
-):
-    if not proj_dir:
-        proj_dir = get_project_dir()
-    if not assets_map:
-        assets_map = fs.load(
-            '{}/patches/{}/assets_map.pkl'.format(proj_dir, version)
-        )
-    patch_dir = '{}/patches/{}/assets'.format(proj_dir, version)
-
-    for uid, (_, relpath, is_dir, size, action) in assets_map.items():
-        if action == 'delete':
-            abspath = '{}/source/{}'.format(proj_dir, relpath)
-            if is_dir:
-                fs.remove_tree(abspath)
-            else:
-                fs.remove_file(abspath)
-        else:
-            ext = 'zip' if is_dir else 'nozip'
-            data_i = client.call(
-                'get_compressed_asset',
-                '{}/{}.{}'.format(remote_assets_dir, uid, ext),
-            )
-            file_m = '{}/{}.{}'.format(patch_dir, uid, ext)
-            path_o = '{}/{}'.format(patch_dir, uid)
-            fs.dump(data_i, file_m, 'binary')
-            if is_dir:
-                fs.unzip(file_m, path_o)
-            else:
-                fs.move(file_m, path_o)
-
-            path_src = path_o
-            path_dst = '{}/source/{}'.format(proj_dir, relpath)
-            if fs.exist(path_dst):
-                if is_dir:
-                    fs.remove_tree(path_dst)
-                else:
-                    fs.remove_file(path_dst)
-            fs.make_link(path_src, path_dst)
-
-
 def download_latest_manifest(
     client: air.Client, appid: str, version: str, patch_dir: str
 ) -> None:
