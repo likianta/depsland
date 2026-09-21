@@ -101,8 +101,16 @@ def apply_patch_from_local(
             ':ir',
         )
         if action == 'delete':
-            abspath = '{}/source/{}'.format(proj_dir, relpath)
-            fs.move(abspath, '{}/{}'.format(delete_dir, uid), True)
+            path_i = '{}/source/{}'.format(proj_dir, relpath)
+            path_o = '{}/{}'.format(delete_dir, uid)
+            if fs.exist(path_i):
+                fs.move(path_i, path_o, True)
+            else:
+                print(
+                    ':v6n',
+                    '`path_i` is about to delete, but it is already gone',
+                    path_i,
+                )
         else:
             path_i = '{}/{}'.format(assets_dir, uid)
             path_o = '{}/source/{}'.format(proj_dir, relpath)
@@ -130,7 +138,7 @@ def download_patch_from_server(
         '{}/manifest.pkl'.format(old_patch_dir), 'binary'
     )
     assets_map, remote_assets_dir = client.call(
-        'prepare_assets', appid, old_mani_data_bytes, new_ver
+        'prepare_assets', appid, old_mani_data_bytes, old_ver, new_ver
     )
     fs.dump(assets_map, f'{new_patch_dir}/assets_map.pkl')
 

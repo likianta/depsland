@@ -1,3 +1,4 @@
+import typing as tp
 from functools import partial
 
 import airmise as air
@@ -7,6 +8,7 @@ from lk_utils import fs
 from lk_utils import uuid
 from neoprint import print
 
+from .logic import T
 from .logic import analyze_assets_diff
 from .logic import compress_patch_result
 from .logic import create_patch_id
@@ -171,7 +173,7 @@ def _get_compressed_asset(local_path: str) -> bytes:
     return fs.load(local_path, 'binary')
 
 
-def _get_manifest(appid, version):
+def _get_manifest(appid: str, version: str) -> bytes:
     return fs.load(get_manifest_file(appid, version), 'binary')
 
 
@@ -192,12 +194,34 @@ def _has_available_patch(appid: str, client_app_version: str) -> str:
 
 
 def _prepare_assets(
-    appid: str, client_manifest_raw_data: bytes, request_version: str = ''
-):
+    appid: str,
+    client_manifest_raw_data: bytes,
+    client_version: str = '',
+    request_version: str = '',
+) -> tp.Tuple[T.AssetsMap, str]:
     old_manifest = reload_user_manifest(appid, client_manifest_raw_data)
     new_manifest = load_current_manifest(appid)
+    if client_version:
+        try:
+            assert old_manifest['version'] == client_version, (
+                old_manifest['version'],
+                client_version,
+            )
+        except AssertionError:
+            fs.dump(
+                client_manifest_raw_data,
+                'test/manifest_from_client.pkl',
+                'binary',
+            )
+            fs.copy_file(
+                paths.chore.user_manifest, 'test/manifest_from_chore.pkl', True
+            )
+            raise
     if request_version:
-        assert new_manifest['version'] == request_version
+        assert new_manifest['version'] == request_version, (
+            new_manifest['version'],
+            request_version,
+        )
 
     patch_id = create_patch_id(
         appid, old_manifest['version'], new_manifest['version']

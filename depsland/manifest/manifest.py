@@ -2,7 +2,6 @@ import os
 import re
 import shlex
 import typing as tp
-from functools import cache
 
 import pyportable_crypto
 from lk_utils import fs
@@ -88,7 +87,6 @@ class Manifest:
         return self
 
     @classmethod
-    @cache
     def load_from_file(
         cls, file: T.AnyPath, start_directory: T.AnyPath = ''
     ) -> 'Manifest':

@@ -1,6 +1,6 @@
 [project]
 name = "depsland"
-version = "0.13.0b6"
+version = "0.13.0b15"
 description = "User oriented dependency management and application distribution tool."
 authors = [{ name = "Likianta", email = "likianta@foxmail.com" }]
 license = "MIT"
@@ -18,7 +18,7 @@ dependencies = [
     "pyportable-crypto>=1.6.1",
     "semver>=3.0.4",
     "streamlit>=1.63.0",
-    "streamlit-canary>=0.4.0a37",
+    "streamlit-canary>=0.4.0a39",
     "streamlit-extras>=1.4.1",
     "streamlit-tree-select>=0.0.5",  # DELETE
     "tree-shaking>=0.4.3a0",
