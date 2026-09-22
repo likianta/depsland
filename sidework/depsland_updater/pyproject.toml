@@ -1,6 +1,6 @@
 [project]
 name = "depsland-updater"
-version = "0.13.0b17"
+version = "0.13.0b18"
 description = "Depsland authored updater toolkit: check and apply incremental updates."
 license = "MIT"
 requires-python = ">=3.12"
@@ -17,8 +17,9 @@ requires = ["hatchling>=1.29.0"]
 
 [dependency-groups]
 dev = [
-    "pyapp-window>=2.2.4b3",  # TODO: mark this optional
+    # "pyapp-window>=2.2.4b3",
     "pyperclip>=1.11.0",
+    "streamlit-canary>=0.4.0a46",  # TODO: mark this optional
 ]
 
 [project.urls]
@@ -55,10 +56,11 @@ default = true
 [[tool.uv.index]]
 name = "likianta"
 url = "http://localhost:2131/"
-explicit = true
+# explicit = true
 
 [tool.uv.sources]
 airmise = { index = "likianta" }
-lk-utils = { index = "likianta" }
+# lk-utils = { index = "likianta" }
 neoprint = { index = "likianta" }
 pyapp-window = { index = "likianta" }
+streamlit-canary = { index = "likianta" }

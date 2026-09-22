@@ -30,7 +30,7 @@ def request_patch(debug: bool = False) -> None:
         # return
 
     if debug:
-        proj_dir = 'C:/Likianta/apps/depsland/jlpdf_watermaker_0xf964-2.0.0a8'
+        proj_dir = 'C:/Likianta/apps/depsland/jlpdf_watermaker_0xf964-2.0.2'
     else:
         proj_dir = get_project_dir()
     ov: T.OverView = fs.load('{}/patches/overview.json'.format(proj_dir))
@@ -75,6 +75,7 @@ def request_patch(debug: bool = False) -> None:
             raise NotImplementedError
         else:
             print(':v8p', 'no server site available')
+    input('Press Enter or close the window to exit...')
 
 
 def apply_patch_from_local(
