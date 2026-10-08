@@ -154,7 +154,7 @@ wheels = [
 
 [[package]]
 name = "airmise"
-version = "3.2.3b5"
+version = "3.2.3"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "aiohttp" },
@@ -163,7 +163,7 @@ dependencies = [
     { name = "neoprint" },
 ]
 wheels = [
-    { url = "http://localhost:2131/airmise/airmise-3.2.3b5-py3-none-any.whl" },
+    { url = "http://localhost:2131/airmise/airmise-3.2.3-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -600,7 +600,7 @@ wheels = [
 
 [[package]]
 name = "depsland"
-version = "0.13.0b15"
+version = "0.13.0b18"
 source = { editable = "." }
 dependencies = [
     { name = "airmise" },
@@ -614,8 +614,6 @@ dependencies = [
     { name = "semver" },
     { name = "streamlit" },
     { name = "streamlit-canary" },
-    { name = "streamlit-extras" },
-    { name = "streamlit-tree-select" },
     { name = "tree-shaking" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'" },
 ]
@@ -625,8 +623,8 @@ dev = [
     { name = "argsense" },
     { name = "icnsutil" },
     { name = "ipython" },
+    { name = "lk-utils" },
     { name = "nuitka" },
-    { name = "pandas" },
     { name = "pillow" },
     { name = "py7zr" },
     { name = "pyapp-window" },
@@ -635,19 +633,17 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "airmise", specifier = ">=3.2.3b5", index = "http://localhost:2131/" },
+    { name = "airmise", specifier = ">=3.2.3", index = "http://localhost:2131/" },
     { name = "argsense", specifier = ">=1.1.2", index = "http://localhost:2131/" },
     { name = "conflore", specifier = ">=0.2.2" },
-    { name = "lk-utils", specifier = ">=3.8.2a20", index = "http://localhost:2131/" },
-    { name = "neoprint", specifier = ">=0.1.11", index = "http://localhost:2131/" },
+    { name = "lk-utils", specifier = ">=3.8.1", index = "http://localhost:2131/" },
+    { name = "neoprint", specifier = ">=0.1.12", index = "http://localhost:2131/" },
     { name = "oss2", specifier = ">=2.19.1" },
     { name = "psutil", specifier = ">=7.2.2" },
     { name = "pyportable-crypto", specifier = ">=1.6.1", index = "http://localhost:2131/" },
     { name = "semver", specifier = ">=3.0.4" },
-    { name = "streamlit", specifier = ">=1.63.0" },
-    { name = "streamlit-canary", specifier = ">=0.4.0a39", index = "http://localhost:2131/" },
-    { name = "streamlit-extras", specifier = ">=1.4.1" },
-    { name = "streamlit-tree-select", specifier = ">=0.0.5" },
+    { name = "streamlit", specifier = ">=1.65.0" },
+    { name = "streamlit-canary", specifier = ">=0.4.0a59", index = "http://localhost:2131/" },
     { name = "tree-shaking", specifier = ">=0.4.3a0", index = "http://localhost:2131/" },
     { name = "windows-toasts", marker = "sys_platform == 'win32'", specifier = ">=1.0.0" },
 ]
@@ -657,11 +653,11 @@ dev = [
     { name = "argsense", specifier = ">=1.1.3a1,<1.2.0", index = "http://localhost:2131/" },
     { name = "icnsutil", specifier = ">=1.1.0" },
     { name = "ipython", specifier = ">=9.17.0" },
+    { name = "lk-utils", specifier = ">=3.8.2a20", index = "http://localhost:2131/" },
     { name = "nuitka", specifier = ">=4.1.3" },
-    { name = "pandas", specifier = "<3.0.0" },
     { name = "pillow", specifier = ">=12.2.0" },
     { name = "py7zr", specifier = ">=1.1.0" },
-    { name = "pyapp-window", specifier = ">=2.2.3", index = "http://localhost:2131/" },
+    { name = "pyapp-window", specifier = ">=2.2.4b3", index = "http://localhost:2131/" },
     { name = "pyinstrument", specifier = ">=5.1.2" },
 ]
 
@@ -1223,13 +1219,13 @@ wheels = [
 
 [[package]]
 name = "neoprint"
-version = "0.1.11"
+version = "0.1.12"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "rich" },
 ]
 wheels = [
-    { url = "http://localhost:2131/neoprint/neoprint-0.1.11-py3-none-any.whl" },
+    { url = "http://localhost:2131/neoprint/neoprint-0.1.12-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -1450,19 +1446,6 @@ wheels = [
 ]
 
 [[package]]
-name = "plotly"
-version = "6.8.0"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-dependencies = [
-    { name = "narwhals" },
-    { name = "packaging" },
-]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/94/fd/d72c292d78aadb93d1a9bcd76bf3c678271040c7cf10abe5788b33040a39/plotly-6.8.0.tar.gz", hash = "sha256:e088e7ddc68d4f70e3d66659224727a45296d71d2b8284181862d3d8f1f0d88f", size = 6915161, upload-time = "2026-06-03T18:33:40.226Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/f9/14/abe5ce876ab5b66ee3c691bf537fcd43d037aea55d447aacf74630a8f31e/plotly-6.8.0-py3-none-any.whl", hash = "sha256:13c5c4a0f70b74cab1913eda0de49b826df5931708eb6f9c3010040614700ec8", size = 9902055, upload-time = "2026-06-03T18:33:34.26Z" },
-]
-
-[[package]]
 name = "prompt-toolkit"
 version = "3.0.52"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
@@ -1658,7 +1641,7 @@ wheels = [
 
 [[package]]
 name = "pyapp-window"
-version = "2.2.4b3"
+version = "2.2.4"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
@@ -1668,7 +1651,7 @@ dependencies = [
     { name = "toga", marker = "sys_platform != 'linux'" },
 ]
 wheels = [
-    { url = "http://localhost:2131/pyapp-window/pyapp_window-2.2.4b3-py3-none-any.whl" },
+    { url = "http://localhost:2131/pyapp-window/pyapp_window-2.2.4-py3-none-any.whl" },
 ]
 
 [[package]]
@@ -2299,7 +2282,7 @@ wheels = [
 
 [[package]]
 name = "streamlit"
-version = "1.63.0"
+version = "1.65.0"
 source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
 dependencies = [
     { name = "altair" },
@@ -2323,14 +2306,14 @@ dependencies = [
     { name = "watchdog", marker = "sys_platform != 'darwin'" },
     { name = "websockets" },
 ]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ce/8a/ccd27f3d5fb05734659a3c188b2c4014454d263e30ae31bb93445290b9cb/streamlit-1.63.0.tar.gz", hash = "sha256:1ea0121884d5606cf055b8c42600528daf07d0401eaabfc8e22f00e235ea53eb", size = 9911883, upload-time = "2026-09-01T17:12:32.456Z" }
+sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/8f/61/75c550a2d2acd79402aa1f32c8068c6cf47fa621d3995883a43caafeeadc/streamlit-1.65.0.tar.gz", hash = "sha256:42acd9ebdf3576a35584977c48a044ec0b5d3e4997fa9248809b9891598ac6a0", size = 9749831, upload-time = "2026-10-02T21:40:36.584Z" }
 wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/18/60/2acf1a5cac2b2fa6b09fea362abf81f210cf25cee40082ab11beb754cf70/streamlit-1.63.0-py3-none-any.whl", hash = "sha256:c24fd38170543ffb749321c801627aaa09068219539d7b81ef77633ea2408b36", size = 10497212, upload-time = "2026-09-01T17:12:30.021Z" },
+    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/fa/e3/5c9d2e88563c9974e53ac744b1523ebb1fd8f0ebb1ecc28a5f6f6bb0baea/streamlit-1.65.0-py3-none-any.whl", hash = "sha256:517a7254e223f4986d2b2e0745d02acf8ca64656943e63e422d345ce34a7495b", size = 10313469, upload-time = "2026-10-02T21:40:33.164Z" },
 ]
 
 [[package]]
 name = "streamlit-canary"
-version = "0.4.0a39"
+version = "0.4.0a59"
 source = { registry = "http://localhost:2131/" }
 dependencies = [
     { name = "argsense" },
@@ -2342,32 +2325,7 @@ dependencies = [
     { name = "watchdog" },
 ]
 wheels = [
-    { url = "http://localhost:2131/streamlit-canary/streamlit_canary-0.4.0a39-py3-none-any.whl" },
-]
-
-[[package]]
-name = "streamlit-extras"
-version = "1.6.0"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-dependencies = [
-    { name = "plotly" },
-    { name = "streamlit" },
-]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/52/e2/34510d0639ee4e321c7e92205c990a15957b46aadaab56eef3bc59e15d23/streamlit_extras-1.6.0.tar.gz", hash = "sha256:d75bfabd2be35f1fba6bce3935d1c446cfcfbe03123478df1b5ba4a02a7c49c0", size = 408284, upload-time = "2026-05-15T15:33:22.666Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/85/6a/3cf1af290973094d8104c5ced9e5e5913c90852492419774286550d6c7bc/streamlit_extras-1.6.0-py3-none-any.whl", hash = "sha256:99c38dad3cd07d088da809c97f3e35cd65f97c983480c3115c724f0324fc8eee", size = 1042438, upload-time = "2026-05-15T15:33:24.18Z" },
-]
-
-[[package]]
-name = "streamlit-tree-select"
-version = "0.0.5"
-source = { registry = "https://pypi.tuna.tsinghua.edu.cn/simple/" }
-dependencies = [
-    { name = "streamlit" },
-]
-sdist = { url = "https://pypi.tuna.tsinghua.edu.cn/packages/83/b5/ec39a5b4cce1fb1cc920d341263bc1f08f73412eb10ea09df7c5e0566a4f/streamlit-tree-select-0.0.5.tar.gz", hash = "sha256:985f5d4c357c403723fd69d4c4fca38193e0f9105974ec36259c43d9e6b78044", size = 1205495, upload-time = "2022-09-05T14:08:51.938Z" }
-wheels = [
-    { url = "https://pypi.tuna.tsinghua.edu.cn/packages/ba/02/8e298f4a4556d2f1ceecc0fcde9a795596520b681aeff4288e5daac588e6/streamlit_tree_select-0.0.5-py3-none-any.whl", hash = "sha256:9bfee4d9394fcb0b3e98801cca32f179c85f9f7fdf7005904bf88811f73db05c", size = 1225810, upload-time = "2022-09-05T14:08:50.009Z" },
+    { url = "http://localhost:2131/streamlit-canary/streamlit_canary-0.4.0a59-py3-none-any.whl" },
 ]
 
 [[package]]

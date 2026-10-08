@@ -8,7 +8,7 @@ dependencies = [
     "airmise>=3.2.3",
     "argsense>=1.1.2",
     "lk-utils>=3.8.1",
-    "neoprint>=0.1.11",
+    "neoprint>=0.1.12",
 ]
 
 [build-system]
@@ -64,3 +64,8 @@ airmise = { index = "likianta" }
 neoprint = { index = "likianta" }
 pyapp-window = { index = "likianta" }
 streamlit-canary = { index = "likianta" }
+
+[tool.uv.workspace]
+members = [
+    "journey-10.01",
+]
